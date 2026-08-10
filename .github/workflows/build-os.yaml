@@ -783,31 +783,29 @@ jobs:
   # ╔═══════════════════════════════════════════════════════════════════════════╗
   # ║  المرحلة 2.5: بناء صور Docker — FastFree Backend + Ledger              ║
   # ║  يستدعي build-backend.yaml + build-ledger.yaml كـ reusable workflows    ║
+  # ║  (Reusable workflows تستخدم على مستوى job وليس step)                    ║
   # ╚═══════════════════════════════════════════════════════════════════════════╝
-  build_images:
-    name: 🐳 بناء صور Docker
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
+  build_backend_image:
+    name: 🐳 بناء صورة Backend
+    uses: ./.github/workflows/build-backend.yaml
     needs: [syntax_check, flake_validate, evaluation]
-    steps:
-      - name: بناء صورة FastFree Backend
-        uses: ./.github/workflows/build-backend.yaml
-        secrets: inherit
+    secrets: inherit
 
-      - name: بناء صورة FastFree Ledger
-        uses: ./.github/workflows/build-ledger.yaml
-        secrets: inherit
+  build_ledger_image:
+    name: 🐳 بناء صورة Ledger
+    uses: ./.github/workflows/build-ledger.yaml
+    needs: [syntax_check, flake_validate, evaluation]
+    secrets: inherit
 
   # ╔═══════════════════════════════════════════════════════════════════════════╗
   # ║  المرحلة 2/2: اختبارات الخدمات — NixOS VM Tests                       ║
   # ║  nix build .#checks.x86_64-linux.* — بناء + تشغيل اختبارات VM         ║
-  # ║  5 اختبارات: mariadb · wireguard · sshd · phpmyadmin · podman            ║
   # ╚═══════════════════════════════════════════════════════════════════════════╝
   service_tests:
     name: 🧪 اختبارات الخدمات
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    needs: [syntax_check, flake_validate, evaluation, build_images]
+    needs: [syntax_check, flake_validate, evaluation, build_backend_image, build_ledger_image]
     outputs:
       passed: ${{ steps.tests.outputs.passed }}
       failed: ${{ steps.tests.outputs.failed }}
@@ -1419,20 +1417,21 @@ jobs:
 
             ### الحزم المتاحة
 
-            | التكوين | النوع | الملف | باسورد |
-            |---------|-------|-------|--------|
-            | client3 | WSL | `fastfree_client3.wsl.7z` | `${{ secrets.ARCHIVE_PASSWORD }}` |
+            | التكوين | النوع | الملف |
+            |---------|-------|-------|
+            | client1 | WSL | `fastfree_client1.wsl.7z` |
+            | client2 | Hyper-V | `fastfree_client2.vhdx.7z` |
 
-            > **باسورد فك الضغط:** `${{ secrets.ARCHIVE_PASSWORD }}`
+            > **ملاحظة:** الحزم مضغوطة بـ 7z. استخدم `7z x <filename>` لفك الضغط.
 
             ### التثبيت — WSL
 
             ```powershell
             # 1. فك الضغط
-            7z x fastfree_client3.wsl.7z -p${{ secrets.ARCHIVE_PASSWORD }}
+            7z x fastfree_client1.wsl.7z
 
             # 2. استيراد في WSL (يجب أن يكون WSL2)
-            wsl --import fastfree D:\fastfree\fastos fastfree_client3.wsl --version 2
+            wsl --import fastfree D:\fastfree\fastos fastfree_client1.wsl --version 2
 
             # 3. دخول
             wsl -d fastfree

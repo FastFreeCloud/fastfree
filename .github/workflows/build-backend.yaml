@@ -111,15 +111,20 @@ jobs:
 
       - name: "3️⃣ إنشاء Tag على GitHub"
         run: |
-          echo "📌 إنشاء Tag: ${{ steps.auto_tag.outputs.TAG }}"
+          TAG="${{ steps.auto_tag.outputs.TAG }}"
+          echo "📌 فحص Tag: $TAG"
 
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # فحص إذا كان Tag موجود مسبقاً
+          if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "⚠️ Tag $TAG موجود مسبقاً —تخطي الإنشاء"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git tag -a "${{ steps.auto_tag.outputs.TAG }}" -m "Release ${{ steps.auto_tag.outputs.TAG }}"
-          git push origin "${{ steps.auto_tag.outputs.TAG }}"
-
-          echo "✅ تم إنشاء Tag: ${{ steps.auto_tag.outputs.TAG }}"
+            git tag -a "$TAG" -m "Release $TAG"
+            git push origin "$TAG"
+            echo "✅ تم إنشاء Tag: $TAG"
+          fi
 
       # ╔═══════════════════════════════════════╗
       # ║  المرحلة 4: كشف اسم التطبيق            ║
