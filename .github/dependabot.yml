@@ -18,15 +18,11 @@ updates:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
-  # NPM — weekly scan for package updates
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "sunday"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "npm"
-    commit-message:
-      prefix: "deps"
+  # NPM — disabled because Dependabot's npm updater doesn't support
+  # pnpm devEngines / packageManager spec correctly (corepack error).
+  # Use `pnpm update` or Renovate for npm dependency updates.
+  # - package-ecosystem: "npm"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "weekly"
+  #     day: "sunday"
