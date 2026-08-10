@@ -214,7 +214,7 @@ jobs:
 
       - name: "3️⃣ إعداد Python"
         if: steps.check.outputs.should_create == 'true'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 
