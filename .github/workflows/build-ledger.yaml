@@ -33,19 +33,27 @@ jobs:
       - name: Safe directory
         run: git config --global safe.directory '*'
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
           version: 11
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+        env:
+          # Skip postinstall for fastfree_ledger during initial install
+          # quasar prepare will run separately below
+          PNPM_SKIP_POSTINSTALL: ""
+
+      - name: Prepare Quasar
+        working-directory: apps/fastfree_ledger
+        run: pnpm exec quasar prepare --silent || true
 
       - name: TypeScript check
         working-directory: apps/fastfree_ledger
@@ -66,7 +74,7 @@ jobs:
       - name: Safe directory
         run: git config --global safe.directory '*'
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
       - uses: cachix/install-nix-action@v31
         with:
@@ -107,7 +115,7 @@ jobs:
       - name: Safe directory
         run: git config --global safe.directory '*'
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 

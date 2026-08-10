@@ -727,8 +727,6 @@ jobs:
 
       - uses: cachix/install-nix-action@v31
 
-      - uses: DeterminateSystems/magic-nix-cache-action@v6
-
       - name: تثبيت 7zip
         run: sudo apt-get update && sudo apt-get install -y p7zip-full
 
@@ -738,6 +736,7 @@ jobs:
         run: nix build .#packages.x86_64-linux.client1 --no-update-lock-file
 
       - name: "تشغيل tarballBuilder — client1"
+        working-directory: apps/fastfree_os
         run: sudo ./result/bin/nixos-wsl-tarball-builder fastfree_client1.wsl
 
       - name: "ضغط fastfree_client1.wsl بـ 7z"

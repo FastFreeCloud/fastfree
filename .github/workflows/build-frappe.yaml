@@ -78,7 +78,7 @@ jobs:
       # ╚═══════════════════════════════════════╝
 
       - name: "1️⃣ تحميل الـ Repo"
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -220,7 +220,7 @@ jobs:
 
       - name: "4️⃣ إعداد Node.js"
         if: steps.check.outputs.should_create == 'true'
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 

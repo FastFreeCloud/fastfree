@@ -77,7 +77,7 @@
         fastfree.deployHost      = cfg.deployHost or "";
         fastfree.deployPassword  = cfg.deployPassword or "";
         fastfree.githubRepo      = cfg.githubRepo or "";
-        fastfree.githubAccount   = cfg.githubAccount or "";
+        fastfree.githubAccount   = lib.mkIf ((cfg.githubAccount or "") != "") cfg.githubAccount;
         fastfree.githubToken     = cfg.githubToken or "";
         fastfree.networking      = cfg.networking or {};
         fastfree.gitOrigin       = cfg.gitOrigin or "";
