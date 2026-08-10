@@ -1,4 +1,5 @@
 { lib, ... }: {
+  # FastFree OS — NixOS configuration options
   options.fastfree = {
     identity = {
       name = lib.mkOption {
