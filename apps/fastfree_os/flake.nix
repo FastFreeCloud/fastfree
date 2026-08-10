@@ -179,7 +179,6 @@
         (lib.nixosSystem {
           inherit system;
           modules = mkClientModules name cfg ++ [({ config, pkgs, lib, ... }: {
-            image.baseName = "fastfree_${name}";
             virtualisation.diskSize = 15 * 1024;
 
             system.build.hypervImage = lib.mkForce (
