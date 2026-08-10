@@ -720,7 +720,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     needs: [dry_build]
-    if: always() && needs.dry_build.result == 'success' && needs.dry_build.outputs.failed == '0'
+    if: always() && needs.dry_build.result == 'success' && needs.dry_build.outputs.pkg_failed == '0'
     permissions:
       contents: read
     steps:
