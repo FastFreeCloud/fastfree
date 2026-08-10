@@ -738,7 +738,7 @@ jobs:
           echo "المضغوط: $(ls -lh fastfree_client1.wsl.7z | awk '{print $5}')"
 
       - name: "رفع fastfree_client1.wsl.7z"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fastfree_client1_wsl
           path: fastfree_client1.wsl.7z
@@ -757,7 +757,7 @@ jobs:
           echo "المضغوط: $(ls -lh result/fastfree_client2.vhdx.7z | awk '{print $5}')"
 
       - name: "رفع fastfree_client2.vhdx.7z"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fastfree_client2_vhdx
           path: result/fastfree_client2.vhdx.7z
@@ -1267,7 +1267,7 @@ jobs:
 
       # ── رفع التقرير كملف مرفق ──────────────────────────────────────────
       - name: رفع تقرير الاختبارات
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-report-${{ github.run_number }}
           path: test-report.md
