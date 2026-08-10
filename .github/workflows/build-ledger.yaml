@@ -9,7 +9,7 @@ on:
       - 'pnpm-workspace.yaml'
       - 'pnpm-lock.yaml'
   pull_request:
-    branches: [main]
+    branches: [main, master]
     paths:
       - 'apps/fastfree_ledger/**'
       - 'packages/**'
@@ -32,7 +32,7 @@ jobs:
       - name: Safe directory
         run: git config --global safe.directory '*'
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
@@ -65,9 +65,9 @@ jobs:
       - name: Safe directory
         run: git config --global safe.directory '*'
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@v30
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -98,7 +98,7 @@ jobs:
 
   release:
     needs: [build-frontend]
-    if: github.ref == 'refs/heads/main' && success()
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && success()
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -106,7 +106,7 @@ jobs:
       - name: Safe directory
         run: git config --global safe.directory '*'
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 

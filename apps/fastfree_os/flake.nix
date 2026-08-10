@@ -178,31 +178,29 @@
       mkVHDX = name: cfg:
         (lib.nixosSystem {
           inherit system;
-          modules = mkClientModules name cfg ++ [{
-            image.modules.hyperv = { config, pkgs, lib, ... }: {
-              image.baseName = "fastfree_${name}";
-              virtualisation.diskSize = 15 * 1024;
+          modules = mkClientModules name cfg ++ [({ config, pkgs, lib, ... }: {
+            image.baseName = "fastfree_${name}";
+            virtualisation.diskSize = 15 * 1024;
 
-              system.build.hypervImage = lib.mkForce (
-                import "${nixpkgs}/nixos/lib/make-disk-image.nix" {
-                  name = "nixos-hyperv-${config.system.nixos.label}-fixed";
-                  baseName = config.image.baseName;
-                  postVM = ''
-                    ${pkgs.vmTools.qemu}/bin/qemu-img convert -f raw -o subformat=fixed -O vhdx $diskImage $out/${config.image.fileName}
-                    ${pkgs.p7zip}/bin/7z a -t7z -m0=lzma2 -mx=9 -p"FastOS@2026" -mhe=on $out/${config.image.fileName}.7z $out/${config.image.fileName}
-                    rm $out/${config.image.fileName}
-                    rm $diskImage
-                  '';
-                  format = "raw";
-                  inherit (config.virtualisation) diskSize;
-                  partitionTableType = "efi";
-                  inherit config lib;
-                  pkgs = customPkgs pkgs;
-                  memSize = 2048;
-                }
-              );
-            };
-          }];
+            system.build.hypervImage = lib.mkForce (
+              import "${nixpkgs}/nixos/lib/make-disk-image.nix" {
+                name = "nixos-hyperv-${config.system.nixos.label}-fixed";
+                baseName = "fastfree_${name}";
+                postVM = ''
+                  ${pkgs.vmTools.qemu}/bin/qemu-img convert -f raw -o subformat=fixed -O vhdx $diskImage $out/fastfree_${name}.vhdx
+                  ${pkgs.p7zip}/bin/7z a -t7z -m0=lzma2 -mx=9 -p"FastOS@2026" -mhe=on $out/fastfree_${name}.vhdx.7z $out/fastfree_${name}.vhdx
+                  rm $out/fastfree_${name}.vhdx
+                  rm $diskImage
+                '';
+                format = "raw";
+                inherit (config.virtualisation) diskSize;
+                partitionTableType = "efi";
+                inherit config lib;
+                pkgs = customPkgs pkgs;
+                memSize = 2048;
+              }
+            );
+          })];
         }).config.system.build.hypervImage;
 
       # -- WSL tarball builder (wsl clients only, where build=true) --

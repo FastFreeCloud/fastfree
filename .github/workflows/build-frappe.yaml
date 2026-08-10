@@ -10,8 +10,6 @@ name: "🆕 إنشاء تطبيق Frappe جديد"
 # ═══════════════════════════════════════════════════════════
 
 on:
-  push:
-    branches: [ main, master ]
   workflow_dispatch:
     inputs:
       app_name:
@@ -473,28 +471,40 @@ jobs:
       # ║  المرحلة 6: Tag + Release              ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣2️⃣ إنشاء Tag v1.0.1"
+      - name: "1️⃣2️⃣ إنشاء Tag + Release"
         if: steps.check.outputs.should_create == 'true' && env.CREATE_RELEASE == 'true'
+        id: tag_version
         run: |
           cd "$GITHUB_WORKSPACE"
-          git tag -a v1.0.1 -m "🎉 الإصدار الأول: $APP_TITLE
 
-          النسخة الأولى من $APP_NAME
-          تم التوليد بـ bench new-app عبر GitHub Actions
+          # حساب الإصدار التالي
+          LATEST_TAG=$(git tag -l "v1.0.*" --sort=-v:refname | head -n1)
+          if [ -z "$LATEST_TAG" ]; then
+            NEXT=1
+          else
+            CURR=${LATEST_TAG#v1.0.}
+            NEXT=$((CURR + 1))
+          fi
+          TAG="v1.0.$NEXT"
 
-          Frappe: $FRAPPE_BRANCH
-          الناشر: $APP_PUBLISHER
-          الرخصة: $APP_LICENSE"
+          # التحقق من وجود الـ tag
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG موجود بالفعل — سيتم تجاهله"
+            echo "next=$CURR" >> $GITHUB_OUTPUT
+            exit 0
+          fi
 
-          git push origin v1.0.1
-          echo "✅ تم إنشاء Tag v1.0.1"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          echo "next=$NEXT" >> $GITHUB_OUTPUT
+          echo "✅ تم إنشاء Tag $TAG"
 
       - name: "1️⃣3️⃣ إنشاء GitHub Release"
         if: steps.check.outputs.should_create == 'true' && env.CREATE_RELEASE == 'true'
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: v1.0.1
-          name: "v1.0.1"
+          tag_name: v1.0.${{ steps.tag_version.outputs.next }}
+          name: "v1.0.${{ steps.tag_version.outputs.next }}"
           body: |
             ## 🎉 الإصدار الأول
 

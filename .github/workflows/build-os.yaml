@@ -73,7 +73,6 @@ permissions:
 # ─────────────────────────────────────────────────────────────────────────────
 env:
   NIXPKGS_ALLOW_UNFREE: "1"
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   # ╔═══════════════════════════════════════════════════════════════════════════╗
@@ -97,11 +96,11 @@ jobs:
 
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       # ── تثبيت Nix ─────────────────────────────────────────────────────────
       - name: تثبيت Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@v30
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
@@ -227,11 +226,11 @@ jobs:
 
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       # ── تثبيت Nix ─────────────────────────────────────────────────────────
       - name: تثبيت Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@v30
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
@@ -298,11 +297,11 @@ jobs:
 
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       # ── تثبيت Nix ─────────────────────────────────────────────────────────
       - name: تثبيت Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@v30
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
@@ -453,11 +452,11 @@ jobs:
 
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       # ── تثبيت Nix ─────────────────────────────────────────────────────────
       - name: تثبيت Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@v30
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
@@ -595,11 +594,11 @@ jobs:
 
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       # ── تثبيت Nix ─────────────────────────────────────────────────────────
       - name: تثبيت Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@v30
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
@@ -711,11 +710,11 @@ jobs:
       - name: تأمين صلاحيات Git
         run: git config --global safe.directory '*'
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@v30
 
-      - uses: DeterminateSystems/magic-nix-cache-action@v14
+      - uses: DeterminateSystems/magic-nix-cache-action@v6
 
       - name: تثبيت 7zip
         run: sudo apt-get update && sudo apt-get install -y p7zip-full
@@ -736,7 +735,7 @@ jobs:
           echo "المضغوط: $(ls -lh fastfree_client1.wsl.7z | awk '{print $5}')"
 
       - name: "رفع fastfree_client1.wsl.7z"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: fastfree_client1_wsl
           path: fastfree_client1.wsl.7z
@@ -755,7 +754,7 @@ jobs:
           echo "المضغوط: $(ls -lh result/fastfree_client2.vhdx.7z | awk '{print $5}')"
 
       - name: "رفع fastfree_client2.vhdx.7z"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: fastfree_client2_vhdx
           path: result/fastfree_client2.vhdx.7z
@@ -794,7 +793,7 @@ jobs:
 
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       # ── تمكين KVM على خادم GitHub Actions ──────────────────────────────────
       - name: تمكين صلاحيات KVM للمستخدمين
@@ -809,7 +808,7 @@ jobs:
 
       # ── تثبيت Nix مع دعم KVM ──────────────────────────────────────────────
       - name: تثبيت Nix مع دعم KVM
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@v30
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
@@ -819,7 +818,7 @@ jobs:
             extra-system-features = kvm nixos-test
             sandbox = false
 
-      - uses: DeterminateSystems/magic-nix-cache-action@v14
+      - uses: DeterminateSystems/magic-nix-cache-action@v6
 
       # ── تشغيل جميع اختبارات NixOS (فردياً للتقارير الدقيقة) ────────────
       - name: تشغيل اختبارات NixOS التلقائية
@@ -964,7 +963,7 @@ jobs:
 
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       # ── تجميع النتائج ──────────────────────────────────────────────────────
       - name: تجميع نتائج جميع الاختبارات
@@ -1265,7 +1264,7 @@ jobs:
 
       # ── رفع التقرير كملف مرفق ──────────────────────────────────────────
       - name: رفع تقرير الاختبارات
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: test-report-${{ github.run_number }}
           path: test-report.md
@@ -1317,14 +1316,14 @@ jobs:
       needs.build_packages.result == 'success' &&
       needs.service_tests.result == 'success' &&
       needs.test_report.result == 'success' &&
-      github.ref == 'refs/heads/master' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') &&
       github.event_name == 'push'
     steps:
       - name: تأمين صلاحيات Git
         run: git config --global safe.directory '*'
 
       - name: استيراد الكود
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
