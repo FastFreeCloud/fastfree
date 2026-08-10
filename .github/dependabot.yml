@@ -12,6 +12,11 @@ updates:
       - "github-actions"
     commit-message:
       prefix: "ci"
+    # Only allow minor and patch updates (ignore major version bumps)
+    # Major versions often have breaking changes and need manual review
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   # NPM — weekly scan for package updates
   - package-ecosystem: "npm"
