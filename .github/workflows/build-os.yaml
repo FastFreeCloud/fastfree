@@ -719,10 +719,9 @@ jobs:
     name: 📦 بناء الحزم
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    needs: [syntax_check, flake_validate, evaluation, dry_build]
+    needs: [dry_build]
     if: always() && needs.dry_build.result == 'success' && needs.dry_build.outputs.failed == '0'
     permissions:
-      id-token: write
       contents: read
     steps:
       - name: تأمين صلاحيات Git
@@ -791,9 +790,6 @@ jobs:
         working-directory: apps/fastfree_os
         run: rm -rf result fastfree_client2.vhdx.7z
 
-      - name: "تنظيف client2"
-        run: rm -rf result
-
   # ╔═══════════════════════════════════════════════════════════════════════════╗
   # ║  المرحلة 2.5: بناء صور Docker — FastFree Backend + Ledger              ║
   # ║  يستدعي build-backend.yaml + build-ledger.yaml كـ reusable workflows    ║
@@ -819,7 +815,7 @@ jobs:
     name: 🧪 اختبارات الخدمات
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    needs: [syntax_check, flake_validate, evaluation, build_backend_image, build_ledger_image]
+    needs: [syntax_check, flake_validate, evaluation]
     outputs:
       passed: ${{ steps.tests.outputs.passed }}
       failed: ${{ steps.tests.outputs.failed }}
@@ -1353,7 +1349,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
-    needs: [syntax_check, nix_lint, flake_validate, evaluation, dry_build, build_packages, service_tests, test_report]
+    needs: [syntax_check, nix_lint, flake_validate, evaluation, dry_build, build_packages, service_tests]
     if: |
       always() &&
       needs.syntax_check.result == 'success' &&
@@ -1363,7 +1359,6 @@ jobs:
       needs.dry_build.result == 'success' &&
       needs.build_packages.result == 'success' &&
       needs.service_tests.result == 'success' &&
-      needs.test_report.result == 'success' &&
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') &&
       github.event_name == 'push'
     steps:
