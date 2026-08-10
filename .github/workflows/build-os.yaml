@@ -781,6 +781,24 @@ jobs:
         run: rm -rf result
 
   # ╔═══════════════════════════════════════════════════════════════════════════╗
+  # ║  المرحلة 2.5: بناء صور Docker — FastFree Backend + Ledger              ║
+  # ║  يستدعي build-backend.yaml + build-ledger.yaml كـ reusable workflows    ║
+  # ╚═══════════════════════════════════════════════════════════════════════════╝
+  build_images:
+    name: 🐳 بناء صور Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    needs: [syntax_check, flake_validate, evaluation]
+    steps:
+      - name: بناء صورة FastFree Backend
+        uses: ./.github/workflows/build-backend.yaml
+        secrets: inherit
+
+      - name: بناء صورة FastFree Ledger
+        uses: ./.github/workflows/build-ledger.yaml
+        secrets: inherit
+
+  # ╔═══════════════════════════════════════════════════════════════════════════╗
   # ║  المرحلة 2/2: اختبارات الخدمات — NixOS VM Tests                       ║
   # ║  nix build .#checks.x86_64-linux.* — بناء + تشغيل اختبارات VM         ║
   # ║  5 اختبارات: mariadb · wireguard · sshd · phpmyadmin · podman            ║
@@ -789,7 +807,7 @@ jobs:
     name: 🧪 اختبارات الخدمات
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    needs: [syntax_check, flake_validate, evaluation]
+    needs: [syntax_check, flake_validate, evaluation, build_images]
     outputs:
       passed: ${{ steps.tests.outputs.passed }}
       failed: ${{ steps.tests.outputs.failed }}

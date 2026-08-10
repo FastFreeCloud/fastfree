@@ -16,6 +16,7 @@ on:
       - 'pnpm-workspace.yaml'
       - 'pnpm-lock.yaml'
   workflow_dispatch:
+  workflow_call:
 
 concurrency:
   group: build-ledger-${{ github.ref }}

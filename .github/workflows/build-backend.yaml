@@ -25,6 +25,7 @@ on:
         required: false
         type: string
         default: "version-15"
+  workflow_call:
 
 # ── منع التشغيل المتزامن على نفس الـ Branch ──
 concurrency:
