@@ -67,6 +67,8 @@
       fastfree_backend = lib.mkEnableOption "FastFree Backend (Frappe/ERPNext)";
       fastfree_ledger  = lib.mkEnableOption "FastFree Ledger (Quasar frontend)";
       phpmyadmin   = lib.mkEnableOption "phpMyAdmin";
+      wireguard    = lib.mkEnableOption "WireGuard VPN";
+      avahi        = lib.mkEnableOption "Avahi mDNS/DNS-SD";
     };
 
     subdomains = {
