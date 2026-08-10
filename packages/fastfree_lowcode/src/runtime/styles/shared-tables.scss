@@ -1,0 +1,108 @@
+.lc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th, td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--lc-outline-variant, #e5e7eb);
+    text-align: start;
+  }
+
+  th {
+    background: var(--lc-surface-container, #f5f5f5);
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--lc-on-surface-variant, #666);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  tr:hover td {
+    background: var(--lc-surface-container-low, #fafafa);
+  }
+
+  .lc-col-actions {
+    width: 100px;
+    text-align: center;
+  }
+
+  .lc-col-number {
+    width: 60px;
+    text-align: center;
+  }
+}
+
+.lc-table--striped tr:nth-child(even) td {
+  background: var(--lc-surface-container-lowest, #fcfcfc);
+}
+
+.lc-table--compact th,
+.lc-table--compact td {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.lc-table--dense th,
+.lc-table--dense td {
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+.lc-table--bordered {
+  border: 1px solid var(--lc-outline-variant, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+
+  th, td {
+    border: 1px solid var(--lc-outline-variant, #e5e7eb);
+  }
+}
+
+.lc-table--elevated {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+@media print {
+  .lc-table {
+    font-size: 11px;
+    page-break-inside: auto;
+
+    th, td {
+      padding: 4px 6px;
+      border: 1px solid #333;
+    }
+
+    th {
+      background: #0D47A1 !important;
+      color: white !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    tr:nth-child(even) td {
+      background: #f8f9fa !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    tr {
+      page-break-inside: avoid;
+    }
+  }
+}
+
+[dir="rtl"] .lc-table {
+  th, td {
+    text-align: right;
+  }
+
+  .lc-col-number {
+    text-align: center;
+  }
+}

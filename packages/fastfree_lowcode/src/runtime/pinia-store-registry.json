@@ -1,0 +1,435 @@
+{
+  "stores": [
+    {
+      "id": "lc-groups",
+      "factoryName": "useGroupsStore",
+      "filePath": "src/runtime/composables/useGroupsStore.ts",
+      "storeType": "defineStore",
+      "state": {
+        "groups": {
+          "type": "ref",
+          "valueType": "Group[]",
+          "description": "Array of group objects containing pages",
+          "initialValue": "[]"
+        },
+        "activeGroupId": {
+          "type": "ref",
+          "valueType": "string",
+          "description": "Currently active group ID",
+          "initialValue": "'system'"
+        }
+      },
+      "computed": {
+        "activeGroup": {
+          "type": "computed",
+          "returns": "Group | null",
+          "description": "Currently active group object"
+        },
+        "systemGroup": {
+          "type": "computed",
+          "returns": "Group | null",
+          "description": "System group (built-in)"
+        },
+        "favoritesGroup": {
+          "type": "computed",
+          "returns": "Group | null",
+          "description": "Favorites group (built-in)"
+        }
+      },
+      "actions": [
+        "load",
+        "initDefaults",
+        "ensureBuiltinGroups",
+        "save",
+        "createGroup",
+        "updateGroup",
+        "deleteGroup",
+        "reorderGroups",
+        "addPage",
+        "removePage",
+        "reorderPages",
+        "setActiveGroup",
+        "toggleFavoritePage",
+        "isFavoritePage"
+      ],
+      "persistence": {
+        "enabled": true,
+        "storageKey": "lc-groups",
+        "storageType": "localStorage",
+        "method": "manual",
+        "persistedFields": ["groups", "activeGroupId"],
+        "loadOnInit": true,
+        "saveOnChange": true,
+        "migrationLogic": "Handles legacy format (array vs object with groups/activeGroupId)"
+      },
+      "resetMethod": {
+        "hasPiniaReset": true,
+        "customReset": false,
+        "description": "Uses Pinia's built-in $reset() method"
+      },
+      "registration": {
+        "autoRegistered": true,
+        "registrationPoint": "boot.register.ts (getLcI18nStore() and getThemeStore() called during boot)",
+        "singleton": true,
+        "singletonAccessor": "None (import useGroupsStore directly)"
+      },
+      "constants": {
+        "SYSTEM_GROUP_ID": "system",
+        "FAVORITES_GROUP_ID": "favorites",
+        "STORAGE_KEY": "lc-groups"
+      },
+      "types": {
+        "Group": "{ id: string; name: string; icon: string; pages: GroupPage[] }",
+        "GroupPage": "{ id: string; screenType: string; label: string; icon: string }"
+      }
+    },
+    {
+      "id": "desktop",
+      "factoryName": "createDesktopStore / useDesktopStore",
+      "filePath": "src/runtime/composables/useDesktopStore.ts",
+      "storeType": "defineStore (factory function)",
+      "state": {
+        "activeWindowId": {
+          "type": "ref",
+          "valueType": "string | null",
+          "description": "Currently active window ID",
+          "initialValue": "null"
+        },
+        "windows": {
+          "type": "ref",
+          "valueType": "Record<string, WindowInfo>",
+          "description": "All open windows keyed by ID",
+          "initialValue": "{}"
+        },
+        "openedOrder": {
+          "type": "ref",
+          "valueType": "string[]",
+          "description": "Z-order of opened windows",
+          "initialValue": "[]"
+        },
+        "preMaximizedBounds": {
+          "type": "ref",
+          "valueType": "Record<string, { width: number; height: number; left: number; top: number }>",
+          "description": "Saved bounds before maximizing",
+          "initialValue": "{}"
+        }
+      },
+      "computed": {
+        "sortedWindows": {
+          "type": "computed",
+          "returns": "WindowInfo[]",
+          "description": "Windows sorted by z-order"
+        },
+        "hasMaximizedWindow": {
+          "type": "computed",
+          "returns": "boolean",
+          "description": "Whether any window is maximized"
+        }
+      },
+      "actions": [
+        "isWindowOpen",
+        "getOpenCount",
+        "getWindowsByType",
+        "saveSessionState",
+        "openWindow",
+        "closeWindow",
+        "bringToFront",
+        "toggleMaximize",
+        "toggleMinimize",
+        "bringToFrontIfOpen",
+        "updateWindowBounds",
+        "reorderWindows",
+        "restoreSessionState",
+        "clearSessionState",
+        "resetState"
+      ],
+      "persistence": {
+        "enabled": true,
+        "storageKey": "lc-open-windows",
+        "storageVersion": 1,
+        "storageType": "localStorage",
+        "method": "manual",
+        "persistedFields": ["windows (filtered)", "openedOrder"],
+        "loadOnInit": false,
+        "saveOnChange": true,
+        "trigger": "Explicit saveSessionState() called on window changes",
+        "configurable": "Controlled by persistState option (default: false from shared config)"
+      },
+      "resetMethod": {
+        "hasPiniaReset": true,
+        "customReset": true,
+        "customResetName": "resetState",
+        "description": "Custom resetState() clears windows, openedOrder, activeWindowId, and clears session storage"
+      },
+      "registration": {
+        "autoRegistered": false,
+        "registrationPoint": "Exported as createDesktopStore() factory; useDesktopStore() is singleton instance",
+        "singleton": true,
+        "singletonAccessor": "useDesktopStore (exported singleton instance)",
+        "factoryOptions": {
+          "storeId": "string (default: 'desktop')",
+          "storageKey": "string (default: 'lc-open-windows')",
+          "persistState": "boolean (default: from shared config)"
+        }
+      },
+      "constants": {
+        "STORED_WINDOWS_KEY": "lc-open-windows",
+        "STORAGE_VERSION": 1
+      },
+      "types": {
+        "WindowInfo": "{ id: string; screenType: string; title: string; icon: string; isMinimized: boolean; isMaximized: boolean; width: number; height: number; left: number; top: number }",
+        "DesktopStoreOptions": "{ storeId?: string; storageKey?: string; persistState?: boolean }"
+      }
+    },
+    {
+      "id": "lc-i18n",
+      "factoryName": "useLcI18nStore",
+      "filePath": "src/runtime/composables/useLcI18nStore.ts",
+      "storeType": "defineStore",
+      "state": {
+        "messages": {
+          "type": "reactive (UnwrapNestedRefs<LcMessages>)",
+          "valueType": "LcMessages",
+          "description": "Merged translation messages (base + overrides) for current locale",
+          "initialValue": "Applied overrides on base messages for detected/saved locale"
+        },
+        "locale": {
+          "type": "reactive ({ value: string })",
+          "valueType": "string",
+          "description": "Current locale ('en' or 'ar')",
+          "initialValue": "From localStorage (lc-locale) -> shared config -> browser detection"
+        }
+      },
+      "computed": {},
+      "actions": [
+        "setLocale",
+        "t",
+        "setOverrides",
+        "getOverrides",
+        "resetOverrides",
+        "resetKeyOverride",
+        "registerMessages",
+        "getValue",
+        "getOverridesForLocale",
+        "setOverridesForLocale"
+      ],
+      "persistence": {
+        "enabled": true,
+        "storageKey": "lc-locale (for locale), lc-translation-overrides-{locale} (for overrides)",
+        "storageType": "localStorage",
+        "method": "manual",
+        "persistedFields": ["locale.value", "overrides per locale"],
+        "loadOnInit": true,
+        "saveOnChange": true,
+        "migrationLogic": "Migrates old 'lc-translation-overrides' key to locale-specific keys"
+      },
+      "resetMethod": {
+        "hasPiniaReset": true,
+        "customReset": false,
+        "description": "Uses Pinia's built-in $reset() method"
+      },
+      "registration": {
+        "autoRegistered": true,
+        "registrationPoint": "boot.register.ts calls getLcI18nStore() during app boot",
+        "singleton": true,
+        "singletonAccessor": "getLcI18nStore() (module-level singleton)",
+        "moduleLevelRegistration": "registerMessages() can be called before store creation"
+      },
+      "constants": {
+        "STORAGE_KEY": "lc-locale",
+        "STORAGE_PREFIX": "lc-translation-overrides-",
+        "SUPPORTED_LOCALES": ["en", "ar"]
+      },
+      "types": {
+        "LcMessages": "Record<string, string> (from config.ts)",
+        "RegisteredMessages": "{ namespace: string; en: Record<string, string>; ar: Record<string, string> }"
+      },
+      "specialFeatures": [
+        "RTL support for Arabic",
+        "Quasar language pack integration",
+        "Message parameter replacement ({key})",
+        "Namespace-based message registration",
+        "Per-locale override storage"
+      ]
+    },
+    {
+      "id": "lc-theme",
+      "factoryName": "useThemeStore",
+      "filePath": "src/runtime/composables/useThemeStore.ts",
+      "storeType": "defineStore",
+      "state": {
+        "mode": {
+          "type": "ref",
+          "valueType": "'light' | 'dark' | 'system'",
+          "description": "Theme mode",
+          "initialValue": "From localStorage (lc-theme-manager) or 'system'"
+        },
+        "presetName": {
+          "type": "ref",
+          "valueType": "string",
+          "description": "Selected theme preset name",
+          "initialValue": "From localStorage or 'ocean'"
+        },
+        "customLight": {
+          "type": "ref",
+          "valueType": "Partial<BrandColors>",
+          "description": "Custom light mode color overrides",
+          "initialValue": "{}"
+        },
+        "customDark": {
+          "type": "ref",
+          "valueType": "Partial<BrandColors>",
+          "description": "Custom dark mode color overrides",
+          "initialValue": "{}"
+        }
+      },
+      "computed": {
+        "getResolvedMode": {
+          "type": "computed",
+          "returns": "'light' | 'dark'",
+          "description": "Resolved mode (handles 'system' -> actual)"
+        },
+        "isDark": {
+          "type": "computed",
+          "returns": "boolean",
+          "description": "Whether resolved mode is dark"
+        },
+        "isSystem": {
+          "type": "computed",
+          "returns": "boolean",
+          "description": "Whether mode is 'system'"
+        },
+        "currentPreset": {
+          "type": "computed",
+          "returns": "ThemePreset | null",
+          "description": "Selected preset object"
+        },
+        "isCustom": {
+          "type": "computed",
+          "returns": "boolean",
+          "description": "Whether using custom colors"
+        },
+        "activeColors": {
+          "type": "computed",
+          "returns": "BrandColors",
+          "description": "Resolved brand colors (preset + custom overrides)"
+        }
+      },
+      "actions": [
+        "apply",
+        "toggleMode",
+        "setMode",
+        "selectPreset",
+        "setBrandColor",
+        "getBrandColor",
+        "resetToDefaults",
+        "exportConfig",
+        "importConfig",
+        "destroy"
+      ],
+      "persistence": {
+        "enabled": true,
+        "storageKey": "lc-theme-manager",
+        "storageType": "localStorage",
+        "method": "watch-based auto-save",
+        "persistedFields": ["mode", "preset", "customLight", "customDark"],
+        "loadOnInit": true,
+        "saveOnChange": true,
+        "trigger": "watch on [mode, presetName, customLight, customDark] -> localStorage.setItem"
+      },
+      "resetMethod": {
+        "hasPiniaReset": true,
+        "customReset": true,
+        "customResetName": "resetToDefaults",
+        "description": "resetToDefaults() resets mode to 'system', preset to 'ocean', clears custom colors"
+      },
+      "registration": {
+        "autoRegistered": true,
+        "registrationPoint": "boot.register.ts calls getThemeStore() during app boot",
+        "singleton": true,
+        "singletonAccessor": "getThemeStore() (module-level singleton)",
+        "systemThemeListener": "MediaQueryList listener for 'prefers-color-scheme' changes"
+      },
+      "constants": {
+        "STORAGE_KEY": "lc-theme-manager",
+        "BRAND_NAMES": ["primary", "secondary", "accent", "positive", "negative", "info", "warning"],
+        "PRESETS": ["ocean", "quasar", "forest", "sunset", "midnight", "gold", "lavender", "crimson", "mint", "arctic"]
+      },
+      "types": {
+        "BrandColors": "{ primary: string; secondary: string; accent: string; positive: string; negative: string; info: string; warning: string }",
+        "ThemePreset": "{ name: string; label: string; light: BrandColors; dark: BrandColors }",
+        "ThemeConfig": "{ mode: 'light' | 'dark' | 'system'; preset: string; customLight: Partial<BrandColors>; customDark: Partial<BrandColors> }"
+      },
+      "specialFeatures": [
+        "CSS variable injection (setCssVar + --lc-* custom properties)",
+        "Quasar Dark plugin integration",
+        "System theme detection with MediaQueryList listener",
+        "10 built-in theme presets",
+        "Custom color mode with per-mode overrides",
+        "Config import/export (JSON)",
+        "Dynamic CSS var updates on theme change"
+      ]
+    }
+  ],
+  "nonPiniaStores": [
+    {
+      "name": "useErrorLogStore",
+      "filePath": "src/runtime/composables/useErrorLogStore.ts",
+      "type": "Reactive factory (not Pinia)",
+      "state": {
+        "entries": { "type": "ref<LogEntry[]>", "description": "Error log entries (max 500)" }
+      },
+      "persistence": {
+        "enabled": true,
+        "storageKey": "fastfree-error-logs",
+        "method": "manual localStorage",
+        "maxEntries": 500
+      },
+      "actions": ["addEntry", "clearAll", "removeEntry", "exportToJSON"]
+    },
+    {
+      "name": "useCrudStore",
+      "filePath": "src/runtime/composables/useCrudStore.ts",
+      "type": "Generic factory function (not Pinia)",
+      "description": "Creates a CRUD store for a specific entity type with optimistic updates",
+      "state": ["items", "loading", "error", "pagination", "optimistic", "snapshot"],
+      "actions": ["fetchItems", "createItem", "updateItem", "deleteItem", "bulkDelete", "bulkUpdate", "getItems", "takeSnapshot", "undo"],
+      "persistence": { "enabled": false }
+    },
+    {
+      "name": "useColumnSettings",
+      "filePath": "src/runtime/composables/useColumnSettings.ts",
+      "type": "Composable factory (not Pinia)",
+      "description": "Manages column order, visibility, widths for Quasar tables",
+      "persistence": {
+        "enabled": true,
+        "storageKeys": ["{storageKey}-order", "{storageKey}-visibility", "{storageKey}-widths"],
+        "storageType": "Quasar LocalStorage"
+      }
+    },
+    {
+      "name": "useSplashCoordinator",
+      "filePath": "src/runtime/composables/useSplashCoordinator.ts",
+      "type": "Composable factory (not Pinia)",
+      "description": "Manages splash screen state (loading, transitioning, ready)",
+      "persistence": { "enabled": false }
+    }
+  ],
+  "piniaSetup": {
+    "instanceCreation": "App creates Pinia instance in main.ts (not shown in extension code)",
+    "plugins": [
+      "piniaDebugPlugin (from usePiniaDebug.ts) - logs actions in dev mode"
+    ],
+    "storeRegistration": "Stores are lazily instantiated on first use via defineStore(). Boot.register.ts initializes lc-i18n and lc-theme stores during app boot.",
+    "autoRegistration": "Pinia auto-registers stores when defineStore() is called. No manual registration needed.",
+    "singletonPattern": "lc-i18n, lc-theme, and desktop stores use module-level singleton getters (getLcI18nStore, getThemeStore, useDesktopStore)"
+  },
+  "debuggerIntegrationNotes": {
+    "storeIds": ["lc-groups", "desktop", "lc-i18n", "lc-theme"],
+    "stateInspection": "All 4 stores use reactive refs/computed - fully inspectable via Pinia DevTools",
+    "actionTracking": "piniaDebugPlugin logs all actions with timing (dev only)",
+    "persistenceDebugging": "3 stores persist to localStorage (lc-groups, lc-i18n, lc-theme); desktop store conditionally persists session",
+    "resetTesting": "All 4 stores support $reset(); lc-theme and desktop have custom reset methods",
+    "timeTravel": "Supported via Pinia DevTools for all defineStore stores"
+  }
+}

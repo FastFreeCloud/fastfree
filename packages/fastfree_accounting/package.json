@@ -1,0 +1,43 @@
+{
+  "name": "fastfree-accounting",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Accounting module for FastFree platform — Chart of Accounts, Journal Entries, Payments, Ledger, Cost Centers, Fiscal Years, Financial Reports",
+  "author": "Mohamed <mohamed.fastfree@gmail.com>",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./services": "./src/services/index.ts",
+    "./stores": "./src/stores/useAccountingStore.ts",
+    "./types": "./src/types/index.ts"
+  },
+  "scripts": {
+    "lint": "oxfmt && oxlint --fix",
+    "lint:check": "oxfmt --check && oxlint",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "dexie": "^4.4.4",
+    "fastfree-auth": "workspace:*",
+    "quasar-app-extension-fastfree-lowcode": "workspace:*"
+  },
+  "devDependencies": {
+    "oxfmt": "^0.x",
+    "oxlint": "^1.x",
+    "oxlint-tsgolint": "^7.0.2001",
+    "pinia": "^4.0.0",
+    "quasar": "^2.23.1",
+    "typescript": "^6.0.0",
+    "vue": "^3.5.22",
+    "vue-tsc": "^3.3.3"
+  },
+  "peerDependencies": {
+    "pinia": "^2.0.0",
+    "quasar": "^2.0.0",
+    "vue": "^3.4.0"
+  },
+  "engines": {
+    "node": ">= 18"
+  }
+}

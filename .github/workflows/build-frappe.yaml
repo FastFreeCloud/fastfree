@@ -11,7 +11,7 @@ name: "🆕 إنشاء تطبيق Frappe جديد"
 
 on:
   push:
-    branches: [main]
+    branches: [ main, master ]
   workflow_dispatch:
     inputs:
       app_name:
