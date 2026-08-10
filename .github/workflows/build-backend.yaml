@@ -11,7 +11,7 @@ name: "🐳 بناء Docker Image + Release تلقائي"
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
     paths:
       - 'apps/fastfree_backend/**'
   workflow_dispatch:

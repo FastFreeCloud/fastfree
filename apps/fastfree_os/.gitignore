@@ -1,0 +1,25 @@
+scripts/__pycache__/
+midscene_run/
+.playwright-mcp/
+__pycache__/
+*.pyc
+*.pyo
+*.log
+result
+*.vhdx
+
+
+# Local dev (not uploaded to GitHub)
+local/
+output/
+
+# Temp files
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+
+
+
+
+scripts/logs/

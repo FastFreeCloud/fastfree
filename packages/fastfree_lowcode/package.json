@@ -1,0 +1,70 @@
+{
+  "name": "quasar-app-extension-fastfree-lowcode",
+  "version": "0.1.0",
+  "description": "Low-code engine for Quasar — Window Manager, CRUD Table, Dynamic Form, and more",
+  "keywords": [
+    "quasar",
+    "quasar-app-extension",
+    "quasar-app-vite",
+    "vue",
+    "vuejs",
+    "lowcode",
+    "window-manager",
+    "crud",
+    "dynamic-form"
+  ],
+  "license": "MIT",
+  "author": "Mohamed <mohamed.fastfree@gmail.com>",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/runtime/index.ts",
+      "module": "./src/runtime/index.ts",
+      "default": "./src/runtime/index.ts"
+    },
+    "./runtime": {
+      "import": "./src/runtime/index.ts",
+      "module": "./src/runtime/index.ts",
+      "default": "./src/runtime/index.ts"
+    },
+    "./src/runtime": {
+      "import": "./src/runtime/index.ts",
+      "module": "./src/runtime/index.ts",
+      "default": "./src/runtime/index.ts"
+    },
+    "./src/runtime/*": {
+      "import": "./src/runtime/*",
+      "module": "./src/runtime/*",
+      "default": "./src/runtime/*"
+    }
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.4.0",
+    "@umalqura/core": "^0.0.7",
+    "dexie": "^4.4.4"
+  },
+  "devDependencies": {
+    "@quasar/app-vite": "^3.2.0",
+    "quasar": "^2.22.0",
+    "vue": "^3.5.22"
+  },
+  "peerDependenciesMeta": {
+    "pinia": {
+      "optional": true
+    },
+    "vue-router": {
+      "optional": true
+    }
+  },
+  "peerDependencies": {
+    "@quasar/app-vite": "^3.2.0",
+    "pinia": "^2.0.0",
+    "quasar": "^2.0.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.0.0"
+  },
+  "engines": {
+    "node": ">= 18"
+  }
+}

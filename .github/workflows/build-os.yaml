@@ -91,6 +91,10 @@ jobs:
       total: ${{ steps.parse.outputs.total }}
       warnings: ${{ steps.common_errors.outputs.warnings }}
     steps:
+      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
+      - name: تأمين صلاحيات Git
+        run: git config --global safe.directory '*'
+
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
         uses: actions/checkout@v7
@@ -217,6 +221,10 @@ jobs:
       statix: ${{ steps.statix.outputs.status }}
       deadnix: ${{ steps.deadnix.outputs.status }}
     steps:
+      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
+      - name: تأمين صلاحيات Git
+        run: git config --global safe.directory '*'
+
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
         uses: actions/checkout@v7
@@ -284,6 +292,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
+      - name: تأمين صلاحيات Git
+        run: git config --global safe.directory '*'
+
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
         uses: actions/checkout@v7
@@ -435,6 +447,10 @@ jobs:
       failed: ${{ steps.eval_configs.outputs.failed }}
       total: ${{ steps.eval_configs.outputs.total }}
     steps:
+      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
+      - name: تأمين صلاحيات Git
+        run: git config --global safe.directory '*'
+
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
         uses: actions/checkout@v7
@@ -553,8 +569,6 @@ jobs:
           done
 
           # التحقق من حزم الإخراج
-          for pkg in "${PACKAGES[@]}"; do
-
           echo ""
           echo "✅ تم التحقق من الحزم"
         shell: bash
@@ -575,6 +589,10 @@ jobs:
       pkg_passed: ${{ steps.dry_packages.outputs.passed }}
       pkg_failed: ${{ steps.dry_packages.outputs.failed }}
     steps:
+      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
+      - name: تأمين صلاحيات Git
+        run: git config --global safe.directory '*'
+
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
         uses: actions/checkout@v7
@@ -690,6 +708,9 @@ jobs:
     needs: [syntax_check, nix_lint, flake_validate, evaluation, dry_build]
     if: always() && needs.dry_build.result == 'success' && needs.dry_build.outputs.failed == '0'
     steps:
+      - name: تأمين صلاحيات Git
+        run: git config --global safe.directory '*'
+
       - uses: actions/checkout@v7
 
       - uses: cachix/install-nix-action@v31
@@ -767,6 +788,10 @@ jobs:
       avahi: ${{ steps.tests.outputs.avahi }}
       multi_client: ${{ steps.tests.outputs.multi_client }}
     steps:
+      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
+      - name: تأمين صلاحيات Git
+        run: git config --global safe.directory '*'
+
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
         uses: actions/checkout@v7
@@ -933,6 +958,10 @@ jobs:
     needs: [syntax_check, nix_lint, flake_validate, evaluation, dry_build, build_packages, service_tests]
     if: always()
     steps:
+      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
+      - name: تأمين صلاحيات Git
+        run: git config --global safe.directory '*'
+
       # ── استيراد الكود ──────────────────────────────────────────────────────
       - name: استيراد الكود المصدري
         uses: actions/checkout@v7
@@ -1291,6 +1320,9 @@ jobs:
       github.ref == 'refs/heads/master' &&
       github.event_name == 'push'
     steps:
+      - name: تأمين صلاحيات Git
+        run: git config --global safe.directory '*'
+
       - name: استيراد الكود
         uses: actions/checkout@v7
         with:

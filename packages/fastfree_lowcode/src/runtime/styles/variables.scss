@@ -1,0 +1,50 @@
+// === FastFree LowCode Design Tokens ===
+:root {
+  // --- Surface & Background ---
+  --lc-bg-primary: #f0f2f5;
+  --lc-surface: #ffffff;
+  --lc-surface-variant: #f8f9fa;
+  --lc-on-surface: #1a1a2e;
+  --lc-on-surface-variant: #6b7280;
+  --lc-on-surface-muted: #555555;
+  --lc-outline-variant: #e5e7eb;
+  --lc-border: rgba(0, 0, 0, 0.12);
+
+  // --- Primary ---
+  --lc-primary: #1565C0;
+  --lc-primary-dark: #0D47A1;
+  --lc-on-primary: #ffffff;
+
+  // --- Semantic ---
+  --lc-accent: #7E57C2;
+  --lc-positive: #21BA45;
+  --lc-negative: #C10015;
+  --lc-warning: #F2C037;
+  --lc-info: #31CCEC;
+
+  // --- Scrollbar ---
+  --lc-scrollbar-thumb: #c4c8cf;
+  --lc-scrollbar-thumb-hover: #a0a5ad;
+
+  // --- Table ---
+  --lc-table-header-text: #495057;
+  --lc-table-cell-border: #f0f0f0;
+  --lc-table-row-hover: #f0f4ff;
+
+  // --- Dock ---
+  --lc-dock-bg: rgba(255, 255, 255, 0.85);
+  --lc-dock-border: rgba(255, 255, 255, 0.4);
+
+  // --- Layout ---
+  --lc-header-height: 56px;
+  --lc-dock-height: 70px;
+  --lc-font-size-sm: 12px;
+  --lc-font-size-base: 14px;
+  --lc-font-size-lg: 16px;
+  --lc-radius-sm: 6px;
+  --lc-radius-md: 10px;
+  --lc-radius-lg: 12px;
+  --lc-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --lc-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --lc-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
