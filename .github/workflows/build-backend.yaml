@@ -14,7 +14,17 @@ on:
     branches: [ main, master ]
     paths:
       - 'apps/fastfree_backend/**'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'apps/fastfree_backend/**'
   workflow_dispatch:
+    inputs:
+      frappe_version:
+        description: "Frappe version branch"
+        required: false
+        type: string
+        default: "version-15"
 
 # ── منع التشغيل المتزامن على نفس الـ Branch ──
 concurrency:
@@ -23,20 +33,21 @@ concurrency:
 
 # ─── المتغيرات: غيّرها حسب مشروعك ───
 env:
-  FRAPPE_VERSION: version-15
+  FRAPPE_VERSION: ${{ inputs.frappe_version || 'version-15' }}
   INCLUDE_ERPNEXT: "true"
   ERPNEXT_VERSION: version-15
   REGISTRY: ghcr.io
 
-permissions:
-  contents: write
-  packages: write
+permissions: {}
 
 jobs:
   build:
     name: "🐳 بناء ورفع الصورة"
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    permissions:
+      contents: write
+      packages: write
 
     steps:
       # ╔═══════════════════════════════════════╗
@@ -44,7 +55,7 @@ jobs:
       # ╚═══════════════════════════════════════╝
 
       - name: "1️⃣ تحميل كود التطبيق"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -252,8 +263,8 @@ jobs:
               --build-arg=FRAPPE_PATH=https://github.com/frappe/frappe \
               --build-arg=FRAPPE_BRANCH=${{ env.FRAPPE_VERSION }} \
               --build-arg=PYTHON_VERSION=3.11 \
-              --build-arg=NODE_VERSION=18 \
-              --build-arg=APPS_JSON_BASE64=$APPS_JSON_BASE64 \
+              --build-arg=NODE_VERSION=22 \
+              --secret=id=apps_json,src=/tmp/apps.json \
               --tag build-temp:latest \
               --file=$CONTAINERFILE .
           fi
@@ -265,7 +276,7 @@ jobs:
       # ║  المرحلة 10: التحقق من الصورة          ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣1️⃣ التحقق من صحة الصورة"
+      - name: "1️⃣2️⃣ التحقق من صحة الصورة"
         run: |
           echo "🔍 فحص الصورة المبنية..."
           echo ""
@@ -291,7 +302,7 @@ jobs:
       # ║  المرحلة 11: تسمية ورفع الصورة         ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣2️⃣ تسمية الصورة (Tags)"
+      - name: "1️⃣3️⃣ تسمية الصورة (Tags)"
         run: |
           echo "🏷️ Tags:"
           echo "${{ steps.meta.outputs.tags }}" | while read -r tag; do
@@ -301,7 +312,7 @@ jobs:
             fi
           done
 
-      - name: "1️⃣3️⃣ رفع الصورة على GHCR"
+      - name: "1️⃣4️⃣ رفع الصورة على GHCR"
         run: |
           echo "📤 جاري الرفع..."
           echo ""
@@ -316,7 +327,7 @@ jobs:
       # ║  المرحلة 12: إنشاء GitHub Release      ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣4️⃣ إنشاء GitHub Release"
+      - name: "1️⃣5️⃣ إنشاء GitHub Release"
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.auto_tag.outputs.TAG }}
@@ -357,11 +368,11 @@ jobs:
       # ║  المرحلة 13: التنظيف                   ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣5️⃣ تنظيف Docker"
+      - name: "1️⃣6️⃣ تنظيف Docker"
         if: always()
         run: |
           docker image rm build-temp:latest 2>/dev/null || true
-          docker buildx prune --force 2>/dev/null || true
+          docker buildx prune --filter "until=1h" --force 2>/dev/null || true
           rm -f /tmp/apps.json
           echo "🧹 تم التنظيف"
 
