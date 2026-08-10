@@ -240,6 +240,7 @@ jobs:
       # ── فحص الأنماط المضادة ─────────────────────────────────────────────
       - name: "statix — فحص الأنماط المضادة"
         id: statix
+        working-directory: apps/fastfree_os
         run: |
           echo "🔍 تشغيل statix — كشف الأنماط المضادة في كود Nix..."
           echo ""
@@ -261,6 +262,7 @@ jobs:
       # ── فحص الكود الميت ──────────────────────────────────────────────────
       - name: "deadnix — فحص الكود غير المستخدم"
         id: deadnix
+        working-directory: apps/fastfree_os
         run: |
           echo "🔍 تشغيل deadnix — كشف الكود غير المستخدم..."
           echo ""
@@ -397,6 +399,7 @@ jobs:
 
       # ── nix flake check --no-build ──────────────────────────────────────────
       - name: "فحص Flake — nix flake check --no-build"
+        working-directory: apps/fastfree_os
         run: |
           echo "🏗️  فحص Flake (بدون بناء)..."
           echo "  يتحقق من: صحة جميع المخرجات + أنواعها + تقييم nixosConfigurations"
@@ -414,6 +417,7 @@ jobs:
 
       # ── nix flake show ──────────────────────────────────────────────────────
       - name: "عرض هيكل الـ Flake — nix flake show"
+        working-directory: apps/fastfree_os
         run: |
           echo "📊 عرض شجرة مخرجات الـ Flake..."
           echo ""
@@ -424,6 +428,7 @@ jobs:
 
       # ── nix flake metadata ──────────────────────────────────────────────────
       - name: "معلومات الـ Flake — nix flake metadata"
+        working-directory: apps/fastfree_os
         run: |
           echo "ℹ️  معلومات الـ Flake ومدخلاته..."
           echo ""
@@ -466,6 +471,7 @@ jobs:
       # ── تقييم جميع تكوينات NixOS ───────────────────────────────────────────
       - name: تقييم جميع تكوينات NixOS
         id: eval_configs
+        working-directory: apps/fastfree_os
         run: |
           echo "🔧 تقييم جميع تكوينات NixOS..."
           echo ""
@@ -507,6 +513,7 @@ jobs:
 
       # ── فحص الخيارات الأساسية لجميع التكوينات ─────────────────────────────
       - name: التحقق من الخيارات الأساسية لجميع التكوينات
+        working-directory: apps/fastfree_os
         run: |
           echo "🔍 التحقق من الخيارات الأساسية لكل تكوين..."
           echo ""
@@ -548,6 +555,7 @@ jobs:
 
       # ── التحقق من مخرجات الحزم ──────────────────────────────────────────
       - name: التحقق من مخرجات الحزم (packages)
+        working-directory: apps/fastfree_os
         run: |
           echo "📦 التحقق من مخرجات الحزم..."
           echo "  (حزم VHDX تُنتج فقط لعملاء Hyper-V: client1, client2, client3)"
@@ -608,6 +616,7 @@ jobs:
       # ── خطة بناء System Closures ─────────────────────────────────────────
       - name: "خطة بناء System Closures — جميع التكوينات"
         id: dry_systems
+        working-directory: apps/fastfree_os
         run: |
           echo "🏗️  خطة بناء System Closures (بدون بناء فعلي)..."
           echo ""
@@ -646,6 +655,7 @@ jobs:
       # ── خطة بناء صور VHDX + WSL ─────────────────────────────────────────
       - name: "خطة بناء صور VHDX + WSL — حزم Hyper-V و WSL"
         id: dry_packages
+        working-directory: apps/fastfree_os
         run: |
           echo "🏗️  خطة بناء الصور (بدون بناء فعلي)..."
           echo "  (فقط عملاء Hyper-V و WSL مع build=true)"
@@ -724,6 +734,7 @@ jobs:
 
       # ── بناء client1 (WSL) ──────────────────────────────────────────────
       - name: "بناء client1 — WSL tarballBuilder"
+        working-directory: apps/fastfree_os
         run: nix build .#packages.x86_64-linux.client1 --no-update-lock-file
 
       - name: "تشغيل tarballBuilder — client1"
@@ -749,6 +760,7 @@ jobs:
 
       # ── بناء client2 (Hyper-V VHDX) ────────────────────────────────────
       - name: "بناء client2 — Hyper-V VHDX"
+        working-directory: apps/fastfree_os
         run: nix build .#packages.x86_64-linux.client2 --no-update-lock-file
 
       - name: "عرض حجم client2"
@@ -826,6 +838,7 @@ jobs:
       # ── تشغيل جميع اختبارات NixOS (فردياً للتقارير الدقيقة) ────────────
       - name: تشغيل اختبارات NixOS التلقائية
         id: tests
+        working-directory: apps/fastfree_os
         run: |
           echo "🧪 بدء تشغيل اختبارات NixOS التلقائية..."
           echo "  كل اختبار يبني VM كامل ويُشغّل Python test script"
