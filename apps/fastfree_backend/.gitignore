@@ -1,0 +1,12 @@
+.DS_Store
+*.pyc
+*.egg-info
+*.swp
+tags
+node_modules
+__pycache__
+fastfree_deployment/
+/midscene_run
+/midscene_run
+*.log
+midscene_run/log/mcp-base-tools.log
