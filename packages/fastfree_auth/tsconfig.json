@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "fastfree-lowcode/*": ["../fastfree_lowcode/src/runtime/*"],
+      "fastfree-lowcode": ["../fastfree_lowcode/src/runtime/index.ts"],
+      "quasar-app-extension-fastfree-lowcode/*": ["../fastfree_lowcode/src/runtime/*"],
+      "quasar-app-extension-fastfree-lowcode": ["../fastfree_lowcode/src/runtime/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"],
+  "exclude": ["node_modules"]
+}

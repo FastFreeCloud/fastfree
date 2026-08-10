@@ -1,0 +1,7 @@
+export { default as PurchaseDashboard } from './PurchaseDashboard.vue'
+export { default as SupplierList } from './SupplierList.vue'
+export { default as SupplierForm } from './SupplierForm.vue'
+export { default as PurchaseOrderList } from './PurchaseOrderList.vue'
+export { default as PurchaseReceiptList } from './PurchaseReceiptList.vue'
+export { default as PurchaseInvoiceList } from './PurchaseInvoiceList.vue'
+export { default as PurchaseReportScreen } from './PurchaseReportScreen.vue'

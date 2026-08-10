@@ -1,0 +1,393 @@
+name: "🐳 بناء Docker Image + Release تلقائي"
+
+# ═══════════════════════════════════════════════════════════
+#   بناء صورة Docker + إنشاء Tag + Release تلقائي
+#   ─────────────────────────────────────────
+#   • يشتغل تلقائي مع كل push على main
+#   • ينشئ Tag جديد (v1.0.x) تلقائي
+#   • يبني Docker Image ويرفعها على GHCR
+#   • ينشئ GitHub Release
+# ═══════════════════════════════════════════════════════════
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apps/fastfree_backend/**'
+  workflow_dispatch:
+
+# ── منع التشغيل المتزامن على نفس الـ Branch ──
+concurrency:
+  group: docker-build-${{ github.ref }}
+  cancel-in-progress: true
+
+# ─── المتغيرات: غيّرها حسب مشروعك ───
+env:
+  FRAPPE_VERSION: version-15
+  INCLUDE_ERPNEXT: "true"
+  ERPNEXT_VERSION: version-15
+  REGISTRY: ghcr.io
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build:
+    name: "🐳 بناء ورفع الصورة"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 1: التحضير                    ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "1️⃣ تحميل كود التطبيق"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 1.5: فحص الأخطاء والتحذيرات  ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "1️⃣5️⃣ فحص GitHub Actions workflow"
+        uses: reviewdog/action-actionlint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          level: warning
+          reporter: github-check
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 2: توليد Tag تلقائي           ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "2️⃣ توليد Tag تلقائي"
+        id: auto_tag
+        run: |
+          echo "🔍 جاري البحث عن آخر Tag..."
+
+          # ── جلب جميع الـ Tags من GitHub ──
+          LATEST=$(git ls-remote --tags origin | \
+            grep -o 'refs/tags/v[0-9]*\.[0-9]*\.[0-9]*$' | \
+            sed 's|refs/tags/||' | \
+            sort -V | tail -1)
+
+          echo "📌 آخر Tag موجود: ${LATEST:-لا يوجد}"
+
+          # ── إذا ما فيه Tags → نبدأ من v1.0.0 ──
+          if [ -z "$LATEST" ]; then
+            NEW_TAG="v1.0.0"
+          else
+            # ── ترقية الرقم الأخير (patch) ──
+            MAJOR=$(echo $LATEST | cut -d. -f1)
+            MINOR=$(echo $LATEST | cut -d. -f2)
+            PATCH=$(echo $LATEST | cut -d. -f3)
+            NEW_PATCH=$((PATCH + 1))
+            NEW_TAG="${MAJOR}.${MINOR}.${NEW_PATCH}"
+          fi
+
+          echo ""
+          echo "✅ Tag الجديد: $NEW_TAG"
+          echo "TAG=$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "TAG_NAME=$NEW_TAG" >> $GITHUB_ENV
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 3: إنشاء Tag على GitHub       ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "3️⃣ إنشاء Tag على GitHub"
+        run: |
+          echo "📌 إنشاء Tag: ${{ steps.auto_tag.outputs.TAG }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git tag -a "${{ steps.auto_tag.outputs.TAG }}" -m "Release ${{ steps.auto_tag.outputs.TAG }}"
+          git push origin "${{ steps.auto_tag.outputs.TAG }}"
+
+          echo "✅ تم إنشاء Tag: ${{ steps.auto_tag.outputs.TAG }}"
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 4: كشف اسم التطبيق            ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "4️⃣ استخراج اسم التطبيق من المستودع"
+        id: detect_app
+        run: |
+          APP_NAME="${{ github.event.repository.name }}"
+          IMAGE_NAME="${{ github.repository_owner }}/$APP_NAME"
+
+          echo "✅ اسم المستودع (التطبيق): $APP_NAME"
+          echo "✅ اسم الصورة: $IMAGE_NAME"
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 5: تحميل frappe_docker        ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "5️⃣ تحميل frappe_docker"
+        timeout-minutes: 3
+        run: |
+          echo "🔧 نسخة Frappe: ${{ env.FRAPPE_VERSION }}"
+
+          git clone --depth 1 \
+            https://github.com/frappe/frappe_docker.git \
+            /tmp/frappe_docker
+
+          echo "✅ تم تحميل frappe_docker"
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 6: إعداد Docker               ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "6️⃣ إعداد Docker Buildx"
+        uses: docker/setup-buildx-action@v4
+
+      - name: "7️⃣ تسجيل الدخول في GHCR"
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 7: تحديد Tags للصورة           ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "8️⃣ توليد Tags و Metadata"
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ steps.auto_tag.outputs.TAG }}
+            type=sha,prefix=,format=short
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 8: تجهيز apps.json            ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "9️⃣ توليد apps.json (jq)"
+        run: |
+          BRANCH="main"
+
+          # ── بناء apps.json بـ jq ──
+          jq -n \
+            --arg token "${{ secrets.GITHUB_TOKEN }}" \
+            --arg repo "${{ github.repository }}" \
+            --arg branch "$BRANCH" \
+            --arg include_erpnext "${{ env.INCLUDE_ERPNEXT }}" \
+            --arg erpnext_ver "${{ env.ERPNEXT_VERSION }}" \
+            '
+            [
+              (if $include_erpnext == "true" then {url: "https://github.com/frappe/erpnext", branch: $erpnext_ver} else empty end),
+              {url: "https://x-access-token:\($token)@github.com/\($repo).git", branch: $branch}
+            ]
+            ' > /tmp/apps.json
+
+          echo "✅ apps.json (تم إخفاء التوكن):"
+          jq 'map(.url |= gsub("https://[^@]+@"; "https://****@"))' /tmp/apps.json
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 8.5: فحص apps.json            ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "🔟 فحص apps.json (jq)"
+        run: |
+          echo "🔍 فحص apps.json..."
+          if jq empty /tmp/apps.json; then
+            echo "✅ apps.json صالح"
+          else
+            echo "❌ apps.json غير صالح!"
+            exit 1
+          fi
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 9: بناء الصورة                ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "1️⃣1️⃣ بناء Docker Image (Layered)"
+        timeout-minutes: 45
+        run: |
+          cd /tmp/frappe_docker
+
+          # ── اكتشاف نوع Containerfile ──
+          if grep -q "mount=type=secret" images/layered/Containerfile 2>/dev/null; then
+            CONTAINERFILE="images/layered/Containerfile"
+            BUILD_METHOD="secret"
+            echo "🔒 Containerfile: Layered (--secret)"
+          elif [ -f images/custom/Containerfile ]; then
+            CONTAINERFILE="images/custom/Containerfile"
+            BUILD_METHOD="build-arg"
+            echo "📦 Containerfile: Custom (--build-arg)"
+          else
+            echo "::error::لا يوجد Containerfile مناسب!"
+            ls -la images/*/
+            exit 1
+          fi
+
+          echo "📋 Frappe: ${{ env.FRAPPE_VERSION }}"
+          echo "🏷️ Tag: ${{ steps.auto_tag.outputs.TAG }}"
+          echo ""
+
+          # ── بناء الصورة ──
+          if [ "$BUILD_METHOD" = "secret" ]; then
+            DOCKER_BUILDKIT=1 docker build \
+              --cache-from type=gha \
+              --cache-to type=gha,mode=max \
+              --build-arg=FRAPPE_PATH=https://github.com/frappe/frappe \
+              --build-arg=FRAPPE_BRANCH=${{ env.FRAPPE_VERSION }} \
+              --secret=id=apps_json,src=/tmp/apps.json \
+              --tag build-temp:latest \
+              --file=$CONTAINERFILE .
+          else
+            export APPS_JSON_BASE64=$(base64 -w 0 /tmp/apps.json)
+            DOCKER_BUILDKIT=1 docker build \
+              --cache-from type=gha \
+              --cache-to type=gha,mode=max \
+              --build-arg=FRAPPE_PATH=https://github.com/frappe/frappe \
+              --build-arg=FRAPPE_BRANCH=${{ env.FRAPPE_VERSION }} \
+              --build-arg=PYTHON_VERSION=3.11 \
+              --build-arg=NODE_VERSION=18 \
+              --build-arg=APPS_JSON_BASE64=$APPS_JSON_BASE64 \
+              --tag build-temp:latest \
+              --file=$CONTAINERFILE .
+          fi
+
+          echo ""
+          echo "✅ تم بناء الصورة بنجاح"
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 10: التحقق من الصورة          ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "1️⃣1️⃣ التحقق من صحة الصورة"
+        run: |
+          echo "🔍 فحص الصورة المبنية..."
+          echo ""
+
+          # ── حجم الصورة ──
+          SIZE=$(docker image inspect build-temp:latest --format='{{.Size}}')
+          SIZE_MB=$((SIZE / 1024 / 1024))
+          echo "📦 حجم الصورة: ${SIZE_MB} MB"
+
+          if [ "$SIZE_MB" -lt 100 ]; then
+            echo "::error::حجم الصورة صغير جداً (${SIZE_MB} MB) — غالباً البناء فشل"
+            exit 1
+          fi
+
+          # ── عدد الطبقات ──
+          LAYERS=$(docker history build-temp:latest --quiet | wc -l)
+          echo "📚 عدد الطبقات: $LAYERS"
+
+          echo ""
+          echo "✅ فحص الصورة اكتمل"
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 11: تسمية ورفع الصورة         ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "1️⃣2️⃣ تسمية الصورة (Tags)"
+        run: |
+          echo "🏷️ Tags:"
+          echo "${{ steps.meta.outputs.tags }}" | while read -r tag; do
+            if [ -n "$tag" ]; then
+              docker tag build-temp:latest "$tag"
+              echo "  ✅ $tag"
+            fi
+          done
+
+      - name: "1️⃣3️⃣ رفع الصورة على GHCR"
+        run: |
+          echo "📤 جاري الرفع..."
+          echo ""
+          echo "${{ steps.meta.outputs.tags }}" | while read -r tag; do
+            if [ -n "$tag" ]; then
+              docker push "$tag"
+              echo "  ✅ تم رفع: $tag"
+            fi
+          done
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 12: إنشاء GitHub Release      ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "1️⃣4️⃣ إنشاء GitHub Release"
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.auto_tag.outputs.TAG }}
+          name: ${{ steps.auto_tag.outputs.TAG }}
+          body: |
+            ## 🐳 بناء Docker Image
+
+            **${{ env.APP_NAME }}** — Frappe ${{ env.FRAPPE_VERSION }}
+
+            ### تفاصيل الصورة
+            | الخاصية | القيمة |
+            |---------|--------|
+            | **السجل** | `${{ env.REGISTRY }}` |
+            | **الصورة** | `${{ env.IMAGE_NAME }}` |
+            | **Frappe** | `${{ env.FRAPPE_VERSION }}` |
+            | **ERPNext** | `${{ env.INCLUDE_ERPNEXT }}` |
+            | **Tag** | `${{ steps.auto_tag.outputs.TAG }}` |
+            | **Commit** | `${{ github.sha }}` |
+
+            ### 🏷️ Docker Tags
+            ```
+            ${{ steps.meta.outputs.tags }}
+            ```
+
+            ### 📥 أمر السحب
+            ```bash
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.auto_tag.outputs.TAG }}
+            ```
+
+            ---
+            *تم البناء و الرفع بواسطة GitHub Actions*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 13: التنظيف                   ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "1️⃣5️⃣ تنظيف Docker"
+        if: always()
+        run: |
+          docker image rm build-temp:latest 2>/dev/null || true
+          docker buildx prune --force 2>/dev/null || true
+          rm -f /tmp/apps.json
+          echo "🧹 تم التنظيف"
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 14: ملخص النتائج              ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "📋 ملخص النتائج"
+        if: always()
+        run: |
+          echo "## 🐳 نتائج البناء والإصدار" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| الخاصية | القيمة |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Tag** | \`${{ steps.auto_tag.outputs.TAG }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **السجل** | \`${{ env.REGISTRY }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **الصورة** | \`${{ env.IMAGE_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Frappe** | \`${{ env.FRAPPE_VERSION }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ ما تم إنجازه" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ تم إنشاء Tag: \`${{ steps.auto_tag.outputs.TAG }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ تم بناء Docker Image و رفعها على GHCR" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ تم إنشاء GitHub Release" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📥 أمر السحب" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.auto_tag.outputs.TAG }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

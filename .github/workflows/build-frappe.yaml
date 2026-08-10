@@ -1,0 +1,554 @@
+name: "🆕 إنشاء تطبيق Frappe جديد"
+
+# ═══════════════════════════════════════════════════════════
+#   المرحلة 1: إنشاء تطبيق Frappe من الصفر
+#   ─────────────────────────────────────────
+#   • يشتغل تلقائي أول مرة لما الـ Repo ما فيه كود تطبيق
+#   • يشتغل يدوي مع قيم مخصصة
+#   • يستخدم bench new-app الحقيقي
+#   • يعمل Tag v1.0.1 + GitHub Release أوتوماتيك
+# ═══════════════════════════════════════════════════════════
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: "اسم التطبيق (اترك فاضي = اسم المستودع)"
+        required: false
+        type: string
+        default: ""
+      app_title:
+        description: "عنوان التطبيق (اترك فاضي = اسم المستودع بمسافات)"
+        required: false
+        type: string
+        default: ""
+      app_description:
+        description: "وصف التطبيق"
+        required: false
+        type: string
+        default: "A custom Frappe application"
+      app_publisher:
+        description: "اسم الناشر / الشركة"
+        required: true
+        type: string
+        default: "FastFree Cloud"
+      app_email:
+        description: "البريد الإلكتروني"
+        required: true
+        type: string
+        default: "admin@fastfree.cloud"
+      app_license:
+        description: "الرخصة"
+        required: false
+        type: choice
+        options:
+          - MIT
+          - GPL-3.0
+          - Apache-2.0
+          - AGPL-3.0
+      frappe_branch:
+        description: "نسخة Frappe"
+        required: false
+        type: string
+        default: "version-15"
+      create_release:
+        description: "إنشاء Tag و GitHub Release (v1.0.1)؟"
+        required: false
+        type: boolean
+        default: true
+
+# ── منع التشغيل المتزامن ──
+concurrency:
+  group: create-app-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  create-app:
+    name: "🏗️ إنشاء التطبيق بـ bench"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 1: التحقق من جاهزية الـ Repo  ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "1️⃣ تحميل الـ Repo"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 0.4: تعيين القيم الافتراضية  ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "1️⃣4️⃣ تعيين القيم (تلقائي أو يدوي)"
+        id: set_values
+        run: |
+          REPO_NAME="${{ github.event.repository.name }}"
+
+          # ── تحويل Repo Name إلى صيغة app_name (أحرف صغيرة + underscore) ──
+          REPO_APP_NAME=$(echo "$REPO_NAME" | tr '[:upper:]' '[:lower:]' | tr '-' '_')
+
+          # ── تحويل Repo Name إلى صيغة app_title (كل كلمة تبدأ بحرف كبير) ──
+          REPO_APP_TITLE=$(echo "$REPO_NAME" | sed 's/[-_]/ /g' | sed 's/\b\(.\)/\u\1/g')
+
+          # ── لو تشغيل يدوي → نستخدم المدخلات (مع القيم الافتراضية من المستودع) ──
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "📝 تشغيل يدوي — استخدام المدخلات"
+
+            # ── لو المدخل فاضي → نستخدم اسم المستودع ──
+            INPUT_APP_NAME="${{ inputs.app_name }}"
+            INPUT_APP_TITLE="${{ inputs.app_title }}"
+
+            if [ -z "$INPUT_APP_NAME" ]; then
+              INPUT_APP_NAME="$REPO_APP_NAME"
+            fi
+            if [ -z "$INPUT_APP_TITLE" ]; then
+              INPUT_APP_TITLE="$REPO_APP_TITLE"
+            fi
+
+            echo "APP_NAME=$INPUT_APP_NAME" >> $GITHUB_ENV
+            echo "APP_TITLE=$INPUT_APP_TITLE" >> $GITHUB_ENV
+            echo "APP_DESCRIPTION=${{ inputs.app_description }}" >> $GITHUB_ENV
+            echo "APP_PUBLISHER=${{ inputs.app_publisher }}" >> $GITHUB_ENV
+            echo "APP_EMAIL=${{ inputs.app_email }}" >> $GITHUB_ENV
+            echo "APP_LICENSE=${{ inputs.app_license }}" >> $GITHUB_ENV
+            echo "FRAPPE_BRANCH=${{ inputs.frappe_branch }}" >> $GITHUB_ENV
+            echo "CREATE_RELEASE=${{ inputs.create_release }}" >> $GITHUB_ENV
+          else
+            # ── لو تشغيل تلقائي → قيم ثابتة ──
+            echo "🤖 تشغيل تلقائي — استخدام القيم الافتراضية"
+            echo "APP_NAME=$REPO_APP_NAME" >> $GITHUB_ENV
+            echo "APP_TITLE=$REPO_APP_TITLE" >> $GITHUB_ENV
+            echo "APP_DESCRIPTION=A custom Frappe application for $REPO_APP_TITLE" >> $GITHUB_ENV
+            echo "APP_PUBLISHER=FastFree Cloud" >> $GITHUB_ENV
+            echo "APP_EMAIL=admin@fastfree.cloud" >> $GITHUB_ENV
+            echo "APP_LICENSE=MIT" >> $GITHUB_ENV
+            echo "FRAPPE_BRANCH=version-15" >> $GITHUB_ENV
+            echo "CREATE_RELEASE=true" >> $GITHUB_ENV
+          fi
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 0.5: التحقق من المدخلات       ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "1️⃣5️⃣ التحقق من صحة المدخلات"
+        run: |
+          echo "🔍 فحص المدخلات..."
+
+          # ── تنظيف المسافات ──
+          APP_NAME=$(echo "$APP_NAME" | xargs)
+          APP_TITLE=$(echo "$APP_TITLE" | xargs)
+          APP_EMAIL=$(echo "$APP_EMAIL" | xargs)
+          REPO_NAME="${{ github.event.repository.name }}"
+
+          # ── التحقق من اسم التطبيق ──
+          if [[ ! "$APP_NAME" =~ ^[a-z0-9_]+$ ]]; then
+            echo "::error::اسم التطبيق غير صالح: '$APP_NAME'"
+            echo "::error::يجب أن يحتوي فقط على أحرف إنجليزية صغيرة وأرقام و underscores."
+            echo "::error::مثال: my_custom_app"
+            exit 1
+          fi
+
+          # ── التحقق من توافق اسم التطبيق مع اسم المستودع ──
+          if [ "$APP_NAME" != "$REPO_NAME" ]; then
+            echo "::warning::اسم التطبيق ('$APP_NAME') لا يطابق اسم المستودع ('$REPO_NAME')."
+            echo "::warning::يُنصح بأن يكون اسم المستودع = اسم التطبيق لضمان توافق Docker Image."
+          fi
+
+          # ── التحقق من العنوان ──
+          if [ -z "$APP_TITLE" ]; then
+            echo "::error::عنوان التطبيق فارغ!"
+            exit 1
+          fi
+
+          # ── التحقق من البريد الإلكتروني ──
+          if [[ ! "$APP_EMAIL" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
+            echo "::error::البريد الإلكتروني غير صالح: '$APP_EMAIL'"
+            exit 1
+          fi
+
+          echo "✅ المدخلات صحيحة"
+          echo "  • الاسم: $APP_NAME"
+          echo "  • العنوان: $APP_TITLE"
+          echo "  • البريد: $APP_EMAIL"
+          echo "  • المستودع: $REPO_NAME"
+
+      - name: "2️⃣ التحقق من حالة الـ Repo"
+        id: check
+        run: |
+          echo "🔍 فحص محتويات الـ Repo..."
+
+          # ── فحص هل فيه كود تطبيق Frappe؟ ──
+          APP_CODE_FOUND=false
+          for file in setup.py setup.cfg pyproject.toml hooks.py requirements.txt; do
+            if [ -f "$file" ]; then
+              APP_CODE_FOUND=true
+              break
+            fi
+          done
+
+          # ── فحص مجلدات التطبيق ──
+          if [ -d "apps/fastfree_backend/fastfree_backend" ] || [ -d "patches" ]; then
+            APP_CODE_FOUND=true
+          fi
+
+          echo "app_code_found=$APP_CODE_FOUND" >> $GITHUB_OUTPUT
+
+          if [ "$APP_CODE_FOUND" = true ]; then
+            echo "⏭️ الـ Repo فيه كود تطبيق Frappe بالفعل — تخطي"
+            echo "should_create=false" >> $GITHUB_OUTPUT
+          else
+            echo "✅ الـ Repo فاضي — مستعدين للإنشاء"
+            echo "should_create=true" >> $GITHUB_OUTPUT
+          fi
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 2: إعداد البيئة               ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "3️⃣ إعداد Python"
+        if: steps.check.outputs.should_create == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: "4️⃣ إعداد Node.js"
+        if: steps.check.outputs.should_create == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: "5️⃣ تخزين مؤقت لـ pip"
+        if: steps.check.outputs.should_create == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-frappe-bench
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: "6️⃣ تثبيت Frappe Bench CLI"
+        if: steps.check.outputs.should_create == 'true'
+        timeout-minutes: 5
+        run: |
+          pip install frappe-bench
+          echo "✅ bench الإصدار: $(bench --version)"
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 3: إنشاء التطبيق بـ bench     ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "7️⃣ تهيئة بيئة Bench"
+        if: steps.check.outputs.should_create == 'true'
+        timeout-minutes: 15
+        run: |
+          echo "🏗️ جاري تهيئة Bench مع Frappe $FRAPPE_BRANCH..."
+
+          # ── محاولة أولى ──
+          if bench init /tmp/frappe-bench \
+            --frappe-branch $FRAPPE_BRANCH \
+            --skip-assets \
+            --skip-redis-config-generation \
+            --python $(which python); then
+            echo "✅ تم تهيئة Bench بنجاح"
+          else
+            # ── محاولة ثانية (مشاكل شبكة) ──
+            echo ""
+            echo "::warning::المحاولة الأولى فشلت — إعادة المحاولة بعد 10 ثوانٍ..."
+            sleep 10
+            rm -rf /tmp/frappe-bench
+
+            bench init /tmp/frappe-bench \
+              --frappe-branch $FRAPPE_BRANCH \
+              --skip-assets \
+              --skip-redis-config-generation \
+              --python $(which python)
+
+            echo "✅ تم تهيئة Bench (المحاولة الثانية)"
+          fi
+
+      - name: "8️⃣ إنشاء التطبيق بـ bench new-app"
+        if: steps.check.outputs.should_create == 'true'
+        id: create_app
+        timeout-minutes: 5
+        run: |
+          cd /tmp/frappe-bench
+
+          echo "🆕 جاري إنشاء التطبيق: $APP_NAME..."
+          echo ""
+
+          # ─── bench new-app بيسأل بالترتيب: ───
+          #  1. App Title
+          #  2. App Description
+          #  3. App Publisher
+          #  4. App Email
+          #  5. App Icon       (Enter = default)
+          #  6. App Color       (Enter = default)
+          #  7. App License
+          #  8. Create CI?      (n = لا)
+          # ─────────────────────────────────────
+
+          BENCH_OK=false
+
+          # ── محاولة 1: مع سؤال CI workflow ──
+          if printf '%s\n' \
+            "$APP_TITLE" \
+            "$APP_DESCRIPTION" \
+            "$APP_PUBLISHER" \
+            "$APP_EMAIL" \
+            "" \
+            "" \
+            "$APP_LICENSE" \
+            "n" \
+          | bench new-app $APP_NAME 2>&1 | tee /tmp/bench_output.log; then
+            BENCH_OK=true
+          fi
+
+          # ── محاولة 2: بدون سؤال CI workflow ──
+          if [ "$BENCH_OK" = false ]; then
+            echo ""
+            echo "::warning::المحاولة الأولى فشلت — إعادة بدون سؤال CI..."
+            rm -rf /tmp/frappe-bench/apps/$APP_NAME
+
+            if printf '%s\n' \
+              "$APP_TITLE" \
+              "$APP_DESCRIPTION" \
+              "$APP_PUBLISHER" \
+              "$APP_EMAIL" \
+              "" \
+              "" \
+              "$APP_LICENSE" \
+            | bench new-app $APP_NAME 2>&1 | tee /tmp/bench_output2.log; then
+              BENCH_OK=true
+            fi
+          fi
+
+          if [ "$BENCH_OK" = false ]; then
+            echo "::error::فشل إنشاء التطبيق بعد محاولتين!"
+            echo ""
+            echo "── السجل ──"
+            cat /tmp/bench_output*.log 2>/dev/null
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ تم إنشاء التطبيق"
+          echo "app_created=true" >> $GITHUB_OUTPUT
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 4: التحقق من الملفات          ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "9️⃣ التحقق من الملفات المولّدة"
+        if: steps.check.outputs.should_create == 'true'
+        run: |
+          APP_DIR="/tmp/frappe-bench/apps/$APP_NAME"
+
+          echo "🔍 فحص الملفات المطلوبة..."
+          echo ""
+
+          MISSING=0
+
+          # ── ملفات إلزامية ──
+          for file in \
+            "$APP_DIR/$APP_NAME/__init__.py" \
+            "$APP_DIR/$APP_NAME/hooks.py" \
+            "$APP_DIR/$APP_NAME/modules.txt" \
+            "$APP_DIR/$APP_NAME/patches.txt" \
+          ; do
+            if [ -f "$file" ]; then
+              echo "  ✅ $(basename "$file")"
+            else
+              echo "  ❌ $(basename "$file") — مفقود!"
+              MISSING=$((MISSING + 1))
+            fi
+          done
+
+          # ── ملف إعداد (واحد على الأقل) ──
+          SETUP_FOUND=0
+          for file in "$APP_DIR/pyproject.toml" "$APP_DIR/setup.py" "$APP_DIR/setup.cfg"; do
+            if [ -f "$file" ]; then
+              echo "  ✅ $(basename "$file")"
+              SETUP_FOUND=1
+            fi
+          done
+
+          if [ "$SETUP_FOUND" -eq 0 ]; then
+            echo "  ❌ لا يوجد pyproject.toml أو setup.py!"
+            MISSING=$((MISSING + 1))
+          fi
+
+          echo ""
+          echo "📂 كل الملفات المولّدة:"
+          find "$APP_DIR" -type f | sort
+          echo ""
+
+          if [ "$MISSING" -gt 0 ]; then
+            echo "::error::$MISSING ملفات إلزامية مفقودة!"
+            exit 1
+          fi
+
+          echo "✅ كل الملفات الإلزامية موجودة"
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 5: نسخ + Commit + Push       ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "🔟 نسخ الملفات للـ Repo"
+        if: steps.check.outputs.should_create == 'true'
+        run: |
+          APP_DIR="/tmp/frappe-bench/apps/$APP_NAME"
+
+          echo "📋 نسخ الملفات بشكل آمن..."
+
+          # ── نسخ الملفات العادية ──
+          mkdir -p "$GITHUB_WORKSPACE/apps/$APP_NAME"
+          cp -r "$APP_DIR"/* "$GITHUB_WORKSPACE/apps/$APP_NAME/" 2>/dev/null || true
+
+          # ── نسخ الملفات المخفية (باستثناء .git و .github) ──
+          find "$APP_DIR" -maxdepth 1 -name ".*" \
+            -not -name "." \
+            -not -name ".." \
+            -not -name ".git" \
+            -not -name ".github" \
+            -exec cp -r -t "$GITHUB_WORKSPACE/apps/$APP_NAME/" {} + 2>/dev/null || true
+
+          # ── حذف ملفات غير مرغوبة ──
+          cd "$GITHUB_WORKSPACE"
+          find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+          find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+          find . -type f -name "*.pyc" -delete 2>/dev/null || true
+          rm -rf node_modules .env .bench-config 2>/dev/null || true
+
+          # ── التأكد من .gitignore ──
+          if [ ! -f .gitignore ]; then
+            cat > .gitignore << 'GIEOF'
+          .DS_Store
+          *.pyc
+          *.egg-info
+          *.swp
+          tags
+          node_modules/
+          __pycache__/
+          .env
+          dist/
+          build/
+          .bench-config
+          GIEOF
+          fi
+
+          echo "✅ تم نسخ الملفات"
+          echo ""
+          echo "📂 محتويات الـ Repo:"
+          find . -not -path './.git/*' -not -path './.github/*' -type f | sort
+
+      - name: "1️⃣1️⃣ حفظ ورفع الملفات"
+        if: steps.check.outputs.should_create == 'true'
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "🆕 إنشاء تطبيق Frappe: $APP_NAME
+
+          التطبيق: $APP_TITLE
+          الناشر: $APP_PUBLISHER
+          الرخصة: $APP_LICENSE
+          Frappe: $FRAPPE_BRANCH
+
+          تم التوليد بـ bench new-app عبر GitHub Actions"
+
+          git push origin ${{ github.ref_name }}
+          echo "✅ تم الرفع على GitHub"
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 6: Tag + Release              ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "1️⃣2️⃣ إنشاء Tag v1.0.1"
+        if: steps.check.outputs.should_create == 'true' && env.CREATE_RELEASE == 'true'
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          git tag -a v1.0.1 -m "🎉 الإصدار الأول: $APP_TITLE
+
+          النسخة الأولى من $APP_NAME
+          تم التوليد بـ bench new-app عبر GitHub Actions
+
+          Frappe: $FRAPPE_BRANCH
+          الناشر: $APP_PUBLISHER
+          الرخصة: $APP_LICENSE"
+
+          git push origin v1.0.1
+          echo "✅ تم إنشاء Tag v1.0.1"
+
+      - name: "1️⃣3️⃣ إنشاء GitHub Release"
+        if: steps.check.outputs.should_create == 'true' && env.CREATE_RELEASE == 'true'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v1.0.1
+          name: "v1.0.1"
+          body: |
+            ## 🎉 الإصدار الأول
+
+            **${{ env.APP_TITLE }}** — ${{ env.APP_DESCRIPTION }}
+
+            ### تفاصيل التطبيق
+            | الخاصية | القيمة |
+            |---------|--------|
+            | **اسم التطبيق** | `${{ env.APP_NAME }}` |
+            | **الناشر** | ${{ env.APP_PUBLISHER }} |
+            | **الرخصة** | ${{ env.APP_LICENSE }} |
+            | **Frappe** | `${{ env.FRAPPE_BRANCH }}` |
+
+            ### التثبيت
+            ```bash
+            bench get-app ${{ env.APP_NAME }} https://github.com/${{ github.repository }}.git
+            bench --site [site-name] install-app ${{ env.APP_NAME }}
+            ```
+
+            ---
+            *تم التوليد أوتوماتيكياً بواسطة GitHub Actions*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ╔═══════════════════════════════════════╗
+      # ║  المرحلة 7: ملخص النتائج               ║
+      # ╚═══════════════════════════════════════╝
+
+      - name: "📋 ملخص النتائج"
+        if: always()
+        run: |
+          echo "## 🆕 نتائج إنشاء التطبيق" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.check.outputs.app_code_found }}" = "true" ]; then
+            echo "### ⛔ تم الإيقاف" >> $GITHUB_STEP_SUMMARY
+            echo "الـ Repo فيه كود تطبيق Frappe بالفعل" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ✅ تم بنجاح!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| الخاصية | القيمة |" >> $GITHUB_STEP_SUMMARY
+            echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+            echo "| **اسم التطبيق** | \`${{ env.APP_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
+            echo "| **العنوان** | ${{ env.APP_TITLE }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| **الناشر** | ${{ env.APP_PUBLISHER }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| **الرخصة** | ${{ env.APP_LICENSE }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Frappe** | \`${{ env.FRAPPE_BRANCH }}\` |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Tag** | \`v1.0.1\` |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Release** | ${{ env.CREATE_RELEASE }} |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📌 الخطوات القادمة" >> $GITHUB_STEP_SUMMARY
+            echo "1. \`git pull\` على جهازك المحلي" >> $GITHUB_STEP_SUMMARY
+            echo "2. أضف DocTypes و APIs والمنطق البرمجي" >> $GITHUB_STEP_SUMMARY
+            echo "3. اعمل Push على \`main\` ← الـ Docker Image يتبنى أوتوماتيك" >> $GITHUB_STEP_SUMMARY
+          fi

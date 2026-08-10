@@ -1,0 +1,61 @@
+{
+  "name": "fastfree-auth",
+  "version": "0.1.0",
+  "description": "Authentication, permissions, license, and common services for FastFree platform",
+  "keywords": [
+    "fastfree",
+    "auth",
+    "permissions",
+    "license",
+    "frappe",
+    "quasar",
+    "vue"
+  ],
+  "license": "MIT",
+  "author": "Mohamed <mohamed.fastfree@gmail.com>",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./services": "./src/services/index.ts",
+    "./stores": "./src/stores/index.ts",
+    "./screens": "./src/screens/index.ts",
+    "./types": "./src/types/index.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "lint": "oxlint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dexie": "^4.0.0",
+    "frappe-js-sdk": "^1.13.0",
+    "socket.io-client": "^4.0.0"
+  },
+  "devDependencies": {
+    "@quasar/app-vite": "^3.2.0",
+    "quasar": "^2.22.0",
+    "vue": "^3.5.22",
+    "pinia": "^2.0.0",
+    "vue-router": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@quasar/app-vite": "^3.2.0",
+    "pinia": "^2.0.0",
+    "quasar": "^2.0.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.0.0",
+    "quasar-app-extension-fastfree-lowcode": "workspace:^0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "quasar-app-extension-fastfree-lowcode": {
+      "optional": false
+    }
+  },
+  "engines": {
+    "node": ">= 18"
+  }
+}
