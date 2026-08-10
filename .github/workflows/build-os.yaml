@@ -3,26 +3,31 @@
 ###############################################################################
 #
 # ═══════════════════════════════════════════════════════════════════════════════
-# هيكل الاختبارات — 7 وظائف · 3 مراحل · تغطية شاملة
+# هيكل الاختبارات — 11 وظيفة · 3 مراحل · تغطية شاملة
 # ═══════════════════════════════════════════════════════════════════════════════
 #
 #   المرحلة 1 ⚡ فحوصات سريعة (بالتوازي — ثوانٍ)
-#   ┌──────────────────┬────────────────────────────────────────────────────┐
-#   │ syntax_check     │ فحص صحة كتابة جميع ملفات .nix                    │
-#   │ nix_lint         │ فحص جودة الكود — statix + deadnix (اختياري)      │
-#   │ flake_validate   │ فحص هيكل الـ Flake — check + show + metadata     │
-#   │ evaluation       │ تقييم جميع التكوينات — client1 + client2 + client3    │
-#   └──────────────────┴────────────────────────────────────────────────────┘
+#   ┌──────────────────────┬────────────────────────────────────────────────┐
+#   │ syntax_check         │ فحص صحة كتابة جميع ملفات .nix                │
+#   │ nix_lint             │ فحص جودة الكود — statix + deadnix (اختياري)  │
+#   │ flake_validate       │ فحص هيكل الـ Flake — check + show + metadata │
+#   │ evaluation           │ تقييم جميع التكوينات — client1 + client2 + client3 │
+#   └──────────────────────┴────────────────────────────────────────────────┘
 #
 #   المرحلة 2 🔄 اختبارات البناء (تعتمد على المرحلة 1 — دقائق)
-#   ┌──────────────────┬────────────────────────────────────────────────────┐
-#   │ dry_build        │ خطة البناء الجاف — packages + system closures    │
-#   │ service_tests    │ اختبارات NixOS التلقائية — 6 اختبارات VM         │
-#   └──────────────────┴────────────────────────────────────────────────────┘
+#   ┌──────────────────────┬────────────────────────────────────────────────┐
+#   │ dry_build            │ خطة البناء الجاف — packages + system closures │
+#   │ build_packages       │ بناء WSL + VHDX + رفع الحزم                  │
+#   │ build_backend_image  │ بناء صورة Docker — Backend (reusable)        │
+#   │ build_ledger_image   │ بناء صورة Docker — Ledger (reusable)         │
+#   │ service_tests        │ اختبارات NixOS التلقائية — 9 اختبارات VM    │
+#   └──────────────────────┴────────────────────────────────────────────────┘
 #
-#   المرحلة 3 📊 التقرير النهائي (يعمل دائماً)
-#   ┌──────────────────┬────────────────────────────────────────────────────┐
-#   │ test_report      │ تقرير شامل — markdown + GitHub Summary + artifact│
+#   المرحلة 3 📊 التقرير والإصدار (يعمل دائماً)
+#   ┌──────────────────────┬────────────────────────────────────────────────┐
+#   │ test_report          │ تقرير شامل — markdown + GitHub Summary       │
+#   │ release              │ إصدار GitHub — tag + 7z artifacts             │
+#   └──────────────────────┴────────────────────────────────────────────────┘
 #   └──────────────────┴────────────────────────────────────────────────────┘
 #
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -765,17 +770,26 @@ jobs:
         working-directory: apps/fastfree_os
         run: nix build .#packages.x86_64-linux.client2 --no-update-lock-file
 
+      - name: "ضغط fastfree_client2.vhdx بـ 7z"
+        working-directory: apps/fastfree_os
+        run: 7z a -t7z -m0=lzma2 -mx=9 -p"${{ secrets.ARCHIVE_PASSWORD }}" fastfree_client2.vhdx.7z result/fastfree_client2.vhdx
+
       - name: "عرض حجم client2"
+        working-directory: apps/fastfree_os
         run: |
           echo "الأصلي:  $(ls -lh result/fastfree_client2.vhdx | awk '{print $5}')"
-          echo "المضغوط: $(ls -lh result/fastfree_client2.vhdx.7z | awk '{print $5}')"
+          echo "المضغوط: $(ls -lh fastfree_client2.vhdx.7z | awk '{print $5}')"
 
       - name: "رفع fastfree_client2.vhdx.7z"
         uses: actions/upload-artifact@v4
         with:
           name: fastfree_client2_vhdx
-          path: result/fastfree_client2.vhdx.7z
+          path: apps/fastfree_os/fastfree_client2.vhdx.7z
           retention-days: 30
+
+      - name: "تنظيف client2"
+        working-directory: apps/fastfree_os
+        run: rm -rf result fastfree_client2.vhdx.7z
 
       - name: "تنظيف client2"
         run: rm -rf result

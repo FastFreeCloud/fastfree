@@ -81,6 +81,9 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install skopeo
+        run: sudo apt-get update && sudo apt-get install -y skopeo
+
       - name: Build frontend image
         working-directory: apps/fastfree_ledger
         run: nix build .#frontendImage -o frontend-image --print-build-logs
