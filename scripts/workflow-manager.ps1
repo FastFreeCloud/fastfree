@@ -267,13 +267,14 @@ if (-not $SkipRun) {
     Start-Sleep -Seconds 10
 
     try {
-        $runs = gh api "repos/$repo/actions/runs?per_page=1&page=1&status=in_progress" --jq '.workflow_runs[:1] | .id' 2>&1
+        $runs = gh api "repos/$repo/actions/runs?per_page=1&page=1&status=in_progress" --jq '.workflow_runs[:1] | .[] | .id' 2>&1
 
-        if ($runs -and $runs -ne "null") {
-            Write-Info "Active run ID: $runs"
+        if ($runs -and $runs -ne "null" -and $runs -ne "[]") {
+            $runId = ($runs -split "`n")[0]
+            Write-Info "Active run ID: $runId"
 
             Write-Info "Watching workflow (Ctrl+C to skip)..."
-            gh run watch $runs --repo $repo --exit-status 2>&1 | Out-Null
+            gh run watch $runId --repo $repo --exit-status 2>&1 | Out-Null
 
             $exitCode = $LASTEXITCODE
             if ($exitCode -eq 0) {
