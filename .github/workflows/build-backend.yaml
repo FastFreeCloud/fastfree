@@ -166,6 +166,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: "7️⃣5️⃣ التأكد من وجود Package على GHCR"
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # ── فحص وجود الـ Package ──
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/user/packages/container/fastfree")
+          
+          if [ "$HTTP_CODE" = "404" ]; then
+            echo "📦 الـ Package غير موجود — جاري الإنشاء..."
+            curl -s -X POST \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/user/packages/container/fastfree" \
+              -d '{"visibility": "public"}' || echo "⚠️ فشل الإنشاء — قد يكون موجود مسبقاً"
+          elif [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ الـ Package موجود فعلاً"
+          else
+            echo "⚠️ استجابة غير متوقعة: $HTTP_CODE"
+          fi
+
       # ╔═══════════════════════════════════════╗
       # ║  المرحلة 7: تحديد Tags للصورة           ║
       # ╚═══════════════════════════════════════╝
