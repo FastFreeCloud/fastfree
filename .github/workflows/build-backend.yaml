@@ -127,7 +127,7 @@ jobs:
         id: detect_app
         run: |
           APP_NAME="${{ github.event.repository.name }}"
-          IMAGE_NAME="$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')"
+          IMAGE_NAME="$(echo "${{ github.repository_owner }}/fastfree_backend" | tr '[:upper:]' '[:lower:]')"
 
           echo "✅ اسم المستودع (التطبيق): $APP_NAME"
           echo "✅ اسم الصورة: $IMAGE_NAME"
@@ -175,14 +175,14 @@ jobs:
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/${{ github.event.repository.name }}")
+            "https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/fastfree_backend")
           
           if [ "$HTTP_CODE" = "404" ]; then
             echo "📦 الـ Package غير موجود — جاري الإنشاء..."
             curl -s -X POST \
               -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               -H "Accept: application/vnd.github+json" \
-              "https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/${{ github.event.repository.name }}" \
+              "https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/fastfree_backend" \
               -d '{"visibility": "public"}' || echo "⚠️ فشل الإنشاء — قد يكون موجود مسبقاً"
           elif [ "$HTTP_CODE" = "200" ]; then
             echo "✅ الـ Package موجود فعلاً"
