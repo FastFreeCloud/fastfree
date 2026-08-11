@@ -56,6 +56,8 @@
         buildPhase = ''
           runHook preBuild
           cd apps/fastfree_ledger
+          mkdir -p .quasar
+          echo '{"compilerOptions":{}}' > .quasar/tsconfig.json
           pnpm exec quasar prepare
           pnpm exec quasar build -m spa
           runHook postBuild
