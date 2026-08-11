@@ -84,7 +84,7 @@ Write-Info "Logs dir: $logsDir"
 if (-not $SkipValidation) {
     Write-Step "PHASE 1: Validating YAML files..."
 
-    $actionlintPath = Join-Path $env:TEMP "actionlint.exe"
+    $actionlintPath = Join-Path (Join-Path $env:TEMP "actionlint") "actionlint.exe"
     if (-not (Test-Path $actionlintPath)) {
         Write-Info "Downloading actionlint..."
         $actionlintZip = Join-Path $env:TEMP "actionlint.zip"
