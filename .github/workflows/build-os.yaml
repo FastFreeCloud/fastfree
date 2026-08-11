@@ -50,14 +50,14 @@ on:
       - "apps/fastfree_os/nix/**"
       - "apps/fastfree_os/flake.nix"
       - "apps/fastfree_os/flake.lock"
-      - ".github/workflows/build-os.yaml"
+      - ".github/workflows/*.yaml"
   pull_request:
     branches: [main, master]
     paths:
       - "apps/fastfree_os/nix/**"
       - "apps/fastfree_os/flake.nix"
       - "apps/fastfree_os/flake.lock"
-      - ".github/workflows/build-os.yaml"
+      - ".github/workflows/*.yaml"
   workflow_dispatch:
 
 # ─────────────────────────────────────────────────────────────────────────────
