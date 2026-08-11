@@ -82,18 +82,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Save frontend image to tarball
+        working-directory: apps/fastfree_ledger
+        run: ./frontend-image > frontend-image.tar
+
       - name: Push frontend image (latest)
         working-directory: apps/fastfree_ledger
         run: |
-          ./frontend-image | skopeo copy \
-            docker-archive:/dev/stdin \
+          skopeo copy \
+            docker-archive:frontend-image.tar \
             docker://${{ env.IMAGE_PREFIX }}:latest
 
       - name: Push frontend image (sha)
         working-directory: apps/fastfree_ledger
         run: |
-          ./frontend-image | skopeo copy \
-            docker-archive:/dev/stdin \
+          skopeo copy \
+            docker-archive:frontend-image.tar \
             docker://${{ env.IMAGE_PREFIX }}:${{ github.sha }}
 
   release:
