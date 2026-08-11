@@ -800,12 +800,18 @@ jobs:
     uses: ./.github/workflows/build-backend.yaml
     needs: [syntax_check, flake_validate, evaluation]
     secrets: inherit
+    permissions:
+      contents: write
+      packages: write
 
   build_ledger_image:
     name: 🐳 بناء صورة Ledger
     uses: ./.github/workflows/build-ledger.yaml
     needs: [syntax_check, flake_validate, evaluation]
     secrets: inherit
+    permissions:
+      contents: write
+      packages: write
 
   # ╔═══════════════════════════════════════════════════════════════════════════╗
   # ║  المرحلة 2/2: اختبارات الخدمات — NixOS VM Tests                       ║
