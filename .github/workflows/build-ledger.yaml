@@ -44,10 +44,8 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
         env:
-          # Skip postinstall for fastfree_ledger during initial install
-          # quasar prepare will run separately below
           PNPM_SKIP_POSTINSTALL: ""
 
       - name: Prepare Quasar

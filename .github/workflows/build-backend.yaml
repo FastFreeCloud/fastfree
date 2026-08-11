@@ -66,7 +66,7 @@ jobs:
 
       - name: "1️⃣5️⃣ فحص GitHub Actions workflow"
         continue-on-error: true
-        uses: reviewdog/actionActionlint@v1
+        uses: reviewdog/action-Actionlint@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           level: info
