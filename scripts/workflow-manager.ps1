@@ -1,26 +1,35 @@
 # ============================================================================
-# FastFree Workflow Manager
+# FastFree Workflow Manager - Single File
 # ============================================================================
-# يحذف runs قديمة، يفحص YAML، ويحذف الملفات الملفقة (.cjs)
-# Usage: .\scripts\workflow-manager.ps1 [-DeleteAll] [-CleanFiles] [-Validate] [-Verbose]
+# Usage:
+#   .\scripts\workflow-manager.ps1
+#   .\scripts\workflow-manager.ps1 -Help
+#
+# Phases:
+# 1. Validate YAML files (actionlint)
+# 2. Delete failed workflow runs only
+# 3. Push project to git
+# 4. Trigger workflow on GitHub
+# 5. Monitor workflow run
+# 6. Save complete logs
 # ============================================================================
 
 param(
-    [switch]$DeleteAll,        # حذف جميع الـ Runs
-    [switch]$CleanFiles,       # حذف الملفات الملفقة (.cjs, .js)
-    [switch]$Validate,         # فحص YAML فقط
-    [switch]$DryRun,           # عرض بس بدون حذف
-    [switch]$Verbose,          # عرض تفصيلي
-    [switch]$Install,          # تثبيت actionlint
+    [switch]$Help,
+    [switch]$SkipValidation,
+    [switch]$SkipDelete,
+    [switch]$SkipPush,
+    [switch]$SkipRun,
+    [int]$KeepRuns = 5
 )
 
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
 $workflowsDir = Join-Path $repoRoot ".github\workflows"
-$scriptsDir = Join-Path $repoRoot "scripts"
 $logsDir = Join-Path $repoRoot "logs\workflows"
+$repo = "FastFreeCloud/fastfree"
 
-# ── ألوان الطرفية ──────────────────────────────────────────────────────────
+# Colors
 function Write-Header($text) {
     Write-Host ""
     Write-Host ("=" * 80) -ForegroundColor Cyan
@@ -30,7 +39,7 @@ function Write-Header($text) {
 
 function Write-Step($text) {
     Write-Host ""
-    Write-Host "  -> $text" -ForegroundColor Yellow
+    Write-Host "  >> $text" -ForegroundColor Yellow
 }
 
 function Write-Ok($text)    { Write-Host "    [OK] $text" -ForegroundColor Green }
@@ -39,293 +48,251 @@ function Write-Warn($text)  { Write-Host "    [WARN] $text" -ForegroundColor Dar
 function Write-Info($text)  { Write-Host "    [INFO] $text" -ForegroundColor Gray }
 function Write-Code($text)  { Write-Host "    $text" -ForegroundColor DarkGray }
 
-# ── تثبيت actionlint ──────────────────────────────────────────────────────
-function Install-Actionlint {
-    $actionlintDir = Join-Path $env:TEMP "actionlint"
-    $actionlintExe = Join-Path $actionlintDir "actionlint.exe"
-
-    if (Test-Path $actionlintExe) {
-        Write-Ok "actionlint already installed"
-        return $actionlintExe
-    }
-
-    Write-Step "تثبيت actionlint..."
-    New-Item -ItemType Directory -Path $actionlintDir -Force | Out-Null
-
-    $url = "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_windows_amd64.zip"
-    $zip = Join-Path $env:TEMP "actionlint.zip"
-    Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
-    Expand-Archive -Path $zip -DestinationPath $actionlintDir -Force
-    Remove-Item $zip -Force
-    Write-Ok "actionlint installed: $actionlintExe"
-    return $actionlintExe
+# Help
+if ($Help) {
+    Write-Host "FastFree Workflow Manager"
+    Write-Host ""
+    Write-Host "Usage:"
+    Write-Host "  .\scripts\workflow-manager.ps1              Run all phases"
+    Write-Host "  .\scripts\workflow-manager.ps1 -Help          Show this help"
+    Write-Host "  .\scripts\workflow-manager.ps1 -SkipValidation  Skip YAML validation"
+    Write-Host "  .\scripts\workflow-manager.ps1 -SkipDelete      Skip deleting failed runs"
+    Write-Host "  .\scripts\workflow-manager.ps1 -SkipPush        Skip git push"
+    Write-Host "  .\scripts\workflow-manager.ps1 -SkipRun         Skip workflow trigger"
+    Write-Host "  .\scripts\workflow-manager.ps1 -KeepRuns 10     Keep last 10 runs (not 5)"
+    exit 0
 }
-
-# ── تنظيف الملفات الملفقة (.cjs, .js) ────────────────────────────────────
-function Clean-MessyFiles {
-    param([string]$Dir)
-    $changed = $false
-
-    if (-not (Test-Path $Dir)) {
-        Write-Info "الملف غير موجود: $Dir"
-        return $changed
-    }
-
-    # حذف جميع الملفات .cjs (CommonJS) - غالباً ملفات Node.js لا تستخدمها
-    $cjsFiles = Get-ChildItem -Path $Dir -Filter "*.cjs" -ErrorAction SilentlyContinue
-    $jsFiles = Get-ChildItem -Path $Dir -Filter "*.js" -ErrorAction SilentlyContinue
-
-    foreach ($f in $cjsFiles) {
-        Write-Code "حذف: $($f.FullName)"
-        Remove-Item -Path $f.FullName -Force -ErrorAction SilentlyContinue
-        $changed = $true
-    }
-
-    foreach ($f in $jsFiles) {
-        # فقط احذف الملفات التي ليست بصورة git
-        if ($f.Name -notmatch '\.git' -and $f.Name -notmatch '\.github' -and $f.Name -notmatch '\.nix') {
-            Write-Code "حذف: $($f.FullName)"
-            Remove-Item -Path $f.FullName -Force -ErrorAction SilentlyContinue
-            $changed = $true
-        }
-    }
-
-    if ($changed) {
-        Write-Ok "تم تنظيف الملفات الملفقة"
-    } else {
-        Write-Info "لا يوجد ملفات ملفقة للعمل"
-    }
-    return $changed
-}
-
-# ── حذف Runs القديمة ─────────────────────────────────────────────────────────
-function Delete-OldRuns {
-    param(
-        [int]$KeepCount = 5,
-        [bool]$DeleteAll = $false,
-        [bool]$KeepSuccessful = $false
-    )
-
-    Write-Step "تحميل جميع الـ Runs..."
-
-    try {
-        $runs = gh api "repos/FastFreeCloud/fastfree/actions/runs?per_page=100&page=1" --jq '.workflow_runs[] | {id: .id, number: .number, name: .name, status: .status, conclusion: .conclusion, event: .event, created_at: .created_at, branch: .head_branch, sha: .head_sha}' 2>&1
-
-        if ($LASTEXITCODE -ne 0) {
-            Write-Fail "خطأ في تحميل الـ Runs"
-            return @()
-        }
-
-        $allRuns = $runs | ConvertFrom-Json
-        Write-Info "تم تحميل $($allRuns.Count) Runs"
-
-        $toDelete = @()
-        $toKeep = @()
-
-        foreach ($run in $allRuns) {
-            $shouldDelete = $false
-
-            if ($DeleteAll) {
-                $shouldDelete = $true
-            } elseif ($KeepSuccessful) {
-                if ($run.conclusion -ne "success") {
-                    $shouldDelete = $true
-                }
-            } else {
-                # احتفظ بأخر N runs
-                $index = [Array]::IndexOf($allRuns, $run)
-                if ($index -ge $KeepCount) {
-                    $shouldDelete = $true
-                }
-            }
-
-            if ($shouldDelete) {
-                $toDelete += $run
-            } else {
-                $toKeep += $run
-            }
-        }
-
-        Write-Info "للحذف: $($toDelete.Count) | للاحتفاظ: $($toKeep.Count)"
-
-        if ($toDelete.Count -eq 0) {
-            Write-Ok "لا يوجدRuns لاحذفها"
-            return @()
-        }
-
-        $deleted = 0
-        $failedDel = 0
-
-        foreach ($run in $toDelete) {
-            Write-Host -NoNewline "    [DEL] حذف #$($run.number) ($($run.conclusion))... "
-            try {
-                $result = gh api -X DELETE "repos/FastFreeCloud/fastfree/actions/runs/$($run.id)" 2>&1
-                if ($LASTEXITCODE -eq 0) {
-                    Write-Host "تم" -ForegroundColor Green
-                    $deleted++
-                } else {
-                    Write-Host "فشل" -ForegroundColor Red
-                    $failedDel++
-                }
-            } catch {
-                Write-Host "فشل" -ForegroundColor Red
-                $failedDel++
-            }
-            Start-Sleep -Milliseconds 300
-        }
-
-        Write-Ok "تم الحذف: $deleted | فشلت: $failedDel"
-        return @{ deleted = $deleted; failed = $failedDel }
-
-    } catch {
-        Write-Fail "خطأ في حذف Runs: $_"
-        return @()
-    }
-}
-
-# ── فحص YAML files ──────────────────────────────────────────────────────────
-function Validate-YAML-Workflows {
-    param([string]$Dir)
-
-    Write-Step "فحص ملفات YAML..."
-
-    $yamlFiles = Get-ChildItem -Path $Dir -Filter "*.yaml" -ErrorAction SilentlyContinue
-    $yamlFiles += Get-ChildItem -Path $Dir -Filter "*.yml" -ErrorAction SilentlyContinue
-
-    $valid = 0
-    $invalid = 0
-
-    foreach ($file in $yamlFiles) {
-        $content = Get-Content -Path $file.FullName -Raw
-        $lines = $content -split "\r?\n"
-
-        # تحقق من التوافق الأساسي
-        $invalid = 0
-        $valid = 0
-
-        foreach ($line in $lines) {
-            if ($line -match '^\s*#{1,6}\s+') {
-                continue  # تعليقات
-            }
-            if ($line -match '^\s*-') {
-                continue  # علامات قائمة
-            }
-            if ($line -match '^\s*[a-z_]+\s*:\s*') {
-                $valid++
-            }
-        }
-
-        # تحقق من YAML باستخدام actionlint
-        $actionlint = Join-Path $env:TEMP "actionlint.exe"
-        if (-not (Test-Path $actionlint)) {
-            Install-Actionlint
-            $actionlint = Join-Path $env:TEMP "actionlint.exe"
-        }
-
-        $result = & $actionlint -color "$($file.FullName)" 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            Write-Ok "$($file.Name) - صالح"
-            $valid++
-        } else {
-            Write-Fail "$($file.Name) - به مشاكل"
-            $invalid++
-        }
-    }
-
-    Write-Info "النتيجة: $valid صالح | $invalid مشكلة"
-    return @{ valid = $valid; invalid = $invalid }
-}
-
-# ╔═══════════════════════════════════════════════════════════════════════╗
-# ║  المرحلة 1: التهيئة                                                       ║
-# ╚═══════════════════════════════════════════════════════════════════════╝
 
 Write-Header "FastFree Workflow Manager"
 
-# تثبيت actionlint
-$actionlint = Install-Actionlint
-if (-not $actionlint) {
-    Write-Fail "لا يمكن المضي قدماً بدون actionlint"
-    exit 1
-}
-
-# ── تهيئة المجلدات ──────────────────────────────────────────────────────────
-Write-Info "تحديد المجلدات..."
-
-# التأكد من مجلد الـ logs
+# Create logs directory
 if (-not (Test-Path $logsDir)) {
     New-Item -ItemType Directory -Path $logsDir -Force | Out-Null
 }
 
-# ╔═══════════════════════════════════════════════════════════════════════╗
-# ║  المرحلة 2: تنظيف الملفات الملفقة                                       ║
-# ╚═══════════════════════════════════════════════════════════════════════╝
+$logFile = Join-Path $logsDir "workflow-run-$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').log"
+Start-Transcript -Path $logFile -Append -Force
 
-Write-Step "تنظيف الملفات الملفقة (.cjs, .js)..."
+Write-Info "Repository: $repo"
+Write-Info "Root: $repoRoot"
+Write-Info "Logs dir: $logsDir"
 
-if ($CleanFiles) {
-    Clean-MessyFiles -Dir $workflowsDir
-    Clean-MessyFiles -Dir $scriptsDir
-    Clean-MessyFiles -Dir $logsDir
-} else {
-    Write-Info "خيار CleanFiles لازم يشتغل..."
+# ========================================================================
+# Phase 1: Validate YAML files
+# ========================================================================
+
+if (-not $SkipValidation) {
+    Write-Step "PHASE 1: Validating YAML files..."
+
+    $actionlintPath = Join-Path $env:TEMP "actionlint.exe"
+    if (-not (Test-Path $actionlintPath)) {
+        Write-Info "Downloading actionlint..."
+        $actionlintZip = Join-Path $env:TEMP "actionlint.zip"
+        $url = "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_windows_amd64.zip"
+        $extractDir = Join-Path $env:TEMP "actionlint"
+
+        try {
+            Invoke-WebRequest -Uri $url -OutFile $actionlintZip -UseBasicParsing
+            Expand-Archive -Path $actionlintZip -DestinationPath $extractDir -Force
+            Remove-Item $actionlintZip -Force
+            Write-Ok "actionlint downloaded"
+        } catch {
+            Write-Fail "Failed to download actionlint: $_"
+            Stop-Transcript
+            exit 1
+        }
+    }
+
+    $yamlFiles = Get-ChildItem -Path $workflowsDir -Filter "*.yaml" | Sort-Object Name
+    $yamlFiles += Get-ChildItem -Path $workflowsDir -Filter "*.yml" | Sort-Object Name
+
+    $yamlFailed = $false
+    foreach ($file in $yamlFiles) {
+        Write-Info "Checking: $($file.Name)"
+
+        $result = & $actionlintPath -color "$($file.FullName)" 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Fail "$($file.Name) has errors:"
+            foreach ($line in $result) {
+                Write-Code "  $line"
+            }
+            $yamlFailed = $true
+        } else {
+            Write-Ok "$($file.Name) is valid"
+        }
+    }
+
+    if ($yamlFailed) {
+        Write-Fail "YAML validation failed. Fix errors before continuing."
+        Stop-Transcript
+        exit 1
+    }
+
+    Write-Ok "All YAML files valid!"
 }
 
-# ╔═══════════════════════════════════════════════════════════════════════╗
-# ║  المرحلة 3: حذف الـ Runs القديمة                                           ║
-# ╚═══════════════════════════════════════════════════════════════════════╝
+# ========================================================================
+# Phase 2: Delete failed workflow runs
+# ========================================================================
 
-Write-Step "حذف الـ Runs القديمة..."
+if (-not $SkipDelete) {
+    Write-Step "PHASE 2: Deleting failed workflow runs..."
 
-$delResult = Delete-OldRuns -KeepCount 5 -DeleteAll:$DeleteAll -KeepSuccessful:$KeepSuccessful
+    try {
+        Write-Info "Fetching workflow runs..."
+        $runsJson = gh api "repos/$repo/actions/runs?per_page=100&page=1" --jq '.workflow_runs[] | {id: .id, number: .number, conclusion: .conclusion, status: .status, event: .event, created_at: .created_at}' 2>&1
 
-# ╔═══════════════════════════════════════════════════════════════════════╗
-# ║  المرحلة 4: فحص YAML                                                    ║
-# ╚═══════════════════════════════════════════════════════════════════════╝
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warn "Could not fetch runs: $runsJson"
+        } else {
+            $allRuns = $runsJson | ConvertFrom-Json
+            Write-Info "Found $($allRuns.Count) total runs"
 
-if ($Validate) {
-    Write-Step "فحص YAML..."
-    $yamlResult = Validate-YAML-Workflows -Dir $workflowsDir
+            $toDelete = @()
+            foreach ($run in $allRuns) {
+                $isFailed = $run.conclusion -in @("failure", "startup_failure", "cancelled", "timed_out")
+                if ($isFailed) {
+                    $toDelete += $run
+                }
+            }
 
-    if ($yamlResult.valid -gt 0) {
-        Write-Ok "الـ YAML files صحيحة"
+            Write-Info "Failed runs to delete: $($toDelete.Count)"
+            Write-Info "Successful runs to keep: $(($allRuns.Count - $toDelete.Count))"
+
+            $deleted = 0
+            $failedDel = 0
+
+            foreach ($run in $toDelete) {
+                Write-Host -NoNewline "    Deleting #$($run.number) ($($run.conclusion))... "
+                $result = gh api -X DELETE "repos/$repo/actions/runs/$($run.id)" 2>&1
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "Done" -ForegroundColor Green
+                    $deleted++
+                } else {
+                    Write-Host "Failed" -ForegroundColor Red
+                    $failedDel++
+                }
+                Start-Sleep -Milliseconds 300
+            }
+
+            Write-Ok "Deleted: $deleted | Failed: $failedDel"
+        }
+    } catch {
+        Write-Warn "Could not delete runs: $_"
     }
 }
 
-# ╔═══════════════════════════════════════════════════════════════════════╗
-# ║  المرحلة 5: الملخص النهائي                                                 ║
-# ╚═══════════════════════════════════════════════════════════════════════╝
+# ========================================================================
+# Phase 3: Push project
+# ========================================================================
 
-Write-Header "الملخص النهائي"
+if (-not $SkipPush) {
+    Write-Step "PHASE 3: Pushing project..."
 
-Write-Host ""
-Write-Host "  📁 مجلد الـ Logs:" -ForegroundColor Cyan
-Write-Host "     $logsDir" -ForegroundColor Gray
-Write-Host ""
+    Push-Location $repoRoot
 
-if ($DeleteAll) {
-    Write-Host "  ⚠️ تم حذف $($delResult.deleted) runs (مع $($delResult.failed) فشل)" -ForegroundColor DarkRed
-} else {
-    Write-Host "  📊 $($delResult.deleted) runs محذوفة، $($delResult.failed) فشلت" -ForegroundColor White
+    try {
+        Write-Info "Checking git status..."
+        $gitStatus = git status --short 2>&1
+
+        if ([string]::IsNullOrWhiteSpace($gitStatus)) {
+            Write-Info "No changes to push"
+        } else {
+            Write-Info "Changes detected:"
+            Write-Code $gitStatus
+
+            Write-Info "Staging files..."
+            git add . 2>&1 | Out-Null
+
+            Write-Info "Committing..."
+            $commitMsg = "Automated workflow: fix + push at $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+            git commit -m $commitMsg 2>&1 | Out-Null
+            Write-Ok "Committed changes"
+
+            Write-Info "Pushing to master..."
+            git push origin master 2>&1 | Out-Null
+            Write-Ok "Pushed to master"
+        }
+    } catch {
+        Write-Warn "Git push skipped or failed: $_"
+    } finally {
+        Pop-Location
+    }
 }
 
+# ========================================================================
+# Phase 4: Trigger workflow
+# ========================================================================
+
+if (-not $SkipRun) {
+    Write-Step "PHASE 4: Triggering workflow..."
+
+    try {
+        Write-Info "Running build-os.yaml workflow..."
+        $runResult = gh workflow run build-os.yaml --repo $repo --ref master 2>&1
+
+        if ($LASTEXITCODE -eq 0) {
+            Write-Ok "Workflow triggered successfully"
+            Write-Info $runResult
+        } else {
+            Write-Warn "Failed to trigger workflow: $runResult"
+        }
+    } catch {
+        Write-Warn "Could not trigger workflow: $_"
+    }
+}
+
+# ========================================================================
+# Phase 5: Monitor workflow run
+# ========================================================================
+
+if (-not $SkipRun) {
+    Write-Step "PHASE 5: Monitoring workflow run..."
+
+    Start-Sleep -Seconds 10
+
+    try {
+        $runs = gh api "repos/$repo/actions/runs?per_page=1&page=1&status=in_progress" --jq '.workflow_runs[:1] | .id' 2>&1
+
+        if ($runs -and $runs -ne "null") {
+            Write-Info "Active run ID: $runs"
+
+            Write-Info "Watching workflow (Ctrl+C to skip)..."
+            gh run watch $runs --repo $repo --exit-status 2>&1 | Out-Null
+
+            $exitCode = $LASTEXITCODE
+            if ($exitCode -eq 0) {
+                Write-Ok "Workflow completed successfully!"
+            } else {
+                Write-Fail "Workflow failed with exit code: $exitCode"
+            }
+        } else {
+            Write-Info "No active runs found - checking recent runs..."
+            $recent = gh run list --repo $repo --limit 1 --json databaseId,status,conclusion,number 2>&1
+            Write-Info "Recent run:"
+            Write-Code $recent
+        }
+    } catch {
+        Write-Warn "Monitoring skipped: $_"
+    }
+}
+
+# ========================================================================
+# Phase 6: Summary
+# ========================================================================
+
+Write-Step "PHASE 6: Summary"
+
 Write-Host ""
-Write-Host "  ✅ ملفs الـ Workflows:" -ForegroundColor Green
-Write-Host "     - Validated YAML: All workflows are clean" -ForegroundColor Green
+Write-Host "  Summary:" -ForegroundColor Cyan
+Write-Host "  1. YAML Validation:    $(if ($SkipValidation) { 'Skipped' } else { 'Complete' })" -ForegroundColor White
+Write-Host "  2. Delete Failed Runs: $(if ($SkipDelete) { 'Skipped' } else { 'Complete' })" -ForegroundColor White
+Write-Host "  3. Git Push:           $(if ($SkipPush) { 'Skipped' } else { 'Complete' })" -ForegroundColor White
+Write-Host "  4. Trigger Workflow:   $(if ($SkipRun) { 'Skipped' } else { 'Complete' })" -ForegroundColor White
+Write-Host "  5. Monitor:            $(if ($SkipRun) { 'Skipped' } else { 'Complete' })" -ForegroundColor White
+Write-Host ""
+Write-Host "  Log file: $logFile" -ForegroundColor Gray
 Write-Host ""
 
-Write-Host ("=" * 80) -ForegroundColor Cyan
-Write-Host "  Completed!" -ForegroundColor Green
-Write-Host ("=" * 80) -ForegroundColor Cyan
-
-# ╔═══════════════════════════════════════════════════════════════════════╗
-# ║  ملخص الأوامر:                                                             ║
-# ╚═══════════════════════════════════════════════════════════════════════╝
-
-Write-Host ""
-Write-Host "أوامر مساعدة:" -ForegroundColor Cyan
-Write-Host "  .\scripts\workflow-manager.ps1 -DeleteAll" -ForegroundColor White
-Write-Host "  .\scripts\workflow-manager.ps1 -CleanFiles" -ForegroundColor White
-Write-Host "  .\scripts\workflow-manager.ps1 -Validate" -ForegroundColor White
-Write-Host "  .\scripts\workflow-manager.ps1 -Verbose" -ForegroundColor White
-Write-Host ""
+Stop-Transcript
+Write-Header "Complete!"
