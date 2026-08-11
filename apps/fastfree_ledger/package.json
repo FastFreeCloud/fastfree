@@ -11,8 +11,7 @@
     "lint:check": "prettier \"**/*.{js,ts,vue,css,scss,html,md,json}\" --ignore-path .gitignore && eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
     "dev": "quasar dev",
     "build": "quasar build",
-    "typecheck": "vue-tsc --noEmit",
-    "postinstall": "quasar prepare --silent"
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
     "fastfree-auth": "workspace:*",

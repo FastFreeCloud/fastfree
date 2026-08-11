@@ -196,7 +196,7 @@ if (-not $SkipPush) {
         $gitStatus = git status --short 2>&1
 
         if ([string]::IsNullOrWhiteSpace($gitStatus)) {
-            Write-Info "No changes to push"
+            Write-Info "No uncommitted changes"
         } else {
             Write-Info "Changes detected:"
             Write-Code $gitStatus
@@ -208,10 +208,18 @@ if (-not $SkipPush) {
             $commitMsg = "Automated workflow: fix + push at $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
             git commit -m $commitMsg 2>&1 | Out-Null
             Write-Ok "Committed changes"
+        }
 
+        # Always check for unpushed commits and push
+        $unpushed = git log origin/master..HEAD --oneline 2>&1
+        if (-not [string]::IsNullOrWhiteSpace($unpushed)) {
+            Write-Info "Unpushed commits detected:"
+            Write-Code $unpushed
             Write-Info "Pushing to master..."
             git push origin master 2>&1 | Out-Null
             Write-Ok "Pushed to master"
+        } else {
+            Write-Info "No unpushed commits"
         }
     } catch {
         Write-Warn "Git push skipped or failed: $_"

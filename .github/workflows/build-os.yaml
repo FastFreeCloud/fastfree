@@ -772,38 +772,16 @@ jobs:
         working-directory: apps/fastfree_os
         run: nix build .#packages.x86_64-linux.client2 --no-update-lock-file
 
-      - name: "ضغط fastfree_client2.vhdx بـ 7z"
-        working-directory: apps/fastfree_os
-        env:
-          ARCHIVE_PASSWORD: ${{ secrets.ARCHIVE_PASSWORD }}
-        run: |
-          if [ ! -f "result/fastfree_client2.vhdx" ]; then
-            echo "❌ result/fastfree_client2.vhdx غير موجود!"
-            ls -la result
-            exit 1
-          fi
-          if [ -z "$ARCHIVE_PASSWORD" ]; then
-            7z a -t7z -m0=lzma2 -mx=9 fastfree_client2.vhdx.7z result/fastfree_client2.vhdx
-          else
-            7z a -t7z -m0=lzma2 -mx=9 -p"$ARCHIVE_PASSWORD" fastfree_client2.vhdx.7z result/fastfree_client2.vhdx
-          fi
-
-      - name: "عرض حجم client2"
-        working-directory: apps/fastfree_os
-        run: |
-          echo "الأصلي:  $(ls -lh result/fastfree_client2.vhdx | awk '{print $5}')"
-          echo "المضغوط: $(ls -lh fastfree_client2.vhdx.7z | awk '{print $5}')"
-
       - name: "رفع fastfree_client2.vhdx.7z"
         uses: actions/upload-artifact@v4
         with:
           name: fastfree_client2_vhdx
-          path: apps/fastfree_os/fastfree_client2.vhdx.7z
+          path: apps/fastfree_os/result/fastfree_client2.vhdx.7z
           retention-days: 30
 
       - name: "تنظيف client2"
         working-directory: apps/fastfree_os
-        run: rm -rf result fastfree_client2.vhdx.7z
+        run: rm -rf result
 
   # ╔═══════════════════════════════════════════════════════════════════════════╗
   # ║  المرحلة 2.5: بناء صور Docker — FastFree Backend + Ledger              ║
