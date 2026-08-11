@@ -58,7 +58,8 @@
           cd apps/fastfree_ledger
           mkdir -p .quasar
           echo '{"compilerOptions":{}}' > .quasar/tsconfig.json
-          ln -sf ../../node_modules .
+          rm -rf node_modules
+          ln -s ../../node_modules .
           pnpm exec quasar prepare
           pnpm exec quasar build -m spa
           runHook postBuild
