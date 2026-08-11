@@ -732,7 +732,7 @@ jobs:
 
       - name: "تشغيل tarballBuilder — client1"
         working-directory: apps/fastfree_os
-        run: sudo ./result/bin/nixos-wsl-tarball-builder fastfree_client1.wsl
+        run: sudo ./result/bin/nixos-wsl-tarball-builder fastfree_client1.wsl && sudo chmod 644 fastfree_client1.wsl
 
       - name: "ضغط fastfree_client1.wsl بـ 7z"
         working-directory: apps/fastfree_os
