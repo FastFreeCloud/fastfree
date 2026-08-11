@@ -20,13 +20,13 @@ jobs:
       - name: Safe directory
         run: git config --global safe.directory '*'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 11.11.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: 'pnpm'
@@ -62,7 +62,7 @@ jobs:
       - name: Safe directory
         run: git config --global safe.directory '*'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: cachix/install-nix-action@v31
         with:
@@ -110,7 +110,7 @@ jobs:
       - name: Safe directory
         run: git config --global safe.directory '*'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 

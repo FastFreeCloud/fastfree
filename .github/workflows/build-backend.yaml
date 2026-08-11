@@ -48,7 +48,7 @@ jobs:
       # ╚═══════════════════════════════════════╝
 
       - name: "1️⃣ تحميل كود التطبيق"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -127,7 +127,7 @@ jobs:
         id: detect_app
         run: |
           APP_NAME="${{ github.event.repository.name }}"
-          IMAGE_NAME="${{ github.repository_owner }}/$APP_NAME"
+          IMAGE_NAME="$(echo "${{ github.repository_owner }}/$APP_NAME" | tr '[:upper:]' '[:lower:]')"
 
           echo "✅ اسم المستودع (التطبيق): $APP_NAME"
           echo "✅ اسم الصورة: $IMAGE_NAME"
