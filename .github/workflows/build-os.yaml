@@ -588,7 +588,7 @@ jobs:
     name: 🏗️ اختبار البناء الجاف
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [syntax_check, flake_validate, evaluation]
+    needs: [build_packages]
     outputs:
       sys_passed: ${{ steps.dry_systems.outputs.passed }}
       sys_failed: ${{ steps.dry_systems.outputs.failed }}
@@ -710,8 +710,8 @@ jobs:
     name: 📦 بناء الحزم
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    needs: [dry_build]
-    if: always() && needs.dry_build.result == 'success' && needs.dry_build.outputs.pkg_failed == '0'
+    needs: [service_tests]
+    if: always() && needs.service_tests.result == 'success'
     permissions:
       contents: read
     steps:
@@ -814,7 +814,7 @@ jobs:
     name: 🧪 اختبارات الخدمات
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    needs: [syntax_check, flake_validate, evaluation]
+    needs: [build_backend_image, build_ledger_image]
     outputs:
       passed: ${{ steps.tests.outputs.passed }}
       failed: ${{ steps.tests.outputs.failed }}

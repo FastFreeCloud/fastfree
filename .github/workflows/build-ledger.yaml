@@ -50,7 +50,7 @@ jobs:
 
       - name: Prepare Quasar
         working-directory: apps/fastfree_ledger
-        run: pnpm exec quasar prepare --silent || true
+        run: pnpm exec quasar prepare --silent
 
       - name: TypeScript check
         working-directory: apps/fastfree_ledger
