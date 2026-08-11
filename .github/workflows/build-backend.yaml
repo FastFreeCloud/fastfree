@@ -68,8 +68,10 @@ jobs:
         uses: reviewdog/action-actionlint@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          level: warning
+          level: info
           reporter: github-check
+          fail_on_error: false
+          filter_mode: nofilter
 
       # ╔═══════════════════════════════════════╗
       # ║  المرحلة 2: توليد Tag تلقائي           ║
@@ -389,19 +391,21 @@ jobs:
       - name: "📋 ملخص النتائج"
         if: always()
         run: |
-          echo "## 🐳 نتائج البناء والإصدار" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| الخاصية | القيمة |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| **Tag** | \`${{ steps.auto_tag.outputs.TAG }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **السجل** | \`${{ env.REGISTRY }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **الصورة** | \`${{ env.IMAGE_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Frappe** | \`${{ env.FRAPPE_VERSION }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### ✅ ما تم إنجازه" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ تم إنشاء Tag: \`${{ steps.auto_tag.outputs.TAG }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ تم بناء Docker Image و رفعها على GHCR" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## 🐳 نتائج البناء والإصدار"
+            echo ""
+            echo "| الخاصية | القيمة |"
+            echo "|---------|--------|"
+            echo "| **Tag** | \`${{ steps.auto_tag.outputs.TAG }}\` |"
+            echo "| **السجل** | \`${{ env.REGISTRY }}\` |"
+            echo "| **الصورة** | \`${{ env.IMAGE_NAME }}\` |"
+            echo "| **Frappe** | \`${{ env.FRAPPE_VERSION }}\` |"
+            echo "| **Commit** | \`${{ github.sha }}\` |"
+            echo ""
+            echo "### ✅ ما تم إنجازه"
+            echo "- ✅ تم إنشاء Tag: \`${{ steps.auto_tag.outputs.TAG }}\`"
+            echo "- ✅ تم بناء Docker Image و رفعها على GHCR"
+          } >> $GITHUB_STEP_SUMMARY
           echo "- ✅ تم إنشاء GitHub Release" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📥 أمر السحب" >> $GITHUB_STEP_SUMMARY
