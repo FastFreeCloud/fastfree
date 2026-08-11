@@ -10,7 +10,7 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/fastfree_ledger
+  IMAGE_PREFIX: ghcr.io/fastfreecloud/fastfree_ledger
 
 jobs:
   lint:
