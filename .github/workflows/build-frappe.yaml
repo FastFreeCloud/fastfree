@@ -112,25 +112,29 @@ jobs:
               INPUT_APP_TITLE="$REPO_APP_TITLE"
             fi
 
-            echo "APP_NAME=$INPUT_APP_NAME" >> $GITHUB_ENV
-            echo "APP_TITLE=$INPUT_APP_TITLE" >> $GITHUB_ENV
-            echo "APP_DESCRIPTION=${{ inputs.app_description }}" >> $GITHUB_ENV
-            echo "APP_PUBLISHER=${{ inputs.app_publisher }}" >> $GITHUB_ENV
-            echo "APP_EMAIL=${{ inputs.app_email }}" >> $GITHUB_ENV
-            echo "APP_LICENSE=${{ inputs.app_license }}" >> $GITHUB_ENV
-            echo "FRAPPE_BRANCH=${{ inputs.frappe_branch }}" >> $GITHUB_ENV
-            echo "CREATE_RELEASE=${{ inputs.create_release }}" >> $GITHUB_ENV
+            {
+              echo "APP_NAME=$INPUT_APP_NAME"
+              echo "APP_TITLE=$INPUT_APP_TITLE"
+              echo "APP_DESCRIPTION=${{ inputs.app_description }}"
+              echo "APP_PUBLISHER=${{ inputs.app_publisher }}"
+              echo "APP_EMAIL=${{ inputs.app_email }}"
+              echo "APP_LICENSE=${{ inputs.app_license }}"
+              echo "FRAPPE_BRANCH=${{ inputs.frappe_branch }}"
+              echo "CREATE_RELEASE=${{ inputs.create_release }}"
+            } >> "$GITHUB_ENV"
           else
             # ── لو تشغيل تلقائي → قيم ثابتة ──
             echo "🤖 تشغيل تلقائي — استخدام القيم الافتراضية"
-            echo "APP_NAME=$REPO_APP_NAME" >> $GITHUB_ENV
-            echo "APP_TITLE=$REPO_APP_TITLE" >> $GITHUB_ENV
-            echo "APP_DESCRIPTION=A custom Frappe application for $REPO_APP_TITLE" >> $GITHUB_ENV
-            echo "APP_PUBLISHER=FastFree Cloud" >> $GITHUB_ENV
-            echo "APP_EMAIL=admin@fastfree.cloud" >> $GITHUB_ENV
-            echo "APP_LICENSE=MIT" >> $GITHUB_ENV
-            echo "FRAPPE_BRANCH=version-15" >> $GITHUB_ENV
-            echo "CREATE_RELEASE=true" >> $GITHUB_ENV
+            {
+              echo "APP_NAME=$REPO_APP_NAME"
+              echo "APP_TITLE=$REPO_APP_TITLE"
+              echo "APP_DESCRIPTION=A custom Frappe application for $REPO_APP_TITLE"
+              echo "APP_PUBLISHER=FastFree Cloud"
+              echo "APP_EMAIL=admin@fastfree.cloud"
+              echo "APP_LICENSE=MIT"
+              echo "FRAPPE_BRANCH=version-15"
+              echo "CREATE_RELEASE=true"
+            } >> "$GITHUB_ENV"
           fi
 
       # ╔═══════════════════════════════════════╗
@@ -220,13 +224,13 @@ jobs:
 
       - name: "4️⃣ إعداد Node.js"
         if: steps.check.outputs.should_create == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
       - name: "5️⃣ تخزين مؤقت لـ pip"
         if: steps.check.outputs.should_create == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-frappe-bench
@@ -252,10 +256,10 @@ jobs:
 
           # ── محاولة أولى ──
           if bench init /tmp/frappe-bench \
-            --frappe-branch $FRAPPE_BRANCH \
+            --frappe-branch "$FRAPPE_BRANCH" \
             --skip-assets \
             --skip-redis-config-generation \
-            --python $(which python); then
+            --python "$(which python)"; then
             echo "✅ تم تهيئة Bench بنجاح"
           else
             # ── محاولة ثانية (مشاكل شبكة) ──
@@ -265,10 +269,10 @@ jobs:
             rm -rf /tmp/frappe-bench
 
             bench init /tmp/frappe-bench \
-              --frappe-branch $FRAPPE_BRANCH \
+              --frappe-branch "$FRAPPE_BRANCH" \
               --skip-assets \
               --skip-redis-config-generation \
-              --python $(which python)
+              --python "$(which python)"
 
             echo "✅ تم تهيئة Bench (المحاولة الثانية)"
           fi
@@ -539,27 +543,31 @@ jobs:
       - name: "📋 ملخص النتائج"
         if: always()
         run: |
-          echo "## 🆕 نتائج إنشاء التطبيق" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🆕 نتائج إنشاء التطبيق" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
 
           if [ "${{ steps.check.outputs.app_code_found }}" = "true" ]; then
-            echo "### ⛔ تم الإيقاف" >> $GITHUB_STEP_SUMMARY
-            echo "الـ Repo فيه كود تطبيق Frappe بالفعل" >> $GITHUB_STEP_SUMMARY
+            {
+              echo "### ⛔ تم الإيقاف"
+              echo "الـ Repo فيه كود تطبيق Frappe بالفعل"
+            } >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "### ✅ تم بنجاح!" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| الخاصية | القيمة |" >> $GITHUB_STEP_SUMMARY
-            echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
-            echo "| **اسم التطبيق** | \`${{ env.APP_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
-            echo "| **العنوان** | ${{ env.APP_TITLE }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| **الناشر** | ${{ env.APP_PUBLISHER }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| **الرخصة** | ${{ env.APP_LICENSE }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| **Frappe** | \`${{ env.FRAPPE_BRANCH }}\` |" >> $GITHUB_STEP_SUMMARY
-            echo "| **Tag** | \`v1.0.1\` |" >> $GITHUB_STEP_SUMMARY
-            echo "| **Release** | ${{ env.CREATE_RELEASE }} |" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### 📌 الخطوات القادمة" >> $GITHUB_STEP_SUMMARY
-            echo "1. \`git pull\` على جهازك المحلي" >> $GITHUB_STEP_SUMMARY
-            echo "2. أضف DocTypes و APIs والمنطق البرمجي" >> $GITHUB_STEP_SUMMARY
-            echo "3. اعمل Push على \`main\` ← الـ Docker Image يتبنى أوتوماتيك" >> $GITHUB_STEP_SUMMARY
+            {
+              echo "### ✅ تم بنجاح!"
+              echo ""
+              echo "| الخاصية | القيمة |"
+              echo "|---------|--------|"
+              echo "| **اسم التطبيق** | \`${{ env.APP_NAME }}\` |"
+              echo "| **العنوان** | ${{ env.APP_TITLE }} |"
+              echo "| **الناشر** | ${{ env.APP_PUBLISHER }} |"
+              echo "| **الرخصة** | ${{ env.APP_LICENSE }} |"
+              echo "| **Frappe** | \`${{ env.FRAPPE_BRANCH }}\` |"
+              echo "| **Tag** | \`v1.0.1\` |"
+              echo "| **Release** | ${{ env.CREATE_RELEASE }} |"
+              echo ""
+              echo "### 📌 الخطوات القادمة"
+              echo "1. \`git pull\` على جهازك المحلي"
+              echo "2. أضف DocTypes و APIs والمنطق البرمجي"
+              echo "3. اعمل Push على \`main\` ← الـ Docker Image يتبنى أوتوماتيك"
+            } >> "$GITHUB_STEP_SUMMARY"
           fi

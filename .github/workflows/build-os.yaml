@@ -758,7 +758,7 @@ jobs:
           echo "المضغوط: $(ls -lh fastfree_client1.wsl.7z | awk '{print $5}')"
 
       - name: "رفع fastfree_client1.wsl.7z"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: fastfree_client1_wsl
           path: apps/fastfree_os/fastfree_client1.wsl.7z
@@ -774,7 +774,7 @@ jobs:
         run: nix build .#packages.x86_64-linux.client2 --no-update-lock-file
 
       - name: "رفع fastfree_client2.vhdx.7z"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: fastfree_client2_vhdx
           path: apps/fastfree_os/result/fastfree_client2.vhdx.7z
@@ -1307,7 +1307,7 @@ jobs:
 
       # ── رفع التقرير كملف مرفق ──────────────────────────────────────────
       - name: رفع تقرير الاختبارات
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-report-${{ github.run_number }}
           path: test-report.md
@@ -1400,7 +1400,7 @@ jobs:
           echo "تم إنشاء Tag: $VERSION"
 
       - name: تحميل الحزم المرفوعة
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: artifacts
           pattern: fastfree_*
