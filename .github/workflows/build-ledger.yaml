@@ -1,20 +1,6 @@
 name: build-ledger
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - 'apps/fastfree_ledger/**'
-      - 'packages/**'
-      - 'pnpm-workspace.yaml'
-      - 'pnpm-lock.yaml'
-  pull_request:
-    branches: [main, master]
-    paths:
-      - 'apps/fastfree_ledger/**'
-      - 'packages/**'
-      - 'pnpm-workspace.yaml'
-      - 'pnpm-lock.yaml'
   workflow_dispatch:
   workflow_call:
 
@@ -50,7 +36,10 @@ jobs:
 
       - name: Prepare Quasar
         working-directory: apps/fastfree_ledger
-        run: pnpm exec quasar prepare --silent
+        run: |
+          mkdir -p .quasar
+          echo '{"compilerOptions":{}}' > .quasar/tsconfig.json
+          pnpm exec quasar prepare --silent
 
       - name: TypeScript check
         working-directory: apps/fastfree_ledger
