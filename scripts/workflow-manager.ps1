@@ -178,7 +178,9 @@ if (-not $SkipDelete) {
             Write-Ok "Deleted: $deleted | Failed: $failedDel"
         }
     } catch {
-        Write-Warn "Could not delete runs: $_"
+        Write-Fail "Could not delete runs: $_"
+        Stop-Transcript
+        exit 1
     }
 }
 
@@ -202,11 +204,13 @@ if (-not $SkipPush) {
             Write-Code $gitStatus
 
             Write-Info "Staging files..."
-            git add . 2>&1 | Out-Null
+            $stageResult = git add . 2>&1
+            if ($LASTEXITCODE -ne 0) { throw "git add failed: $stageResult" }
 
             Write-Info "Committing..."
             $commitMsg = "Automated workflow: fix + push at $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
-            git commit -m $commitMsg 2>&1 | Out-Null
+            $commitResult = git commit -m $commitMsg 2>&1
+            if ($LASTEXITCODE -ne 0) { throw "git commit failed: $commitResult" }
             Write-Ok "Committed changes"
         }
 
@@ -216,13 +220,17 @@ if (-not $SkipPush) {
             Write-Info "Unpushed commits detected:"
             Write-Code $unpushed
             Write-Info "Pushing to master..."
-            git push origin master 2>&1 | Out-Null
+            $pushOutput = git push origin master 2>&1
+            if ($LASTEXITCODE -ne 0) { throw "git push failed: $pushOutput" }
             Write-Ok "Pushed to master"
         } else {
             Write-Info "No unpushed commits"
         }
     } catch {
-        Write-Warn "Git push skipped or failed: $_"
+        Write-Fail "Git push FAILED: $_"
+        Stop-Transcript
+        Pop-Location
+        exit 1
     } finally {
         Pop-Location
     }
@@ -239,14 +247,13 @@ if (-not $SkipRun) {
         Write-Info "Running build-os.yaml workflow..."
         $runResult = gh workflow run build-os.yaml --repo $repo --ref master 2>&1
 
-        if ($LASTEXITCODE -eq 0) {
-            Write-Ok "Workflow triggered successfully"
-            Write-Info $runResult
-        } else {
-            Write-Warn "Failed to trigger workflow: $runResult"
-        }
+        if ($LASTEXITCODE -ne 0) { throw "gh workflow run failed: $runResult" }
+        Write-Ok "Workflow triggered successfully"
+        Write-Info $runResult
     } catch {
-        Write-Warn "Could not trigger workflow: $_"
+        Write-Fail "Could not trigger workflow: $_"
+        Stop-Transcript
+        exit 1
     }
 }
 
@@ -273,6 +280,8 @@ if (-not $SkipRun) {
                 Write-Ok "Workflow completed successfully!"
             } else {
                 Write-Fail "Workflow failed with exit code: $exitCode"
+                Stop-Transcript
+                exit 1
             }
         } else {
             Write-Info "No active runs found - checking recent runs..."
@@ -281,7 +290,9 @@ if (-not $SkipRun) {
             Write-Code $recent
         }
     } catch {
-        Write-Warn "Monitoring skipped: $_"
+        Write-Fail "Monitoring failed: $_"
+        Stop-Transcript
+        exit 1
     }
 }
 
