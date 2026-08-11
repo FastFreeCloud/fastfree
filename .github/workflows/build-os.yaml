@@ -736,16 +736,18 @@ jobs:
 
       - name: "ضغط fastfree_client1.wsl بـ 7z"
         working-directory: apps/fastfree_os
+        env:
+          ARCHIVE_PASSWORD: ${{ secrets.ARCHIVE_PASSWORD }}
         run: |
           if [ ! -f "fastfree_client1.wsl" ]; then
             echo "❌ fastfree_client1.wsl غير موجود!"
             ls -la
             exit 1
           fi
-          if [ -z "${{ secrets.ARCHIVE_PASSWORD }}" ]; then
+          if [ -z "$ARCHIVE_PASSWORD" ]; then
             7z a -t7z -m0=lzma2 -mx=9 fastfree_client1.wsl.7z fastfree_client1.wsl
           else
-            7z a -t7z -m0=lzma2 -mx=9 -p"${{ secrets.ARCHIVE_PASSWORD }}" fastfree_client1.wsl.7z fastfree_client1.wsl
+            7z a -t7z -m0=lzma2 -mx=9 -p"$ARCHIVE_PASSWORD" fastfree_client1.wsl.7z fastfree_client1.wsl
           fi
 
       - name: "عرض حجم client1"
@@ -772,16 +774,18 @@ jobs:
 
       - name: "ضغط fastfree_client2.vhdx بـ 7z"
         working-directory: apps/fastfree_os
+        env:
+          ARCHIVE_PASSWORD: ${{ secrets.ARCHIVE_PASSWORD }}
         run: |
           if [ ! -f "result/fastfree_client2.vhdx" ]; then
             echo "❌ result/fastfree_client2.vhdx غير موجود!"
             ls -la result
             exit 1
           fi
-          if [ -z "${{ secrets.ARCHIVE_PASSWORD }}" ]; then
+          if [ -z "$ARCHIVE_PASSWORD" ]; then
             7z a -t7z -m0=lzma2 -mx=9 fastfree_client2.vhdx.7z result/fastfree_client2.vhdx
           else
-            7z a -t7z -m0=lzma2 -mx=9 -p"${{ secrets.ARCHIVE_PASSWORD }}" fastfree_client2.vhdx.7z result/fastfree_client2.vhdx
+            7z a -t7z -m0=lzma2 -mx=9 -p"$ARCHIVE_PASSWORD" fastfree_client2.vhdx.7z result/fastfree_client2.vhdx
           fi
 
       - name: "عرض حجم client2"

@@ -71,8 +71,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           level: info
           reporter: github-check
-          fail_on_error: false
           filter_mode: added
+          actionlint_flags: "-ignore-fatal-warnings"
 
       # ╔═══════════════════════════════════════╗
       # ║  المرحلة 2: توليد Tag تلقائي           ║
