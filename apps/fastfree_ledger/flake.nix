@@ -55,6 +55,7 @@
 
         buildPhase = ''
           runHook preBuild
+          cd apps/fastfree_ledger
           pnpm exec quasar prepare
           pnpm exec quasar build -m spa
           runHook postBuild
