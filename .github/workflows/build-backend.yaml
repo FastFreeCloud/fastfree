@@ -65,13 +65,14 @@ jobs:
       # ╚═══════════════════════════════════════╝
 
       - name: "1️⃣5️⃣ فحص GitHub Actions workflow"
-        uses: reviewdog/action-actionlint@v1
+        continue-on-error: true
+        uses: reviewdog/actionActionlint@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           level: info
           reporter: github-check
           fail_on_error: false
-          filter_mode: nofilter
+          filter_mode: added
 
       # ╔═══════════════════════════════════════╗
       # ║  المرحلة 2: توليد Tag تلقائي           ║

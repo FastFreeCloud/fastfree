@@ -147,12 +147,9 @@ jobs:
           echo "  └── إجمالي الملفات:      $TOTAL"
           echo "════════════════════════════════════════════════════"
 
-          echo "passed=$PASSED" >> $GITHUB_OUTPUT
-          echo "failed=$FAILED" >> $GITHUB_OUTPUT
-          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          { echo "passed=$PASSED"; echo "failed=$FAILED"; echo "total=$TOTAL"; } >> $GITHUB_OUTPUT
 
           if [ "$FAILED" -gt 0 ]; then
-            echo ""
             echo "❌ فشل الفحص — يوجد $FAILED ملفات تحتوي أخطاء في الصياغة"
             exit 1
           fi
@@ -505,9 +502,7 @@ jobs:
           echo "  └── إجمالي التكوينات:   ${#CONFIGS[@]}"
           echo "════════════════════════════════════════════════════"
 
-          echo "passed=$PASSED" >> $GITHUB_OUTPUT
-          echo "failed=$FAILED" >> $GITHUB_OUTPUT
-          echo "total=${#CONFIGS[@]}" >> $GITHUB_OUTPUT
+          { echo "passed=$PASSED"; echo "failed=$FAILED"; echo "total=${#CONFIGS[@]}"; } >> $GITHUB_OUTPUT
 
           if [ "$FAILED" -gt 0 ]; then
             echo "❌ فشل تقييم $FAILED تكوينات"
@@ -538,9 +533,8 @@ jobs:
             echo "  ━━━ $config ━━━"
             for option in "${OPTIONS[@]}"; do
               echo -n "    $option → "
-              VALUE=$(nix eval ".#nixosConfigurations.$config.config.$option" \
-                --no-update-lock-file 2>&1)
-              if [ $? -eq 0 ]; then
+              if VALUE=$(nix eval ".#nixosConfigurations.$config.config.$option" \
+                --no-update-lock-file 2>&1); then
                 # اختصار القيم الطويلة
                 DISPLAY=$(echo "$VALUE" | head -c 80)
                 if [ ${#VALUE} -gt 80 ]; then
@@ -647,8 +641,7 @@ jobs:
           echo "  نتائج البناء الجاف (Systems): $PASSED/${#CONFIGS[@]} نجح"
           echo "════════════════════════════════════════════════════"
 
-          echo "passed=$PASSED" >> $GITHUB_OUTPUT
-          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          { echo "passed=$PASSED"; echo "failed=$FAILED"; } >> $GITHUB_OUTPUT
 
           if [ "$FAILED" -gt 0 ]; then
             echo "❌ فشل البناء الجاف لـ $FAILED تكوينات"
@@ -700,9 +693,7 @@ jobs:
           echo "  └── فشل:     $FAILED"
           echo "════════════════════════════════════════════"
 
-          echo "passed=$PASSED" >> $GITHUB_OUTPUT
-          echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
-          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          { echo "passed=$PASSED"; echo "skipped=$SKIPPED"; echo "failed=$FAILED"; } >> $GITHUB_OUTPUT
 
           if [ "$FAILED" -gt 0 ]; then
             echo "❌ فشل البناء الجاف لـ $FAILED حزم"
@@ -952,18 +943,20 @@ jobs:
           echo "  └── نسبة النجاح:  $(( PASSED * 100 / TOTAL ))%"
           echo "════════════════════════════════════════════════════════════"
 
-          echo "passed=$PASSED" >> $GITHUB_OUTPUT
-          echo "failed=$FAILED" >> $GITHUB_OUTPUT
-          echo "total=$TOTAL" >> $GITHUB_OUTPUT
-          echo "mariadb=$MARIADB_RESULT" >> $GITHUB_OUTPUT
-          echo "wireguard=$WIREGUARD_RESULT" >> $GITHUB_OUTPUT
-          echo "sshd=$SSHD_RESULT" >> $GITHUB_OUTPUT
-          echo "phpmyadmin=$PHPMYADMIN_RESULT" >> $GITHUB_OUTPUT
-          echo "podman=$PODMAN_RESULT" >> $GITHUB_OUTPUT
-          echo "fastfree_backend=$FASTFREE_BACKEND_RESULT" >> $GITHUB_OUTPUT
-          echo "fastfree_ledger=$FASTFREE_LEDGER_RESULT" >> $GITHUB_OUTPUT
-          echo "avahi=$AVAHI_RESULT" >> $GITHUB_OUTPUT
-          echo "multi_client=$MULTI_CLIENT_RESULT" >> $GITHUB_OUTPUT
+          {
+            echo "passed=$PASSED"
+            echo "failed=$FAILED"
+            echo "total=$TOTAL"
+            echo "mariadb=$MARIADB_RESULT"
+            echo "wireguard=$WIREGUARD_RESULT"
+            echo "sshd=$SSHD_RESULT"
+            echo "phpmyadmin=$PHPMYADMIN_RESULT"
+            echo "podman=$PODMAN_RESULT"
+            echo "fastfree_backend=$FASTFREE_BACKEND_RESULT"
+            echo "fastfree_ledger=$FASTFREE_LEDGER_RESULT"
+            echo "avahi=$AVAHI_RESULT"
+            echo "multi_client=$MULTI_CLIENT_RESULT"
+          } >> $GITHUB_OUTPUT
 
           if [ "$FAILED" -gt 0 ]; then
             echo "❌ فشل $FAILED من أصل $TOTAL اختبارات"
@@ -1023,13 +1016,15 @@ jobs:
           echo ""
 
           # حفظ نتائج كل وظيفة
-          echo "syntax=${{ needs.syntax_check.result }}" >> $GITHUB_OUTPUT
-          echo "lint=${{ needs.nix_lint.result }}" >> $GITHUB_OUTPUT
-          echo "flake=${{ needs.flake_validate.result }}" >> $GITHUB_OUTPUT
-          echo "eval=${{ needs.evaluation.result }}" >> $GITHUB_OUTPUT
-          echo "dry_build=${{ needs.dry_build.result }}" >> $GITHUB_OUTPUT
-          echo "service=${{ needs.service_tests.result }}" >> $GITHUB_OUTPUT
-          echo "packages=${{ needs.build_packages.result }}" >> $GITHUB_OUTPUT
+          {
+            echo "syntax=${{ needs.syntax_check.result }}"
+            echo "lint=${{ needs.nix_lint.result }}"
+            echo "flake=${{ needs.flake_validate.result }}"
+            echo "eval=${{ needs.evaluation.result }}"
+            echo "dry_build=${{ needs.dry_build.result }}"
+            echo "service=${{ needs.service_tests.result }}"
+            echo "packages=${{ needs.build_packages.result }}"
+          } >> $GITHUB_OUTPUT
 
           # حساب النجاحات — 6 وظائف إلزامية (بدون nix_lint الاختياري)
           PASSED=0
@@ -1053,10 +1048,7 @@ jobs:
             PCT=0
           fi
 
-          echo "passed=$PASSED" >> $GITHUB_OUTPUT
-          echo "failed=$FAILED" >> $GITHUB_OUTPUT
-          echo "total=$TOTAL" >> $GITHUB_OUTPUT
-          echo "pct=$PCT" >> $GITHUB_OUTPUT
+          { echo "passed=$PASSED"; echo "failed=$FAILED"; echo "total=$TOTAL"; echo "pct=$PCT"; } >> $GITHUB_OUTPUT
 
           if [ "$PASSED" -eq "$TOTAL" ]; then
             echo "all_passed=true" >> $GITHUB_OUTPUT
@@ -1304,11 +1296,9 @@ jobs:
           EOF
 
           if [ "${{ steps.results.outputs.all_passed }}" = "true" ]; then
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "> 🎉 **جميع الاختبارات نجحت!**" >> $GITHUB_STEP_SUMMARY
+            { echo ""; echo "> 🎉 **جميع الاختبارات نجحت!**"; } >> $GITHUB_STEP_SUMMARY
           else
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "> ⚠️ **بعض الاختبارات فشلت — راجع التفاصيل أعلاه**" >> $GITHUB_STEP_SUMMARY
+            { echo ""; echo "> ⚠️ **بعض الاختبارات فشلت — راجع التفاصيل أعلاه**"; } >> $GITHUB_STEP_SUMMARY
           fi
         shell: bash
 
