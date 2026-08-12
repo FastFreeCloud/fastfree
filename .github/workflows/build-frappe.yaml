@@ -178,10 +178,10 @@ jobs:
           fi
 
           echo "✅ المدخلات صحيحة"
-          echo "  • الاسم: $APP_NAME"
-          echo "  • العنوان: $APP_TITLE"
-          echo "  • البريد: $APP_EMAIL"
-          echo "  • المستودع: $REPO_NAME"
+          echo "  • الاسم: "$APP_NAME""
+          echo "  • العنوان: "$APP_TITLE""
+          echo "  • البريد: "$APP_EMAIL""
+          echo "  • المستودع: "$REPO_NAME""
 
       - name: "2️⃣ التحقق من حالة الـ Repo"
         id: check
