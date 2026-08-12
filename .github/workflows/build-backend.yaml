@@ -319,6 +319,7 @@ jobs:
           fi
 
           # ── عدد الطبقات ──
+          declare LAYERS
           LAYERS=$(docker history build-temp:latest --quiet | wc -l)
           echo "📚 عدد الطبقات: $LAYERS"
 
