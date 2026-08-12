@@ -417,10 +417,14 @@ if (-not $SkipDelete) {
             Write-Info "Failed runs to delete: $($toDelete.Count)"
             Write-Info "Successful runs to keep: $(($allRuns.Count - $toDelete.Count))"
 
+            $keptRuns = @($allRuns | Where-Object { $_.conclusion -notin $failedConclusions })
+            $runsToKeep = @($keptRuns | Sort-Object CreatedAt -Descending | Select-Object -First $KeepRuns)
+            $runsToDelete = @($allRuns | Where-Object { $_.conclusion -notin $keptRuns.Conclusion })
+
             $deleted = 0
             $failedDel = 0
 
-            foreach ($run in $toDelete) {
+            foreach ($run in $runsToDelete) {
                 Write-Host -NoNewline "    Deleting #$($run.number) ($($run.conclusion))... "
                 $result = gh api -X DELETE "repos/$repo/actions/runs/$($run.id)" 2>&1
                 if ($LASTEXITCODE -eq 0) {
@@ -440,6 +444,75 @@ if (-not $SkipDelete) {
         Write-SummaryLog -Status "[FAIL]" -Detail "Delete runs failed"
         Stop-Transcript
         exit 1
+    }
+}
+
+# ========================================================================
+# Phase 2.5: Cleanup artifacts and logs
+# ========================================================================
+
+if (-not $SkipDelete) {
+    Write-Step "PHASE 2.5: Cleanup artifacts and logs..."
+
+    try {
+        Write-Info "Cleaning up old GitHub Actions artifacts..."
+
+        # Delete artifacts older than 30 days, keep last 20 per workflow
+        $artifactsJson = gh api "repos/$repo/actions/artifacts?per_page=100" --jq '.artifacts[] | {id: .id, name: .name, created_at: .created_at, workflow_id: .workflow_id}' 2>&1
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warn "Could not fetch artifacts: $artifactsJson"
+        } else {
+            $artifacts = $artifactsJson | ConvertFrom-Json
+            if ($null -eq $artifacts) { $artifacts = @() }
+            Write-Info "Found $($artifacts.Count) total artifacts"
+
+            $artifactsToDelete = @($artifacts | Where-Object { 
+                ($_.created_at -as [datetime]) -lt (Get-Date).AddDays(-30)
+            })
+
+            Write-Info "Artifacts older than 30 days: $($artifactsToDelete.Count)"
+
+            $keptArtifacts = @($artifacts | Sort-Object CreatedAt -Descending | Select-Object -First 20)
+
+            $deletedArtifacts = 0
+            foreach ($artifact in $artifactsToDelete) {
+                Write-Host -NoNewline "    Deleting artifact #$($artifact.id) ($($artifact.name))... "
+                $result = gh api -X DELETE "repos/$repo/actions/artifacts/$($artifact.id)" 2>&1
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "Done" -ForegroundColor Green
+                    $deletedArtifacts++
+                } else {
+                    Write-Host "Failed" -ForegroundColor Red
+                }
+                Start-Sleep -Milliseconds 200
+            }
+
+            Write-OK "Deleted: $deletedArtifacts artifacts older than 30 days"
+        }
+
+        # Clean up old log files (keep last 10)
+        Write-Info "Cleaning up old workflow logs..."
+        $logFiles = Get-ChildItem -Path $logsDir -Filter "*.log" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending
+
+        $logsToDelete = $logFiles | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-90) }
+
+        $logsDeleted = 0
+        foreach ($logFile in $logsToDelete) {
+            Write-Host -NoNewline "    Deleting log $($logFile.Name)... "
+            try {
+                Remove-Item $logFile.FullName -Force 2>&1 | Out-Null
+                Write-Host "Done" -ForegroundColor Green
+                $logsDeleted++
+            } catch {
+                Write-Host "Failed" -ForegroundColor Red
+            }
+        }
+
+        Write-OK "Cleaned up: $logsDeleted old log files"
+    } catch {
+        Write-Warn "Artifact/log cleanup failed: $_"
+        # Non-critical, continue
     }
 }
 
