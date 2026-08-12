@@ -95,8 +95,8 @@ jobs:
 
           echo ""
           echo "✅ Tag الجديد: $NEW_TAG"
-          echo "TAG=$NEW_TAG" >> $GITHUB_OUTPUT
-          echo "TAG_NAME=$NEW_TAG" >> $GITHUB_ENV
+          echo "TAG=$NEW_TAG" >> "$GITHUB_OUTPUT"
+          echo "TAG_NAME=$NEW_TAG" >> "$GITHUB_ENV"
 
       # ╔═══════════════════════════════════════╗
       # ║  المرحلة 3: إنشاء Tag على GitHub       ║
@@ -131,8 +131,8 @@ jobs:
 
           echo "✅ اسم المستودع (التطبيق): $APP_NAME"
           echo "✅ اسم الصورة: $IMAGE_NAME"
-          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+          echo "APP_NAME=$APP_NAME" >> "$GITHUB_ENV"
+          echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_ENV"
 
       # ╔═══════════════════════════════════════╗
       # ║  المرحلة 5: تحميل frappe_docker        ║
@@ -308,6 +308,7 @@ jobs:
           echo ""
 
           # ── حجم الصورة ──
+          declare SIZE
           SIZE=$(docker image inspect build-temp:latest --format='{{.Size}}')
           SIZE_MB=$((SIZE / 1024 / 1024))
           echo "📦 حجم الصورة: ${SIZE_MB} MB"
