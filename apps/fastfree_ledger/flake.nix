@@ -37,7 +37,7 @@
           inherit (spa-app) pname version src;
           inherit pnpm;
           fetcherVersion = 3;
-          hash = "sha256-NiptOMRW0+AnjquiM2JRGZYZ6SNjmZpt0GscMaZpylE=";
+          hash = "";
         };
 
         buildInputs = [ pkgs.glibc pkgs.zlib ];
