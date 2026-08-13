@@ -271,7 +271,7 @@ jobs:
             system-features = kvm nixos-test
             sandbox = false
 
-      - uses: DeterminateSystems/magic-nix-cache-action@v6
+      - uses: DeterminateSystems/magic-nix-cache-action@v14
 
       - name: تشغيل اختبارات NixOS
         working-directory: apps/fastfree_os
