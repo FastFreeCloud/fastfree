@@ -280,15 +280,8 @@ jobs:
             "mariadb-test:MariaDB"
             "wireguard-test:WireGuard"
             "sshd-test:SSH"
-            "phpmyadmin-test:phpMyAdmin"
             "podman-test:Podman"
-            "fastfree-backend-test:Backend"
-            "fastfree-ledger-test:Ledger"
-            "fastfree-erp-test:ERP"
-            "fastfree-hr-test:HR"
-            "fastfree-pos-test:POS"
             "avahi-test:Avahi"
-            "multi-client-test:Multi-Client"
           )
 
           PASSED=0

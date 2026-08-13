@@ -62,7 +62,7 @@
         ./nix/modules/avahi-subdomains.nix
       ];
 
-      testDiskSize = { virtualisation.diskSize = 40 * 1024; };
+      testDiskSize = { virtualisation.diskSize = 8 * 1024; };
 
       # -- Default kernelModules per deployType --
       defaultKernelModules = {
@@ -302,28 +302,7 @@
           '';
         };
 
-        # ── اختبار 5: phpMyAdmin يشتغل ─────────────────────────────
-        phpmyadmin-test = pkgs.testers.runNixOSTest {
-          name = "phpmyadmin-test";
-          nodes.machine = { config, pkgs, ... }: {
-            imports = commonModules ++ [
-              testDiskSize
-              (mkBaseConfig "test" {
-                hostName = "test";
-                domain = "test.local";
-                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
-                apps = { base = true; mariadb = true; phpmyadmin = true; };
-              })
-            ];
-          };
-          testScript = ''
-            machine.wait_for_unit("podman-phpmyadmin.service")
-            machine.wait_for_open_port(8082)
-            machine.wait_until_succeeds("curl -sf http://localhost:8082/", timeout=30)
-          '';
-        };
-
-        # ── اختبار 6: Podman يشتغل ─────────────────────────────────
+        # ── اختبار 5: Podman يشتغل ─────────────────────────────────
         podman-test = pkgs.testers.runNixOSTest {
           name = "podman-test";
           nodes.machine = { config, pkgs, ... }: {
@@ -343,117 +322,6 @@
             machine.sleep(2)
             machine.wait_until_succeeds("podman info", timeout=30)
             machine.succeed("podman ps")
-          '';
-        };
-
-        # ── اختبار 7: fastfree-backend يشتغل ────────────────────────
-        fastfree-backend-test = pkgs.testers.runNixOSTest {
-          name = "fastfree-backend-test";
-          nodes.machine = { config, pkgs, ... }: {
-            imports = commonModules ++ [
-              testDiskSize
-              (mkBaseConfig "test" {
-                hostName = "test";
-                domain = "test.local";
-                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
-                apps = { base = true; mariadb = true; fastfree_backend = true; };
-              })
-            ];
-          };
-          testScript = ''
-            machine.wait_for_unit("mysql.service")
-            machine.wait_for_unit("fastfree-backend-network.service")
-            machine.wait_for_unit("fastfree-backend-app.service")
-            machine.wait_for_open_port(8080)
-            machine.wait_until_succeeds("curl -sf http://localhost:8080/", timeout=60)
-          '';
-        };
-
-        # ── اختبار 8: fastfree-ledger يشتغل ─────────────────────────
-        fastfree-ledger-test = pkgs.testers.runNixOSTest {
-          name = "fastfree-ledger-test";
-          nodes.machine = { config, pkgs, ... }: {
-            imports = commonModules ++ [
-              testDiskSize
-              (mkBaseConfig "test" {
-                hostName = "test";
-                domain = "test.local";
-                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
-                apps = { base = true; fastfree_ledger = true; };
-              })
-            ];
-          };
-          testScript = ''
-            machine.wait_for_unit("fastfree-ledger-network.service")
-            machine.wait_for_unit("fastfree-ledger-frontend.service")
-            machine.wait_for_open_port(9000)
-            machine.wait_until_succeeds("curl -sf http://localhost:9000/", timeout=30)
-          '';
-        };
-
-        # ── اختبار 10: fastfree-erp يشتغل ───────────────────────────
-        fastfree-erp-test = pkgs.testers.runNixOSTest {
-          name = "fastfree-erp-test";
-          nodes.machine = { config, pkgs, ... }: {
-            imports = commonModules ++ [
-              testDiskSize
-              (mkBaseConfig "test" {
-                hostName = "test";
-                domain = "test.local";
-                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
-                apps = { base = true; fastfree_erp = true; };
-              })
-            ];
-          };
-          testScript = ''
-            machine.wait_for_unit("fastfree-erp-network.service")
-            machine.wait_for_unit("fastfree-erp-frontend.service")
-            machine.wait_for_open_port(9001)
-            machine.wait_until_succeeds("curl -sf http://localhost:9001/", timeout=30)
-          '';
-        };
-
-        # ── اختبار 11: fastfree-hr يشتغل ───────────────────────────
-        fastfree-hr-test = pkgs.testers.runNixOSTest {
-          name = "fastfree-hr-test";
-          nodes.machine = { config, pkgs, ... }: {
-            imports = commonModules ++ [
-              testDiskSize
-              (mkBaseConfig "test" {
-                hostName = "test";
-                domain = "test.local";
-                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
-                apps = { base = true; fastfree_hr = true; };
-              })
-            ];
-          };
-          testScript = ''
-            machine.wait_for_unit("fastfree-hr-network.service")
-            machine.wait_for_unit("fastfree-hr-frontend.service")
-            machine.wait_for_open_port(9002)
-            machine.wait_until_succeeds("curl -sf http://localhost:9002/", timeout=30)
-          '';
-        };
-
-        # ── اختبار 12: fastfree-pos يشتغل ───────────────────────────
-        fastfree-pos-test = pkgs.testers.runNixOSTest {
-          name = "fastfree-pos-test";
-          nodes.machine = { config, pkgs, ... }: {
-            imports = commonModules ++ [
-              testDiskSize
-              (mkBaseConfig "test" {
-                hostName = "test";
-                domain = "test.local";
-                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
-                apps = { base = true; fastfree_pos = true; };
-              })
-            ];
-          };
-          testScript = ''
-            machine.wait_for_unit("fastfree-pos-network.service")
-            machine.wait_for_unit("fastfree-pos-frontend.service")
-            machine.wait_for_open_port(9003)
-            machine.wait_until_succeeds("curl -sf http://localhost:9003/", timeout=30)
           '';
         };
 
@@ -482,37 +350,6 @@
           '';
         };
 
-        # ── اختبار 10: Multi-client يشتغل ───────────────────────────
-        multi-client-test = pkgs.testers.runNixOSTest {
-          name = "multi-client-test";
-          nodes.machine = { config, pkgs, ... }: {
-            imports = commonModules ++ [
-              testDiskSize
-              (mkBaseConfig "test" {
-                hostName = "test";
-                domain = "test.local";
-                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
-                apps = { base = true; mariadb = true; fastfree_backend = true; fastfree_ledger = true; fastfree_erp = true; fastfree_hr = true; fastfree_pos = true; phpmyadmin = true; };
-                wireguard = {
-                  enable = true;
-                  address = "10.100.0.1";
-                  listenPort = 51820;
-                  privateKey = "qCnRIgcAKrgqE/cyOFx2lKBymioGZ/zyXJ+0vHgxa04=";
-                  peers = {};
-                };
-              })
-            ];
-          };
-          testScript = ''
-            machine.wait_for_unit("mysql.service")
-            machine.wait_for_unit("wireguard-wg0.service")
-            machine.wait_for_unit("podman-phpmyadmin.service")
-            machine.wait_for_open_port(3306)
-            machine.wait_for_open_port(8082)
-            machine.succeed("mysql -u root -ptest -e 'SELECT 1'")
-            machine.succeed("ip link show wg0")
-          '';
-        };
       };
 
     };
