@@ -178,10 +178,10 @@ jobs:
           fi
 
           echo "✅ المدخلات صحيحة"
-          echo "  • الاسم: "$APP_NAME""
-          echo "  • العنوان: "$APP_TITLE""
-          echo "  • البريد: "$APP_EMAIL""
-          echo "  • المستودع: "$REPO_NAME""
+          echo "  • الاسم: $APP_NAME"
+          echo "  • العنوان: $APP_TITLE"
+          echo "  • البريد: $APP_EMAIL"
+          echo "  • المستودع: $REPO_NAME"
 
       - name: "2️⃣ التحقق من حالة الـ Repo"
         id: check
@@ -202,14 +202,14 @@ jobs:
             APP_CODE_FOUND=true
           fi
 
-          echo "app_code_found=$APP_CODE_FOUND" >> $GITHUB_OUTPUT
+          echo "app_code_found=$APP_CODE_FOUND" >> "$GITHUB_OUTPUT"
 
           if [ "$APP_CODE_FOUND" = true ]; then
             echo "⏭️ الـ Repo فيه كود تطبيق Frappe بالفعل — تخطي"
-            echo "should_create=false" >> $GITHUB_OUTPUT
+            echo "should_create=false" >> "$GITHUB_OUTPUT"
           else
             echo "✅ الـ Repo فاضي — مستعدين للإنشاء"
-            echo "should_create=true" >> $GITHUB_OUTPUT
+            echo "should_create=true" >> "$GITHUB_OUTPUT"
           fi
 
       # ╔═══════════════════════════════════════╗
@@ -343,7 +343,7 @@ jobs:
 
           echo ""
           echo "✅ تم إنشاء التطبيق"
-          echo "app_created=true" >> $GITHUB_OUTPUT
+          echo "app_created=true" >> "$GITHUB_OUTPUT"
 
       # ╔═══════════════════════════════════════╗
       # ║  المرحلة 4: التحقق من الملفات          ║
@@ -495,13 +495,13 @@ jobs:
           # التحقق من وجود الـ tag
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             echo "Tag $TAG موجود بالفعل — سيتم تجاهله"
-            echo "next=$CURR" >> $GITHUB_OUTPUT
+            echo "next=$CURR" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
-          echo "next=$NEXT" >> $GITHUB_OUTPUT
+          echo "next=$NEXT" >> "$GITHUB_OUTPUT"
           echo "✅ تم إنشاء Tag $TAG"
 
       - name: "1️⃣3️⃣ إنشاء GitHub Release"

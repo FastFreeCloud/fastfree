@@ -322,12 +322,14 @@ jobs:
     steps:
       - name: إنشاء التقرير
         run: |
-          echo "## 📊 تقرير FastFree OS" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| المرحلة | النتيجة |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------|---------|" >> $GITHUB_STEP_SUMMARY
-          echo "| فحص النحو | ${{ needs.syntax_check.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| فحص Flake | ${{ needs.flake_validate.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| تقييم التكوينات | ${{ needs.evaluation.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| اختبارات الخدمات | ${{ needs.service_tests.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## 📊 تقرير FastFree OS"
+            echo ""
+            echo "| المرحلة | النتيجة |"
+            echo "|---------|---------|"
+            echo "| فحص النحو | ${{ needs.syntax_check.result == 'success' && '✅' || '❌' }} |"
+            echo "| فحص Flake | ${{ needs.flake_validate.result == 'success' && '✅' || '❌' }} |"
+            echo "| تقييم التكوينات | ${{ needs.evaluation.result == 'success' && '✅' || '❌' }} |"
+            echo "| اختبارات الخدمات | ${{ needs.service_tests.result == 'success' && '✅' || '❌' }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
         shell: bash
