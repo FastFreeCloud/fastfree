@@ -182,7 +182,7 @@
         (lib.nixosSystem {
           inherit system;
           modules = mkClientModules name cfg ++ [({ config, pkgs, lib, ... }: {
-            virtualisation.diskSize = 15 * 1024;
+            virtualisation.diskSize = 25 * 1024;
 
             system.build.hypervImage = lib.mkForce (
               import "${nixpkgs}/nixos/lib/make-disk-image.nix" {
