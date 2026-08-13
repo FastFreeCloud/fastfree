@@ -213,21 +213,19 @@ jobs:
           BRANCH="${{ github.event.repository.default_branch }}"
 
           # ── بناء apps.json بـ jq ──
+          # ملاحظة: fastfree repo مش Frappe app — مش مضاف هنا
+          # الـ Frappe app هيتثبت لاحقاً عند التشغيل
           jq -n \
-            --arg token "${{ secrets.GITHUB_TOKEN }}" \
-            --arg repo "${{ github.repository }}" \
-            --arg branch "$BRANCH" \
             --arg include_erpnext "${{ env.INCLUDE_ERPNEXT }}" \
             --arg erpnext_ver "${{ env.ERPNEXT_VERSION }}" \
             '
             [
-              (if $include_erpnext == "true" then {url: "https://github.com/frappe/erpnext", branch: $erpnext_ver} else empty end),
-              {url: "https://x-access-token:\($token)@github.com/\($repo).git", branch: $branch}
+              (if $include_erpnext == "true" then {url: "https://github.com/frappe/erpnext", branch: $erpnext_ver} else empty end)
             ]
             ' > /tmp/apps.json
 
-          echo "✅ apps.json (تم إخفاء التوكن):"
-          jq 'map(.url |= gsub("https://[^@]+@"; "https://****@"))' /tmp/apps.json
+          echo "✅ apps.json:"
+          jq '.' /tmp/apps.json
 
       # ╔═══════════════════════════════════════╗
       # ║  المرحلة 8.5: فحص apps.json            ║
@@ -282,7 +280,8 @@ jobs:
               --tag build-temp:latest \
               --file=$CONTAINERFILE .
           else
-            export APPS_JSON_BASE64=$(base64 -w 0 /tmp/apps.json)
+            APPS_JSON_BASE64=$(base64 -w 0 /tmp/apps.json)
+            export APPS_JSON_BASE64
             DOCKER_BUILDKIT=1 docker build \
               --cache-from type=gha \
               --cache-to type=gha,mode=max \
