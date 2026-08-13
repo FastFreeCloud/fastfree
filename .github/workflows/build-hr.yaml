@@ -107,15 +107,15 @@ jobs:
       - name: Compute next version
         id: version
         run: |
-          LATEST_TAG=$(git tag -l "v1.0.*" --sort=-v:refname | head -n1)
+          LATEST_TAG=$(git tag -l "hr-v1.0.*" --sort=-v:refname | head -n1)
           if [ -z "$LATEST_TAG" ]; then
             NEXT=1
           else
-            CURR=${LATEST_TAG#v1.0.}
+            CURR=${LATEST_TAG#hr-v1.0.}
             NEXT=$((CURR + 1))
           fi
-          echo "tag=v1.0.$NEXT" >> "$GITHUB_OUTPUT"
-          echo "Version: v1.0.$NEXT"
+          echo "tag=hr-v1.0.$NEXT" >> "$GITHUB_OUTPUT"
+          echo "Version: hr-v1.0.$NEXT"
 
       - name: Create tag and push
         run: |
