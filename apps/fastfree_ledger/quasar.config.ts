@@ -11,7 +11,7 @@ export default defineConfig((ctx) => {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['fastfree-auth-init', 'fastfree-accounting-init', 'fastfree-inventory-init', 'fastfree-sales-init', 'fastfree-purchase-init', 'fastfree-hr-init', 'fastfree-crm-init', 'i18n', 'register-service-worker'],
+    boot: ['fastfree-auth-init', 'fastfree-accounting-init', 'fastfree-inventory-init', 'i18n', 'register-service-worker'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css
     css: ['app.scss'],
@@ -67,30 +67,6 @@ export default defineConfig((ctx) => {
           tsConfig.compilerOptions.paths['fastfree-inventory/*'] = [
             '../../../packages/fastfree_inventory/src/*',
           ];
-          tsConfig.compilerOptions.paths['fastfree-sales'] = [
-            '../../../packages/fastfree_sales/src/index.ts',
-          ];
-          tsConfig.compilerOptions.paths['fastfree-sales/*'] = [
-            '../../../packages/fastfree_sales/src/*',
-          ];
-          tsConfig.compilerOptions.paths['fastfree-purchase'] = [
-            '../../../packages/fastfree_purchase/src/index.ts',
-          ];
-          tsConfig.compilerOptions.paths['fastfree-purchase/*'] = [
-            '../../../packages/fastfree_purchase/src/*',
-          ];
-          tsConfig.compilerOptions.paths['fastfree-hr'] = [
-            '../../../packages/fastfree_hr/src/index.ts',
-          ];
-          tsConfig.compilerOptions.paths['fastfree-hr/*'] = [
-            '../../../packages/fastfree_hr/src/*',
-          ];
-          tsConfig.compilerOptions.paths['fastfree-crm'] = [
-            '../../../packages/fastfree_crm/src/index.ts',
-          ];
-          tsConfig.compilerOptions.paths['fastfree-crm/*'] = [
-            '../../../packages/fastfree_crm/src/*',
-          ];
         },
       },
 
@@ -121,10 +97,6 @@ export default defineConfig((ctx) => {
           path.join(monorepoRoot, 'packages', 'fastfree_auth'),
           path.join(monorepoRoot, 'packages', 'fastfree_accounting'),
           path.join(monorepoRoot, 'packages', 'fastfree_inventory'),
-          path.join(monorepoRoot, 'packages', 'fastfree_sales'),
-          path.join(monorepoRoot, 'packages', 'fastfree_purchase'),
-          path.join(monorepoRoot, 'packages', 'fastfree_hr'),
-          path.join(monorepoRoot, 'packages', 'fastfree_crm'),
           path.join(appRoot, 'node_modules', '@quasar', 'extras'),
         ];
       },

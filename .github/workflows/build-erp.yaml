@@ -1,0 +1,138 @@
+name: build-erp
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: build-erp-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/fastfreecloud/fastfree_erp
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Safe directory
+        run: git config --global safe.directory '*'
+
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 11.11.0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        env:
+          PNPM_SKIP_POSTINSTALL: ""
+
+      - name: Prepare Quasar
+        working-directory: apps/fastfree_erp
+        run: |
+          mkdir -p .quasar
+          echo '{"compilerOptions":{}}' > .quasar/tsconfig.json
+          pnpm exec quasar prepare --silent
+
+      - name: TypeScript check
+        working-directory: apps/fastfree_erp
+        run: pnpm exec vue-tsc --noEmit
+
+      - name: Lint check
+        working-directory: apps/fastfree_erp
+        run: pnpm run lint:check
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install skopeo
+        run: sudo apt-get update && sudo apt-get install -y skopeo
+
+      - name: Build frontend image
+        working-directory: apps/fastfree_erp
+        run: nix build .#frontendImage -o frontend-image --print-build-logs
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Save frontend image to tarball
+        working-directory: apps/fastfree_erp
+        run: ./frontend-image > frontend-image.tar
+
+      - name: Push frontend image (latest)
+        working-directory: apps/fastfree_erp
+        run: |
+          skopeo copy \
+            docker-archive:frontend-image.tar \
+            docker://${{ env.IMAGE_PREFIX }}:latest
+
+      - name: Push frontend image (sha)
+        working-directory: apps/fastfree_erp
+        run: |
+          skopeo copy \
+            docker-archive:frontend-image.tar \
+            docker://${{ env.IMAGE_PREFIX }}:${{ github.sha }}
+
+  release:
+    needs: [lint-and-build]
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Safe directory
+        run: git config --global safe.directory '*'
+
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Compute next version
+        id: version
+        run: |
+          LATEST_TAG=$(git tag -l "v1.0.*" --sort=-v:refname | head -n1)
+          if [ -z "$LATEST_TAG" ]; then
+            NEXT=1
+          else
+            CURR=${LATEST_TAG#v1.0.}
+            NEXT=$((CURR + 1))
+          fi
+          echo "tag=v1.0.$NEXT" >> "$GITHUB_OUTPUT"
+          echo "Version: v1.0.$NEXT"
+
+      - name: Create tag and push
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, skipping"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          echo "Tag $TAG created and pushed"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          generate_release_notes: true

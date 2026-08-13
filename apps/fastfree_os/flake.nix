@@ -54,6 +54,9 @@
         ./nix/modules/caddy.nix
         ./nix/modules/fastfree_backend.nix
         ./nix/modules/fastfree_ledger.nix
+        ./nix/modules/fastfree_erp.nix
+        ./nix/modules/fastfree_hr.nix
+        ./nix/modules/fastfree_pos.nix
         ./nix/modules/phpmyadmin.nix
         ./nix/modules/wireguard.nix
         ./nix/modules/avahi-subdomains.nix
@@ -379,6 +382,69 @@
           '';
         };
 
+        # ── اختبار 10: fastfree-erp يشتغل ───────────────────────────
+        fastfree-erp-test = pkgs.testers.runNixOSTest {
+          name = "fastfree-erp-test";
+          nodes.machine = { config, pkgs, ... }: {
+            imports = commonModules ++ [
+              (mkBaseConfig "test" {
+                hostName = "test";
+                domain = "test.local";
+                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
+                apps = { base = true; fastfree_erp = true; };
+              })
+            ];
+          };
+          testScript = ''
+            machine.wait_for_unit("fastfree-erp-network.service")
+            machine.wait_for_unit("fastfree-erp-frontend.service")
+            machine.wait_for_open_port(9001)
+            machine.wait_until_succeeds("curl -sf http://localhost:9001/", timeout=30)
+          '';
+        };
+
+        # ── اختبار 11: fastfree-hr يشتغل ───────────────────────────
+        fastfree-hr-test = pkgs.testers.runNixOSTest {
+          name = "fastfree-hr-test";
+          nodes.machine = { config, pkgs, ... }: {
+            imports = commonModules ++ [
+              (mkBaseConfig "test" {
+                hostName = "test";
+                domain = "test.local";
+                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
+                apps = { base = true; fastfree_hr = true; };
+              })
+            ];
+          };
+          testScript = ''
+            machine.wait_for_unit("fastfree-hr-network.service")
+            machine.wait_for_unit("fastfree-hr-frontend.service")
+            machine.wait_for_open_port(9002)
+            machine.wait_until_succeeds("curl -sf http://localhost:9002/", timeout=30)
+          '';
+        };
+
+        # ── اختبار 12: fastfree-pos يشتغل ───────────────────────────
+        fastfree-pos-test = pkgs.testers.runNixOSTest {
+          name = "fastfree-pos-test";
+          nodes.machine = { config, pkgs, ... }: {
+            imports = commonModules ++ [
+              (mkBaseConfig "test" {
+                hostName = "test";
+                domain = "test.local";
+                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
+                apps = { base = true; fastfree_pos = true; };
+              })
+            ];
+          };
+          testScript = ''
+            machine.wait_for_unit("fastfree-pos-network.service")
+            machine.wait_for_unit("fastfree-pos-frontend.service")
+            machine.wait_for_open_port(9003)
+            machine.wait_until_succeeds("curl -sf http://localhost:9003/", timeout=30)
+          '';
+        };
+
         # ── اختبار 9: Avahi يشتغل ───────────────────────────────────
         avahi-test = pkgs.testers.runNixOSTest {
           name = "avahi-test";
@@ -412,7 +478,7 @@
                 hostName = "test";
                 domain = "test.local";
                 passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
-                apps = { base = true; mariadb = true; fastfree_backend = true; fastfree_ledger = true; phpmyadmin = true; };
+                apps = { base = true; mariadb = true; fastfree_backend = true; fastfree_ledger = true; fastfree_erp = true; fastfree_hr = true; fastfree_pos = true; phpmyadmin = true; };
                 wireguard = {
                   enable = true;
                   address = "10.100.0.1";

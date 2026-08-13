@@ -21,6 +21,9 @@
     phpmyadmin  = true;
     fastfree_backend = true;
     fastfree_ledger  = true;
+    fastfree_erp     = true;
+    fastfree_hr      = true;
+    fastfree_pos     = true;
     wireguard   = true;
     avahi       = true;
   };

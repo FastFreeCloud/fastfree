@@ -66,7 +66,10 @@
       mariadb      = lib.mkEnableOption "MariaDB database server";
       caddy        = lib.mkEnableOption "Caddy reverse proxy";
       fastfree_backend = lib.mkEnableOption "FastFree Backend (Frappe/ERPNext)";
-      fastfree_ledger  = lib.mkEnableOption "FastFree Ledger (Quasar frontend)";
+      fastfree_ledger  = lib.mkEnableOption "FastFree Ledger (Accounting + Inventory)";
+      fastfree_erp     = lib.mkEnableOption "FastFree ERP (Full Enterprise Resource Planning)";
+      fastfree_hr      = lib.mkEnableOption "FastFree HR (Human Resources + CRM)";
+      fastfree_pos     = lib.mkEnableOption "FastFree POS (Point of Sale)";
       phpmyadmin   = lib.mkEnableOption "phpMyAdmin";
       wireguard    = lib.mkEnableOption "WireGuard VPN";
       avahi        = lib.mkEnableOption "Avahi mDNS/DNS-SD";

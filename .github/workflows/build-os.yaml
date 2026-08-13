@@ -1,48 +1,9 @@
 ###############################################################################
 # اختبارات FastFree OS — فحص شامل واحترافي لنظام NixOS
 ###############################################################################
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-# هيكل الاختبارات — 11 وظيفة · 3 مراحل · تغطية شاملة
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-#   المرحلة 1 ⚡ فحوصات سريعة (بالتوازي — ثوانٍ)
-#   ┌──────────────────────┬────────────────────────────────────────────────┐
-#   │ syntax_check         │ فحص صحة كتابة جميع ملفات .nix                │
-#   │ nix_lint             │ فحص جودة الكود — statix + deadnix (اختياري)  │
-#   │ flake_validate       │ فحص هيكل الـ Flake — check + show + metadata │
-#   │ evaluation           │ تقييم جميع التكوينات — client1 + client2 + client3 │
-#   └──────────────────────┴────────────────────────────────────────────────┘
-#
-#   المرحلة 2 🔄 اختبارات البناء (تعتمد على المرحلة 1 — دقائق)
-#   ┌──────────────────────┬────────────────────────────────────────────────┐
-#   │ dry_build            │ خطة البناء الجاف — packages + system closures │
-#   │ build_packages       │ بناء WSL + VHDX + رفع الحزم                  │
-#   │ build_backend_image  │ بناء صورة Docker — Backend (reusable)        │
-#   │ build_ledger_image   │ بناء صورة Docker — Ledger (reusable)         │
-#   │ service_tests        │ اختبارات NixOS التلقائية — 9 اختبارات VM    │
-#   └──────────────────────┴────────────────────────────────────────────────┘
-#
-#   المرحلة 3 📊 التقرير والإصدار (يعمل دائماً)
-#   ┌──────────────────────┬────────────────────────────────────────────────┐
-#   │ test_report          │ تقرير شامل — markdown + GitHub Summary       │
-#   │ release              │ إصدار GitHub — tag + 7z artifacts             │
-#   └──────────────────────┴────────────────────────────────────────────────┘
-#   └──────────────────┴────────────────────────────────────────────────────┘
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-# التكوينات المختبرة:  client1 · client2 · client3
-# اختبارات الخدمات:   mariadb · wireguard · sshd · phpmyadmin · podman
-# أدوات الفحص:        nix-instantiate · nix eval · nix flake check · nix build
-#                      statix · deadnix
-# ═══════════════════════════════════════════════════════════════════════════════
-###############################################################################
 
 name: "🖥️ بناء FastFree OS + اختبارات"
 
-# ─────────────────────────────────────────────────────────────────────────────
-# شروط التشغيل — push + pull_request + يدوي
-# ─────────────────────────────────────────────────────────────────────────────
 on:
   push:
     branches: [main, master]
@@ -60,72 +21,44 @@ on:
       - ".github/workflows/*.yaml"
   workflow_dispatch:
 
-# ─────────────────────────────────────────────────────────────────────────────
-# منع التشغيل المتزامن لنفس الفرع
-# ─────────────────────────────────────────────────────────────────────────────
 concurrency:
   group: tests-${{ github.ref }}
   cancel-in-progress: true
 
-# ─────────────────────────────────────────────────────────────────────────────
-# الصلاحيات — أقل صلاحيات ممكنة (مبدأ least privilege)
-# ─────────────────────────────────────────────────────────────────────────────
 permissions:
   contents: read
   packages: write
 
-# ─────────────────────────────────────────────────────────────────────────────
-# الإعدادات العامة
-# ─────────────────────────────────────────────────────────────────────────────
 env:
   NIXPKGS_ALLOW_UNFREE: "1"
 
 jobs:
-  # ╔═══════════════════════════════════════════════════════════════════════════╗
-  # ║  المرحلة 1/1: فحص النحو                                               ║
-  # ║  nix-instantiate --parse — التحقق من صحة كتابة ملفات .nix             ║
-  # ║  + فحص توازن الأقواس + فحص imports                                    ║
-  # ╚═══════════════════════════════════════════════════════════════════════════╝
+  # ═══════════════════════════════════════════════════════════════
+  #  المرحلة 1: فحص النحو
+  # ═══════════════════════════════════════════════════════════════
   syntax_check:
     name: ⚡ فحص النحو
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    outputs:
-      passed: ${{ steps.parse.outputs.passed }}
-      failed: ${{ steps.parse.outputs.failed }}
-      total: ${{ steps.parse.outputs.total }}
-      warnings: ${{ steps.common_errors.outputs.warnings }}
     steps:
-      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
       - name: تأمين صلاحيات Git
         run: git config --global safe.directory '*'
 
-      # ── استيراد الكود ──────────────────────────────────────────────────────
-      - name: استيراد الكود المصدري
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      # ── تثبيت Nix ─────────────────────────────────────────────────────────
-      - name: تثبيت Nix
-        uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
             experimental-features = nix-command flakes
             accept-flake-config = true
 
-      # ── فحص جميع ملفات .nix (بدون flake.lock — ملف JSON وليس Nix) ───────
       - name: فحص صحة جميع ملفات .nix
-        id: parse
         run: |
-          echo "🔍 بدء فحص جميع ملفات .nix في المشروع..."
-          echo ""
-
           FAILED=0
           PASSED=0
           TOTAL=0
-          ERRORS=""
 
-          # البحث عن جميع ملفات .nix فقط (flake.lock ملف JSON — لا يُفحص)
           while IFS= read -r -d '' file; do
             TOTAL=$((TOTAL + 1))
             echo -n "  فحص $file ... "
@@ -136,585 +69,25 @@ jobs:
               echo "❌ خطأ في الصياغة"
               echo "$ERROR" | head -5 | sed 's/^/    /'
               FAILED=$((FAILED + 1))
-              ERRORS="${ERRORS}    ❌ ${file}\n"
             fi
           done < <(find . -name "*.nix" -not -name "cli.nix" -not -path "./.git/*" -print0 | sort -z)
 
           echo ""
-          echo "════════════════════════════════════════════════════"
-          echo "  📊 نتائج فحص النحو:"
-          echo "  ├── الملفات الصحيحة:     $PASSED"
-          echo "  ├── الملفات بها أخطاء:   $FAILED"
-          echo "  └── إجمالي الملفات:      $TOTAL"
-          echo "════════════════════════════════════════════════════"
-
-          { echo "passed=$PASSED"; echo "failed=$FAILED"; echo "total=$TOTAL"; } >> $GITHUB_OUTPUT
-
+          echo "  الملفات الصحيحة: $PASSED / $TOTAL"
           if [ "$FAILED" -gt 0 ]; then
-            echo "❌ فشل الفحص — يوجد $FAILED ملفات تحتوي أخطاء في الصياغة"
+            echo "❌ فشل — $FAILED ملفات بها أخطاء"
             exit 1
           fi
-
-          echo ""
-          echo "✅ جميع ملفات .nix ($TOTAL) صحيحة"
+          echo "✅ جميع ملفات .nix صحيحة"
         shell: bash
 
-      # ── فحص أخطاء شائعة (توازن الأقواس + imports) ────────────────────────
-      - name: فحص أخطاء شائعة
-        id: common_errors
-        if: always()
-        run: |
-          echo "🔎 فحص الأخطاء الشائعة..."
-          echo ""
-          WARNINGS=0
-
-          # ── فحص توازن الأقواس ──
-          echo "  ── فحص توازن الأقواس { } ──"
-          for file in $(find . -name "*.nix" -not -name "cli.nix" -not -path "./.git/*" 2>/dev/null | sort); do
-            OPEN=$(grep -o '{' "$file" 2>/dev/null | wc -l)
-            CLOSE=$(grep -o '}' "$file" 2>/dev/null | wc -l)
-            if [ "$OPEN" -ne "$CLOSE" ]; then
-              echo "    ⚠️  $file — أقواس غير متطابقة (فتح: $OPEN ≠ إغلاق: $CLOSE)"
-              WARNINGS=$((WARNINGS + 1))
-            fi
-          done
-
-          # ── فحص imports لملفات غير موجودة ──
-          echo ""
-          echo "  ── فحص صحة مسارات import ──"
-          if [ -d "apps/fastfree_os/nix" ]; then
-            while IFS= read -r -d '' file; do
-              IMPORTS=$(grep -oP 'import\s+(/?[a-zA-Z0-9_./-]+\.nix)' "$file" 2>/dev/null | grep -oP '(/?[a-zA-Z0-9_./-]+\.nix)' || true)
-              for import_path in $IMPORTS; do
-                if [[ "$import_path" == /* ]]; then
-                  CHECK_PATH="${import_path#/}"
-                else
-                  DIR=$(dirname "$file")
-                  CHECK_PATH="$DIR/$import_path"
-                fi
-                if [ ! -f "$CHECK_PATH" ]; then
-                  echo "    ⚠️  $file → import '$import_path' (غير موجود)"
-                  WARNINGS=$((WARNINGS + 1))
-                fi
-              done
-            done < <(find apps/fastfree_os/nix -name "*.nix" -not -name "cli.nix" -print0)
-          fi
-
-          echo ""
-          echo "warnings=$WARNINGS" >> $GITHUB_OUTPUT
-          if [ "$WARNINGS" -gt 0 ]; then
-            echo "⚠️  تم العثور على $WARNINGS تحذيرات"
-          else
-            echo "✅ لا توجد أخطاء شائعة"
-          fi
-        shell: bash
-
-  # ╔═══════════════════════════════════════════════════════════════════════════╗
-  # ║  المرحلة 1/2: فحص جودة الكود (اختياري — لا يمنع النجاح)               ║
-  # ║  statix — كشف الأنماط المضادة في كود Nix                              ║
-  # ║  deadnix — كشف الكود غير المستخدم                                     ║
-  # ╚═══════════════════════════════════════════════════════════════════════════╝
-  nix_lint:
-    name: 🔍 فحص جودة الكود
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    continue-on-error: true
-    outputs:
-      statix: ${{ steps.statix.outputs.status }}
-      deadnix: ${{ steps.deadnix.outputs.status }}
-    steps:
-      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
-      - name: تأمين صلاحيات Git
-        run: git config --global safe.directory '*'
-
-      # ── استيراد الكود ──────────────────────────────────────────────────────
-      - name: استيراد الكود المصدري
-        uses: actions/checkout@v5
-
-      # ── تثبيت Nix ─────────────────────────────────────────────────────────
-      - name: تثبيت Nix
-        uses: cachix/install-nix-action@v31
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            accept-flake-config = true
-
-      # ── فحص الأنماط المضادة ─────────────────────────────────────────────
-      - name: "statix — فحص الأنماط المضادة"
-        id: statix
-        working-directory: apps/fastfree_os
-        run: |
-          echo "🔍 تشغيل statix — كشف الأنماط المضادة في كود Nix..."
-          echo ""
-          echo "  الأنماط المفحوصة: let غير مستخدم · patterns فارغة · builtins قديمة"
-          echo ""
-
-          if nix-shell -p statix --run "statix check ." 2>&1; then
-            echo ""
-            echo "✅ لا توجد أنماط مضادة"
-            echo "status=pass" >> $GITHUB_OUTPUT
-          else
-            echo ""
-            echo "⚠️  تم العثور على أنماط مضادة — يُنصح بإصلاحها"
-            echo "💡 لإصلاحها تلقائياً: nix-shell -p statix --run 'statix fix .'"
-            echo "status=warn" >> $GITHUB_OUTPUT
-          fi
-        shell: bash
-
-      # ── فحص الكود الميت ──────────────────────────────────────────────────
-      - name: "deadnix — فحص الكود غير المستخدم"
-        id: deadnix
-        working-directory: apps/fastfree_os
-        run: |
-          echo "🔍 تشغيل deadnix — كشف الكود غير المستخدم..."
-          echo ""
-          echo "  الفحوصات: arguments غير مستخدمة · let bindings ميتة · with غير ضرورية"
-          echo ""
-
-          if nix-shell -p deadnix --run "deadnix ." 2>&1; then
-            echo ""
-            echo "✅ لا يوجد كود غير مستخدم"
-            echo "status=pass" >> $GITHUB_OUTPUT
-          else
-            echo ""
-            echo "⚠️  تم العثور على كود غير مستخدم — يُنصح بإزالته"
-            echo "💡 لإصلاحها تلقائياً: nix-shell -p deadnix --run 'deadnix -e .'"
-            echo "status=warn" >> $GITHUB_OUTPUT
-          fi
-        shell: bash
-
-  # ╔═══════════════════════════════════════════════════════════════════════════╗
-  # ║  المرحلة 1/3: فحص الـ Flake                                           ║
-  # ║  nix flake check --no-build — فحص هيكل ومخرجات الـ Flake              ║
-  # ║  nix flake show — عرض شجرة المخرجات                                   ║
-  # ║  nix flake metadata — معلومات المدخلات والإصدارات                     ║
-  # ║  + فحص صحة flake.lock (JSON) + فحص الملفات الأساسية                   ║
-  # ╚═══════════════════════════════════════════════════════════════════════════╝
+  # ═══════════════════════════════════════════════════════════════
+  #  المرحلة 1: فحص الـ Flake
+  # ═══════════════════════════════════════════════════════════════
   flake_validate:
     name: 📦 فحص الـ Flake
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    steps:
-      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
-      - name: تأمين صلاحيات Git
-        run: git config --global safe.directory '*'
-
-      # ── استيراد الكود ──────────────────────────────────────────────────────
-      - name: استيراد الكود المصدري
-        uses: actions/checkout@v5
-
-      # ── تثبيت Nix ─────────────────────────────────────────────────────────
-      - name: تثبيت Nix
-        uses: cachix/install-nix-action@v31
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            accept-flake-config = true
-
-      # ── فحص الملفات والمجلدات الأساسية ────────────────────────────────────
-      - name: فحص وجود الملفات والمجلدات الأساسية
-        run: |
-          echo "📁 فحص وجود الملفات والمجلدات الأساسية..."
-          echo ""
-
-          REQUIRED=(
-            "apps/fastfree_os/flake.nix"
-            "apps/fastfree_os/flake.lock"
-            "apps/fastfree_os/nix"
-            "apps/fastfree_os/nix/options.nix"
-            "apps/fastfree_os/nix/modules"
-            "apps/fastfree_os/nix/modules/base.nix"
-            "apps/fastfree_os/nix/modules/mariadb.nix"
-            "apps/fastfree_os/nix/modules/caddy.nix"
-            "apps/fastfree_os/nix/modules/wireguard.nix"
-            "apps/fastfree_os/nix/modules/phpmyadmin.nix"
-            "apps/fastfree_os/nix/modules/fastfree_ledger.nix"
-            "apps/fastfree_os/nix/modules/fastfree_backend.nix"
-            "apps/fastfree_os/nix/modules/avahi-subdomains.nix"
-            "apps/fastfree_os/nix/clients"
-            "apps/fastfree_os/nix/clients/client1.nix"
-            "apps/fastfree_os/nix/clients/client2.nix"
-            "apps/fastfree_os/nix/clients/client3.nix"
-            "apps/fastfree_os/nix/colmena.nix"
-            "apps/fastfree_os/nix/disko.nix"
-          )
-
-          MISSING=0
-          for item in "${REQUIRED[@]}"; do
-            echo -n "  $item ... "
-            if [ -e "$item" ]; then
-              echo "✅"
-            else
-              echo "❌ غير موجود"
-              MISSING=$((MISSING + 1))
-            fi
-          done
-
-          echo ""
-          echo "════════════════════════════════════════════════════"
-          echo "  الملفات الموجودة: $((${#REQUIRED[@]} - MISSING)) / ${#REQUIRED[@]}"
-          echo "════════════════════════════════════════════════════"
-
-          if [ "$MISSING" -gt 0 ]; then
-            echo "❌ يوجد $MISSING ملفات/مجلدات مفقودة"
-            exit 1
-          fi
-          echo "✅ جميع الملفات والمجلدات الأساسية موجودة"
-        shell: bash
-
-      # ── فحص صحة flake.lock ─────────────────────────────────────────────────
-      - name: التحقق من صحة flake.lock وعرض المدخلات
-        run: |
-          echo "🔒 التحقق من صحة flake.lock (ملف JSON)..."
-          echo ""
-
-          # flake.lock هو ملف JSON وليس Nix — نفحصه كـ JSON
-          if ! python3 -c "import json; json.load(open('apps/fastfree_os/flake.lock'))" 2>/dev/null; then
-            echo "❌ flake.lock ليس ملف JSON صالح"
-            exit 1
-          fi
-          echo "  ✅ flake.lock ملف JSON صالح"
-          echo ""
-
-          # عرض المدخلات وإصداراتها
-          echo "  📦 مدخلات الـ Flake (Inputs):"
-          python3 << 'PYEOF'
-          import json, datetime
-          with open('apps/fastfree_os/flake.lock') as f:
-              lock = json.load(f)
-          for name, node in sorted(lock.get('nodes', {}).items()):
-              if name == 'root':
-                  continue
-              locked = node.get('locked', {})
-              owner = locked.get('owner', '—')
-              repo = locked.get('repo', '—')
-              rev = (locked.get('rev', '') or '—')[:12]
-              ts = locked.get('lastModified')
-              if ts:
-                  date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
-              else:
-                  date = '—'
-              print(f'    ├── {name}: {owner}/{repo} @ {rev} ({date})')
-          PYEOF
-        shell: bash
-
-      # ── nix flake check --no-build ──────────────────────────────────────────
-      - name: "فحص Flake — nix flake check --no-build"
-        working-directory: apps/fastfree_os
-        run: |
-          echo "🏗️  فحص Flake (بدون بناء)..."
-          echo "  يتحقق من: صحة جميع المخرجات + أنواعها + تقييم nixosConfigurations"
-          echo ""
-
-          if nix flake check --no-build --no-update-lock-file 2>&1; then
-            echo ""
-            echo "✅ فحص Flake ناجح — جميع المخرجات صحيحة"
-          else
-            echo ""
-            echo "❌ فشل فحص Flake"
-            exit 1
-          fi
-        shell: bash
-
-      # ── nix flake show ──────────────────────────────────────────────────────
-      - name: "عرض هيكل الـ Flake — nix flake show"
-        working-directory: apps/fastfree_os
-        run: |
-          echo "📊 عرض شجرة مخرجات الـ Flake..."
-          echo ""
-          nix flake show --no-update-lock-file 2>&1
-          echo ""
-          echo "✅ تم عرض الهيكل بنجاح"
-        shell: bash
-
-      # ── nix flake metadata ──────────────────────────────────────────────────
-      - name: "معلومات الـ Flake — nix flake metadata"
-        working-directory: apps/fastfree_os
-        run: |
-          echo "ℹ️  معلومات الـ Flake ومدخلاته..."
-          echo ""
-          nix flake metadata --no-update-lock-file 2>&1
-          echo ""
-          echo "✅ تم عرض المعلومات بنجاح"
-        shell: bash
-
-  # ╔═══════════════════════════════════════════════════════════════════════════╗
-  # ║  المرحلة 1/4: تقييم التكوينات                                          ║
-  # ║  nix eval — تقييم جميع nixosConfigurations بدون بناء                   ║
-  # ║  + فحص الخيارات الأساسية + فحص مخرجات الحزم                           ║
-  # ╚═══════════════════════════════════════════════════════════════════════════╝
-  evaluation:
-    name: 🔧 تقييم التكوينات
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    outputs:
-      passed: ${{ steps.eval_configs.outputs.passed }}
-      failed: ${{ steps.eval_configs.outputs.failed }}
-      total: ${{ steps.eval_configs.outputs.total }}
-    steps:
-      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
-      - name: تأمين صلاحيات Git
-        run: git config --global safe.directory '*'
-
-      # ── استيراد الكود ──────────────────────────────────────────────────────
-      - name: استيراد الكود المصدري
-        uses: actions/checkout@v5
-
-      # ── تثبيت Nix ─────────────────────────────────────────────────────────
-      - name: تثبيت Nix
-        uses: cachix/install-nix-action@v31
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            accept-flake-config = true
-
-      # ── تقييم جميع تكوينات NixOS ───────────────────────────────────────────
-      - name: تقييم جميع تكوينات NixOS
-        id: eval_configs
-        working-directory: apps/fastfree_os
-        run: |
-          echo "🔧 تقييم جميع تكوينات NixOS..."
-          echo ""
-
-          CONFIGS=("client1" "client2" "client3")
-          PASSED=0
-          FAILED=0
-
-          for config in "${CONFIGS[@]}"; do
-            echo -n "  تقييم nixosConfigurations.$config ... "
-            if nix eval ".#nixosConfigurations.$config.config.system.build.toplevel" \
-              --no-update-lock-file 2>&1; then
-              echo "✅ نجح"
-              PASSED=$((PASSED + 1))
-            else
-              echo "❌ فشل"
-              FAILED=$((FAILED + 1))
-            fi
-          done
-
-          echo ""
-          echo "════════════════════════════════════════════════════"
-          echo "  📊 نتائج التقييم:"
-          echo "  ├── التكوينات الناجحة:  $PASSED"
-          echo "  ├── التكوينات الفاشلة:  $FAILED"
-          echo "  └── إجمالي التكوينات:   ${#CONFIGS[@]}"
-          echo "════════════════════════════════════════════════════"
-
-          { echo "passed=$PASSED"; echo "failed=$FAILED"; echo "total=${#CONFIGS[@]}"; } >> $GITHUB_OUTPUT
-
-          if [ "$FAILED" -gt 0 ]; then
-            echo "❌ فشل تقييم $FAILED تكوينات"
-            exit 1
-          fi
-          echo "✅ جميع التكوينات تم تقييمها بنجاح"
-        shell: bash
-
-      # ── فحص الخيارات الأساسية لجميع التكوينات ─────────────────────────────
-      - name: التحقق من الخيارات الأساسية لجميع التكوينات
-        working-directory: apps/fastfree_os
-        run: |
-          echo "🔍 التحقق من الخيارات الأساسية لكل تكوين..."
-          echo ""
-
-          CONFIGS=("client1" "client2" "client3")
-          OPTIONS=(
-            "fastfree.identity.name"
-            "fastfree.identity.domain"
-            "fastfree.deployType"
-            "fastfree.apps"
-            "fastfree.passwords.root"
-            "networking.hostName"
-            "users.mutableUsers"
-          )
-
-          for config in "${CONFIGS[@]}"; do
-            echo "  ━━━ $config ━━━"
-            for option in "${OPTIONS[@]}"; do
-              echo -n "    $option → "
-              if VALUE=$(nix eval ".#nixosConfigurations.$config.config.$option" \
-                --no-update-lock-file 2>&1); then
-                # اختصار القيم الطويلة
-                DISPLAY=$(echo "$VALUE" | head -c 80)
-                if [ ${#VALUE} -gt 80 ]; then
-                  echo "$DISPLAY..."
-                else
-                  echo "$DISPLAY"
-                fi
-              else
-                echo "⚠️  غير قابل للتقييم"
-              fi
-            done
-            echo ""
-          done
-
-          echo "✅ تم فحص الخيارات الأساسية لجميع التكوينات"
-        shell: bash
-
-      # ── التحقق من مخرجات الحزم ──────────────────────────────────────────
-      - name: التحقق من مخرجات الحزم (packages)
-        working-directory: apps/fastfree_os
-        run: |
-          echo "📦 التحقق من مخرجات الحزم..."
-          echo "  (حزم VHDX تُنتج فقط لعملاء Hyper-V: client1, client2, client3)"
-          echo ""
-
-          PACKAGES=("client1" "client2" "client3")
-          PASSED=0
-
-          for pkg in "${PACKAGES[@]}"; do
-            echo -n "  packages.x86_64-linux.$pkg ... "
-            if nix eval ".#packages.x86_64-linux.$pkg" \
-              --no-update-lock-file 2>/dev/null; then
-              echo "✅ موجود"
-              PASSED=$((PASSED + 1))
-            else
-              echo "⚠️  غير موجود"
-            fi
-          done
-
-          # التحقق من حزم الإخراج
-          echo ""
-          echo "✅ تم التحقق من الحزم"
-        shell: bash
-
-  # ╔═══════════════════════════════════════════════════════════════════════════╗
-  # ║  المرحلة 2/1: البناء الجاف                                             ║
-  # ║  nix build --dry-run — عرض خطة البناء بدون بناء فعلي                  ║
-  # ║  يتحقق من إمكانية البناء ويعرض عدد الحزم المطلوبة                     ║
-  # ╚═══════════════════════════════════════════════════════════════════════════╝
-  dry_build:
-    name: 🏗️ اختبار البناء الجاف
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [build_packages]
-    outputs:
-      sys_passed: ${{ steps.dry_systems.outputs.passed }}
-      sys_failed: ${{ steps.dry_systems.outputs.failed }}
-      pkg_passed: ${{ steps.dry_packages.outputs.passed }}
-      pkg_failed: ${{ steps.dry_packages.outputs.failed }}
-    steps:
-      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
-      - name: تأمين صلاحيات Git
-        run: git config --global safe.directory '*'
-
-      # ── استيراد الكود ──────────────────────────────────────────────────────
-      - name: استيراد الكود المصدري
-        uses: actions/checkout@v5
-
-      # ── تثبيت Nix ─────────────────────────────────────────────────────────
-      - name: تثبيت Nix
-        uses: cachix/install-nix-action@v31
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            accept-flake-config = true
-
-      # ── خطة بناء System Closures ─────────────────────────────────────────
-      - name: "خطة بناء System Closures — جميع التكوينات"
-        id: dry_systems
-        working-directory: apps/fastfree_os
-        run: |
-          echo "🏗️  خطة بناء System Closures (بدون بناء فعلي)..."
-          echo ""
-
-          CONFIGS=("client1" "client2" "client3")
-          PASSED=0
-          FAILED=0
-
-          for config in "${CONFIGS[@]}"; do
-            echo "  ━━━ nixosConfigurations.$config ━━━"
-            if nix build ".#nixosConfigurations.$config.config.system.build.toplevel" \
-              --dry-run --no-update-lock-file 2>&1; then
-              echo "    ✅ خطة البناء صحيحة"
-              PASSED=$((PASSED + 1))
-            else
-              echo "    ❌ فشل إنشاء خطة البناء"
-              FAILED=$((FAILED + 1))
-            fi
-            echo ""
-          done
-
-          echo "════════════════════════════════════════════════════"
-          echo "  نتائج البناء الجاف (Systems): $PASSED/${#CONFIGS[@]} نجح"
-          echo "════════════════════════════════════════════════════"
-
-          { echo "passed=$PASSED"; echo "failed=$FAILED"; } >> $GITHUB_OUTPUT
-
-          if [ "$FAILED" -gt 0 ]; then
-            echo "❌ فشل البناء الجاف لـ $FAILED تكوينات"
-            exit 1
-          fi
-          echo "✅ جميع خطط البناء صحيحة"
-        shell: bash
-
-      # ── خطة بناء صور VHDX + WSL ─────────────────────────────────────────
-      - name: "خطة بناء صور VHDX + WSL — حزم Hyper-V و WSL"
-        id: dry_packages
-        working-directory: apps/fastfree_os
-        run: |
-          echo "🏗️  خطة بناء الصور (بدون بناء فعلي)..."
-          echo "  (فقط عملاء Hyper-V و WSL مع build=true)"
-          echo ""
-
-          # Determine which packages actually exist in the flake
-          PACKAGES_TO_CHECK=("client1" "client2" "client3")
-          PASSED=0
-          SKIPPED=0
-          FAILED=0
-
-          for pkg in "${PACKAGES_TO_CHECK[@]}"; do
-            echo "  ━━━ packages.x86_64-linux.$pkg ━━━"
-            # First check if the attribute exists
-            if nix eval ".#packages.x86_64-linux.$pkg" --no-update-lock-file 2>/dev/null; then
-              # Attribute exists (build=true) → do dry-run build
-              if nix build ".#packages.x86_64-linux.$pkg" \
-                --dry-run --no-update-lock-file 2>&1; then
-                echo "    ✅ خطة البناء صحيحة"
-                PASSED=$((PASSED + 1))
-              else
-                echo "    ❌ فشل إنشاء خطة البناء"
-                FAILED=$((FAILED + 1))
-              fi
-            else
-              # Attribute doesn't exist (build=false → filtered out)
-              echo "    ⚠️  حزمة غير موجودة (build=false) — تم التخطي"
-              SKIPPED=$((SKIPPED + 1))
-            fi
-            echo ""
-          done
-
-          echo "════════════════════════════════════════════"
-          echo "  نتائج البناء الجاف (VHDX + WSL):"
-          echo "  ├── نجح:     $PASSED"
-          echo "  ├── تخطي:    $SKIPPED (build=false)"
-          echo "  └── فشل:     $FAILED"
-          echo "════════════════════════════════════════════"
-
-          { echo "passed=$PASSED"; echo "skipped=$SKIPPED"; echo "failed=$FAILED"; } >> $GITHUB_OUTPUT
-
-          if [ "$FAILED" -gt 0 ]; then
-            echo "❌ فشل البناء الجاف لـ $FAILED حزم"
-            exit 1
-          fi
-          echo "✅ جميع خطط بناء الحزم صحيحة (تم تخطي الحزم غير المفعلة)"
-        shell: bash
-
-  # ╔═══════════════════════════════════════════════════════════════════════════╗
-  # ║  المرحلة 2.5: بناء الحزم + رفع Artefacts                              ║
-  # ║  nix build .#packages.x86_64-linux.* — بناء فعلي + upload               ║
-  # ╚═══════════════════════════════════════════════════════════════════════════╝
-  build_packages:
-    name: 📦 بناء الحزم
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    needs: [service_tests]
-    if: always() && needs.service_tests.result == 'success'
-    permissions:
-      contents: read
     steps:
       - name: تأمين صلاحيات Git
         run: git config --global safe.directory '*'
@@ -722,76 +95,119 @@ jobs:
       - uses: actions/checkout@v5
 
       - uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
 
-      - name: تثبيت 7zip
-        run: sudo apt-get update && sudo apt-get install -y p7zip-full
-
-      # ── بناء client1 (WSL) ──────────────────────────────────────────────
-      - name: "بناء client1 — WSL tarballBuilder"
-        working-directory: apps/fastfree_os
-        run: nix build .#packages.x86_64-linux.client1 --no-update-lock-file
-
-      - name: "تشغيل tarballBuilder — client1"
-        working-directory: apps/fastfree_os
-        run: sudo ./result/bin/nixos-wsl-tarball-builder fastfree_client1.wsl && sudo chmod 644 fastfree_client1.wsl
-
-      - name: "ضغط fastfree_client1.wsl بـ 7z"
-        working-directory: apps/fastfree_os
-        env:
-          ARCHIVE_PASSWORD: ${{ secrets.ARCHIVE_PASSWORD }}
+      - name: فحص وجود الملفات الأساسية
         run: |
-          if [ ! -f "fastfree_client1.wsl" ]; then
-            echo "❌ fastfree_client1.wsl غير موجود!"
-            ls -la
+          REQUIRED=(
+            "apps/fastfree_os/flake.nix"
+            "apps/fastfree_os/nix/options.nix"
+            "apps/fastfree_os/nix/modules/base.nix"
+            "apps/fastfree_os/nix/modules/mariadb.nix"
+            "apps/fastfree_os/nix/modules/caddy.nix"
+            "apps/fastfree_os/nix/modules/fastfree_backend.nix"
+            "apps/fastfree_os/nix/modules/fastfree_ledger.nix"
+            "apps/fastfree_os/nix/modules/fastfree_erp.nix"
+            "apps/fastfree_os/nix/modules/fastfree_hr.nix"
+            "apps/fastfree_os/nix/modules/fastfree_pos.nix"
+            "apps/fastfree_os/nix/modules/phpmyadmin.nix"
+            "apps/fastfree_os/nix/modules/wireguard.nix"
+            "apps/fastfree_os/nix/modules/avahi-subdomains.nix"
+            "apps/fastfree_os/nix/clients/client1.nix"
+            "apps/fastfree_os/nix/clients/client2.nix"
+            "apps/fastfree_os/nix/clients/client3.nix"
+          )
+
+          MISSING=0
+          for item in "${REQUIRED[@]}"; do
+            echo -n "  $item ... "
+            if [ -e "$item" ]; then echo "✅"; else echo "❌"; MISSING=$((MISSING + 1)); fi
+          done
+
+          if [ "$MISSING" -gt 0 ]; then
+            echo "❌ يوجد $MISSING ملفات مفقودة"
             exit 1
           fi
-          if [ -z "$ARCHIVE_PASSWORD" ]; then
-            7z a -t7z -m0=lzma2 -mx=9 fastfree_client1.wsl.7z fastfree_client1.wsl
-          else
-            7z a -t7z -m0=lzma2 -mx=9 -p"$ARCHIVE_PASSWORD" fastfree_client1.wsl.7z fastfree_client1.wsl
-          fi
+          echo "✅ جميع الملفات موجودة"
+        shell: bash
 
-      - name: "عرض حجم client1"
+      - name: "فحص Flake — nix flake check --no-build"
         working-directory: apps/fastfree_os
         run: |
-          echo "الأصلي:  $(ls -lh fastfree_client1.wsl | awk '{print $5}')"
-          echo "المضغوط: $(ls -lh fastfree_client1.wsl.7z | awk '{print $5}')"
+          if nix flake check --no-build --no-update-lock-file 2>&1; then
+            echo "✅ فحص Flake ناجح"
+          else
+            echo "❌ فشل فحص Flake"
+            exit 1
+          fi
+        shell: bash
 
-      - name: "رفع fastfree_client1.wsl.7z"
-        uses: actions/upload-artifact@v5
+      - name: "عرض هيكل الـ Flake"
+        working-directory: apps/fastfree_os
+        run: nix flake show --no-update-lock-file 2>&1
+        shell: bash
+
+  # ═══════════════════════════════════════════════════════════════
+  #  المرحلة 1: تقييم التكوينات
+  # ═══════════════════════════════════════════════════════════════
+  evaluation:
+    name: 🔧 تقييم التكوينات
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: تأمين صلاحيات Git
+        run: git config --global safe.directory '*'
+
+      - uses: actions/checkout@v5
+
+      - uses: cachix/install-nix-action@v31
         with:
-          name: fastfree_client1_wsl
-          path: apps/fastfree_os/fastfree_client1.wsl.7z
-          retention-days: 30
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
 
-      - name: "تنظيف client1"
+      - name: تقييم جميع تكوينات NixOS
         working-directory: apps/fastfree_os
-        run: rm -rf result fastfree_client1.wsl fastfree_client1.wsl.7z
+        run: |
+          CONFIGS=("client1" "client2" "client3")
+          FAILED=0
+          for config in "${CONFIGS[@]}"; do
+            echo -n "  تقييم $config ... "
+            if nix eval ".#nixosConfigurations.$config.config.system.build.toplevel" \
+              --no-update-lock-file 2>&1; then
+              echo "✅"
+            else
+              echo "❌"
+              FAILED=$((FAILED + 1))
+            fi
+          done
+          if [ "$FAILED" -gt 0 ]; then
+            echo "❌ فشل تقييم $FAILED تكوينات"
+            exit 1
+          fi
+          echo "✅ جميع التكوينات صحيحة"
+        shell: bash
 
-      # ── بناء client2 (Hyper-V VHDX) ────────────────────────────────────
-      - name: "بناء client2 — Hyper-V VHDX"
-        working-directory: apps/fastfree_os
-        run: nix build .#packages.x86_64-linux.client2 --no-update-lock-file
-
-      - name: "رفع fastfree_client2.vhdx.7z"
-        uses: actions/upload-artifact@v5
-        with:
-          name: fastfree_client2_vhdx
-          path: apps/fastfree_os/result/fastfree_client2.vhdx.7z
-          retention-days: 30
-
-      - name: "تنظيف client2"
-        working-directory: apps/fastfree_os
-        run: rm -rf result
-
-  # ╔═══════════════════════════════════════════════════════════════════════════╗
-  # ║  المرحلة 2.5: بناء صور Docker — FastFree Backend + Ledger              ║
-  # ║  يستدعي build-backend.yaml + build-ledger.yaml كـ reusable workflows    ║
-  # ║  (Reusable workflows تستخدم على مستوى job وليس step)                    ║
-  # ╚═══════════════════════════════════════════════════════════════════════════╝
+  # ═══════════════════════════════════════════════════════════════
+  #  المرحلة 2: بناء صور Docker
+  # ═══════════════════════════════════════════════════════════════
   build_backend_image:
     name: 🐳 بناء صورة Backend
     uses: ./.github/workflows/build-backend.yaml
+    needs: [syntax_check, flake_validate, evaluation]
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+
+  build_erp_image:
+    name: 🐳 بناء صورة ERP
+    uses: ./.github/workflows/build-erp.yaml
     needs: [syntax_check, flake_validate, evaluation]
     secrets: inherit
     permissions:
@@ -807,661 +223,118 @@ jobs:
       contents: write
       packages: write
 
-  # ╔═══════════════════════════════════════════════════════════════════════════╗
-  # ║  المرحلة 2/2: اختبارات الخدمات — NixOS VM Tests                       ║
-  # ║  nix build .#checks.x86_64-linux.* — بناء + تشغيل اختبارات VM         ║
-  # ╚═══════════════════════════════════════════════════════════════════════════╝
+  build_hr_image:
+    name: 🐳 بناء صورة HR
+    uses: ./.github/workflows/build-hr.yaml
+    needs: [syntax_check, flake_validate, evaluation]
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+
+  build_pos_image:
+    name: 🐳 بناء صورة POS
+    uses: ./.github/workflows/build-pos.yaml
+    needs: [syntax_check, flake_validate, evaluation]
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+
+  # ═══════════════════════════════════════════════════════════════
+  #  المرحلة 2: اختبارات الخدمات — NixOS VM Tests
+  # ═══════════════════════════════════════════════════════════════
   service_tests:
     name: 🧪 اختبارات الخدمات
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    needs: [build_backend_image, build_ledger_image]
-    outputs:
-      passed: ${{ steps.tests.outputs.passed }}
-      failed: ${{ steps.tests.outputs.failed }}
-      total: ${{ steps.tests.outputs.total }}
-      mariadb: ${{ steps.tests.outputs.mariadb }}
-      wireguard: ${{ steps.tests.outputs.wireguard }}
-      sshd: ${{ steps.tests.outputs.sshd }}
-      phpmyadmin: ${{ steps.tests.outputs.phpmyadmin }}
-      podman: ${{ steps.tests.outputs.podman }}
-      fastfree_backend: ${{ steps.tests.outputs.fastfree_backend }}
-      fastfree_ledger: ${{ steps.tests.outputs.fastfree_ledger }}
-      avahi: ${{ steps.tests.outputs.avahi }}
-      multi_client: ${{ steps.tests.outputs.multi_client }}
+    needs: [build_backend_image, build_erp_image, build_ledger_image, build_hr_image, build_pos_image]
     steps:
-      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
       - name: تأمين صلاحيات Git
         run: git config --global safe.directory '*'
 
-      # ── استيراد الكود ──────────────────────────────────────────────────────
-      - name: استيراد الكود المصدري
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      # ── تمكين KVM على خادم GitHub Actions ──────────────────────────────────
-      - name: تمكين صلاحيات KVM للمستخدمين
+      - name: تمكين KVM
         run: |
           if [ -e /dev/kvm ]; then
-            echo "✅ تم العثور على KVM. جاري ضبط الصلاحيات لتمكين تسريع المحاكاة..."
             sudo chmod 666 /dev/kvm
-          else
-            echo "⚠️ لم يتم العثور على /dev/kvm في هذا الخادم"
           fi
         shell: bash
 
-      # ── تثبيت Nix مع دعم KVM ──────────────────────────────────────────────
-      - name: تثبيت Nix مع دعم KVM
-        uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
             experimental-features = nix-command flakes
             accept-flake-config = true
             system-features = kvm nixos-test
-            extra-system-features = kvm nixos-test
             sandbox = false
 
       - uses: DeterminateSystems/magic-nix-cache-action@v6
 
-      # ── تشغيل جميع اختبارات NixOS (فردياً للتقارير الدقيقة) ────────────
-      - name: تشغيل اختبارات NixOS التلقائية
-        id: tests
+      - name: تشغيل اختبارات NixOS
         working-directory: apps/fastfree_os
         run: |
-          echo "🧪 بدء تشغيل اختبارات NixOS التلقائية..."
-          echo "  كل اختبار يبني VM كامل ويُشغّل Python test script"
-          echo ""
-          echo "⏱️  قد يستغرق هذا 30-60 دقيقة"
-          echo ""
-
-          # الاختبارات المعرّفة في checks.x86_64-linux
           TESTS=(
-            "mariadb-test:MariaDB:المنفذ 3306 + SQL"
-            "wireguard-test:WireGuard:واجهة wg0"
-            "sshd-test:SSH:المنفذ 22"
-            "phpmyadmin-test:phpMyAdmin:المنفذ 8082"
-            "podman-test:Podman:podman info"
-            "fastfree-backend-test:FastFree Backend:Frappe/ERPNext"
-            "fastfree-ledger-test:FastFree Ledger:Vue.js frontend"
-            "avahi-test:Avahi:mDNS discovery"
-            "multi-client-test:Multi-Client:连接性"
+            "mariadb-test:MariaDB"
+            "wireguard-test:WireGuard"
+            "sshd-test:SSH"
+            "phpmyadmin-test:phpMyAdmin"
+            "podman-test:Podman"
+            "fastfree-backend-test:Backend"
+            "fastfree-ledger-test:Ledger"
+            "fastfree-erp-test:ERP"
+            "fastfree-hr-test:HR"
+            "fastfree-pos-test:POS"
+            "avahi-test:Avahi"
+            "multi-client-test:Multi-Client"
           )
 
           PASSED=0
           FAILED=0
-          TOTAL=${#TESTS[@]}
-
-          # متغيرات لنتائج كل اختبار
-          MARIADB_RESULT="skip"
-          WIREGUARD_RESULT="skip"
-          SSHD_RESULT="skip"
-          PHPMYADMIN_RESULT="skip"
-          PODMAN_RESULT="skip"
-          FASTFREE_BACKEND_RESULT="skip"
-          FASTFREE_LEDGER_RESULT="skip"
-          AVAHI_RESULT="skip"
-          MULTI_CLIENT_RESULT="skip"
-
           for entry in "${TESTS[@]}"; do
-            IFS=':' read -r test_id service_name test_desc <<< "$entry"
-
-            echo "╔════════════════════════════════════════════════════════════╗"
-            echo "║  🧪 اختبار: $service_name ($test_id)"
-            echo "║  📝 يختبر: $test_desc"
-            echo "╚════════════════════════════════════════════════════════════╝"
-            echo ""
-
+            IFS=':' read -r test_id service_name <<< "$entry"
+            echo "🧪 اختبار: $service_name ($test_id)"
             if nix build ".#checks.x86_64-linux.$test_id" \
               --print-build-logs --no-update-lock-file --option sandbox false 2>&1; then
-              echo ""
               echo "  ✅ $service_name — نجح"
               PASSED=$((PASSED + 1))
-              RESULT="pass"
             else
-              echo ""
               echo "  ❌ $service_name — فشل"
               FAILED=$((FAILED + 1))
-              RESULT="fail"
             fi
             echo ""
-
-            # حفظ نتيجة كل اختبار
-            case "$test_id" in
-              mariadb-test)         MARIADB_RESULT="$RESULT" ;;
-              wireguard-test)       WIREGUARD_RESULT="$RESULT" ;;
-              sshd-test)            SSHD_RESULT="$RESULT" ;;
-              phpmyadmin-test)      PHPMYADMIN_RESULT="$RESULT" ;;
-              podman-test)          PODMAN_RESULT="$RESULT" ;;
-              fastfree-backend-test) FASTFREE_BACKEND_RESULT="$RESULT" ;;
-              fastfree-ledger-test)  FASTFREE_LEDGER_RESULT="$RESULT" ;;
-              avahi-test)           AVAHI_RESULT="$RESULT" ;;
-              multi-client-test)    MULTI_CLIENT_RESULT="$RESULT" ;;
-            esac
           done
 
-          echo "════════════════════════════════════════════════════════════"
-          echo "  📊 نتائج اختبارات الخدمات:"
-          echo "  ├── نجحت:         $PASSED / $TOTAL"
-          echo "  ├── فشلت:         $FAILED / $TOTAL"
-          echo "  └── نسبة النجاح:  $(( PASSED * 100 / TOTAL ))%"
-          echo "════════════════════════════════════════════════════════════"
-
-          {
-            echo "passed=$PASSED"
-            echo "failed=$FAILED"
-            echo "total=$TOTAL"
-            echo "mariadb=$MARIADB_RESULT"
-            echo "wireguard=$WIREGUARD_RESULT"
-            echo "sshd=$SSHD_RESULT"
-            echo "phpmyadmin=$PHPMYADMIN_RESULT"
-            echo "podman=$PODMAN_RESULT"
-            echo "fastfree_backend=$FASTFREE_BACKEND_RESULT"
-            echo "fastfree_ledger=$FASTFREE_LEDGER_RESULT"
-            echo "avahi=$AVAHI_RESULT"
-            echo "multi_client=$MULTI_CLIENT_RESULT"
-          } >> $GITHUB_OUTPUT
+          echo "════════════════════════════════════════════"
+          echo "  النتائج: $PASSEDنجح / $FAILEDفشل / ${#TESTS[@]}إجمالي"
+          echo "════════════════════════════════════════════"
 
           if [ "$FAILED" -gt 0 ]; then
-            echo "❌ فشل $FAILED من أصل $TOTAL اختبارات"
+            echo "❌ فشل $FAILED اختبارات"
             exit 1
           fi
-          echo "✅ جميع الاختبارات ($TOTAL) نجحت"
+          echo "✅ جميع الاختبارات نجحت"
         shell: bash
 
-      # ── عرض ملخص النتائج ─────────────────────────────────────────────────
-      - name: عرض ملخص نتائج الاختبارات
-        if: always()
-        run: |
-          icon() { [ "$1" = "pass" ] && echo "✅" || echo "❌"; }
-
-          echo "╔════════════════════════════════════════════════════════════╗"
-          echo "║           نتائج اختبارات الخدمات                        ║"
-          echo "╠════════════════════════════════════════════════════════════╣"
-          echo "║                                                          ║"
-          echo "║  $(icon ${{ steps.tests.outputs.mariadb }})  mariadb-test    — MariaDB (المنفذ 3306)           ║"
-          echo "║  $(icon ${{ steps.tests.outputs.wireguard }})  wireguard-test  — WireGuard (واجهة wg0)           ║"
-          echo "║  $(icon ${{ steps.tests.outputs.sshd }})  sshd-test       — SSH (المنفذ 22)                ║"
-          echo "║  $(icon ${{ steps.tests.outputs.phpmyadmin }})  phpmyadmin-test — phpMyAdmin (المنفذ 8082)        ║"
-          echo "║  $(icon ${{ steps.tests.outputs.podman }})  podman-test     — Podman                         ║"
-          echo "║                                                          ║"
-          echo "╠════════════════════════════════════════════════════════════╣"
-          echo "║  نجح: ${{ steps.tests.outputs.passed }}  فشل: ${{ steps.tests.outputs.failed }}  إجمالي: ${{ steps.tests.outputs.total }}                               ║"
-          echo "╚════════════════════════════════════════════════════════════╝"
-        shell: bash
-
-  # ╔═══════════════════════════════════════════════════════════════════════════╗
-  # ║  المرحلة 3: التقرير النهائي                                            ║
-  # ║  يجمع نتائج جميع الوظائف السبع ويُنشئ:                               ║
-  # ║  1. تقرير markdown شامل (artifact)                                     ║
-  # ║  2. ملخص GitHub Actions (Job Summary)                                  ║
-  # ║  3. ملخص في السجلات (logs)                                             ║
-  # ╚═══════════════════════════════════════════════════════════════════════════╝
+  # ═══════════════════════════════════════════════════════════════
+  #  المرحلة 3: التقرير
+  # ═══════════════════════════════════════════════════════════════
   test_report:
-    name: 📊 تقرير النتائج
+    name: 📊 التقرير النهائي
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: [syntax_check, nix_lint, flake_validate, evaluation, dry_build, build_packages, service_tests]
+    needs: [syntax_check, flake_validate, evaluation, service_tests]
     if: always()
     steps:
-      # ── تأمين صلاحيات Git ──────────────────────────────────────────────────
-      - name: تأمين صلاحيات Git
-        run: git config --global safe.directory '*'
-
-      # ── استيراد الكود ──────────────────────────────────────────────────────
-      - name: استيراد الكود المصدري
-        uses: actions/checkout@v5
-
-      # ── تجميع النتائج ──────────────────────────────────────────────────────
-      - name: تجميع نتائج جميع الاختبارات
-        id: results
+      - name: إنشاء التقرير
         run: |
-          echo "📊 تجميع نتائج جميع الاختبارات..."
-          echo ""
-
-          # حفظ نتائج كل وظيفة
-          {
-            echo "syntax=${{ needs.syntax_check.result }}"
-            echo "lint=${{ needs.nix_lint.result }}"
-            echo "flake=${{ needs.flake_validate.result }}"
-            echo "eval=${{ needs.evaluation.result }}"
-            echo "dry_build=${{ needs.dry_build.result }}"
-            echo "service=${{ needs.service_tests.result }}"
-            echo "packages=${{ needs.build_packages.result }}"
-          } >> $GITHUB_OUTPUT
-
-          # حساب النجاحات — 6 وظائف إلزامية (بدون nix_lint الاختياري)
-          PASSED=0
-          TOTAL=6
-          for result in \
-            "${{ needs.syntax_check.result }}" \
-            "${{ needs.flake_validate.result }}" \
-            "${{ needs.evaluation.result }}" \
-            "${{ needs.dry_build.result }}" \
-            "${{ needs.build_packages.result }}" \
-            "${{ needs.service_tests.result }}"; do
-            if [ "$result" = "success" ]; then
-              PASSED=$((PASSED + 1))
-            fi
-          done
-
-          FAILED=$((TOTAL - PASSED))
-          if [ "$TOTAL" -gt 0 ]; then
-            PCT=$(awk "BEGIN {printf \"%.0f\", $PASSED * 100 / $TOTAL}")
-          else
-            PCT=0
-          fi
-
-          { echo "passed=$PASSED"; echo "failed=$FAILED"; echo "total=$TOTAL"; echo "pct=$PCT"; } >> $GITHUB_OUTPUT
-
-          if [ "$PASSED" -eq "$TOTAL" ]; then
-            echo "all_passed=true" >> $GITHUB_OUTPUT
-            echo "✅ جميع الاختبارات الإلزامية نجحت ($PASSED/$TOTAL)"
-          else
-            echo "all_passed=false" >> $GITHUB_OUTPUT
-            echo "⚠️  بعض الاختبارات فشلت ($PASSED/$TOTAL نجح)"
-          fi
+          echo "## 📊 تقرير FastFree OS" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| المرحلة | النتيجة |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| فحص النحو | ${{ needs.syntax_check.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| فحص Flake | ${{ needs.flake_validate.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| تقييم التكوينات | ${{ needs.evaluation.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| اختبارات الخدمات | ${{ needs.service_tests.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
         shell: bash
-
-      # ── إنشاء تقرير markdown شامل ──────────────────────────────────────────
-      - name: إنشاء تقرير الاختبارات الشامل
-        run: |
-          REPORT="test-report.md"
-
-          # ── دالتان مساعدتان ──
-          status_icon() {
-            case "$1" in
-              success)   echo "✅ نجح" ;;
-              failure)   echo "❌ فشل" ;;
-              cancelled) echo "⏹️ ألغي" ;;
-              skipped)   echo "⏭️ تخطي" ;;
-              *)         echo "❓ غير معروف" ;;
-            esac
-          }
-
-          test_status_icon() {
-            case "$1" in
-              pass) echo "✅ نجح" ;;
-              fail) echo "❌ فشل" ;;
-              skip) echo "⏭️ تخطي" ;;
-              *)    echo "⏭️ لم يُشغّل" ;;
-            esac
-          }
-
-          # ── رأس التقرير ──
-          cat > "$REPORT" << 'STATIC_HEADER'
-          # 📋 تقرير اختبارات FastFree OS
-
-          > تقرير شامل لجميع اختبارات نظام NixOS — يُنشأ تلقائياً بعد كل push أو pull request
-
-          ---
-
-          STATIC_HEADER
-
-          # ── معلومات التشغيل ──
-          cat >> "$REPORT" << EOF
-          ## ℹ️ معلومات التشغيل
-
-          | المعلومة | القيمة |
-          |----------|--------|
-          | 📅 التاريخ | $(date '+%Y-%m-%d %H:%M:%S %Z') |
-          | 🔗 الـ Commit | [\`${GITHUB_SHA:0:8}\`](https://github.com/${{ github.repository }}/commit/${{ github.sha }}) |
-          | 🌿 الفرع | \`${{ github.ref_name }}\` |
-          | 📦 المخزن | \`${{ github.repository }}\` |
-          | 🔄 رقم التشغيل | [#${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
-          | 🎯 سبب التشغيل | \`${{ github.event_name }}\` |
-
-          ---
-
-          ## 📊 ملخص النتائج
-
-          | # | الوظيفة | الحالة | المستوى | الوصف |
-          |:-:|---------|--------|---------|-------|
-          | 1 | ⚡ فحص النحو | $(status_icon "${{ needs.syntax_check.result }}") | 🔴 حرج | فحص صحة كتابة جميع ملفات .nix |
-          | 2 | 🔍 جودة الكود | $(status_icon "${{ needs.nix_lint.result }}") | 🟡 اختياري | statix + deadnix |
-          | 3 | 📦 فحص Flake | $(status_icon "${{ needs.flake_validate.result }}") | 🔴 حرج | هيكل + مخرجات + مدخلات |
-           | 4 | 🔧 تقييم التكوينات | $(status_icon "${{ needs.evaluation.result }}") | 🔴 حرج | client1 + client2 + client3 |
-          | 5 | 🏗️ البناء الجاف | $(status_icon "${{ needs.dry_build.result }}") | 🟠 مهم | خطة البناء بدون بناء فعلي |
-          | 6 | 📦 بناء الحزم | $(status_icon "${{ needs.build_packages.result }}") | 🟠 مهم | بناء WSL + VHDX + رفع الحزم |
-          | 7 | 🧪 اختبارات الخدمات | $(status_icon "${{ needs.service_tests.result }}") | 🔴 حرج | 6 اختبارات NixOS VM |
-
-          ---
-
-          ## ⚠️ التنبيهات والتحذيرات النظامية (System Warnings & Logs)
-
-          > [!NOTE]
-          > **إصدار Node.js للمستودع**:
-          > تم تكوين بيئة تشغيل GitHub Actions لتستخدم إصدار Node.js المدعوم عبر إعدادات \`actions/setup-node\` لضمان توافق الحزم والـ Actions.
-
-          > [!IMPORTANT]
-          > **بيئة تسريع المحاكاة KVM**:
-          > تتطلب اختبارات التكامل لخدمات NixOS صلاحيات الوصول إلى تسريع العتاد \`/dev/kvm\`. قمنا بإضافة الصلاحيات الكاملة (\`sudo chmod 666 /dev/kvm\`) وضبط ميزات بيئة Nix (\`system-features = kvm nixos-test\`) للسماح بإطلاق خوادم QEMU الافتراضية بشكل أسرع (في دقائق معدودة بدلاً من ساعات).
-
-          $(if [ "${{ needs.nix_lint.outputs.statix }}" = "warn" ] || [ "${{ needs.nix_lint.outputs.deadnix }}" = "warn" ]; then
-            echo "> [!WARNING]"
-            echo "> **تحذيرات جودة الكود (nix_lint)**:"
-            echo "> تم كشف بعض الملاحظات البرمجية أو المتغيرات غير المستخدمة من قبل أدوات الفحص البرمجي (Statix / Deadnix). يرجى مراجعة سجلات خطوة الفحص لإصلاحها وتجنب الأنماط المضادة."
-          fi)
-
-          ---
-
-          ## 📝 تفاصيل الاختبارات
-
-          ### 1. ⚡ فحص النحو — \`nix-instantiate --parse\`
-
-          **الهدف:** التحقق من أن جميع ملفات \`.nix\` خالية من أخطاء الصياغة.
-
-          **الأدوات المستخدمة:**
-          - \`nix-instantiate --parse\` — فحص صحة كتابة كل ملف \`.nix\`
-          - فحص توازن الأقواس \`{ }\` — كشف أقواس غير مغلقة
-          - فحص صحة مسارات \`import\` — كشف ملفات مفقودة
-
-          **إحصائيات الملفات:**
-          - إجمالي الملفات المفحوصة: **${{ needs.syntax_check.outputs.total || '0' }}**
-          - الملفات السليمة: **${{ needs.syntax_check.outputs.passed || '0' }}**
-          - الملفات التالفة: **${{ needs.syntax_check.outputs.failed || '0' }}**
-          - عدد تحذيرات الأقواس والـ Imports المكتشفة: **${{ needs.syntax_check.outputs.warnings || '0' }}**
-
-          ---
-
-          ### 2. 🔍 فحص جودة الكود — statix + deadnix
-
-          **الهدف:** كشف الأنماط المضادة والكود غير المستخدم (اختياري)
-
-          | الأداة | ماذا تفحص | الحالة | أمر الإصلاح |
-          |--------|----------|--------|------------|
-          | statix | أنماط مضادة · let غير مستخدم · patterns فارغة | $([ "${{ needs.nix_lint.outputs.statix }}" = "warn" ] && echo "⚠️ تحذيرات" || echo "✅ سليم") | \`statix fix .\` |
-          | deadnix | كود ميت · arguments غير مستخدمة · with غير ضرورية | $([ "${{ needs.nix_lint.outputs.deadnix }}" = "warn" ] && echo "⚠️ تحذيرات" || echo "✅ سليم") | \`deadnix -e .\` |
-
-          ---
-
-          ### 3. 📦 فحص الـ Flake — check + show + metadata
-
-          **الهدف:** التحقق من صحة هيكل الـ Flake وجميع المخرجات
-
-          **الفحوصات:**
-          - \`nix flake check --no-build\` — فحص جميع المخرجات بدون بناء
-          - \`nix flake show\` — عرض شجرة المخرجات
-          - \`nix flake metadata\` — معلومات المدخلات والإصدارات
-          - فحص صحة \`flake.lock\` كملف JSON سليم
-          - فحص وجود 20 ملف/مجلد أساسي في الهيكل
-
-          ---
-
-          ### 4. 🔧 تقييم التكوينات — \`nix eval\`
-
-          **الهدف:** التأكد من أن جميع تكوينات NixOS قابلة للتقييم
-
-          **إحصائيات التقييم:**
-          - إجمالي التكوينات المفحوصة: **${{ needs.evaluation.outputs.total || '3' }}** (client1 · client2 · client3)
-          - التكوينات السليمة: **${{ needs.evaluation.outputs.passed || '0' }}**
-          - التكوينات الفاشلة: **${{ needs.evaluation.outputs.failed || '0' }}**
-
-          | التكوين | النوع | النشر | الخدمات المشمولة |
-          |---------|-------|-------|---------|
-          | \`client1\` | Hyper-V | محلي | base, mariadb, phpmyadmin |
-          | \`client2\` | Hyper-V | محلي | base, mariadb |
-          | \`client3\` | WSL | محلي | base, mariadb, backend, phpmyadmin |
-
-          ---
-
-          ## 📦 بناء الحزم — Build Packages
-
-          **الهدف:** بناء حزم WSL ورفعها كملفات مرفقة
-
-          | التكوين | النوع | الحالة |
-          |---------|-------|--------|
-          | \`client1\` | Hyper-V | ⏭️ تخطي (build=false) |
-          | \`client2\` | Hyper-V | ⏭️ تخطي (build=false) |
-          | \`client3\` | WSL (\`.wsl\`) | $(status_icon "${{ needs.build_packages.result }}") |
-
-          ---
-
-          ### 5. 🏗️ البناء الجاف — \`nix build --dry-run\`
-
-          **الهدف:** التأكد من إمكانية إنشاء خطة بناء لجميع المخرجات بدون بناء فعلي
-
-          **تفاصيل البناء الجاف:**
-          - تقييم بناء نظام التشغيل (System Closures): **${{ needs.dry_build.outputs.sys_passed || '0' }}** ناجح / **${{ needs.dry_build.outputs.sys_failed || '0' }}** فشل
-          - تقييم بناء حزم الصور (VHDX Packages): **${{ needs.dry_build.outputs.pkg_passed || '0' }}** ناجح / **${{ needs.dry_build.outputs.pkg_failed || '0' }}** فشل
-
-          ---
-
-          ### 6. 🧪 اختبارات الخدمات — NixOS VM Tests
-
-          **الهدف:** تشغيل اختبارات تلقائية كاملة لكل خدمة داخل VMs افتراضية
-
-          **إحصائيات اختبارات الـ VM:**
-          - إجمالي الاختبارات: **${{ needs.service_tests.outputs.total || '5' }}**
-          - الاختبارات الناجحة: **${{ needs.service_tests.outputs.passed || '0' }}**
-          - الاختبارات الفاشلة: **${{ needs.service_tests.outputs.failed || '0' }}**
-
-          | الاختبار | الخدمة | ماذا يختبر | الحالة |
-          |----------|--------|-----------|--------|
-          | \`mariadb-test\` | MariaDB | تشغيل الخدمة + المنفذ 3306 + SQL query | $(test_status_icon "${{ needs.service_tests.outputs.mariadb }}") |
-          | \`wireguard-test\` | WireGuard | تشغيل الخدمة + واجهة wg0 | $(test_status_icon "${{ needs.service_tests.outputs.wireguard }}") |
-          | \`sshd-test\` | SSH | تشغيل الخدمة + المنفذ 22 | $(test_status_icon "${{ needs.service_tests.outputs.sshd }}") |
-          | \`phpmyadmin-test\` | phpMyAdmin | تشغيل phpfpm + المنفذ 8082 | $(test_status_icon "${{ needs.service_tests.outputs.phpmyadmin }}") |
-          | \`podman-test\` | Podman | تشغيل الخدمة + \`podman info\` | $(test_status_icon "${{ needs.service_tests.outputs.podman }}") |
-
-          ---
-
-          ## 📈 الملخص النهائي
-
-          | المؤشر | القيمة |
-          |--------|--------|
-          | إجمالي الوظائف الإلزامية | ${{ steps.results.outputs.total }} |
-          | الوظائف الناجحة | ${{ steps.results.outputs.passed }} |
-          | الوظائف الفاشلة | ${{ steps.results.outputs.failed }} |
-          | نسبة النجاح | ${{ steps.results.outputs.pct }}% |
-
-          EOF
-
-          if [ "${{ steps.results.outputs.all_passed }}" = "true" ]; then
-            echo "" >> "$REPORT"
-            echo "> 🎉 **جميع الاختبارات الإلزامية نجحت!** المشروع جاهز." >> "$REPORT"
-          else
-            echo "" >> "$REPORT"
-            echo "> ⚠️ **بعض الاختبارات فشلت.** يرجى مراجعة [سجلات التشغيل](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})." >> "$REPORT"
-          fi
-
-          cat >> "$REPORT" << EOF
-
-          ---
-
-          *أُنشئ هذا التقرير تلقائياً بواسطة [GitHub Actions](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) — $(date '+%Y-%m-%d %H:%M %Z')*
-          EOF
-
-          echo "✅ تم إنشاء التقرير: $REPORT"
-        shell: bash
-
-      # ── كتابة ملخص GitHub Actions (Job Summary) ─────────────────────────
-      - name: كتابة ملخص GitHub Actions
-        if: always()
-        run: |
-          cat >> $GITHUB_STEP_SUMMARY << 'SUMMARY_HEADER'
-          # 📋 نتائج اختبارات FastFree OS
-
-          SUMMARY_HEADER
-
-          cat >> $GITHUB_STEP_SUMMARY << EOF
-
-          | الوظيفة | الحالة |
-          |---------|--------|
-          | ⚡ فحص النحو | $([ "${{ needs.syntax_check.result }}" = "success" ] && echo "✅ نجح (${{ needs.syntax_check.outputs.passed }}/${{ needs.syntax_check.outputs.total }} ملف، ${{ needs.syntax_check.outputs.warnings }} تحذير)" || echo "❌ فشل") |
-          | 🔍 جودة الكود | $([ "${{ needs.nix_lint.result }}" = "success" ] && echo "✅ نجح" || echo "⚠️ تحذيرات") |
-          | 📦 فحص Flake | $([ "${{ needs.flake_validate.result }}" = "success" ] && echo "✅ نجح" || echo "❌ فشل") |
-          | 🔧 تقييم التكوينات | $([ "${{ needs.evaluation.result }}" = "success" ] && echo "✅ نجح (${{ needs.evaluation.outputs.passed }}/${{ needs.evaluation.outputs.total }} تكوين)" || echo "❌ فشل") |
-          | 🏗️ البناء الجاف | $([ "${{ needs.dry_build.result }}" = "success" ] && echo "✅ نجح" || echo "❌ فشل") |
-          | 📦 بناء الحزم | $([ "${{ needs.build_packages.result }}" = "success" ] && echo "✅ نجح" || echo "❌ فشل") |
-          | 🧪 اختبارات الخدمات | $([ "${{ needs.service_tests.result }}" = "success" ] && echo "✅ نجح (${{ needs.service_tests.outputs.passed }}/${{ needs.service_tests.outputs.total }} اختبار)" || echo "❌ فشل") |
-
-          **النتيجة:** ${{ steps.results.outputs.passed }}/${{ steps.results.outputs.total }} وظائف إلزامية نجحت (${{ steps.results.outputs.pct }}%)
-          EOF
-
-          if [ "${{ steps.results.outputs.all_passed }}" = "true" ]; then
-            { echo ""; echo "> 🎉 **جميع الاختبارات نجحت!**"; } >> $GITHUB_STEP_SUMMARY
-          else
-            { echo ""; echo "> ⚠️ **بعض الاختبارات فشلت — راجع التفاصيل أعلاه**"; } >> $GITHUB_STEP_SUMMARY
-          fi
-        shell: bash
-
-      # ── رفع التقرير كملف مرفق ──────────────────────────────────────────
-      - name: رفع تقرير الاختبارات
-        uses: actions/upload-artifact@v5
-        with:
-          name: test-report-${{ github.run_number }}
-          path: test-report.md
-          retention-days: 30
-          if-no-files-found: warn
-
-      # ── طباعة ملخص في السجلات ───────────────────────────────────────────
-      - name: طباعة ملخص النتائج في السجلات
-        if: always()
-        run: |
-          echo ""
-          echo "╔════════════════════════════════════════════════════════════╗"
-          echo "║        📊 ملخص نتائج اختبارات FastFree OS               ║"
-          echo "╠════════════════════════════════════════════════════════════╣"
-          echo "║                                                          ║"
-          echo "║  ⚡ فحص النحو:        $([ "${{ needs.syntax_check.result }}" = "success" ] && echo "✅ نجح  " || echo "❌ فشل  ")                           ║"
-          echo "║  🔍 جودة الكود:       $([ "${{ needs.nix_lint.result }}" = "success" ] && echo "✅ نجح  " || echo "⚠️ تحذيرات")                           ║"
-          echo "║  📦 فحص Flake:        $([ "${{ needs.flake_validate.result }}" = "success" ] && echo "✅ نجح  " || echo "❌ فشل  ")                           ║"
-          echo "║  🔧 تقييم التكوينات:  $([ "${{ needs.evaluation.result }}" = "success" ] && echo "✅ نجح  " || echo "❌ فشل  ")                           ║"
-          echo "║  🏗️ البناء الجاف:     $([ "${{ needs.dry_build.result }}" = "success" ] && echo "✅ نجح  " || echo "❌ فشل  ")                           ║"
-          echo "║  📦 بناء الحزم:       $([ "${{ needs.build_packages.result }}" = "success" ] && echo "✅ نجح  " || echo "❌ فشل  ")                           ║"
-          echo "║  🧪 اختبارات الخدمات: $([ "${{ needs.service_tests.result }}" = "success" ] && echo "✅ نجح  " || echo "❌ فشل  ")                           ║"
-          echo "║                                                          ║"
-          echo "╠════════════════════════════════════════════════════════════╣"
-          echo "║  📄 التقرير: test-report-${{ github.run_number }}                         ║"
-          echo "║  📊 النتيجة: ${{ steps.results.outputs.passed }}/${{ steps.results.outputs.total }} وظائف إلزامية (${{ steps.results.outputs.pct }}%)                    ║"
-          echo "╚════════════════════════════════════════════════════════════╝"
-          echo ""
-        shell: bash
-
-  # ╔═══════════════════════════════════════════════════════════════════════════╗
-  # ║  الإصدار — إنشاء Tag + GitHub Release تلقائي                          ║
-  # ║  يعمل فقط بعد نجاح بناء الحزم + اختبارات الخدمات                      ║
-  # ╚═══════════════════════════════════════════════════════════════════════════╝
-  release:
-    name: 🚀 إنشاء الإصدار
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-    needs: [syntax_check, nix_lint, flake_validate, evaluation, dry_build, build_packages, service_tests]
-    if: |
-      always() &&
-      needs.syntax_check.result == 'success' &&
-      (needs.nix_lint.result == 'success' || needs.nix_lint.result == 'skipped') &&
-      needs.flake_validate.result == 'success' &&
-      needs.evaluation.result == 'success' &&
-      needs.dry_build.result == 'success' &&
-      needs.build_packages.result == 'success' &&
-      needs.service_tests.result == 'success' &&
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') &&
-      github.event_name == 'push'
-    steps:
-      - name: تأمين صلاحيات Git
-        run: git config --global safe.directory '*'
-
-      - name: استيراد الكود
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: حساب رقم الإصدار
-        id: version
-        run: |
-          # حساب version تلقائي: YYYY.MM.DD.RUN_NUMBER
-          DATE=$(date -u '+%Y.%m.%d')
-          RUN=${{ github.run_number }}
-          VERSION="v${DATE}.${RUN}"
-          echo "tag=$VERSION" >> $GITHUB_OUTPUT
-          echo "version=$VERSION"
-          echo ""
-
-          # التحقق من وجود الـ tag
-          if git rev-parse "$VERSION" >/dev/null 2>&1; then
-            echo "Tag $VERSION موجود بالفعل — سيتم تجاهله"
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "Tag $VERSION جديد — سيتم إنشاؤه"
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: إنشاء Git Tag
-        if: steps.version.outputs.exists == 'false'
-        run: |
-          VERSION="${{ steps.version.outputs.tag }}"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$VERSION" -m "Release $VERSION"
-          git push origin "$VERSION"
-          echo "تم إنشاء Tag: $VERSION"
-
-      - name: تحميل الحزم المرفوعة
-        uses: actions/download-artifact@v5
-        with:
-          path: artifacts
-          pattern: fastfree_*
-
-      - name: عرض الملفات
-        run: |
-          echo "📦 الملفات المحملة:"
-          find artifacts -type f -exec ls -lh {} \;
-
-      - name: إنشاء GitHub Release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: "FastFree ${{ steps.version.outputs.tag }}"
-          body: |
-            ## FastFree ${{ steps.version.outputs.tag }}
-
-            ### ملخص البناء
-            - **تاريخ البناء:** ${{ github.event.head_commit.timestamp }}
-            - **رقم التشغيل:** #${{ github.run_number }}
-            - **الـ Commit:** [`${{ github.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
-
-            ### الحزم المتاحة
-
-            | التكوين | النوع | الملف |
-            |---------|-------|-------|
-            | client1 | WSL | `fastfree_client1.wsl.7z` |
-            | client2 | Hyper-V | `fastfree_client2.vhdx.7z` |
-
-            > **ملاحظة:** الحزم مضغوطة بـ 7z. استخدم `7z x <filename>` لفك الضغط.
-
-            ### التثبيت — WSL
-
-            ```powershell
-            # 1. فك الضغط
-            7z x fastfree_client1.wsl.7z
-
-            # 2. استيراد في WSL (يجب أن يكون WSL2)
-            wsl --import fastfree D:\fastfree\fastos fastfree_client1.wsl --version 2
-
-            # 3. دخول
-            wsl -d fastfree
-
-            # 4. تحديث (من داخل WSL)
-            fastfree update
-            ```
-
-            ### التثبيت — GUI (موصى به)
-
-            استخدم سكربتات `scripts/setup/`:
-            - `1_fastfree_installer.ps1` — تثبيت جديد
-            - `2_fastfree_backup.ps1` — نسخ احتياطي
-            - `3_fastfree_tools.ps1` — تثبيت الأدوات
-            - `4_fastfree_update.ps1` — تحديث النظام
-
-            ### ملاحظات
-            - الحزم مبنية تلقائياً via GitHub Actions
-            - جميع الاختبارات نجحت ✅
-            - للتحديث من داخل WSL: `fastfree update`
-          files: artifacts/**/*
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

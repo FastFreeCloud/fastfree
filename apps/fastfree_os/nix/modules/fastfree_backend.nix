@@ -88,7 +88,7 @@ in {
       entrypoint = "bash";
       cmd = [ "-c" ''
         ls -1 apps > sites/apps.txt;
-        bench set-config -g db_host db;
+        bench set-config -g db_host host.containers.internal;
         bench set-config -gp db_port 3306;
         bench set-config -g redis_cache "redis://fastfree-redis-cache:6379";
         bench set-config -g redis_queue "redis://fastfree-redis-queue:6379";
@@ -121,7 +121,7 @@ in {
         set -e
         echo "Waiting for MariaDB...";
         for i in $(seq 1 30); do
-          if mysqladmin ping -h db --silent 2>/dev/null; then break; fi
+          if mysqladmin ping -h host.containers.internal --silent 2>/dev/null; then break; fi
           sleep 2;
         done;
         echo "Waiting for Redis...";
@@ -145,7 +145,7 @@ in {
       environment = {
         DB_PASSWORD = pw.mariadbRoot;
         ADMIN_PASSWORD = pw.admin;
-        FRAPPE_SITE_NAME_HEADER = "erp.${config.fastfree.identity.domain}";
+        FRAPPE_SITE_NAME_HEADER = "backend.${config.fastfree.identity.domain}";
       };
       volumes = [
         "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
@@ -207,7 +207,7 @@ in {
       environment = {
         BACKEND = "fastfree-backend-app:8000";
         SOCKETIO = "fastfree-backend-websocket:9000";
-        FRAPPE_SITE_NAME_HEADER = "erp.${config.fastfree.identity.domain}";
+        FRAPPE_SITE_NAME_HEADER = "backend.${config.fastfree.identity.domain}";
         UPSTREAM_REAL_IP_ADDRESS = "127.0.0.1";
         UPSTREAM_REAL_IP_HEADER = "X-Forwarded-For";
         UPSTREAM_REAL_IP_RECURSIVE = "off";
@@ -267,7 +267,7 @@ in {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       autoStart = true;
       extraOptions = [ "--network=fastfree-net" ];
-        cmd = [ "bench" "worker" "--queue" "long" ];
+      cmd = [ "bench" "worker" "--queue" "long,default,short" ];
       volumes = [
         "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
         "fastfree-backend-logs:/home/frappe/frappe-bench/logs"
