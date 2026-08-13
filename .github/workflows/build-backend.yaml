@@ -276,7 +276,7 @@ jobs:
               --build-arg=FRAPPE_BRANCH=${{ env.FRAPPE_VERSION }} \
               --secret=id=apps_json,src=/tmp/apps.json \
               --tag build-temp:latest \
-              --file=$CONTAINERFILE .
+              --file="$CONTAINERFILE" .
           else
             APPS_JSON_BASE64=$(base64 -w 0 /tmp/apps.json)
             export APPS_JSON_BASE64
@@ -289,7 +289,7 @@ jobs:
               --build-arg=NODE_VERSION=22 \
               --secret=id=apps_json,src=/tmp/apps.json \
               --tag build-temp:latest \
-              --file=$CONTAINERFILE .
+              --file="$CONTAINERFILE" .
           fi
 
           echo ""

@@ -310,7 +310,7 @@ jobs:
             "" \
             "$APP_LICENSE" \
             "n" \
-          | bench new-app $APP_NAME 2>&1 | tee /tmp/bench_output.log; then
+          | bench new-app "$APP_NAME" 2>&1 | tee /tmp/bench_output.log; then
             BENCH_OK=true
           fi
 
@@ -318,7 +318,7 @@ jobs:
           if [ "$BENCH_OK" = false ]; then
             echo ""
             echo "::warning::المحاولة الأولى فشلت — إعادة بدون سؤال CI..."
-            rm -rf /tmp/frappe-bench/apps/$APP_NAME
+            rm -rf "/tmp/frappe-bench/apps/$APP_NAME"
 
             if printf '%s\n' \
               "$APP_TITLE" \
@@ -328,7 +328,7 @@ jobs:
               "" \
               "" \
               "$APP_LICENSE" \
-            | bench new-app $APP_NAME 2>&1 | tee /tmp/bench_output2.log; then
+            | bench new-app "$APP_NAME" 2>&1 | tee /tmp/bench_output2.log; then
               BENCH_OK=true
             fi
           fi
