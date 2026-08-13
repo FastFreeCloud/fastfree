@@ -62,6 +62,8 @@
         ./nix/modules/avahi-subdomains.nix
       ];
 
+      testDiskSize = { virtualisation.diskSize = 40 * 1024; };
+
       # -- Default kernelModules per deployType --
       defaultKernelModules = {
         hostinger = [ "virtio_pci" "virtio_scsi" "sd_mod" ];
@@ -237,6 +239,7 @@
           name = "mariadb-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
+              testDiskSize
               (mkBaseConfig "test" {
                 hostName = "test";
                 domain = "test.local";
@@ -257,6 +260,7 @@
           name = "wireguard-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
+              testDiskSize
               (mkBaseConfig "test" {
                 hostName = "test";
                 domain = "test.local";
@@ -283,6 +287,7 @@
           name = "sshd-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
+              testDiskSize
               (mkBaseConfig "test" {
                 hostName = "test";
                 domain = "test.local";
@@ -302,6 +307,7 @@
           name = "phpmyadmin-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
+              testDiskSize
               (mkBaseConfig "test" {
                 hostName = "test";
                 domain = "test.local";
@@ -322,6 +328,7 @@
           name = "podman-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
+              testDiskSize
               (mkBaseConfig "test" {
                 hostName = "test";
                 domain = "test.local";
@@ -344,6 +351,7 @@
           name = "fastfree-backend-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
+              testDiskSize
               (mkBaseConfig "test" {
                 hostName = "test";
                 domain = "test.local";
@@ -366,6 +374,7 @@
           name = "fastfree-ledger-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
+              testDiskSize
               (mkBaseConfig "test" {
                 hostName = "test";
                 domain = "test.local";
@@ -387,6 +396,7 @@
           name = "fastfree-erp-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
+              testDiskSize
               (mkBaseConfig "test" {
                 hostName = "test";
                 domain = "test.local";
@@ -408,6 +418,7 @@
           name = "fastfree-hr-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
+              testDiskSize
               (mkBaseConfig "test" {
                 hostName = "test";
                 domain = "test.local";
@@ -429,6 +440,7 @@
           name = "fastfree-pos-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
+              testDiskSize
               (mkBaseConfig "test" {
                 hostName = "test";
                 domain = "test.local";
@@ -450,6 +462,7 @@
           name = "avahi-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
+              testDiskSize
               (mkBaseConfig "test" {
                 hostName = "test";
                 domain = "test.local";
@@ -474,6 +487,7 @@
           name = "multi-client-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
+              testDiskSize
               (mkBaseConfig "test" {
                 hostName = "test";
                 domain = "test.local";
