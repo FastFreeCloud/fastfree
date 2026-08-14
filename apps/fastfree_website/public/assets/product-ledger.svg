@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="FastFree Ledger">
+  <defs>
+    <linearGradient id="led-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#030712"/>
+    </linearGradient>
+    <radialGradient id="led-glow" cx="0.5" cy="0.42" r="0.5">
+      <stop offset="0" stop-color="#f57c00" stop-opacity="0.45"/>
+      <stop offset="0.6" stop-color="#f57c00" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#f57c00" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="led-dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="#0dcaf0" fill-opacity="0.12"/>
+    </pattern>
+  </defs>
+
+  <rect x="0" y="0" width="800" height="600" rx="18" fill="url(#led-bg)"/>
+  <rect x="0" y="0" width="800" height="600" rx="18" fill="url(#led-dots)"/>
+  <rect x="0" y="0" width="800" height="600" rx="18" fill="url(#led-glow)"/>
+  <rect x="6" y="6" width="788" height="588" rx="14" fill="none" stroke="#0dcaf0" stroke-opacity="0.35" stroke-width="1.5"/>
+
+  <g transform="translate(400 205)" fill="none" stroke="#f57c00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="-110" y="-60" width="220" height="150" rx="12" stroke="#f57c00"/>
+    <line x1="-110" y1="-22" x2="110" y2="-22" stroke="#0dcaf0"/>
+    <line x1="-40" y1="-22" x2="-40" y2="90" stroke="#0dcaf0" stroke-opacity="0.6"/>
+    <line x1="40" y1="-22" x2="40" y2="90" stroke="#0dcaf0" stroke-opacity="0.6"/>
+    <line x1="-110" y1="22" x2="110" y2="22" stroke="#0dcaf0" stroke-opacity="0.6"/>
+    <line x1="-110" y1="56" x2="110" y2="56" stroke="#0dcaf0" stroke-opacity="0.6"/>
+    <circle cx="-75" cy="0" r="3" fill="#0dcaf0" stroke="none"/>
+    <circle cx="-7" cy="0" r="3" fill="#0dcaf0" stroke="none"/>
+    <circle cx="61" cy="0" r="3" fill="#0dcaf0" stroke="none"/>
+    <path d="M-95 40 L-50 12 L-15 34 L40 6 L95 28" stroke="#0dcaf0" stroke-width="3"/>
+  </g>
+
+  <text x="400" y="420" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-size="40" font-weight="700" fill="#f57c00">FastFree Ledger</text>
+  <text x="400" y="468" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-size="30" font-weight="600" fill="#0dcaf0">فاست فري ليدجر</text>
+</svg>

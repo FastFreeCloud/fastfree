@@ -1,0 +1,21 @@
+{
+  "name": "FastFree",
+  "short_name": "FastFree",
+  "description": "FastFree builds CRM, ERP, dashboards, and bilingual web applications.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030712",
+  "theme_color": "#030712",
+  "icons": [
+    {
+      "src": "/fastfree_logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/fastfree_logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -20,6 +20,7 @@
     fastfree_erp     = true;
     fastfree_hr      = true;
     fastfree_pos     = true;
+    fastfree_website = true;
     phpmyadmin = true;
     caddy      = true;
     wireguard  = true;

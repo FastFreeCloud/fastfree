@@ -1,0 +1,71 @@
+name: Build and Deploy Next.js Web App
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Downcase Repo Owner and Name
+        id: string
+        run: |
+          echo "owner_lc=${OWNER,,}" >> ${GITHUB_OUTPUT}
+          echo "repo_lc=${REPO,,}" >> ${GITHUB_OUTPUT}
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ steps.string.outputs.owner_lc }}/fastfree_web:latest
+            ghcr.io/${{ steps.string.outputs.owner_lc }}/fastfree_web:v1.0.${{ github.run_number }}
+            ghcr.io/${{ steps.string.outputs.owner_lc }}/fastfree_web:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create Git Tag and GitHub Release
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="v1.0.${{ github.run_number }}"
+          echo "Creating Release $VERSION..."
+          gh release create "$VERSION" \
+            --target "${{ github.sha }}" \
+            --title "$VERSION" \
+            --notes "Automated production build $VERSION from commit ${{ github.sha }}."
+
+      - name: Trigger Portainer Stack Redeployment
+        if: success()
+        run: |
+          if [ -n "${{ secrets.PORTAINER_WEBHOOK_URL }}" ]; then
+            echo "Triggering Portainer webhook..."
+            curl -X POST "${{ secrets.PORTAINER_WEBHOOK_URL }}"
+          else
+            echo "PORTAINER_WEBHOOK_URL secret not set. Skipping webhook trigger."
+          fi

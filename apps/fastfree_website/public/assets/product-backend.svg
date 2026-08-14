@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="FastFree Backend">
+  <defs>
+    <linearGradient id="be-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#030712"/>
+    </linearGradient>
+    <radialGradient id="be-glow" cx="0.5" cy="0.42" r="0.5">
+      <stop offset="0" stop-color="#0dcaf0" stop-opacity="0.40"/>
+      <stop offset="0.6" stop-color="#0dcaf0" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#0dcaf0" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="be-dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="#f57c00" fill-opacity="0.12"/>
+    </pattern>
+  </defs>
+
+  <rect x="0" y="0" width="800" height="600" rx="18" fill="url(#be-bg)"/>
+  <rect x="0" y="0" width="800" height="600" rx="18" fill="url(#be-dots)"/>
+  <rect x="0" y="0" width="800" height="600" rx="18" fill="url(#be-glow)"/>
+  <rect x="6" y="6" width="788" height="588" rx="14" fill="none" stroke="#f57c00" stroke-opacity="0.35" stroke-width="1.5"/>
+
+  <g transform="translate(400 205)" fill="none" stroke="#0dcaf0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-120 -40 a30 30 0 0 1 30 -30 h70 a40 40 0 0 1 80 0 h30 a30 30 0 0 1 30 30 v30 a30 30 0 0 1 -30 30 h-190 a30 30 0 0 1 -30 -30 z" stroke="#0dcaf0"/>
+    <line x1="-58" y1="-58" x2="-58" y2="22" stroke="#f57c00" stroke-opacity="0.7"/>
+    <line x1="0" y1="-58" x2="0" y2="22" stroke="#f57c00" stroke-opacity="0.7"/>
+    <line x1="58" y1="-58" x2="58" y2="22" stroke="#f57c00" stroke-opacity="0.7"/>
+  </g>
+  <g transform="translate(400 290)" fill="none" stroke="#f57c00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="-150" y="-28" width="300" height="56" rx="10"/>
+    <line x1="-110" y1="-28" x2="-110" y2="28" stroke="#0dcaf0" stroke-opacity="0.7"/>
+    <line x1="-40" y1="-28" x2="-40" y2="28" stroke="#0dcaf0" stroke-opacity="0.7"/>
+    <line x1="40" y1="-28" x2="40" y2="28" stroke="#0dcaf0" stroke-opacity="0.7"/>
+    <line x1="110" y1="-28" x2="110" y2="28" stroke="#0dcaf0" stroke-opacity="0.7"/>
+    <circle cx="-130" cy="0" r="4" fill="#0dcaf0" stroke="none"/>
+    <circle cx="130" cy="0" r="4" fill="#0dcaf0" stroke="none"/>
+  </g>
+
+  <text x="400" y="450" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-size="40" font-weight="700" fill="#f57c00">FastFree Backend</text>
+  <text x="400" y="498" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-size="30" font-weight="600" fill="#0dcaf0">فاست فري باك إند</text>
+</svg>

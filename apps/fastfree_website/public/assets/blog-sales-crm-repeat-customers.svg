@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="المبيعات وإدارة العملاء">
+  <defs>
+    <linearGradient id="bg8" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#030712"/>
+      <stop offset="1" stop-color="#0b1220"/>
+    </linearGradient>
+    <radialGradient id="glow8" cx="0.75" cy="0.28" r="0.55">
+      <stop offset="0" stop-color="#f57c00" stop-opacity="0.32"/>
+      <stop offset="1" stop-color="#f57c00" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow8t" cx="0.2" cy="0.82" r="0.5">
+      <stop offset="0" stop-color="#0dcaf0" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#0dcaf0" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid8" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" fill="none" stroke="#0dcaf0" stroke-opacity="0.07" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg8)"/>
+  <rect width="1200" height="630" fill="url(#grid8)"/>
+  <rect width="1200" height="630" fill="url(#glow8)"/>
+  <rect width="1200" height="630" fill="url(#glow8t)"/>
+  <rect x="14" y="14" width="1172" height="602" rx="18" fill="none" stroke="#0dcaf0" stroke-opacity="0.35" stroke-width="1.5"/>
+
+  <g transform="translate(600 155)" stroke="#f57c00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M-70 10c0-24 18-40 40-40 14 0 26 7 33 18 7-11 19-18 33-18 22 0 40 16 40 40 0 34-53 58-73 70-20-12-73-36-73-70z"/>
+    <circle cx="0" cy="-6" r="6" fill="#0dcaf0" stroke="none"/>
+  </g>
+
+  <text x="600" y="335" text-anchor="middle" direction="rtl" font-family="Cairo, Arial, sans-serif" font-size="44" font-weight="700" fill="#f57c00">المبيعات وإدارة العملاء</text>
+  <text x="600" y="398" text-anchor="middle" direction="rtl" font-family="Cairo, Arial, sans-serif" font-size="30" font-weight="500" fill="#0dcaf0">تحويل العملاء المحتملين إلى زبائن دائمين</text>
+
+  <g transform="translate(600 505)" stroke="#0dcaf0" stroke-width="2" fill="none" opacity="0.6">
+    <line x1="-180" y1="0" x2="-40" y2="0"/>
+    <line x1="40" y1="0" x2="180" y2="0"/>
+    <circle cx="0" cy="0" r="5" fill="#f57c00" stroke="none"/>
+  </g>
+</svg>

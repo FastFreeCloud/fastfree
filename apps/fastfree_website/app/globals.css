@@ -1,0 +1,471 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* ── FastFree Design System ─────────────────────────── */
+:root {
+  --ff-primary: #f57c00;
+  --ff-primary-light: #ffa726;
+  --ff-primary-dark: #e65100;
+  --ff-secondary: #0f172a;
+  --ff-accent: #0dcaf0;
+  --ff-accent-dark: #0891b2;
+  --ff-success: #10b981;
+  --ff-warning: #f59e0b;
+  --ff-danger: #ef4444;
+  --ff-bg: #f8fafc;
+  --ff-surface: #ffffff;
+  --ff-text: #1e293b;
+  --ff-text-muted: #64748b;
+  --ff-border: #e2e8f0;
+  --ff-gradient: linear-gradient(135deg, #0dcaf0 0%, #f57c00 50%, #ffa726 100%);
+  --ff-gradient-dark: linear-gradient(135deg, #030712 0%, #0a0d16 50%, #1a1206 100%);
+  --ff-font-heading: 'El Messiri', sans-serif;
+  --ff-font-body: 'Tajawal', sans-serif;
+}
+
+/* ── Base Styles ────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--ff-font-body);
+  color: var(--ff-text);
+  background: var(--ff-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--ff-font-heading);
+}
+
+/* ── Custom Scrollbar ───────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ── Animations ─────────────────────────────────────── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(12, 90, 219, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(12, 90, 219, 0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.5s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+/* ── Stagger Delays ─────────────────────────────────── */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* ── Glass Effect ───────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── Status Badge Colors ────────────────────────────── */
+.status-new { background: #eff6ff; color: #2563eb; }
+.status-contacted { background: #fefce8; color: #ca8a04; }
+.status-qualified { background: #f0fdf4; color: #16a34a; }
+.status-won { background: #ecfdf5; color: #059669; }
+.status-lost { background: #fef2f2; color: #dc2626; }
+
+/* ── Error Level Colors ─────────────────────────────── */
+.level-info { color: #3b82f6; }
+.level-warn { color: #f59e0b; }
+.level-error { color: #ef4444; }
+.level-critical { color: #dc2626; font-weight: 700; }
+
+/* ── Modern UI Utilities ────────────────────────────── */
+.bg-grid-pattern {
+  background-size: 50px 50px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* ── Light Mode ─────────────────────────────────────── */
+html.light {
+  color-scheme: light;
+}
+
+html.light body {
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+/* ── Page & Section Backgrounds ──────────────────────── */
+html.light .bg-\[\#030712\],
+html.light .bg-\[\#080c16\],
+html.light .bg-\[\#090d16\],
+html.light .bg-\[\#070b19\],
+html.light .bg-\[\#050814\],
+html.light .bg-\[\#080b11\],
+html.light .bg-\[\#0d121f\],
+html.light .bg-\[\#0b0f19\],
+html.light .bg-\[\#0a0f24\] {
+  background: #f8fafc !important;
+}
+
+html.light .bg-\[\#030712\]/80,
+html.light .bg-\[\#030712\]/75,
+html.light .bg-\[\#030712\]/95,
+html.light .bg-\[\#030712\]/60 {
+  background: rgba(248, 250, 252, 0.85) !important;
+}
+
+html.light .bg-\[\#080c16\]/80,
+html.light .bg-\[\#090d16\]/60,
+html.light .bg-\[\#070b19\]/60,
+html.light .bg-\[\#070b19\]/80,
+html.light .bg-\[\#0d121f\]/60,
+html.light .bg-\[\#080b11\]/60 {
+  background: rgba(241, 245, 249, 0.8) !important;
+}
+
+html.light .bg-slate-900\/40,
+html.light .bg-slate-950\/40 {
+  background: rgba(241, 245, 249, 0.8) !important;
+}
+
+/* ── Semi-transparent White → Dark on Light ──────────── */
+html.light .bg-white\/5 {
+  background: rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light .bg-white\/10 {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light .bg-white\/20 {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light .bg-white\/30 {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light .bg-white\/40 {
+  background: rgba(0, 0, 0, 0.12) !important;
+}
+
+html.light .bg-white\/50 {
+  background: rgba(0, 0, 0, 0.15) !important;
+}
+
+html.light .bg-white\/60 {
+  background: rgba(0, 0, 0, 0.18) !important;
+}
+
+html.light .bg-white\/80 {
+  background: rgba(0, 0, 0, 0.25) !important;
+}
+
+html.light .bg-white\/90 {
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ── Borders ─────────────────────────────────────────── */
+html.light .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+html.light .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+html.light .border-white\/30 {
+  border-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+html.light .border-t\/5 {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ── Text Colors ─────────────────────────────────────── */
+html.light .text-white {
+  color: #1e293b !important;
+}
+
+html.light .text-slate-200 {
+  color: #334155 !important;
+}
+
+html.light .text-slate-300 {
+  color: #475569 !important;
+}
+
+html.light .text-slate-400 {
+  color: #64748b !important;
+}
+
+html.light .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+html.light .text-slate-600 {
+  color: #94a3b8 !important;
+}
+
+html.light .text-slate-700 {
+  color: #334155 !important;
+}
+
+html.light .text-gray-400 {
+  color: #6b7280 !important;
+}
+
+/* ── Hover States ────────────────────────────────────── */
+html.light .hover\:text-white:hover {
+  color: #1e293b !important;
+}
+
+html.light .hover\:text-slate-300:hover {
+  color: #475569 !important;
+}
+
+html.light .hover\:bg-white\/5:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light .hover\:bg-white\/10:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light .hover\:bg-white\/20:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ── Grid Pattern ────────────────────────────────────── */
+html.light .bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px) !important;
+}
+
+/* ── Shadows ─────────────────────────────────────────── */
+html.light .shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.06) !important;
+}
+
+html.light .shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.06) !important;
+}
+
+html.light .shadow-blue-500\/10 {
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.08) !important;
+}
+
+html.light .shadow-green-500\/30 {
+  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* ── Backdrop Blur ───────────────────────────────────── */
+html.light .backdrop-blur-sm,
+html.light .backdrop-blur-md,
+html.light .backdrop-blur-xl,
+html.light .backdrop-blur-2xl {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* ── Gradients ───────────────────────────────────────── */
+html.light .from-purple-950\/10 {
+  --tw-gradient-from: rgba(88, 28, 135, 0.03) !important;
+}
+
+html.light .from-\[\#030712\] {
+  --tw-gradient-from: #f8fafc !important;
+}
+
+html.light .to-\[\#030712\] {
+  --tw-gradient-to: #f8fafc !important;
+}
+
+/* ── Form Inputs ─────────────────────────────────────── */
+html.light input[class*="bg-[#030712]"],
+html.light input[class*="bg-[#070b19]"],
+html.light input[class*="bg-[#080c16]"],
+html.light textarea[class*="bg-[#030712]"],
+html.light textarea[class*="bg-[#070b19]"],
+html.light select[class*="bg-[#030712]"],
+html.light select[class*="bg-[#070b19]"] {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* ── Scrollbar ───────────────────────────────────────── */
+html.light ::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+/* ── Prose (Blog Content) ────────────────────────────── */
+html.light .prose-invert {
+  color: #1e293b;
+}
+
+html.light .prose-invert h1,
+html.light .prose-invert h2,
+html.light .prose-invert h3,
+html.light .prose-invert h4,
+html.light .prose-invert h5,
+html.light .prose-invert h6 {
+  color: #0f172a;
+}
+
+html.light .prose-invert a {
+  color: #2563eb;
+}
+
+html.light .prose-invert code {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+html.light .prose-invert pre {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+html.light .prose-invert blockquote {
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+/* ── Status Badges ───────────────────────────────────── */
+html.light .status-new { background: #eff6ff; color: #2563eb; }
+html.light .status-contacted { background: #fefce8; color: #ca8a04; }
+html.light .status-qualified { background: #f0fdf4; color: #16a34a; }
+html.light .status-won { background: #ecfdf5; color: #059669; }
+html.light .status-lost { background: #fef2f2; color: #dc2626; }
+
+/* ── Accessibility ───────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #0dcaf0;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  background: var(--ff-accent);
+  color: #030712;
+  font-weight: 700;
+  border-radius: 0.5rem;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

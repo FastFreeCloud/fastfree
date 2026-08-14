@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="The Database Behind an ERP">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#030712"/>
+      <stop offset="1" stop-color="#0b1220"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.32" r="0.55">
+      <stop offset="0" stop-color="#f57c00" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#f57c00" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowt" cx="0.18" cy="0.8" r="0.5">
+      <stop offset="0" stop-color="#0dcaf0" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#0dcaf0" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#0dcaf0" stroke-opacity="0.07" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect width="1200" height="630" fill="url(#glowt)"/>
+  <rect x="14" y="14" width="1172" height="602" rx="18" fill="none" stroke="#0dcaf0" stroke-opacity="0.35" stroke-width="1.5"/>
+
+  <text x="60" y="70" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="30" font-weight="700" fill="#f57c00">FastFree</text>
+
+  <g transform="translate(600 195)" stroke="#f57c00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <ellipse cx="0" cy="-50" rx="90" ry="26"/>
+    <path d="M-90 -50V50A90 26 0 0 0 90 50V-50"/>
+    <path d="M-90 -10A90 26 0 0 0 90 -10" stroke="#0dcaf0" stroke-width="2"/>
+    <path d="M-90 30A90 26 0 0 0 90 30" stroke="#0dcaf0" stroke-width="2"/>
+  </g>
+
+  <text x="600" y="360" text-anchor="middle" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="36" font-weight="700" fill="#ffffff">The Database Behind an ERP</text>
+  <text x="600" y="410" text-anchor="middle" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="30" font-weight="500" fill="#0dcaf0">Why Relational Storage Matters</text>
+
+  <g transform="translate(600 510)">
+    <rect x="-95" y="-22" width="190" height="44" rx="22" fill="#0dcaf0" fill-opacity="0.12" stroke="#0dcaf0" stroke-width="1.5"/>
+    <text x="600" y="507" text-anchor="middle" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="22" font-weight="600" fill="#0dcaf0" letter-spacing="2">TECHNOLOGY</text>
+  </g>
+</svg>

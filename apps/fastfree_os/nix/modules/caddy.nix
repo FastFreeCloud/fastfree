@@ -15,11 +15,15 @@ in {
     services.caddy.enable = true;
 
     services.caddy.virtualHosts = {
-      # ── Main domain redirect ──────────────────────────────
+      # ── Main domain ────────────────────────────────────────
       "${domain}" = {
         extraConfig = ''
           ${tlsConfig}
-          redir https://{host}{uri} permanent
+          ${if config.fastfree.apps.fastfree_website then ''
+            reverse_proxy localhost:9004
+          '' else ''
+            redir https://{host}{uri} permanent
+          ''}
         '';
       };
 

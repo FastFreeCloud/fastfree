@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="Data Ownership and Privacy in ERP">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#030712"/>
+      <stop offset="1" stop-color="#0b1220"/>
+    </linearGradient>
+    <radialGradient id="glowG" cx="0.28" cy="0.3" r="0.55">
+      <stop offset="0" stop-color="#f57c00" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#f57c00" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowT" cx="0.8" cy="0.82" r="0.5">
+      <stop offset="0" stop-color="#0dcaf0" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#0dcaf0" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse">
+      <path d="M42 0H0V42" fill="none" stroke="#0dcaf0" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect width="1200" height="630" fill="url(#glowG)"/>
+  <rect width="1200" height="630" fill="url(#glowT)"/>
+  <rect x="14" y="14" width="1172" height="602" rx="18" fill="none" stroke="#0dcaf0" stroke-opacity="0.30" stroke-width="1.5"/>
+
+  <text x="64" y="72" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="34" font-weight="700" fill="#f57c00">FastFree</text>
+
+  <rect x="948" y="44" width="188" height="44" rx="22" fill="#0dcaf0" fill-opacity="0.12" stroke="#0dcaf0" stroke-opacity="0.6" stroke-width="1.5"/>
+  <text x="1042" y="72" text-anchor="middle" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="20" font-weight="600" fill="#0dcaf0" letter-spacing="1">COMPANY_NEWS</text>
+
+  <g transform="translate(600 150)" stroke="#0dcaf0" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M0 -52 L46 -34 V8 C46 36 24 52 0 56 C-24 52 -46 36 -46 8 V-34 Z" stroke="#f57c00"/>
+    <rect x="-20" y="6" width="40" height="32" rx="6" stroke="#0dcaf0"/>
+    <path d="M-12 6 v-8 a12 12 0 0 1 24 0 v8" stroke="#0dcaf0"/>
+    <circle cx="0" cy="20" r="4" fill="#f57c00" stroke="none"/>
+    <line x1="0" y1="24" x2="0" y2="32" stroke="#f57c00"/>
+  </g>
+
+  <text x="600" y="350" text-anchor="middle" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="42" font-weight="700" fill="#e8eef5">Data Ownership and Privacy</text>
+  <text x="600" y="406" text-anchor="middle" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="42" font-weight="700" fill="#e8eef5">in ERP Systems</text>
+
+  <g transform="translate(600 510)" stroke="#0dcaf0" stroke-width="2" fill="none" opacity="0.6">
+    <line x1="-180" y1="0" x2="-40" y2="0"/>
+    <line x1="40" y1="0" x2="180" y2="0"/>
+    <circle cx="0" cy="0" r="5" fill="#f57c00" stroke="none"/>
+  </g>
+</svg>

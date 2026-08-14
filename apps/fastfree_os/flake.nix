@@ -57,6 +57,7 @@
         ./nix/modules/fastfree_erp.nix
         ./nix/modules/fastfree_hr.nix
         ./nix/modules/fastfree_pos.nix
+        ./nix/modules/fastfree_website.nix
         ./nix/modules/phpmyadmin.nix
         ./nix/modules/wireguard.nix
         ./nix/modules/avahi-subdomains.nix

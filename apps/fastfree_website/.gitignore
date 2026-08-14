@@ -1,0 +1,26 @@
+# ── Dependencies ────────────────────────────────────
+node_modules/
+
+# ── Next.js Build ───────────────────────────────────
+.next/
+out/
+
+# ── Environment & Secrets ───────────────────────────
+.env
+.env.local
+.env.production
+config.json
+
+# ── Logs ────────────────────────────────────────────
+logs/
+*.log
+
+# ── OS & IDE ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ── Compilation & Artifacts ─────────────────────────
+/prisma-dist/
+tsconfig.tsbuildinfo

@@ -114,6 +114,7 @@ jobs:
             "apps/fastfree_os/nix/modules/fastfree_erp.nix"
             "apps/fastfree_os/nix/modules/fastfree_hr.nix"
             "apps/fastfree_os/nix/modules/fastfree_pos.nix"
+            "apps/fastfree_os/nix/modules/fastfree_website.nix"
             "apps/fastfree_os/nix/modules/phpmyadmin.nix"
             "apps/fastfree_os/nix/modules/wireguard.nix"
             "apps/fastfree_os/nix/modules/avahi-subdomains.nix"
@@ -241,6 +242,15 @@ jobs:
       contents: write
       packages: write
 
+  build_website_image:
+    name: 🐳 بناء صورة Website
+    uses: ./.github/workflows/build-website.yaml
+    needs: [syntax_check, flake_validate, evaluation]
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+
   # ═══════════════════════════════════════════════════════════════
   #  المرحلة 2: اختبارات الخدمات — NixOS VM Tests
   # ═══════════════════════════════════════════════════════════════
@@ -248,7 +258,7 @@ jobs:
     name: 🧪 اختبارات الخدمات
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    needs: [build_backend_image, build_erp_image, build_ledger_image, build_hr_image, build_pos_image]
+    needs: [build_backend_image, build_erp_image, build_ledger_image, build_hr_image, build_pos_image, build_website_image]
     steps:
       - name: تأمين صلاحيات Git
         run: git config --global safe.directory '*'

@@ -70,6 +70,7 @@
       fastfree_erp     = lib.mkEnableOption "FastFree ERP (Full Enterprise Resource Planning)";
       fastfree_hr      = lib.mkEnableOption "FastFree HR (Human Resources + CRM)";
       fastfree_pos     = lib.mkEnableOption "FastFree POS (Point of Sale)";
+      fastfree_website = lib.mkEnableOption "FastFree Website (Next.js public website)";
       phpmyadmin   = lib.mkEnableOption "phpMyAdmin";
       wireguard    = lib.mkEnableOption "WireGuard VPN";
       avahi        = lib.mkEnableOption "Avahi mDNS/DNS-SD";

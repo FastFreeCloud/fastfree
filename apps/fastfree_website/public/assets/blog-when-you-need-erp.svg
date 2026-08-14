@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" font-family="Cairo, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#030712"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.8" cy="0.3" r="0.55">
+      <stop offset="0" stop-color="#0dcaf0" stop-opacity="0.28"/>
+      <stop offset="0.5" stop-color="#0dcaf0" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#0dcaf0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="goldglow" cx="0.18" cy="0.82" r="0.5">
+      <stop offset="0" stop-color="#f57c00" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#f57c00" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40,0 L0,0 L0,40" fill="none" stroke="#0dcaf0" stroke-opacity="0.08" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect width="1200" height="630" fill="url(#goldglow)"/>
+
+  <rect x="18" y="18" width="1164" height="594" rx="16" fill="none" stroke="#f57c00" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="28" y="28" width="1144" height="574" rx="12" fill="none" stroke="#0dcaf0" stroke-opacity="0.25" stroke-width="1"/>
+
+  <g transform="translate(80,120)">
+    <circle cx="60" cy="60" r="60" fill="#0dcaf0" fill-opacity="0.10" stroke="#0dcaf0" stroke-opacity="0.55" stroke-width="1.5"/>
+    <g fill="none" stroke="#0dcaf0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" transform="translate(22,28)">
+      <path d="M6,12 L34,12 L46,24 L46,62 L6,62 Z"/>
+      <line x1="6" y1="30" x2="46" y2="30"/>
+      <line x1="6" y1="44" x2="46" y2="44"/>
+      <line x1="20" y1="12" x2="20" y2="62"/>
+      <line x1="32" y1="12" x2="32" y2="62"/>
+      <polyline points="10,58 22,46 30,52 44,34" stroke="#f57c00"/>
+    </g>
+  </g>
+
+  <text x="80" y="300" fill="#f57c00" font-size="22" letter-spacing="2">F A S T F R E E · مقال</text>
+  <text x="80" y="356" fill="#0dcaf0" font-size="42" font-weight="700">متى تحتاج شركتك إلى نظام ERP؟</text>
+  <text x="80" y="410" fill="#0dcaf0" font-size="42" font-weight="700">علامات أنك تجاوزت جداول البيانات</text>
+  <text x="80" y="464" fill="#e5e7eb" fill-opacity="0.85" font-size="20">الإشارات التي تدل على حاجة نموّك لنظام متكامل</text>
+
+  <g transform="translate(930,400)" stroke="#f57c00" stroke-opacity="0.5" stroke-width="2" fill="none">
+    <rect x="0" y="10" width="60" height="66" rx="4"/>
+    <line x1="0" y1="28" x2="60" y2="28"/>
+    <line x1="0" y1="46" x2="60" y2="46"/>
+    <line x1="20" y1="10" x2="20" y2="76"/>
+    <line x1="40" y1="10" x2="40" y2="76"/>
+  </g>
+</svg>

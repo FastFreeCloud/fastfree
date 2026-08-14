@@ -24,6 +24,7 @@
     fastfree_erp     = true;
     fastfree_hr      = true;
     fastfree_pos     = true;
+    fastfree_website = true;
     wireguard   = true;
     avahi       = true;
   };
