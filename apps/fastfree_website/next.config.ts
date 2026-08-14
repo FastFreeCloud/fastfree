@@ -28,16 +28,17 @@ const nextConfig: NextConfig = {
     ],
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+    unoptimized: true,
   },
 
-  // ── Standalone Output (Docker) ──────────────────────
-  output: 'standalone',
+  // ── Static Export Output ────────────────────────────
+  output: 'export',
 
   // ── Transpile Packages ──────────────────────────────
   transpilePackages: ['motion'],
 
   // ── Server External Packages (not bundled in client) ──
-  serverExternalPackages: ['@google/genai', 'bcrypt', 'resend'],
+  // serverExternalPackages: ['@google/genai', 'bcrypt', 'resend'], // Not needed for static export
 
   // ── Experimental Features ───────────────────────────
   experimental: {

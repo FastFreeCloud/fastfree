@@ -8,6 +8,7 @@ CONFIG_NAME=$(cat /etc/fastfree/flake-config 2>/dev/null || echo "")
 GITHUB_REPO=$(cat /etc/fastfree/github-repo 2>/dev/null || echo "")
 GIT_ORIGIN=$(cat /etc/fastfree/git-origin 2>/dev/null || echo "")
 
+
 usage() {
   cat <<EOF
 FastFree OS — System Management CLI
