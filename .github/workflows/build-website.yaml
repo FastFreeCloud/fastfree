@@ -31,7 +31,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: apps/fastfree_website
-        run: npm install --legacy-peer-deps
+        run: npm install --legacy-peer-deps --ignore-scripts
 
       - name: TypeScript check
         working-directory: apps/fastfree_website

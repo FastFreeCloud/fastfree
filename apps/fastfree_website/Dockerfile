@@ -19,9 +19,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
-
 # Compile Prisma seed to JS
 RUN npx tsc prisma/seed.ts --target es2022 --module commonjs --allowSyntheticDefaultImports --esModuleInterop --moduleResolution node --outDir prisma-dist
 

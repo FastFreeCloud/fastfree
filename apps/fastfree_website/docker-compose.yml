@@ -82,10 +82,7 @@ services:
   fastfree_web:
     image: ghcr.io/fastfreecloud/fastfree_web:latest
     container_name: fastfree_web
-    command: >
-      sh -c "node node_modules/prisma/build/index.js db push --accept-data-loss && 
-             node prisma-dist/seed.js && 
-             node server.js"
+    command: node server.js
     ports:
       - "3000:3000"
     environment:
