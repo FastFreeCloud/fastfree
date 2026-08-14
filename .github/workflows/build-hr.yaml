@@ -34,8 +34,11 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
+      - name: Clear pnpm cache
+        run: pnpm store prune
+
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --no-frozen-lockfile --ignore-scripts
         env:
           PNPM_SKIP_POSTINSTALL: ""
 
