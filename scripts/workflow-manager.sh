@@ -897,7 +897,7 @@ main() {
 
     write_header ""
     echo -e "  ${C_CYAN}Pipeline Summary:${C_RESET}" -foreground Cyan
-    echo -e "  ${C_DARKGREEN}------------------${C_RESET}"
+    echo -e "  ${C_DARKGRAY}------------------${C_RESET}"
     echo -e "  1. YAML Validation:    ${s1}"
     echo -e "  2. Delete Failed Runs: ${s2}"
     echo -e "  3. Git Push:           ${s3}"
