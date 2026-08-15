@@ -187,7 +187,7 @@ invoke_with_retry() {
             write_fail "$description failed after $max_attempts attempts: $?"
             return 1
         fi
-        ((attempt++))
+        attempt=$((attempt + 1))
     done
     return 1
 }
@@ -477,7 +477,7 @@ phase2_delete_runs_and_cleanup() {
         if (( page_count < per_page )); then
             break
         fi
-        ((page++))
+        page=$((page + 1))
     done
 
     write_info "Found ${#all_runs[@]} total runs"
@@ -523,10 +523,10 @@ phase2_delete_runs_and_cleanup() {
         local del_err
         if del_err=$(gh api -X DELETE "repos/$REPO/actions/runs/$run_id" 2>&1); then
             write_ok "Deleted #$run_number"
-            ((deleted++))
+            deleted=$((deleted + 1))
         else
             write_fail "Failed to delete #$run_number: $del_err"
-            ((failed_del++))
+            failed_del=$((failed_del + 1))
         fi
         sleep 0.3
     done
@@ -587,7 +587,7 @@ phase2_delete_runs_and_cleanup() {
 
         if gh api -X DELETE "repos/$REPO/actions/artifacts/$artifact_id" >/dev/null 2>&1; then
             write_ok "Deleted artifact #$artifact_id"
-            ((deleted_artifacts++))
+            deleted_artifacts=$((deleted_artifacts + 1))
         else
             write_warn "Failed to delete artifact #$artifact_id"
         fi
@@ -621,7 +621,7 @@ phase2_delete_runs_and_cleanup() {
             write_info "Deleting log $log_file..."
             if rm -f "$log_file" 2>/dev/null; then
                 write_ok "Deleted log $log_file"
-                ((logs_deleted++))
+                logs_deleted=$((logs_deleted + 1))
             else
                 write_fail "Failed to delete log $log_file"
             fi
