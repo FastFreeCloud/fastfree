@@ -50,9 +50,28 @@
           runHook preInstall
           mkdir -p $out
           cp -r apps/fastfree_website/.next/standalone/. $out/
-          mkdir -p $out/apps/fastfree_website/.next
+
+          # Copy static assets + public dir to BOTH possible layouts
+          # (flat: $out/.next/static, nested: $out/apps/fastfree_website/.next/static)
+          # so the standalone server finds them regardless of how Next traced them.
+          mkdir -p $out/.next $out/apps/fastfree_website/.next $out/public $out/apps/fastfree_website/public
+          cp -r apps/fastfree_website/.next/static $out/.next/static
           cp -r apps/fastfree_website/.next/static $out/apps/fastfree_website/.next/static
+          cp -r apps/fastfree_website/public $out/public
           cp -r apps/fastfree_website/public $out/apps/fastfree_website/public
+
+          # Launcher that locates the traced server.js (flat or nested) and runs it.
+          mkdir -p $out/bin
+          cat > $out/bin/start-website <<'LAUNCHER'
+          #!/bin/sh
+          SJ=$(find ${website-app} -name server.js -not -path '*/node_modules/*' 2>/dev/null | head -1)
+          if [ -z "$SJ" ]; then
+            echo "start-website: server.js not found under ${website-app}" >&2
+            exit 1
+          fi
+          exec ${nodejs}/bin/node "$SJ"
+          LAUNCHER
+          chmod +x $out/bin/start-website
           runHook postInstall
         '';
 
@@ -78,7 +97,7 @@
 
         config = {
           WorkingDir = "${website-app}";
-          Cmd = [ "${nodejs}/bin/node" "${website-app}/apps/fastfree_website/server.js" ];
+          Cmd = [ "${website-app}/bin/start-website" ];
           ExposedPorts = { "3000/tcp" = {}; };
         };
       };
