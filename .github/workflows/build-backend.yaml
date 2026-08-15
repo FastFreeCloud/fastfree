@@ -18,6 +18,12 @@ on:
         type: string
         default: "version-15"
   workflow_call:
+    inputs:
+      frappe_version:
+        description: "Frappe version branch"
+        required: false
+        type: string
+        default: "version-15"
 
 # ── منع التشغيل المتزامن على نفس الـ Branch ──
 concurrency:
