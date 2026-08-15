@@ -15,9 +15,9 @@
 
       # ── Official Nix packaging for an npm / Next.js project ──
       # pkgs.buildNpmPackage reproducibly fetches dependencies via an
-      # offline fetchNpmDeps derivation and runs `npm ci` + `npm run
-      # build` inside the given workspace. No __noChroot / network
-      # hacks and no ad-hoc `find` launcher.
+      # offline fetchNpmDeps derivation (scoped to the website dir, where
+      # package-lock.json lives) and runs `npm ci` + `npm run build`.
+      # No __noChroot / network hacks and no ad-hoc `find` launcher.
       #
       # npmDepsHash is set to lib.fakeHash: the FIRST `nix build`
       # fails and prints the real hash, which you then paste back here.
@@ -25,8 +25,7 @@
         pname = "fastfree-website";
         version = "1.0.0";
 
-        src = ../../.;
-        npmWorkspace = "apps/fastfree_website";
+        src = ../../apps/fastfree_website;
 
         npmDepsHash = lib.fakeHash;
 
@@ -41,17 +40,17 @@
         };
 
         # buildNpmPackage already ran `next build`; the standalone
-        # output lives at apps/fastfree_website/.next/standalone.
-        # Copy the traced server plus static + public assets.
+        # output lives at .next/standalone. Copy the traced server plus
+        # static + public assets.
         installPhase = ''
           runHook preInstall
 
           mkdir -p $out
-          cp -r apps/fastfree_website/.next/standalone/. $out/
+          cp -r .next/standalone/. $out/
 
           mkdir -p $out/.next/static $out/public
-          cp -r apps/fastfree_website/.next/static/. $out/.next/static/
-          cp -r apps/fastfree_website/public/. $out/public/
+          cp -r .next/static/. $out/.next/static/
+          cp -r public/. $out/public/
 
           runHook postInstall
         '';
