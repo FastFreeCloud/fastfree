@@ -5,21 +5,7 @@ let
 in {
   config = lib.mkIf config.fastfree.apps.fastfree_pos {
 
-    # ── 1. Shared Podman network ───────────────────────────
-    systemd.services."fastfree-network" = {
-      description = "Create shared podman network for POS containers";
-      wantedBy = [ "multi-user.target" ];
-      before = [
-        "fastfree-pos-frontend.service"
-      ];
-      serviceConfig.Type = "oneshot";
-      script = ''
-        ${pkgs.podman}/bin/podman network inspect fastfree-net >/dev/null 2>&1 || \
-          ${pkgs.podman}/bin/podman network create fastfree-net
-      '';
-    };
-
-    # ── 2. Caddyfile generation ────────────────────────────
+    # ── 1. Caddyfile generation ────────────────────────────
     systemd.services."fastfree-pos-caddyfile" = {
       description = "Generate Caddyfile for POS Frontend";
       before = [ "fastfree-pos-frontend.service" ];

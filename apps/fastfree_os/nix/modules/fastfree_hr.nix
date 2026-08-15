@@ -5,21 +5,7 @@ let
 in {
   config = lib.mkIf config.fastfree.apps.fastfree_hr {
 
-    # ── 1. Shared Podman network ───────────────────────────
-    systemd.services."fastfree-network" = {
-      description = "Create shared podman network for HR containers";
-      wantedBy = [ "multi-user.target" ];
-      before = [
-        "fastfree-hr-frontend.service"
-      ];
-      serviceConfig.Type = "oneshot";
-      script = ''
-        ${pkgs.podman}/bin/podman network inspect fastfree-net >/dev/null 2>&1 || \
-          ${pkgs.podman}/bin/podman network create fastfree-net
-      '';
-    };
-
-    # ── 2. Caddyfile generation ────────────────────────────
+    # ── 1. Caddyfile generation ────────────────────────────
     systemd.services."fastfree-hr-caddyfile" = {
       description = "Generate Caddyfile for HR Frontend";
       before = [ "fastfree-hr-frontend.service" ];
