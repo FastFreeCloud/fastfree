@@ -1,4 +1,8 @@
 import type {NextConfig} from 'next';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -33,6 +37,10 @@ const nextConfig: NextConfig = {
 
   // ── Standalone Output (Node server, served by the Nix-built image) ──
   output: 'standalone',
+
+  // Trace from the app directory so the standalone server lands at
+  // .next/standalone/server.js (flat) — the layout the Nix image expects.
+  outputFileTracingRoot: __dirname,
 
   // ── Transpile Packages ──────────────────────────────
   transpilePackages: ['motion'],

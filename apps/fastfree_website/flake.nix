@@ -9,73 +9,52 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      lib = pkgs.lib;
 
       nodejs = pkgs.nodejs_22;
 
-      meta = {
-        description = "FastFree Website — Nix-built container image (Next.js standalone)";
-        platforms = [ "x86_64-linux" ];
-      };
-
-      # ── Next.js standalone build ──────────────────────
-      # `output: 'standalone'` in next.config.ts emits a traced Node
-      # server under .next/standalone plus the static assets and public
-      # dir. We copy those into the image and run the traced server.
+      # ── Official Nix packaging for an npm / Next.js project ──
+      # pkgs.buildNpmPackage reproducibly fetches dependencies via an
+      # offline fetchNpmDeps derivation and runs `npm ci` + `npm run
+      # build` inside the given workspace. No __noChroot / network
+      # hacks and no ad-hoc `find` launcher.
       #
-      # __noChroot lets `npm ci` fetch dependencies at build time so we
-      # don't need a precomputed npmDeps hash.
-      website-app = pkgs.stdenv.mkDerivation {
+      # npmDepsHash is set to lib.fakeHash: the FIRST `nix build`
+      # fails and prints the real hash, which you then paste back here.
+      website-app = pkgs.buildNpmPackage {
         pname = "fastfree-website";
         version = "1.0.0";
+
         src = ../../.;
+        npmWorkspace = "apps/fastfree_website";
 
-        nativeBuildInputs = [ nodejs ];
+        npmDepsHash = lib.fakeHash;
 
-        __noChroot = true;
+        npmInstallFlags = [ "--legacy-peer-deps" "--no-audit" "--no-fund" ];
+        npmBuildScript = "build";
+
+        nodejs = nodejs;
 
         env = {
           NODE_OPTIONS = "--max-old-space-size=4096";
           NEXT_TELEMETRY_DISABLED = "1";
         };
 
-        buildPhase = ''
-          runHook preBuild
-          cd apps/fastfree_website
-          npm ci --legacy-peer-deps --no-audit --no-fund
-          npm run build
-          runHook postBuild
-        '';
-
+        # buildNpmPackage already ran `next build`; the standalone
+        # output lives at apps/fastfree_website/.next/standalone.
+        # Copy the traced server plus static + public assets.
         installPhase = ''
           runHook preInstall
+
           mkdir -p $out
           cp -r apps/fastfree_website/.next/standalone/. $out/
 
-          # Copy static assets + public dir to BOTH possible layouts
-          # (flat: $out/.next/static, nested: $out/apps/fastfree_website/.next/static)
-          # so the standalone server finds them regardless of how Next traced them.
-          mkdir -p $out/.next $out/apps/fastfree_website/.next $out/public $out/apps/fastfree_website/public
-          cp -r apps/fastfree_website/.next/static $out/.next/static
-          cp -r apps/fastfree_website/.next/static $out/apps/fastfree_website/.next/static
-          cp -r apps/fastfree_website/public $out/public
-          cp -r apps/fastfree_website/public $out/apps/fastfree_website/public
+          mkdir -p $out/.next/static $out/public
+          cp -r apps/fastfree_website/.next/static/. $out/.next/static/
+          cp -r apps/fastfree_website/public/. $out/public/
 
-          # Launcher that locates the traced server.js (flat or nested) and runs it.
-          mkdir -p $out/bin
-          cat > $out/bin/start-website <<'LAUNCHER'
-          #!/bin/sh
-          SJ=$(find ${website-app} -name server.js -not -path '*/node_modules/*' 2>/dev/null | head -1)
-          if [ -z "$SJ" ]; then
-            echo "start-website: server.js not found under ${website-app}" >&2
-            exit 1
-          fi
-          exec ${nodejs}/bin/node "$SJ"
-          LAUNCHER
-          chmod +x $out/bin/start-website
           runHook postInstall
         '';
-
-        inherit meta;
       };
 
       frontend-image = pkgs.dockerTools.streamLayeredImage {
@@ -96,8 +75,14 @@
         maxLayers = 50;
 
         config = {
+          Env = [
+            "NODE_ENV=production"
+            "NEXT_TELEMETRY_DISABLED=1"
+            "PORT=3000"
+            "HOSTNAME=0.0.0.0"
+          ];
           WorkingDir = "${website-app}";
-          Cmd = [ "${website-app}/bin/start-website" ];
+          Cmd = [ "${nodejs}/bin/node" "${website-app}/server.js" ];
           ExposedPorts = { "3000/tcp" = {}; };
         };
       };
