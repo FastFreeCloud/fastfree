@@ -6,7 +6,7 @@ in {
   config = lib.mkIf config.fastfree.apps.fastfree_hr {
 
     # ── 1. Shared Podman network ───────────────────────────
-    systemd.services."fastfree-hr-network" = {
+    systemd.services."fastfree-network" = {
       description = "Create shared podman network for HR containers";
       wantedBy = [ "multi-user.target" ];
       before = [
@@ -14,8 +14,8 @@ in {
       ];
       serviceConfig.Type = "oneshot";
       script = ''
-        ${pkgs.podman}/bin/podman network inspect fastfree-hr-net >/dev/null 2>&1 || \
-          ${pkgs.podman}/bin/podman network create fastfree-hr-net
+        ${pkgs.podman}/bin/podman network inspect fastfree-net >/dev/null 2>&1 || \
+          ${pkgs.podman}/bin/podman network create fastfree-net
       '';
     };
 
@@ -62,7 +62,7 @@ CADDY
       autoStart = true;
       ports = [ "9002:80" ];
       extraOptions = [
-        "--network=fastfree-hr-net"
+        "--network=fastfree-net"
       ];
       volumes = [
         "/etc/fastfree/caddy/hr-Caddyfile:/etc/caddy/Caddyfile:ro"
@@ -70,8 +70,8 @@ CADDY
     };
 
     systemd.services."fastfree-hr-frontend" = {
-      after = [ "fastfree-hr-network.service" "fastfree-hr-caddyfile.service" ];
-      requires = [ "fastfree-hr-network.service" ];
+      after = [ "fastfree-network.service" "fastfree-hr-caddyfile.service" ];
+      requires = [ "fastfree-network.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "5";
     };

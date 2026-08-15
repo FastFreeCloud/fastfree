@@ -6,7 +6,7 @@ in {
   config = lib.mkIf config.fastfree.apps.fastfree_pos {
 
     # ── 1. Shared Podman network ───────────────────────────
-    systemd.services."fastfree-pos-network" = {
+    systemd.services."fastfree-network" = {
       description = "Create shared podman network for POS containers";
       wantedBy = [ "multi-user.target" ];
       before = [
@@ -14,8 +14,8 @@ in {
       ];
       serviceConfig.Type = "oneshot";
       script = ''
-        ${pkgs.podman}/bin/podman network inspect fastfree-pos-net >/dev/null 2>&1 || \
-          ${pkgs.podman}/bin/podman network create fastfree-pos-net
+        ${pkgs.podman}/bin/podman network inspect fastfree-net >/dev/null 2>&1 || \
+          ${pkgs.podman}/bin/podman network create fastfree-net
       '';
     };
 
@@ -62,7 +62,7 @@ CADDY
       autoStart = true;
       ports = [ "9003:80" ];
       extraOptions = [
-        "--network=fastfree-pos-net"
+        "--network=fastfree-net"
       ];
       volumes = [
         "/etc/fastfree/caddy/pos-Caddyfile:/etc/caddy/Caddyfile:ro"
@@ -70,8 +70,8 @@ CADDY
     };
 
     systemd.services."fastfree-pos-frontend" = {
-      after = [ "fastfree-pos-network.service" "fastfree-pos-caddyfile.service" ];
-      requires = [ "fastfree-pos-network.service" ];
+      after = [ "fastfree-network.service" "fastfree-pos-caddyfile.service" ];
+      requires = [ "fastfree-network.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "5";
     };

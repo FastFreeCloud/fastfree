@@ -41,11 +41,11 @@
         buildInputs = [ pkgs.glibc pkgs.zlib ];
 
         preBuild = ''
-          DART_DIR="node_modules/.pnpm/sass-embedded-linux-x64@1.100.0/node_modules/sass-embedded-linux-x64/dart-sass/src"
-          if [ -f "$DART_DIR/dart" ]; then
+          DART=$(find node_modules/.pnpm -path '*sass-embedded-linux-x64*/dart-sass/src/dart' 2>/dev/null | head -1)
+          if [ -n "$DART" ]; then
             patchelf --set-interpreter ${pkgs.glibc}/lib/ld-linux-x86-64.so.2 \
                      --set-rpath "${pkgs.lib.makeLibraryPath [ pkgs.glibc pkgs.zlib ]}" \
-                     "$DART_DIR/dart" 2>/dev/null || true
+                     "$DART"
           fi
         '';
 
@@ -55,9 +55,7 @@
           runHook preBuild
           cd apps/fastfree_hr
           mkdir -p .quasar
-          echo '{"compilerOptions":{}}' > .quasar/tsconfig.json
-          rm -rf node_modules
-          ln -s ../../node_modules .
+          [ -f .quasar/tsconfig.json ] || echo '{"compilerOptions":{}}' > .quasar/tsconfig.json
           pnpm exec quasar prepare
           pnpm exec quasar build -m spa
           runHook postBuild
@@ -66,7 +64,7 @@
         installPhase = ''
           runHook preInstall
           mkdir -p $out/srv
-          cp -r dist/spa/* $out/srv/
+          cp -r apps/fastfree_hr/dist/spa/. $out/srv/
           runHook postInstall
         '';
 
@@ -83,16 +81,6 @@
                 X-XSS-Protection "1; mode=block"
                 Referrer-Policy "strict-origin-when-cross-origin"
                 Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' http: https: ws:"
-            }
-
-            @api path /api/*
-            handle @api {
-                reverse_proxy fastfree-backend-app:8000
-            }
-
-            @websocket path /socket.io/*
-            handle @websocket {
-                reverse_proxy fastfree-backend-websocket:9000
             }
 
             handle {

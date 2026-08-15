@@ -18,6 +18,10 @@
         platforms = [ "x86_64-linux" ];
       };
 
+      # Quasar (pnpm) is built with the official pnpmConfigHook +
+      # fetchPnpmDeps. `buildNpmPackage` is npm-only and does NOT support
+      # pnpm, so stdenv.mkDerivation + pnpmConfigHook is the canonical
+      # Nix way for this SPA.
       spa-app = pkgs.stdenv.mkDerivation {
         pname = "fastfree-erp-spa";
         version = "1.0.0";
@@ -31,6 +35,7 @@
           pkgs.patchelf
         ];
 
+        # Same root pnpm-lock.yaml for all 4 apps → identical FOD hash.
         pnpmDeps = pkgs.fetchPnpmDeps {
           inherit (spa-app) pname version src;
           inherit pnpm;
@@ -40,12 +45,15 @@
 
         buildInputs = [ pkgs.glibc pkgs.zlib ];
 
+        # sass-embedded ships a prebuilt dart binary that must be patched
+        # against the Nix glibc. Find it (version-agnostic) and patch it
+        # loudly — never swallow the error.
         preBuild = ''
-          DART_DIR="node_modules/.pnpm/sass-embedded-linux-x64@1.100.0/node_modules/sass-embedded-linux-x64/dart-sass/src"
-          if [ -f "$DART_DIR/dart" ]; then
+          DART=$(find node_modules/.pnpm -path '*sass-embedded-linux-x64*/dart-sass/src/dart' 2>/dev/null | head -1)
+          if [ -n "$DART" ]; then
             patchelf --set-interpreter ${pkgs.glibc}/lib/ld-linux-x86-64.so.2 \
                      --set-rpath "${pkgs.lib.makeLibraryPath [ pkgs.glibc pkgs.zlib ]}" \
-                     "$DART_DIR/dart" 2>/dev/null || true
+                     "$DART"
           fi
         '';
 
@@ -55,9 +63,7 @@
           runHook preBuild
           cd apps/fastfree_erp
           mkdir -p .quasar
-          echo '{"compilerOptions":{}}' > .quasar/tsconfig.json
-          rm -rf node_modules
-          ln -s ../../node_modules .
+          [ -f .quasar/tsconfig.json ] || echo '{"compilerOptions":{}}' > .quasar/tsconfig.json
           pnpm exec quasar prepare
           pnpm exec quasar build -m spa
           runHook postBuild
@@ -66,13 +72,15 @@
         installPhase = ''
           runHook preInstall
           mkdir -p $out/srv
-          cp -r dist/spa/* $out/srv/
+          cp -r apps/fastfree_erp/dist/spa/. $out/srv/
           runHook postInstall
         '';
 
         inherit meta;
       };
 
+      # Static-only Caddyfile. API / socket.io proxying is handled by the
+      # host's single edge Caddy (services.caddy), not inside the container.
       caddyfile = pkgs.writeText "Caddyfile" ''
         :9001 {
             root * /srv
@@ -83,16 +91,6 @@
                 X-XSS-Protection "1; mode=block"
                 Referrer-Policy "strict-origin-when-cross-origin"
                 Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' http: https: ws:"
-            }
-
-            @api path /api/*
-            handle @api {
-                reverse_proxy fastfree-backend-app:8000
-            }
-
-            @websocket path /socket.io/*
-            handle @websocket {
-                reverse_proxy fastfree-backend-websocket:9000
             }
 
             handle {

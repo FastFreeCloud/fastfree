@@ -6,7 +6,7 @@ in {
   config = lib.mkIf config.fastfree.apps.fastfree_ledger {
 
     # ── 1. Shared Podman network ───────────────────────────
-    systemd.services."fastfree-ledger-network" = {
+    systemd.services."fastfree-network" = {
       description = "Create shared podman network for Ledger containers";
       wantedBy = [ "multi-user.target" ];
       before = [
@@ -14,8 +14,8 @@ in {
       ];
       serviceConfig.Type = "oneshot";
       script = ''
-        ${pkgs.podman}/bin/podman network inspect fastfree-ledger-net >/dev/null 2>&1 || \
-          ${pkgs.podman}/bin/podman network create fastfree-ledger-net
+        ${pkgs.podman}/bin/podman network inspect fastfree-net >/dev/null 2>&1 || \
+          ${pkgs.podman}/bin/podman network create fastfree-net
       '';
     };
 
@@ -62,7 +62,7 @@ CADDY
       autoStart = true;
       ports = [ "9000:80" ];
       extraOptions = [
-        "--network=fastfree-ledger-net"
+        "--network=fastfree-net"
       ];
       volumes = [
         "/etc/fastfree/caddy/ledger-Caddyfile:/etc/caddy/Caddyfile:ro"
@@ -70,8 +70,8 @@ CADDY
     };
 
     systemd.services."fastfree-ledger-frontend" = {
-      after = [ "fastfree-ledger-network.service" "fastfree-ledger-caddyfile.service" ];
-      requires = [ "fastfree-ledger-network.service" ];
+      after = [ "fastfree-network.service" "fastfree-ledger-caddyfile.service" ];
+      requires = [ "fastfree-network.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "5";
     };

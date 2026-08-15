@@ -84,7 +84,7 @@ in {
     virtualisation.oci-containers.containers.fastfree-backend-configurator = {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       autoStart = false;
-      extraOptions = [ "--network=fastfree-net" ];
+      extraOptions = [ "--network=fastfree-net" "--add-host=host.containers.internal:host-gateway" ];
       entrypoint = "bash";
       cmd = [ "-c" ''
         ls -1 apps > sites/apps.txt;
@@ -115,7 +115,7 @@ in {
     virtualisation.oci-containers.containers.fastfree-backend-create-site = {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       autoStart = false;
-      extraOptions = [ "--network=fastfree-net" ];
+      extraOptions = [ "--network=fastfree-net" "--add-host=host.containers.internal:host-gateway" ];
       entrypoint = "bash";
       cmd = [ "-c" ''
         set -e
@@ -172,7 +172,7 @@ in {
     virtualisation.oci-containers.containers.fastfree-backend-app = {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       autoStart = true;
-      extraOptions = [ "--network=fastfree-net" ];
+      extraOptions = [ "--network=fastfree-net" "--add-host=host.containers.internal:host-gateway" ];
       environment = {
         GUNICORN_THREADS = "4";
         GUNICORN_WORKERS = "2";
