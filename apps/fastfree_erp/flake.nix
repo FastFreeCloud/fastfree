@@ -72,7 +72,7 @@
         installPhase = ''
           runHook preInstall
           mkdir -p $out/srv
-          cp -r apps/fastfree_erp/dist/spa/. $out/srv/
+          cp -r $src/apps/fastfree_erp/dist/spa/. $out/srv/
           runHook postInstall
         '';
 

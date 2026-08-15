@@ -181,14 +181,14 @@ jobs:
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/fastfree_backend")
+            "https://api.github.com/users/${{ github.repository_owner }}/packages/container/fastfree_backend")
           
           if [ "$HTTP_CODE" = "404" ]; then
             echo "📦 الـ Package غير موجود — جاري الإنشاء..."
             curl -s -X POST \
               -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               -H "Accept: application/vnd.github+json" \
-              "https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/fastfree_backend" \
+              "https://api.github.com/users/${{ github.repository_owner }}/packages/container/fastfree_backend" \
               -d '{"visibility": "public"}' || echo "⚠️ فشل الإنشاء — قد يكون موجود مسبقاً"
           elif [ "$HTTP_CODE" = "200" ]; then
             echo "✅ الـ Package موجود فعلاً"
