@@ -403,7 +403,7 @@ phase1_validate_yaml() {
     if [[ -d "$WORKFLOWS_DIR" ]]; then
         while IFS= read -r -d '' file; do
             yaml_files+=("$file")
-        done < <(find "$WORKFLOWS_DIR" -maxdepth 1 -name "*.yaml" -o -name "*.yml" -print0 2>/dev/null | sort -z)
+        done < <(find "$WORKFLOWS_DIR" -maxdepth 1 \( -name "*.yaml" -o -name "*.yml" \) -print0 2>/dev/null | sort -z)
     fi
 
     if (( ${#yaml_files[@]} == 0 )); then
@@ -450,14 +450,14 @@ phase2_delete_runs_and_cleanup() {
     while true; do
         local runs_json
         runs_json=$(gh api "repos/$REPO/actions/runs?per_page=$per_page&page=$page" --jq '
-            .workflow_runs[] | {
+            [.workflow_runs[] | {
                 id: .id,
-                number: .number,
+                number: (.run_number // .number),
                 conclusion: .conclusion,
                 status: .status,
                 event: .event,
                 created_at: .created_at
-            }' 2>/dev/null) || {
+            }]' 2>/dev/null) || {
             write_warn "Could not fetch runs (page $page)"
             break
         }
@@ -500,23 +500,12 @@ phase2_delete_runs_and_cleanup() {
     write_info "Failed runs to delete: ${#to_delete[@]}"
     write_info "Successful runs: ${#successful_runs[@]}"
 
-    # Keep the last $KEEP_RUNS successful runs
+    # Keep the last $KEEP_RUNS successful runs (informational only; not deleted)
     local runs_to_keep=()
     if (( ${#successful_runs[@]} > KEEP_RUNS )); then
-        # Sort by created_at descending and keep top $KEEP_RUNS
-        local sorted_runs
-        sorted_runs=$(printf '%s\n' "${successful_runs[@]}" |
-            jq -c -S '.created_at as $dt | . + {_dt: $dt}' |
-            sort_by -r ._dt |
-            jq -c 'del(._dt)')
-        local count=0
-        for run in $sorted_runs; do
-            if (( count >= KEEP_RUNS )); then
-                break
-            fi
-            runs_to_keep+=("$run")
-            ((count++))
-        done
+        runs_to_keep=("${successful_runs[@]:0:$KEEP_RUNS}")
+    else
+        runs_to_keep=("${successful_runs[@]}")
     fi
 
     # Delete failed runs
@@ -531,11 +520,12 @@ phase2_delete_runs_and_cleanup() {
 
         write_info "Deleting #$run_number (id: $run_id)..."
 
-        if gh -X DELETE "repos/$REPO/actions/runs/$run_id" >/dev/null 2>&1; then
+        local del_err
+        if del_err=$(gh api -X DELETE "repos/$REPO/actions/runs/$run_id" 2>&1); then
             write_ok "Deleted #$run_number"
             ((deleted++))
         else
-            write_fail "Failed to delete #$run_number"
+            write_fail "Failed to delete #$run_number: $del_err"
             ((failed_del++))
         fi
         sleep 0.3
@@ -586,11 +576,8 @@ phase2_delete_runs_and_cleanup() {
 
     write_info "Artifacts older than 30 days: ${#artifacts_to_delete[@]}"
 
-    local kept_artifacts=($(printf '%s\n' "${artifacts[@]}" |
-        jq -c -S '.created_at as $dt | . + {_dt: $dt}' |
-        sort_by -r ._dt |
-        head -n 20 |
-        jq -c 'del(._dt)'))
+    local kept_artifacts=($(printf '%s\n' "${artifacts[@]}" | jq -sc '
+        sort_by(-(.created_at | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601)) | .[0:20]'))
 
     local deleted_artifacts=0
     for artifact in "${artifacts_to_delete[@]}"; do
@@ -598,7 +585,7 @@ phase2_delete_runs_and_cleanup() {
         artifact_id=$(echo "$artifact" | jq -r '.id')
         write_info "Deleting artifact #$artifact_id..."
 
-        if gh -X DELETE "repos/$REPO/actions/artifacts/$artifact_id" >/dev/null 2>&1; then
+        if gh api -X DELETE "repos/$REPO/actions/artifacts/$artifact_id" >/dev/null 2>&1; then
             write_ok "Deleted artifact #$artifact_id"
             ((deleted_artifacts++))
         else
@@ -814,12 +801,84 @@ phase5_monitor_workflow() {
 }
 
 # ============================================================================
+# Dependency Management (jq + gh)
+# ============================================================================
+
+cmd_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Install a package via winget. Falls back gracefully if winget is missing.
+install_with_winget() {
+    local pkg_id="$1"
+    local name="$2"
+
+    if cmd_exists winget; then
+        write_info "Installing $name via winget ($pkg_id)..."
+        if winget install --accept-package-agreements --accept-source-agreements "$pkg_id" >/dev/null 2>&1; then
+            write_ok "$name installed via winget"
+            return 0
+        else
+            write_warn "winget install of $name failed"
+            return 1
+        fi
+    else
+        write_warn "winget not found - cannot auto-install $name"
+        return 1
+    fi
+}
+
+ensure_dependency() {
+    local cmd="$1"
+    local pkg_id="$2"
+    local name="$3"
+
+    if cmd_exists "$cmd"; then
+        return 0
+    fi
+
+    write_warn "$name ($cmd) is not installed."
+
+    # Try winget first
+    if install_with_winget "$pkg_id" "$name"; then
+        return 0
+    fi
+
+    # Fallback: download jq directly (Windows)
+    if [[ "$cmd" == "jq" ]]; then
+        local jq_target="/c/Windows/System32/jq.exe"
+        write_info "Downloading jq directly..."
+        if curl -fsSL "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-windows-amd64.exe" -o "$jq_target" 2>/dev/null; then
+            write_ok "jq downloaded to $jq_target"
+            return 0
+        fi
+    fi
+
+    write_fail "$name is required but could not be installed automatically."
+    write_info "Install it manually: winget install $pkg_id"
+    return 1
+}
+
+ensure_dependencies() {
+    local ok=1
+    ensure_dependency jq jqlang.jq "jq" || ok=0
+    ensure_dependency gh GitHub.cli "GitHub CLI (gh)" || ok=0
+    if [[ "$ok" != "1" ]]; then
+        write_fail "Missing required dependencies. Aborting."
+        exit 1
+    fi
+}
+
+# ============================================================================
 # Main Execution
 # ============================================================================
 
 main() {
     local phase_start
     phase_start=$(date +%s)
+
+    # Ensure jq and gh are available (install via winget if missing)
+    ensure_dependencies
 
     # Create logs directory
     mkdir -p "$LOGS_DIR"

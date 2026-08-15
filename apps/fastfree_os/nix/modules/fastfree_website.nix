@@ -19,7 +19,7 @@ in {
       '';
     };
 
-    # ── 2. Frontend container (Next.js standalone) ─────────
+    # ── 2. Frontend container (Next.js standalone server) ─
     virtualisation.oci-containers.containers.fastfree-website-frontend = {
       image = "ghcr.io/${ghAccount}/fastfree_website:latest";
       autoStart = true;

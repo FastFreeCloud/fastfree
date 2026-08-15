@@ -31,14 +31,14 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
 
-  // ── Static Export Output ────────────────────────────
-  output: 'export',
+  // ── Standalone Output (Node server, served by the Nix-built image) ──
+  output: 'standalone',
 
   // ── Transpile Packages ──────────────────────────────
   transpilePackages: ['motion'],
 
-  // ── Server External Packages (not bundled in client) ──
-  // serverExternalPackages: ['@google/genai', 'bcrypt', 'resend'], // Not needed for static export
+  // ── Server External Packages (kept external at runtime) ──
+  serverExternalPackages: ['resend'],
 
   // ── Experimental Features ───────────────────────────
   experimental: {
