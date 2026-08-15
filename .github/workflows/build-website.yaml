@@ -87,7 +87,7 @@ jobs:
       - name: Push frontend image (latest)
         working-directory: apps/fastfree_website
         env:
-          SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+          SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
         run: |
           skopeo copy \
             --dest-creds "$SKOPEO_DEST_CREDS" \
@@ -97,7 +97,7 @@ jobs:
       - name: Push frontend image (sha)
         working-directory: apps/fastfree_website
         env:
-          SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+          SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
         run: |
           skopeo copy \
             --dest-creds "$SKOPEO_DEST_CREDS" \
