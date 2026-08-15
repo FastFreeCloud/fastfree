@@ -343,12 +343,15 @@ jobs:
           echo "✅ تم حفظ الصورة كـ tarball"
 
       - name: "1️⃣4️⃣5️⃣ رفع الصورة على GHCR (skopeo)"
+        env:
+          SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "📤 جاري الرفع بـ skopeo..."
           echo ""
           echo "${{ steps.meta.outputs.tags }}" | while read -r tag; do
             if [ -n "$tag" ]; then
               skopeo copy \
+                --dest-creds "$SKOPEO_DEST_CREDS" \
                 docker-archive:/tmp/backend-image.tar \
                 "docker://${tag}"
               echo "  ✅ تم رفع: $tag"

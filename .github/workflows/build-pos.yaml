@@ -81,15 +81,21 @@ jobs:
 
       - name: Push frontend image (latest)
         working-directory: apps/fastfree_pos
+        env:
+          SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
         run: |
           skopeo copy \
+            --dest-creds "$SKOPEO_DEST_CREDS" \
             docker-archive:frontend-image.tar \
             docker://${{ env.IMAGE_PREFIX }}:latest
 
       - name: Push frontend image (sha)
         working-directory: apps/fastfree_pos
+        env:
+          SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
         run: |
           skopeo copy \
+            --dest-creds "$SKOPEO_DEST_CREDS" \
             docker-archive:frontend-image.tar \
             docker://${{ env.IMAGE_PREFIX }}:${{ github.sha }}
 
