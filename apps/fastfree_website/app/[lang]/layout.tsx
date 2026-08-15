@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { El_Messiri, Tajawal } from 'next/font/google';
 import '../globals.css';
 import { LanguageProvider } from '@/lib/language-provider';
 import { ThemeProvider } from '@/lib/theme-provider';
@@ -7,20 +6,6 @@ import SharedNavbar from '@/components/SharedNavbar';
 import SharedFooter from '@/components/SharedFooter';
 import { getLocaleStaticParams, localeDirection, type Locale } from '@/lib/i18n';
 import { SITE, SITE_URL, DEFAULT_DESCRIPTION } from '@/lib/seo-data';
-
-const elMessiri = El_Messiri({
-  subsets: ['arabic', 'latin'],
-  display: 'swap',
-  variable: '--ff-font-heading',
-  weight: ['400', '500', '600', '700'],
-});
-
-const tajawal = Tajawal({
-  subsets: ['arabic', 'latin'],
-  display: 'swap',
-  variable: '--ff-font-body',
-  weight: ['200', '300', '400', '500', '700', '800', '900'],
-});
 
 export function generateStaticParams() {
   return getLocaleStaticParams();
@@ -63,7 +48,6 @@ export default async function RootLayout({
       lang={lang}
       dir={dir}
       suppressHydrationWarning
-      className={`${elMessiri.variable} ${tajawal.variable}`}
     >
       <head>
         <link rel="preconnect" href={SITE_URL} />
