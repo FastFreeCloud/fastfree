@@ -64,7 +64,7 @@
         installPhase = ''
           runHook preInstall
           mkdir -p $out/srv
-          cp -r $src/apps/fastfree_ledger/dist/spa/. $out/srv/
+          cp -r dist/spa/. $out/srv/
           runHook postInstall
         '';
 
