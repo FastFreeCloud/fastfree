@@ -118,6 +118,11 @@
         maxLayers = 50;
 
         config = {
+          Labels = {
+            "org.opencontainers.image.source" = "https://github.com/FastFreeCloud/fastfree";
+            "org.opencontainers.image.description" = "FastFree POS";
+            "org.opencontainers.image.title" = "fastfree_pos";
+          };
           Cmd = [ "${pkgs.caddy}/bin/caddy" "run" "--config" "/etc/caddy/Caddyfile" ];
           ExposedPorts = { "9003/tcp" = {}; };
         };

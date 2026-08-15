@@ -83,6 +83,11 @@
           WorkingDir = "${website-app}";
           Cmd = [ "${nodejs}/bin/node" "${website-app}/server.js" ];
           ExposedPorts = { "3000/tcp" = {}; };
+          Labels = {
+            "org.opencontainers.image.source" = "https://github.com/FastFreeCloud/fastfree";
+            "org.opencontainers.image.description" = "FastFree Website";
+            "org.opencontainers.image.title" = "fastfree_website";
+          };
         };
       };
 
