@@ -56,8 +56,9 @@ jobs:
         working-directory: apps/fastfree_os
         run: |
           echo "📦 Creating WSL tarball..."
-          chmod +x ./result/bin/nixos-wsl-tarball-builder
-          ./result/bin/nixos-wsl-tarball-builder ${{ env.WSL_TARBALL }}
+          cp -r ./result/bin/nixos-wsl-tarball-builder ./tarball-builder
+          chmod +x ./tarball-builder
+          ./tarball-builder ${{ env.WSL_TARBALL }}
           echo "✅ WSL tarball created"
           ls -lh ${{ env.WSL_TARBALL }}
 
