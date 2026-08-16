@@ -68,7 +68,7 @@ jobs:
           echo "========================================="
           sshpass -p '${{ env.VPS_PASS }}' ssh -o StrictHostKeyChecking=no \
             ${{ env.VPS_USER }}@${{ env.VPS_IP }} \
-            "cd /etc/fastfree && nixos-rebuild switch --flake .#${{ env.DEPLOY_CLIENT }} --extra-experimental-features 'nix-command flakes'"
+            "cd /etc/fastfree && nixos-rebuild switch --flake .#${{ env.DEPLOY_CLIENT }} --accept-flake-config"
           
           echo "✅ Deploy completed!"
 
@@ -101,6 +101,6 @@ jobs:
           echo "========================================="
           sshpass -p '${{ env.VPS_PASS }}' ssh -o StrictHostKeyChecking=no \
             ${{ env.VPS_USER }}@${{ env.VPS_IP }} \
-            "nixos-rebuild switch --rollback"
+            "nixos-rebuild switch --rollback --accept-flake-config"
           
           echo "✅ Rollback completed"
