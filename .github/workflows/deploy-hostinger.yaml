@@ -3,27 +3,16 @@ name: "🚀 Deploy to Hostinger VPS"
 on:
   workflow_dispatch:
     inputs:
-      client:
-        description: "Client to deploy"
-        required: true
-        default: "client3"
-        type: choice
-        options:
-          - client3
       dry_run:
-        description: "Dry run (check only, no deploy)"
+        description: "Check only (no deploy)"
         required: false
         default: false
         type: boolean
-  push:
-    branches: [master]
-    paths:
-      - "apps/fastfree_os/**"
-      - ".github/workflows/deploy-hostinger.yaml"
 
 env:
-  VPS_HOST: "fastfree.cloud"
+  VPS_IP: "76.13.51.10"
   VPS_USER: "root"
+  VPS_PASS: "fastfree@2026"
   DEPLOY_CLIENT: "client3"
 
 jobs:
@@ -34,115 +23,63 @@ jobs:
       - name: "📥 Checkout"
         uses: actions/checkout@v4
 
-      - name: "🔧 Install Nix"
-        uses: cachix/install-nix-action@v27
-        with:
-          extra_nix_config: |
-            accept-flake-config = true
-
-      - name: "📋 Prepare SSH Key"
+      - name: "🔧 Setup SSH"
         run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass openssh-client
           mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/vps_key
-          chmod 600 ~/.ssh/vps_key
-          ssh-keyscan -H ${{ env.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H ${{ env.VPS_IP }} >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: "🔍 Check Current Deployment"
         run: |
           echo "========================================="
           echo "🔍 Checking current deployment on VPS..."
           echo "========================================="
-          
-          ssh -i ~/.ssh/vps_key -o StrictHostKeyChecking=no \
-            ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "nixos-version && hostname && cat /etc/fastfree/flake-config 2>/dev/null || echo 'No flake-config found'"
-          
-          echo ""
-          echo "========================================="
-          echo "📋 Current system profile:"
-          echo "========================================="
-          
-          ssh -i ~/.ssh/vps_key -o StrictHostKeyChecking=no \
-            ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "nix profile list 2>/dev/null || echo 'No profile found'"
+          sshpass -p '${{ env.VPS_PASS }}' ssh -o StrictHostKeyChecking=no \
+            ${{ env.VPS_USER }}@${{ env.VPS_IP }} \
+            "echo '📋 NixOS Version:' && nixos-version && echo '' && echo '📋 Hostname:' && hostname && echo '' && echo '📋 Flake Config:' && cat /etc/fastfree/flake-config 2>/dev/null || echo 'Not found'"
 
-      - name: "📦 Copy Configuration to VPS"
+      - name: "📦 Deploy NixOS Configuration"
         if: ${{ inputs.dry_run != true }}
         run: |
           echo "========================================="
-          echo "📦 Copying configuration to VPS..."
+          echo "📦 Deploying to VPS..."
           echo "========================================="
           
           # Create remote directory
-          ssh -i ~/.ssh/vps_key -o StrictHostKeyChecking=no \
-            ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+          sshpass -p '${{ env.VPS_PASS }}' ssh -o StrictHostKeyChecking=no \
+            ${{ env.VPS_USER }}@${{ env.VPS_IP }} \
             "mkdir -p /etc/fastfree"
           
-          # Copy flake files
-          scp -i ~/.ssh/vps_key -o StrictHostKeyChecking=no -r \
+          # Copy configuration files
+          sshpass -p '${{ env.VPS_PASS }}' scp -o StrictHostKeyChecking=no -r \
             apps/fastfree_os/flake.nix \
             apps/fastfree_os/flake.lock \
-            ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:/etc/fastfree/
-          
-          # Copy nix directory
-          scp -i ~/.ssh/vps_key -o StrictHostKeyChecking=no -r \
             apps/fastfree_os/nix \
-            ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:/etc/fastfree/
+            ${{ env.VPS_USER }}@${{ env.VPS_IP }}:/etc/fastfree/
           
-          # Copy apps directory (needed for local packages)
-          scp -i ~/.ssh/vps_key -o StrictHostKeyChecking=no -r \
-            apps/fastfree_os/apps \
-            ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:/etc/fastfree/ 2>/dev/null || true
-          
-          echo "✅ Configuration copied successfully"
+          echo "✅ Configuration copied"
 
-      - name: "🔄 Deploy NixOS Configuration"
+      - name: "🔄 Run nixos-rebuild switch"
         if: ${{ inputs.dry_run != true }}
         run: |
           echo "========================================="
-          echo "🔄 Deploying NixOS configuration..."
+          echo "🔄 Running nixos-rebuild switch..."
           echo "========================================="
+          sshpass -p '${{ env.VPS_PASS }}' ssh -o StrictHostKeyChecking=no \
+            ${{ env.VPS_USER }}@${{ env.VPS_IP }} \
+            "cd /etc/fastfree && nixos-rebuild switch --flake .#${{ env.DEPLOY_CLIENT }} --extra-experimental-features 'nix-command flakes'"
           
-          ssh -i ~/.ssh/vps_key -o StrictHostKeyChecking=no \
-            ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "cd /etc/fastfree && sudo nixos-rebuild switch --flake .#${{ env.DEPLOY_CLIENT }} --extra-experimental-features 'nix-command flakes'"
-          
-          echo "✅ Deployment completed successfully"
+          echo "✅ Deploy completed!"
 
       - name: "✅ Verify Deployment"
         run: |
           echo "========================================="
-          echo "✅ Verifying deployment..."
+          echo "✅ Verification"
           echo "========================================="
-          
-          echo ""
-          echo "📋 System Version:"
-          ssh -i ~/.ssh/vps_key -o StrictHostKeyChecking=no \
-            ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "nixos-version"
-          
-          echo ""
-          echo "📋 Hostname:"
-          ssh -i ~/.ssh/vps_key -o StrictHostKeyChecking=no \
-            ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "hostname"
-          
-          echo ""
-          echo "📋 Flake Config:"
-          ssh -i ~/.ssh/vps_key -o StrictHostKeyChecking=no \
-            ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "cat /etc/fastfree/flake-config 2>/dev/null || echo 'Not found'"
-          
-          echo ""
-          echo "📋 Services Status:"
-          ssh -i ~/.ssh/vps_key -o StrictHostKeyChecking=no \
-            ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "systemctl list-units --type=service --state=running | grep -E 'fastfree|caddy|mariadb|wireguard' || echo 'No matching services'"
-          
-          echo ""
-          echo "========================================="
-          echo "✅ Deployment verification complete!"
-          echo "========================================="
+          sshpass -p '${{ env.VPS_PASS }}' ssh -o StrictHostKeyChecking=no \
+            ${{ env.VPS_USER }}@${{ env.VPS_IP }} \
+            "echo '📋 NixOS Version:' && nixos-version && echo '' && echo '📋 Hostname:' && hostname && echo '' && echo '📋 Active Services:' && systemctl list-units --type=service --state=running | grep -E 'fastfree|caddy|mariadb' || echo 'No matching services'"
 
   rollback:
     name: "↩️ Rollback"
@@ -150,33 +87,20 @@ jobs:
     runs-on: ubuntu-latest
     if: failure()
     steps:
-      - name: "📋 Prepare SSH Key"
+      - name: "🔧 Setup SSH"
         run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass openssh-client
           mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/vps_key
-          chmod 600 ~/.ssh/vps_key
-          ssh-keyscan -H ${{ env.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H ${{ env.VPS_IP }} >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: "↩️ Rollback to Previous Generation"
+      - name: "↩️ Rollback"
         run: |
           echo "========================================="
-          echo "↩️ Rolling back to previous generation..."
+          echo "↩️ Rolling back..."
           echo "========================================="
-          
-          ssh -i ~/.ssh/vps_key -o StrictHostKeyChecking=no \
-            ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "sudo nixos-rebuild switch --rollback"
+          sshpass -p '${{ env.VPS_PASS }}' ssh -o StrictHostKeyChecking=no \
+            ${{ env.VPS_USER }}@${{ env.VPS_IP }} \
+            "nixos-rebuild switch --rollback"
           
           echo "✅ Rollback completed"
-
-      - name: "📋 Verify Rollback"
-        run: |
-          echo "========================================="
-          echo "📋 Verifying rollback..."
-          echo "========================================="
-          
-          ssh -i ~/.ssh/vps_key -o StrictHostKeyChecking=no \
-            ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "nixos-version && hostname"
-          
-          echo "✅ Rollback verification complete"
