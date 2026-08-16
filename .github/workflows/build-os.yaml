@@ -251,6 +251,14 @@ jobs:
       contents: write
       packages: write
 
+  build_wsl_image:
+    name: 🪟 بناء صورة WSL
+    uses: ./.github/workflows/build-wsl.yaml
+    needs: [syntax_check, flake_validate, evaluation]
+    secrets: inherit
+    permissions:
+      contents: write
+
   # ═══════════════════════════════════════════════════════════════
   #  المرحلة 2: اختبارات الخدمات — NixOS VM Tests
   # ═══════════════════════════════════════════════════════════════
@@ -327,7 +335,7 @@ jobs:
   test_report:
     name: 📊 التقرير النهائي
     runs-on: ubuntu-latest
-    needs: [syntax_check, flake_validate, evaluation, service_tests]
+    needs: [syntax_check, flake_validate, evaluation, service_tests, build_wsl_image]
     if: always()
     steps:
       - name: إنشاء التقرير
@@ -341,5 +349,6 @@ jobs:
             echo "| فحص Flake | ${{ needs.flake_validate.result == 'success' && '✅' || '❌' }} |"
             echo "| تقييم التكوينات | ${{ needs.evaluation.result == 'success' && '✅' || '❌' }} |"
             echo "| اختبارات الخدمات | ${{ needs.service_tests.result == 'success' && '✅' || '❌' }} |"
+            echo "| بناء WSL | ${{ needs.build_wsl_image.result == 'success' && '✅' || '❌' }} |"
           } >> "$GITHUB_STEP_SUMMARY"
         shell: bash
