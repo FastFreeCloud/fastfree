@@ -1,6 +1,11 @@
 name: build-hr
 
 on:
+  push:
+    branches: [main, master]
+    paths:
+      - "apps/fastfree_hr/**"
+      - ".github/workflows/build-hr.yaml"
   workflow_dispatch:
   workflow_call:
 

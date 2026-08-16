@@ -5,6 +5,11 @@
 name: build-wsl
 
 on:
+  push:
+    branches: [main, master]
+    paths:
+      - "apps/fastfree_os/**"
+      - ".github/workflows/build-wsl.yaml"
   workflow_dispatch:
   workflow_call:
 

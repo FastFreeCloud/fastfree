@@ -1,6 +1,11 @@
 name: build-website
 
 on:
+  push:
+    branches: [main, master]
+    paths:
+      - "apps/fastfree_website/**"
+      - ".github/workflows/build-website.yaml"
   workflow_dispatch:
   workflow_call:
 
