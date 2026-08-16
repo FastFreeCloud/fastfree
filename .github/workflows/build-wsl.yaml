@@ -58,7 +58,7 @@ jobs:
           echo "📦 Creating WSL tarball..."
           cp -r ./result/bin/nixos-wsl-tarball-builder ./tarball-builder
           chmod +x ./tarball-builder
-          ./tarball-builder ${{ env.WSL_TARBALL }}
+          sudo ./tarball-builder ${{ env.WSL_TARBALL }}
           echo "✅ WSL tarball created"
           ls -lh ${{ env.WSL_TARBALL }}
 
