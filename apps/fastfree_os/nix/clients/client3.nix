@@ -50,7 +50,7 @@
     enable    = true;
     address   = "10.100.0.7";
     listenPort = 51820;
-    privateKey = "TBD_RUN_WG_KEYS_SCRIPT";
+    privateKey = "QHQ7138SsIV9VxSN3RNOQqr2VOqJ6N934AAdbJbL9Vo=";
     peers = {
       dev = {
         publicKey = "fyQoOuejO7n+KKtWHFmqIQSGpfrYIJXwuRXNfdQjPyo=";
@@ -86,27 +86,27 @@
         allowedIPs = [ "10.100.0.5/32" "10.100.0.0/24" ];
       };
       c3-device1 = {
-        publicKey = "TBD_RUN_WG_KEYS_SCRIPT";
+        publicKey = "rbrbWmSZvggjRdmKu0ach3Q0doyjp8y2RDx9M45WenA=";
         address   = "10.100.3.1";
         allowedIPs = [ "10.100.3.1/32" ];
       };
       c3-device2 = {
-        publicKey = "TBD_RUN_WG_KEYS_SCRIPT";
+        publicKey = "laAp+UUU/E/w2b0ybTibCvDsVu2dh4USRYz5NnvlGVo=";
         address   = "10.100.3.2";
         allowedIPs = [ "10.100.3.2/32" ];
       };
       c3-device3 = {
-        publicKey = "TBD_RUN_WG_KEYS_SCRIPT";
+        publicKey = "cDQa13iYqdL1Cnf5JS18sL599CFX2ADhQVouJsM7Yy4=";
         address   = "10.100.3.3";
         allowedIPs = [ "10.100.3.3/32" ];
       };
       c3-device4 = {
-        publicKey = "TBD_RUN_WG_KEYS_SCRIPT";
+        publicKey = "A3IiosJh6cVXOQWjbXEDAwvpXhejrPn4o9SS7IN8SDM=";
         address   = "10.100.3.4";
         allowedIPs = [ "10.100.3.4/32" ];
       };
       c3-device5 = {
-        publicKey = "TBD_RUN_WG_KEYS_SCRIPT";
+        publicKey = "MRqjg01M7CvK3XT8awMCX+90H5abJ+s2cSn4JcREdHQ=";
         address   = "10.100.3.5";
         allowedIPs = [ "10.100.3.5/32" ];
       };

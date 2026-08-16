@@ -51,6 +51,13 @@ $DEVICES = @{
         domain      = "fastfree.cloud"
         connects_to = "dev"
     }
+    "client3" = @{
+        ip          = "10.100.0.7"
+        port        = 51820
+        role        = "sub-hub"
+        domain      = "client3.fastfree.cloud"
+        connects_to = "dev"
+    }
     # Direct clients (connect to dev)
     "windows" = @{
         ip          = "10.100.0.4"
@@ -174,6 +181,42 @@ $DEVICES = @{
         domain      = $null
         connects_to = "client2"
     }
+    # client3 devices (connect to client3 directly)
+    "c3-device1" = @{
+        ip          = "10.100.3.1"
+        port        = 51820
+        role        = "device"
+        domain      = $null
+        connects_to = "client3"
+    }
+    "c3-device2" = @{
+        ip          = "10.100.3.2"
+        port        = 51820
+        role        = "device"
+        domain      = $null
+        connects_to = "client3"
+    }
+    "c3-device3" = @{
+        ip          = "10.100.3.3"
+        port        = 51820
+        role        = "device"
+        domain      = $null
+        connects_to = "client3"
+    }
+    "c3-device4" = @{
+        ip          = "10.100.3.4"
+        port        = 51820
+        role        = "device"
+        domain      = $null
+        connects_to = "client3"
+    }
+    "c3-device5" = @{
+        ip          = "10.100.3.5"
+        port        = 51820
+        role        = "device"
+        domain      = $null
+        connects_to = "client3"
+    }
 }
 
 # ── Helpers ──────────────────────────────────────────────────────
@@ -200,6 +243,93 @@ function Warn($msg) {
     Write-Host "  [!!] $msg" -ForegroundColor Yellow
 }
 
+# ── Winget Install ────────────────────────────────────────────────
+function Ensure-Winget {
+    # Step 1: Check if winget already works
+    $test = Get-Command winget -ErrorAction SilentlyContinue
+    if ($test) {
+        Info "winget already available"
+        return $true
+    }
+
+    # Step 2: Try to find winget via AppX package (it's installed but not in PATH)
+    $pkg = Get-AppxPackage Microsoft.DesktopAppInstaller -ErrorAction SilentlyContinue
+    if ($pkg) {
+        $wingetPath = Join-Path $pkg.InstallLocation "winget.exe"
+        if (Test-Path $wingetPath) {
+            Ok "winget found via AppX package: $wingetPath"
+            $env:Path += ";$($pkg.InstallLocation)"
+            $test = Get-Command winget -ErrorAction SilentlyContinue
+            if ($test) {
+                Info "winget now available in PATH"
+                return $true
+            }
+        }
+    }
+
+    # Step 3: Try common paths
+    $wingetPaths = @(
+        "$env:LOCALAPPDATA\Microsoft\WindowsApps\winget.exe",
+        "C:\Program Files\WindowsApps\Microsoft.DesktopAppInstaller_*\winget.exe"
+    )
+    foreach ($p in $wingetPaths) {
+        $found = Get-Item $p -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($found) {
+            Info "winget found at: $($found.FullName)"
+            $env:Path += ";$(Split-Path $found.FullName)"
+            $test = Get-Command winget -ErrorAction SilentlyContinue
+            if ($test) {
+                Info "winget now available"
+                return $true
+            }
+        }
+    }
+
+    # Step 4: Install winget (only if truly not installed)
+    Warn "winget not found. Installing from Microsoft..."
+    try {
+        $bundleUrl = "https://aka.ms/getwinget"
+        $bundlePath = "$env:TEMP\winget.msixbundle"
+
+        Info "Downloading winget from $bundleUrl ..."
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $bundleUrl -OutFile $bundlePath -UseBasicParsing
+        Ok "Downloaded winget bundle"
+
+        Info "Installing winget..."
+        Add-AppxPackage -Path $bundlePath -ErrorAction Stop
+        Start-Sleep -Seconds 5
+
+        # Refresh PATH
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+        # Check again
+        $test = Get-Command winget -ErrorAction SilentlyContinue
+        if ($test) {
+            Ok "winget installed successfully"
+            return $true
+        }
+
+        # Try AppX again after install
+        $pkg = Get-AppxPackage Microsoft.DesktopAppInstaller -ErrorAction SilentlyContinue
+        if ($pkg) {
+            $wingetPath = Join-Path $pkg.InstallLocation "winget.exe"
+            if (Test-Path $wingetPath) {
+                Ok "winget found after install: $wingetPath"
+                $env:Path += ";$($pkg.InstallLocation)"
+                return $true
+            }
+        }
+
+        Fail "winget installation completed but not available"
+        return $false
+    }
+    catch {
+        Fail "Failed to install winget: $_"
+        return $false
+    }
+}
+
 # ── WireGuard Check & Install ────────────────────────────────────
 function Ensure-WireGuard {
     if (Test-Path $WG_PATH) {
@@ -207,17 +337,65 @@ function Ensure-WireGuard {
         return $true
     }
 
-    Warn "WireGuard not found. Installing via winget..."
+    Warn "WireGuard not found. Installing..."
+
+    # Step 1: Ensure winget is installed FIRST
+    Info "Step 1: Ensuring winget is available..."
+    if (-not (Ensure-Winget)) {
+        Fail "Cannot continue without winget"
+        return $false
+    }
+
+    # Step 2: Use winget to install WireGuard
+    Info "Step 2: Installing WireGuard via winget..."
     try {
         winget install -e --id WireGuard.WireGuard --silent --accept-package-agreements --accept-source-agreements
         if (Test-Path $WG_PATH) {
-            Ok "WireGuard installed successfully"
+            Ok "WireGuard installed successfully via winget"
             return $true
         }
-        else {
-            Fail "WireGuard installed but wg.exe not found at: $WG_PATH"
-            return $false
+
+        # Maybe installed to a different path
+        $found = Get-ChildItem "C:\Program Files\WireGuard" -Filter "wg.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($found) {
+            $script:WG_PATH = $found.FullName
+            Ok "WireGuard installed at: $($found.FullName)"
+            return $true
         }
+
+        Warn "winget install completed but wg.exe not found"
+    }
+    catch {
+        Warn "winget failed: $_"
+    }
+
+    # Step 3: Fallback - download MSI directly
+    Info "Step 3: Fallback - downloading MSI directly..."
+    try {
+        $msiUrl = "https://download.wireguard.com/windows-client/wireguard-amd64-0.5.3.msi"
+        $msiPath = "$env:TEMP\wireguard-amd64-0.5.3.msi"
+
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $msiUrl -OutFile $msiPath -UseBasicParsing
+        Ok "Downloaded WireGuard MSI"
+
+        $proc = Start-Process msiexec.exe -ArgumentList "/i `"$msiPath`" DO_NOT_LAUNCH=1 /qn /norestart" -Verb RunAs -Wait -PassThru
+
+        if ($proc.ExitCode -eq 0 -or $proc.ExitCode -eq 3010) {
+            Ok "WireGuard installed via MSI"
+            return (Test-Path $WG_PATH)
+        }
+
+        # Check alternative paths
+        $found = Get-ChildItem "C:\Program Files\WireGuard" -Filter "wg.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($found) {
+            $script:WG_PATH = $found.FullName
+            Ok "WireGuard found at: $($found.FullName)"
+            return $true
+        }
+
+        Fail "WireGuard install failed (exit code: $($proc.ExitCode))"
+        return $false
     }
     catch {
         Fail "Failed to install WireGuard: $_"
@@ -514,9 +692,17 @@ function Invoke-Cleanup {
 # ── Main ─────────────────────────────────────────────────────────
 Header "FastFree WireGuard Key Generator (PowerShell)"
 
-# Ensure WireGuard CLI is available
+# Step 1: Ensure winget is available FIRST (it's the package manager)
+Info "=== Step 1: Ensuring winget is available ==="
+if (-not (Ensure-Winget)) {
+    Fail "Cannot continue without winget"
+    exit 1
+}
+
+# Step 2: Ensure WireGuard CLI is available (installed via winget)
+Info "=== Step 2: Ensuring WireGuard CLI is available ==="
 if (-not (Ensure-WireGuard)) {
-    Fail "Cannot proceed without WireGuard CLI. Install manually: winget install WireGuard.WireGuard"
+    Fail "Cannot proceed without WireGuard CLI"
     exit 1
 }
 

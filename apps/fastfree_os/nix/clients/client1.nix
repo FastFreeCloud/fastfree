@@ -76,7 +76,7 @@
         allowedIPs = [ "10.100.0.6/32" "10.100.4.0/24" ];
       };
       client3 = {
-        publicKey = "TBD_RUN_WG_KEYS_SCRIPT";
+        publicKey = "9lJj2TBXB8Z4r8fp4/eKL6nNiCahaAOxGa74sEXbFlU=";
         address   = "10.100.0.7";
         allowedIPs = [ "10.100.0.7/32" "10.100.3.0/24" ];
       };
