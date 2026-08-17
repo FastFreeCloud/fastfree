@@ -153,7 +153,7 @@ in {
 
     # ── Auto-derive githubRepo from githubAccount ──────────
     fastfree.githubRepo = lib.mkDefault
-      "https://github.com/${config.fastfree.githubAccount}/fastfree_os.git";
+      "https://github.com/${config.fastfree.githubAccount}/fastfree.git";
 
     # ── FastFree Config Files ─────────────────────────────
     environment.etc."fastfree/github-repo".text = config.fastfree.githubRepo;

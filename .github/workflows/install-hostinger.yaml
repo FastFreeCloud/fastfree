@@ -1,0 +1,41 @@
+name: "📥 Install Hostinger VPS (nixos-anywhere)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type INSTALL to wipe and install the VPS"
+        required: true
+        default: ""
+
+jobs:
+  install:
+    name: "📥 Install client3 via nixos-anywhere"
+    runs-on: ubuntu-latest
+    if: ${{ inputs.confirm == 'INSTALL' }}
+    steps:
+      - name: "📥 Checkout"
+        uses: actions/checkout@v4
+
+      - name: "🔧 Install Nix"
+        uses: DeterminateSystems/nix-installer-action@v10
+
+      - name: "🌟 Magic Nix Cache"
+        uses: DeterminateSystems/magic-nix-cache-action@v10
+
+      - name: "🚀 nixos-anywhere install"
+        env:
+          SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
+        run: |
+          nix run github:nix-community/nixos-anywhere -- \
+            --flake ./apps/fastfree_os#client3 \
+            --target-host root@${{ secrets.CLIENT3_IP }} \
+            --env-password
+
+      - name: "✅ Verify (SSH key)"
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.CLIENT3_DEPLOY_KEY }}" > ~/.ssh/client3
+          chmod 600 ~/.ssh/client3
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/client3 \
+            root@${{ secrets.CLIENT3_IP }} "nixos-version && hostname && echo DEPLOY_OK"

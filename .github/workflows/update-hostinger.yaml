@@ -1,0 +1,37 @@
+name: "🔄 Update Hostinger VPS (colmena)"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update:
+    name: "🔄 Apply client3 config via colmena"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "📥 Checkout"
+        uses: actions/checkout@v4
+
+      - name: "🔧 Install Nix"
+        uses: DeterminateSystems/nix-installer-action@v10
+
+      - name: "🌟 Magic Nix Cache"
+        uses: DeterminateSystems/magic-nix-cache-action@v10
+
+      - name: "🔑 Setup SSH key"
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.CLIENT3_DEPLOY_KEY }}" > ~/.ssh/client3
+          chmod 600 ~/.ssh/client3
+          printf 'Host fastfree.cloud\n  HostName %s\n  User root\n  IdentityFile ~/.ssh/client3\n  StrictHostKeyChecking no\n' "${{ secrets.CLIENT3_IP }}" >> ~/.ssh/config
+          chmod 600 ~/.ssh/config
+
+      - name: "📦 colmena apply"
+        working-directory: apps/fastfree_os
+        run: |
+          nix run github:nix-community/colmena -- apply --on client3
+
+      - name: "✅ Verify"
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/client3 \
+            root@${{ secrets.CLIENT3_IP }} \
+            "systemctl list-units --type=service --state=running | grep -E 'fastfree|caddy|mariadb' || true"

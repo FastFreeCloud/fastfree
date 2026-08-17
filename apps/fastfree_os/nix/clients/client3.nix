@@ -34,13 +34,16 @@
   };
 
   githubAccount = "FastFreeCloud";
-  githubToken   = "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";
+
+  users.users.root.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILA5GRXOSiMnQEib+pXSH9CU10ujSc4qX8/GjblJKgM7 client3-deploy"
+  ];
 
   networking = {
     nameservers = [ "1.1.1.1" "8.8.8.8" ];
   };
 
-  gitOrigin = "https://github.com/FastFreeCloud/fastfree_os.git";
+  gitOrigin = "https://github.com/FastFreeCloud/fastfree.git";
 
   extra = {
     timezone  = "Africa/Cairo";
