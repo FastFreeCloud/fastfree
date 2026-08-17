@@ -5,13 +5,13 @@
 
   deployType = "hostinger";
   deployHost = "fastfree.cloud";
-  deployPassword = "fastfree@2026";
+  deployPassword = "Fastfree@2026";
 
   passwords = {
-    root        = "fastfree@2026";
-    admin       = "fastfree@2026";
-    mariadbRoot = "fastfree@2026";
-    mariadbUser = "fastfree@2026";
+    root        = "Fastfree@2026";
+    admin       = "Fastfree@2026";
+    mariadbRoot = "Fastfree@2026";
+    mariadbUser = "Fastfree@2026";
   };
 
   apps = {
