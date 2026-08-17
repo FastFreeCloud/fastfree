@@ -32,9 +32,7 @@
   };
 
   githubAccount = "FastFreeCloud";
-  githubToken   = "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";
-
-  gitOrigin = "https://github.com/FastFreeCloud/fastfree_os.git";
+  gitOrigin = "https://github.com/FastFreeCloud/fastfree.git";
 
   extra = {
     timezone  = "Africa/Cairo";
