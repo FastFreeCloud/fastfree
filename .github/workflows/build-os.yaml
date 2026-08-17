@@ -11,14 +11,12 @@ on:
       - "apps/fastfree_os/nix/**"
       - "apps/fastfree_os/flake.nix"
       - "apps/fastfree_os/flake.lock"
-      - ".github/workflows/*.yaml"
   pull_request:
     branches: [main, master]
     paths:
       - "apps/fastfree_os/nix/**"
       - "apps/fastfree_os/flake.nix"
       - "apps/fastfree_os/flake.lock"
-      - ".github/workflows/*.yaml"
   workflow_dispatch:
 
 concurrency:
