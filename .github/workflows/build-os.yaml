@@ -264,7 +264,7 @@ jobs:
     name: 🧪 اختبارات الخدمات
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    needs: [build_backend_image, build_erp_image, build_ledger_image, build_hr_image, build_pos_image, build_website_image]
+    needs: [syntax_check, flake_validate, evaluation]
     steps:
       - name: تأمين صلاحيات Git
         run: git config --global safe.directory '*'
