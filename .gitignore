@@ -1,3 +1,6 @@
+# Scripts (local only, not uploaded to GitHub)
+scripts/
+
 # Dependencies
 node_modules/
 .pnpm-store/
