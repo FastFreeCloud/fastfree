@@ -74,7 +74,7 @@ jobs:
           echo "📊 SIZE=$(stat --printf='%s' ${{ env.WSL_ARCHIVE }})" >> "$GITHUB_ENV"
 
       - name: Upload WSL artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.WSL_ARCHIVE }}
           path: apps/fastfree_os/${{ env.WSL_ARCHIVE }}
@@ -95,7 +95,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download WSL artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: fastfree_client1.wsl.7z
 
@@ -135,17 +135,16 @@ jobs:
 
       - name: Print install instructions
         run: |
-          echo ""
-          echo "══════════════════════════════════════════════════════════════"
-          echo "  🪟 FastFree OS — WSL Installation"
-          echo "══════════════════════════════════════════════════════════════"
-          echo ""
-          echo "  1. Download: fastfree_client1.wsl.7z"
-          echo "  2. Extract:"
-          echo "     7z x fastfree_client1.wsl.7z -pFastOS@2026"
-          echo "  3. Import:"
-          echo "     wsl --import fastfree D:\\fastfree\\fastos fastfree_client1.wsl --version 2"
-          echo "  4. Login:"
-          echo "     wsl -d fastfree"
-          echo ""
-          echo "══════════════════════════════════════════════════════════════"
+          printf '%s\n' ""
+          printf '%s\n' "══════════════════════════════════════════════════════════════"
+          printf '%s\n' "  🪟 FastFree OS — WSL Installation"
+          printf '%s\n' "══════════════════════════════════════════════════════════════"
+          printf '%s\n' ""
+          printf '%s\n' "  1. Download: fastfree_client1.wsl.7z"
+          printf '%s\n' "  2. Extract:"
+          printf '%s\n' "     7z x fastfree_client1.wsl.7z -pFastOS@2026"
+          printf '%s\n' "  3. Import:"
+          printf '%s\n' "     wsl --import fastfree D:\fastfree\fastos fastfree_client1.wsl --version 2"
+          printf '%s\n' "  4. Login:"
+          printf '%s\n' "     wsl -d fastfree"
+          printf '%s\n' ""
