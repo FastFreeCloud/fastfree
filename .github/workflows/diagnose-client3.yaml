@@ -1,0 +1,142 @@
+###############################################################################
+# FastFree OS — Diagnostic & Health Check
+# Fihss kol shay 3la client3: containers, services, network, ports
+###############################################################################
+
+name: "🔍 Diagnose client3"
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: diagnose-client3-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    name: 🔍 فحص شامل — client3
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Run full diagnostic
+        env:
+          SSH_PASSWORD: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
+        run: |
+          set -e
+          IP="76.13.51.10"
+          USER="root"
+          
+          SSH_CMD="sshpass -p '$SSH_PASSWORD' ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 $USER@$IP"
+          
+          echo "════════════════════════════════════════════════════════"
+          echo "  🔍 FastFree OS — Diagnostic Report"
+          echo "  📅 $(date)"
+          echo "════════════════════════════════════════════════════════"
+          echo ""
+          
+          # ── 1. System Info ──
+          echo "═══ 1. SYSTEM INFO ═══"
+          eval $SSH_CMD "hostname; echo '---'; uname -a; echo '---'; uptime; echo '---'; cat /etc/os-release | head -5"
+          echo ""
+          
+          # ── 2. Network ──
+          echo "═══ 2. NETWORK ═══"
+          eval $SSH_CMD "ip addr show ens18 | grep 'inet '; echo '---'; ip route show default; echo '---'; ping -c 2 -W 3 8.8.8.8 || echo 'PING FAILED'; echo '---'; ping -c 2 -W 3 ghcr.io || echo 'DNS FAILED'"
+          echo ""
+          
+          # ── 3. DNS Resolution ──
+          echo "═══ 3. DNS RESOLUTION ═══"
+          eval $SSH_CMD "resolvectl status | head -10 || echo 'resolvectl not available'"
+          echo ""
+          
+          # ── 4. Firewall ──
+          echo "═══ 4. FIREWALL (nft list ruleset) ═══"
+          eval $SSH_CMD "nft list ruleset 2>/dev/null | head -30 || echo 'nft not available'"
+          echo ""
+          
+          # ── 5. Listening Ports ──
+          echo "═══ 5. LISTENING PORTS ═══"
+          eval $SSH_CMD "ss -tlnp | grep -E '(22|80|443|3306|51820|8080|8082|9000|9001|9002|9003|9004)' || echo 'No services listening'"
+          echo ""
+          
+          # ── 6. Podman Containers ──
+          echo "═══ 6. PODMAN CONTAINERS ═══"
+          eval $SSH_CMD "podman ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' || echo 'podman not available'"
+          echo ""
+          
+          # ── 7. Podman Images ──
+          echo "═══ 7. PODMAN IMAGES ═══"
+          eval $SSH_CMD "podman images --format 'table {{.Repository}}\t{{.Tag}}\t{{.Size}}' || echo 'No images'"
+          echo ""
+          
+          # ── 8. Podman Networks ──
+          echo "═══ 8. PODMAN NETWORKS ═══"
+          eval $SSH_CMD "podman network ls || echo 'No networks'"
+          echo ""
+          
+          # ── 9. Systemd Services ──
+          echo "═══ 9. SYSTEMD SERVICES ═══"
+          eval $SSH_CMD "systemctl list-units --type=service --state=running | grep -E '(podman|caddy|mariadb|wireguard|avahi|fastfree)' || echo 'No FastFree services'"
+          echo ""
+          
+          # ── 10. Failed Services ──
+          echo "═══ 10. FAILED SERVICES ═══"
+          eval $SSH_CMD "systemctl list-units --type=service --state=failed || echo 'No failed services'"
+          echo ""
+          
+          # ── 11. Caddy Status ──
+          echo "═══ 11. CADDY STATUS ═══"
+          eval $SSH_CMD "systemctl status caddy --no-pager -l | head -15 || echo 'Caddy not running'"
+          echo ""
+          
+          # ── 12. MariaDB Status ──
+          echo "═══ 12. MARIADB STATUS ═══"
+          eval $SSH_CMD "systemctl status mariadb --no-pager -l | head -15 || echo 'MariaDB not running'"
+          echo ""
+          
+          # ── 13. WireGuard Status ──
+          echo "═══ 13. WIREGUARD STATUS ═══"
+          eval $SSH_CMD "wg show || echo 'WireGuard not running'"
+          echo ""
+          
+          # ── 14. Container Logs (recent errors) ──
+          echo "═══ 14. RECENT CONTAINER ERRORS ═══"
+          eval $SSH_CMD "podman ps -a --format '{{.Names}}' | while read c; do echo \"--- \$c ---\"; podman logs --tail 5 \$c 2>&1 | grep -i 'error\|fail\|exception' || echo 'No errors'; done"
+          echo ""
+          
+          # ── 15. NixOS Generation ──
+          echo "═══ 15. NIXOS GENERATION ═══"
+          eval $SSH_CMD "nixos-rebuild --version 2>/dev/null || echo 'NixOS not available'; echo '---'; ls -la /nix/var/nix/profiles/ 2>/dev/null | tail -5 || echo 'No profiles'"
+          echo ""
+          
+          # ── 16. Disk Usage ──
+          echo "═══ 16. DISK USAGE ═══"
+          eval $SSH_CMD "df -h / /var /tmp 2>/dev/null || df -h"
+          echo ""
+          
+          # ── 17. Test HTTP Endpoints ──
+          echo "═══ 17. HTTP ENDPOINTS TEST ═══"
+          eval $SSH_CMD "
+            for port in 80 443 8080 8082 9000 9001 9002 9003 9004; do
+              HTTP_CODE=\$(curl -s -o /dev/null -w '%{http_code}' --connect-timeout 3 http://localhost:\$port/ 2>/dev/null || echo '000')
+              echo \"  Port \$port: HTTP \$HTTP_CODE\"
+            done
+          "
+          echo ""
+          
+          # ── 18. GHCR Auth Check ──
+          echo "═══ 18. GHCR AUTH CHECK ═══"
+          eval $SSH_CMD "cat /etc/containers/auth.json 2>/dev/null | head -5 || echo 'No auth.json found'"
+          echo ""
+          
+          # ── 19. Journal Errors ──
+          echo "═══ 19. RECENT JOURNAL ERRORS ═══"
+          eval $SSH_CMD "journalctl -p err --no-pager -n 20 2>/dev/null || echo 'journalctl not available'"
+          echo ""
+          
+          echo "════════════════════════════════════════════════════════"
+          echo "  ✅ Diagnostic Complete"
+          echo "════════════════════════════════════════════════════════"
