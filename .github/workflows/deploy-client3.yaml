@@ -1,4 +1,4 @@
-name: "🔄 Update Hostinger VPS"
+name: "🔄 Deploy client3"
 
 on:
   workflow_dispatch:

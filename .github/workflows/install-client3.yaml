@@ -1,4 +1,4 @@
-name: "📥 Install Hostinger VPS (nixos-anywhere)"
+name: "📥 Install client3 (nixos-anywhere)"
 
 on:
   workflow_dispatch:
