@@ -1,5 +1,5 @@
-# Scripts (local only, not uploaded to GitHub)
-scripts/
+# Scripts
+scripts/*.log
 
 # Dependencies
 node_modules/
