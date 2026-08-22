@@ -3,6 +3,9 @@ name: "🔄 Update Hostinger VPS (colmena)"
 on:
   workflow_dispatch:
 
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
+
 jobs:
   update:
     name: "🔄 Apply client3 config via colmena"
@@ -12,10 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "🔧 Install Nix"
-        uses: DeterminateSystems/nix-installer-action@v10
-
-      - name: "🌟 Magic Nix Cache"
-        uses: DeterminateSystems/magic-nix-cache-action@v10
+        uses: DeterminateSystems/determinate-nix-action@v3
 
       - name: "🔑 Setup SSH key"
         run: |
