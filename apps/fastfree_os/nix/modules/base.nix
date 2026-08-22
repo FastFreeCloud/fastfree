@@ -15,17 +15,27 @@ in {
     networking = {
       hostName                     = config.fastfree.identity.name;
       firewall.allowedTCPPorts     = [ 22 443 ];
-      useDHCP                      = lib.mkDefault (config.fastfree.networking.ipv4Address == "");
+      useDHCP                      = false;
+      useNetworkd                  = true;
       hosts                        = hosts;
-
-    } // lib.optionalAttrs (config.fastfree.networking.ipv4Address != "") {
-      useDHCP = false;
     };
 
-    # hostinger: use systemd-networkd with GatewayOnLink (Hostinger/Hetzner onlink gateways)
-    systemd.network = lib.mkIf (config.fastfree.networking.ipv4Address != "") {
+    # hostinger: systemd-networkd for all VPS
+    systemd.network = {
       enable = true;
-      networks."10-wan" = {
+      # DHCP mode (no static IP configured)
+      networks."10-wan" = lib.mkIf (config.fastfree.networking.ipv4Address == "") {
+        matchConfig.Name = config.fastfree.networking.interface;
+        networkConfig = {
+          DHCP = "yes";
+          DNS = config.fastfree.networking.nameservers;
+        };
+        dhcpConfig = {
+          UseDNS = true;
+        };
+      };
+      # Static IP mode
+      networks."10-wan-static" = lib.mkIf (config.fastfree.networking.ipv4Address != "") {
         matchConfig.Name = config.fastfree.networking.interface;
         networkConfig = {
           DHCP = "no";
