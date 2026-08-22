@@ -40,7 +40,10 @@
   ];
 
   networking = {
-    nameservers = [ "1.1.1.1" "8.8.8.8" ];
+    nameservers  = [ "1.1.1.1" "8.8.8.8" ];
+    ipv4Address  = "76.13.51.10";
+    ipv4Gateway  = "76.13.51.1";
+    ipv4Prefix   = 24;
   };
 
   gitOrigin = "https://github.com/FastFreeCloud/fastfree.git";
@@ -119,6 +122,6 @@
   avahi = {
     enable     = true;
     reflector  = false;
-    interfaces = [ "eth0" "wg0" ];
+    interfaces = [ "ens18" "wg0" ];
   };
 }

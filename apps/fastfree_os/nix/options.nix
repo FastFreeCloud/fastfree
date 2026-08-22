@@ -111,7 +111,7 @@
     networking = {
       interface = lib.mkOption {
         type = lib.types.str;
-        default = "eth0";
+        default = "ens18";
         description = "Network interface name for static IP configuration.";
       };
       ipv4Address = lib.mkOption {
