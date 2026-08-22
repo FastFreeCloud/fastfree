@@ -119,6 +119,6 @@
   avahi = {
     enable     = true;
     reflector  = false;
-    interfaces = [ "ens18" "wg0" ];
+    interfaces = [ "eth0" "wg0" ];
   };
 }
