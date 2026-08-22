@@ -46,6 +46,7 @@ in {
           { routeConfig = {
               Gateway = config.fastfree.networking.ipv4Gateway;
               GatewayOnLink = true;
+              Src = config.fastfree.networking.ipv4Address;
             };
           }
         ];
