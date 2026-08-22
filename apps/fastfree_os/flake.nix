@@ -219,9 +219,9 @@
 
     in {
       # -- Colmena (deploy to running machines via SSH) --
-      colmena = import ./nix/colmena.nix {
+      colmenaHive = colmena.lib.makeHive (import ./nix/colmena.nix {
         inherit nixpkgs clients mkClientModules system;
-      };
+      });
 
       # -- VHDX packages (hyperv clients only, where build=true) --
       packages.${system} = lib.mapAttrs mkVHDX
