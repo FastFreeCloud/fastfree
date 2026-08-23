@@ -1,4 +1,4 @@
-name: "🔄 Deploy client3"
+name: "Deploy client3"
 
 on:
   workflow_dispatch:
@@ -8,19 +8,16 @@ env:
 
 jobs:
   update:
-    name: "🔄 Deploy client3 via Colmena"
+    name: "Deploy client3 via Colmena"
     runs-on: ubuntu-latest
     steps:
-      - name: "📥 Checkout"
+      - name: "Checkout"
         uses: actions/checkout@v4
 
-      - name: "🔧 Install Nix"
+      - name: "Install Nix"
         uses: DeterminateSystems/determinate-nix-action@v3
 
-      - name: "🔧 Install Colmena"
-        run: nix profile install nixpkgs#colmena
-
-      - name: "📦 Deploy via Colmena"
+      - name: "Deploy via Colmena"
         working-directory: apps/fastfree_os
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
@@ -29,12 +26,12 @@ jobs:
           eval "$(ssh-agent -s -a $SSH_AUTH_SOCK)"
           echo "${{ secrets.CLIENT3_DEPLOY_KEY }}" | ssh-add -
           
-          # Deploy using Colmena
-          colmena apply --on client3
+          # Use Colmena from flake input (not nixpkgs)
+          nix run github:zhaofengli/colmena -- apply --on client3
 
-      - name: "✅ Verify"
+      - name: "Verify"
         run: |
-          eval "$(ssh-agent -s -a /tmp/ssh_agent_sock)"
+          eval "$(ssh-agent -s -a /tmp/ssh_agent.sock)"
           echo "${{ secrets.CLIENT3_DEPLOY_KEY }}" | ssh-add -
           ssh -o StrictHostKeyChecking=no root@${{ secrets.CLIENT3_IP }} \
             "systemctl list-units --type=service --state=running | grep -E 'fastfree|caddy|mariadb' || true"
