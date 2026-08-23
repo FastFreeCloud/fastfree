@@ -42,9 +42,7 @@
 
         pnpmFlags = [ "--config.onlyBuiltDependencies=['esbuild','@parcel/watcher','vue-demi']" ];
 
-        # Remove sass-embedded (requires native Dart binary that Nix sandbox
-        # cannot provide). Vite falls back to the pure-JS `sass` package.
-        postPatch = ''
+        preBuild = ''
           rm -rf node_modules/.pnpm/sass-embedded*
           rm -rf node_modules/sass-embedded*
         '';
