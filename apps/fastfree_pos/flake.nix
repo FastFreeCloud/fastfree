@@ -29,13 +29,11 @@
           pkgs.pnpmConfigHook
         ];
 
-        # NOTE: On first build, nix will fail and show the correct hash.
-        # Copy it here and rebuild. Example: sha256-abc123...
         pnpmDeps = pkgs.fetchPnpmDeps {
           inherit (spa-app) pname version src;
           inherit pnpm;
           fetcherVersion = 3;
-          hash = pkgs.lib.fakeHash;
+          hash = "sha256-mhla+0RI+d7QgB/GfrKLiAxdAZLekORy4ZgmzAKKSj4=";
         };
 
         buildInputs = [ pkgs.glibc ];

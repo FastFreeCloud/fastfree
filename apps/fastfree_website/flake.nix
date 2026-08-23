@@ -27,9 +27,7 @@
 
         src = lib.cleanSource ./.;
 
-        # NOTE: On first build, nix will fail and show the correct hash.
-        # Copy it here and rebuild.
-        npmDepsHash = lib.fakeHash;
+        npmDepsHash = "sha256-SE/f6ptm1SVmmMc6LGhazN4z9r81t7f/3EDMV2vp9sc=";
 
         npmInstallFlags = [ "--legacy-peer-deps" "--no-audit" "--no-fund" ];
         npmBuildScript = "build";
