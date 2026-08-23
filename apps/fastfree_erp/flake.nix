@@ -43,15 +43,11 @@
 
         buildInputs = [ pkgs.glibc ];
 
-        # sass-embedded ships prebuilt dart binaries that must be executable
-        # in the Nix sandbox. chmod is more robust than patchelf here.
-        postPatch = ''
-          chmod +x node_modules/.pnpm/sass-embedded-*/node_modules/sass-embedded-linux-x64/dart-sass/src/dart 2>/dev/null || true
-          chmod +x node_modules/.pnpm/sass-embedded-*/node_modules/sass-embedded-linux-arm64/dart-sass/src/dart 2>/dev/null || true
-          chmod +x node_modules/.pnpm/sass-embedded-*/node_modules/sass-embedded-linux-x64/dart-sass/src/dart 2>/dev/null || true
-        '';
-
+        # sass-embedded ships prebuilt dart binaries that must be extracted
+        # via postinstall. Add it to onlyBuiltDependencies so pnpm runs it.
         pnpmRoot = ".";
+
+        pnpmFlags = [ "--config.onlyBuiltDependencies=['sass-embedded-linux-x64','sass-embedded-linux-arm64','esbuild','@parcel/watcher','vue-demi']" ];
 
         buildPhase = ''
           runHook preBuild
