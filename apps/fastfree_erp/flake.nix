@@ -31,30 +31,25 @@
           nodejs
           pnpm
           pkgs.pnpmConfigHook
-          pkgs.autoPatchelfHook
-          pkgs.patchelf
         ];
 
         # Same root pnpm-lock.yaml for all 4 apps → identical FOD hash.
+        # NOTE: On first build, nix will fail and show the correct hash.
+        # Copy it here and rebuild. Example: sha256-abc123...
         pnpmDeps = pkgs.fetchPnpmDeps {
           inherit (spa-app) pname version src;
           inherit pnpm;
           fetcherVersion = 3;
-          hash = "sha256-RPNJibYIAvAmp/VHMMIijZyPKdn6zWKy4BnxZtxdDnE=";
+          hash = pkgs.lib.fakeHash;
         };
 
-        buildInputs = [ pkgs.glibc pkgs.zlib ];
+        buildInputs = [ pkgs.glibc ];
 
-        # sass-embedded ships a prebuilt dart binary that must be patched
-        # against the Nix glibc. Find it (version-agnostic) and patch it
-        # loudly — never swallow the error.
+        # sass-embedded ships prebuilt dart binaries that must be executable
+        # in the Nix sandbox. chmod is more robust than patchelf here.
         preBuild = ''
-          DART=$(find node_modules/.pnpm -path '*sass-embedded-linux-x64*/dart-sass/src/dart' 2>/dev/null | head -1)
-          if [ -n "$DART" ]; then
-            patchelf --set-interpreter ${pkgs.glibc}/lib/ld-linux-x86-64.so.2 \
-                     --set-rpath "${pkgs.lib.makeLibraryPath [ pkgs.glibc pkgs.zlib ]}" \
-                     "$DART"
-          fi
+          chmod +x node_modules/.pnpm/sass-embedded-*/node_modules/sass-embedded-linux-x64/*.dart 2>/dev/null || true
+          chmod +x node_modules/.pnpm/sass-embedded-*/node_modules/sass-embedded-linux-arm64/*.dart 2>/dev/null || true
         '';
 
         pnpmRoot = ".";

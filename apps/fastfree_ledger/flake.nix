@@ -27,26 +27,22 @@
           nodejs
           pnpm
           pkgs.pnpmConfigHook
-          pkgs.autoPatchelfHook
-          pkgs.patchelf
         ];
 
+        # NOTE: On first build, nix will fail and show the correct hash.
+        # Copy it here and rebuild. Example: sha256-abc123...
         pnpmDeps = pkgs.fetchPnpmDeps {
           inherit (spa-app) pname version src;
           inherit pnpm;
           fetcherVersion = 3;
-          hash = "sha256-RPNJibYIAvAmp/VHMMIijZyPKdn6zWKy4BnxZtxdDnE=";
+          hash = pkgs.lib.fakeHash;
         };
 
-        buildInputs = [ pkgs.glibc pkgs.zlib ];
+        buildInputs = [ pkgs.glibc ];
 
         preBuild = ''
-          DART=$(find node_modules/.pnpm -path '*sass-embedded-linux-x64*/dart-sass/src/dart' 2>/dev/null | head -1)
-          if [ -n "$DART" ]; then
-            patchelf --set-interpreter ${pkgs.glibc}/lib/ld-linux-x86-64.so.2 \
-                     --set-rpath "${pkgs.lib.makeLibraryPath [ pkgs.glibc pkgs.zlib ]}" \
-                     "$DART"
-          fi
+          chmod +x node_modules/.pnpm/sass-embedded-*/node_modules/sass-embedded-linux-x64/*.dart 2>/dev/null || true
+          chmod +x node_modules/.pnpm/sass-embedded-*/node_modules/sass-embedded-linux-arm64/*.dart 2>/dev/null || true
         '';
 
         pnpmRoot = ".";

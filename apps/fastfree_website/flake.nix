@@ -25,9 +25,11 @@
         pname = "fastfree-website";
         version = "1.0.0";
 
-        src = lib.cleanSource ../../apps/fastfree_website;
+        src = lib.cleanSource ./.;
 
-        npmDepsHash = "sha256-SE/f6ptm1SVmmMc6LGhazN4z9r81t7f/3EDMV2vp9sc=";
+        # NOTE: On first build, nix will fail and show the correct hash.
+        # Copy it here and rebuild.
+        npmDepsHash = lib.fakeHash;
 
         npmInstallFlags = [ "--legacy-peer-deps" "--no-audit" "--no-fund" ];
         npmBuildScript = "build";
