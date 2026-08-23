@@ -16,18 +16,25 @@ Start-Sleep -Seconds 5
 
 # 3. Trigger deploy workflow
 Write-Host "`nTriggering deploy workflow..." -ForegroundColor Yellow
-gh workflow run "Deploy client3" --ref master
+$deployName = "Deploy client3"
+gh workflow run $deployName --ref master
 
 # 4. Watch for completion
 Write-Host "Waiting for deploy to complete..." -ForegroundColor Yellow
-$run = gh run list --workflow="Deploy client3" --limit=1 --json databaseId --jq '.[0].databaseId'
-gh run watch $run --exit-status
+Start-Sleep -Seconds 10
+$runs = gh run list --workflow=$deployName --limit=1 --json databaseId | ConvertFrom-Json
+$runId = $runs[0].databaseId
+Write-Host "Deploy run ID: $runId" -ForegroundColor Green
+gh run watch $runId --exit-status
 
 # 5. Run diagnostic
 Write-Host "`nRunning diagnostic..." -ForegroundColor Yellow
-gh workflow run "Diagnose client3" --ref master
-Start-Sleep -Seconds 5
-$diagRun = gh run list --workflow="Diagnose client3" --limit=1 --json databaseId --jq '.[0].databaseId'
-gh run watch $diagRun --exit-status
+$diagName = "Diagnose client3"
+gh workflow run $diagName --ref master
+Start-Sleep -Seconds 10
+$diagRuns = gh run list --workflow=$diagName --limit=1 --json databaseId | ConvertFrom-Json
+$diagRunId = $diagRuns[0].databaseId
+Write-Host "Diagnose run ID: $diagRunId" -ForegroundColor Green
+gh run watch $diagRunId --exit-status
 
 Write-Host "`nDeploy complete!" -ForegroundColor Cyan
