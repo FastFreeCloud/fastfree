@@ -10,11 +10,6 @@ name: "🐳 بناء Docker Image + Release تلقائي"
 # ═══════════════════════════════════════════════════════════
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - "apps/fastfree_backend/**"
-      - ".github/workflows/build-backend.yaml"
   workflow_dispatch:
     inputs:
       frappe_version:
