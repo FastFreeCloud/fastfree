@@ -51,6 +51,7 @@ jobs:
         run: |
           echo "Building WSL tarball for ${{ env.WSL_CLIENT }}..."
           nix build .#packages.x86_64-linux.${{ env.WSL_CLIENT }} \
+            --out-link ./result-builder \
             --print-build-logs --no-update-lock-file
           echo "WSL tarball builder built"
 
@@ -66,7 +67,7 @@ jobs:
         working-directory: apps/fastfree_os
         run: |
           echo "Creating WSL tarball..."
-          cp -r ./result/bin/nixos-wsl-tarball-builder ./tarball-builder
+          cp -r ./result-builder/bin/nixos-wsl-tarball-builder ./tarball-builder
           chmod +x ./tarball-builder
           sudo ./tarball-builder ${{ env.WSL_TARBALL }}
           echo "WSL tarball created"
