@@ -233,6 +233,37 @@ cd apps/fastfree_ledger && npm run dev
 1. useFormatNumber.ts — تصحيح import path
 2. useStatusHelpers.ts — تصحيح import path + fallback color
 
+## سكربتات PowerShell (`scripts/`)
+
+> كل السكربتات تشتغل من **جذر المشروع** (`C:\Users\fastfree\Desktop\fastfree-lowcode-roadmap\fastfree`)
+
+| السكربت | الوظيفة | الاستخدام |
+|---------|---------|-----------|
+| `scripts\fastfree_push.ps1` | **رفع المشروع على GitHub** — يتحقق من git repo، يسوي stage + commit + push تلقائي مع timestamp | `.\scripts\fastfree_push.ps1` أو مع رسالة `.\scripts\fastfree_push.ps1 -Message "msg" -Force` |
+| `scripts\fastfree_deploy.ps1` | **نشر على السيرفر (VPS client3)** — يرفع الكود، يشغل workflow `Deploy client3`، ينتظر انتهائه، ثم يشغل `Diagnose client3` تلقائي | `.\scripts\fastfree_deploy.ps1` |
+| `scripts\fastfree_cleanup.ps1` | **حذف_runs الفاشلة** من GitHub Actions — يجيب كل الـ runs اللي status=failure أو cancelled ويحذفها | `.\scripts\fastfree_cleanup.ps1 -All` أو `-DryRun` للتجربة |
+| `scripts\fastfree_rebuild.ps1` | **إعادة بناء كل الصور** (ERP, Ledger, HR, POS, Website) محلياً ثم رفعها على GHCR عبر skopeo | `.\scripts\fastfree_rebuild.ps1` |
+| `scripts\fastfree_fix_hashes.ps1` | **إصلاح hashes المكسورة** في flake.nix — يبني كل صورة ويصحح hash mismatch تلقائياً | `.\scripts\fastfree_fix_hashes.ps1` |
+
+### استخدام سريع
+
+```powershell
+# رفع سريع
+.\scripts\fastfree_push.ps1 -Force
+
+# رفع + نشر على السيرفر
+.\scripts\fastfree_deploy.ps1
+
+# تنظيف الـ runs الفاشلة
+.\scripts\fastfree_cleanup.ps1 -All
+
+# إعادة بناء الصور محلياً
+.\scripts\fastfree_rebuild.ps1
+
+# إصلاح hashes مكسورة
+.\scripts\fastfree_fix_hashes.ps1
+```
+
 ## Log Files
 
 - `TYPECHECK_LOG.md` — سجل TypeCheck
