@@ -30,4 +30,4 @@ Start-Sleep -Seconds 5
 $diagRun = gh run list --workflow="🔍 Diagnose client3" --limit=1 --json databaseId --jq '.[0].databaseId'
 gh run watch $diagRun --exit-status
 
-Write-Host "`n🎉 Deploy complete!" -ForegroundColor Cyan
+Write-Host "`nDeploy complete!" -ForegroundColor Cyan
