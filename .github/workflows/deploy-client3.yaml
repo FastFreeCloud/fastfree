@@ -8,7 +8,7 @@ env:
 
 jobs:
   update:
-    name: "🔄 Deploy client3 config via SSH"
+    name: "🔄 Deploy client3 via Colmena"
     runs-on: ubuntu-latest
     steps:
       - name: "📥 Checkout"
@@ -17,25 +17,24 @@ jobs:
       - name: "🔧 Install Nix"
         uses: DeterminateSystems/determinate-nix-action@v3
 
-      - name: "📦 Deploy via SSH + nixos-rebuild"
-        env:
-          SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
-        run: |
-          # Copy flake files to VPS
-          sshpass -p "$SSHPASS" scp -o StrictHostKeyChecking=no -r \
-            apps/fastfree_os/flake.nix \
-            apps/fastfree_os/flake.lock \
-            apps/fastfree_os/nix/ \
-            root@${{ secrets.CLIENT3_IP }}:/tmp/fastfree_os/
+      - name: "🔧 Install Colmena"
+        run: nix profile install nixpkgs#colmena
 
-          # Run nixos-rebuild on VPS
-          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
-            root@${{ secrets.CLIENT3_IP }} \
-            "cd /tmp/fastfree_os && nixos-rebuild switch --flake .#client3"
+      - name: "📦 Deploy via Colmena"
+        working-directory: apps/fastfree_os
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          # Setup SSH agent with deploy key
+          eval "$(ssh-agent -s -a $SSH_AUTH_SOCK)"
+          echo "${{ secrets.CLIENT3_DEPLOY_KEY }}" | ssh-add -
+          
+          # Deploy using Colmena
+          colmena apply --on client3
 
       - name: "✅ Verify"
         run: |
-          sshpass -p "${{ secrets.CLIENT3_ROOT_PASSWORD }}" \
-            ssh -o StrictHostKeyChecking=no \
-            root@${{ secrets.CLIENT3_IP }} \
+          eval "$(ssh-agent -s -a /tmp/ssh_agent_sock)"
+          echo "${{ secrets.CLIENT3_DEPLOY_KEY }}" | ssh-add -
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.CLIENT3_IP }} \
             "systemctl list-units --type=service --state=running | grep -E 'fastfree|caddy|mariadb' || true"
