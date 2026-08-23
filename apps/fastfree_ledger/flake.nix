@@ -38,9 +38,10 @@
 
         buildInputs = [ pkgs.glibc ];
 
-        preBuild = ''
-          chmod +x node_modules/.pnpm/sass-embedded-*/node_modules/sass-embedded-linux-x64/*.dart 2>/dev/null || true
-          chmod +x node_modules/.pnpm/sass-embedded-*/node_modules/sass-embedded-linux-arm64/*.dart 2>/dev/null || true
+        postPatch = ''
+          chmod +x node_modules/.pnpm/sass-embedded-*/node_modules/sass-embedded-linux-x64/dart-sass/src/dart 2>/dev/null || true
+          chmod +x node_modules/.pnpm/sass-embedded-*/node_modules/sass-embedded-linux-arm64/dart-sass/src/dart 2>/dev/null || true
+          chmod +x node_modules/.pnpm/sass-embedded-*/node_modules/sass-embedded-linux-x64/dart-sass/src/dart 2>/dev/null || true
         '';
 
         pnpmRoot = ".";
