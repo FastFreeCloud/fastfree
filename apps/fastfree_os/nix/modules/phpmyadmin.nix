@@ -7,7 +7,7 @@ in {
 
     virtualisation.oci-containers.containers.phpmyadmin = {
       image = "docker.io/phpmyadmin:5.2.1";
-      pullPolicy = "always";
+      pull = "always";
       autoStart = true;
       ports = [ "8082:80" ];
       extraOptions = [

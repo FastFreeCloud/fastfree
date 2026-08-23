@@ -22,7 +22,7 @@ in {
     # ── 2. Frontend container (Next.js standalone server) ─
     virtualisation.oci-containers.containers.fastfree-website-frontend = {
       image = "ghcr.io/${ghAccount}/fastfree_website:latest";
-      pullPolicy = "always";
+      pull = "always";
       autoStart = true;
       ports = [ "9004:3000" ];
       extraOptions = [
