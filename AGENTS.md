@@ -243,7 +243,6 @@ cd apps/fastfree_ledger && npm run dev
 | `scripts\fastfree_deploy.ps1` | **نشر على السيرفر (VPS client3)** — يرفع الكود، يشغل workflow `Deploy client3`، ينتظر انتهائه، ثم يشغل `Diagnose client3` تلقائي | `.\scripts\fastfree_deploy.ps1` |
 | `scripts\fastfree_cleanup.ps1` | **حذف_runs الفاشلة** من GitHub Actions — يجيب كل الـ runs اللي status=failure أو cancelled ويحذفها | `.\scripts\fastfree_cleanup.ps1 -All` أو `-DryRun` للتجربة |
 | `scripts\fastfree_rebuild.ps1` | **إعادة بناء كل الصور** (ERP, Ledger, HR, POS, Website) محلياً ثم رفعها على GHCR عبر skopeo | `.\scripts\fastfree_rebuild.ps1` |
-| `scripts\fastfree_fix_hashes.ps1` | **إصلاح hashes المكسورة** في flake.nix — يبني كل صورة ويصحح hash mismatch تلقائياً | `.\scripts\fastfree_fix_hashes.ps1` |
 
 ### استخدام سريع
 
@@ -259,9 +258,6 @@ cd apps/fastfree_ledger && npm run dev
 
 # إعادة بناء الصور محلياً
 .\scripts\fastfree_rebuild.ps1
-
-# إصلاح hashes مكسورة
-.\scripts\fastfree_fix_hashes.ps1
 ```
 
 ## Log Files
