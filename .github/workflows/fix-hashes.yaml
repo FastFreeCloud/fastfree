@@ -1,0 +1,78 @@
+name: "🔧 Auto-fix Flake Hashes"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - '**/pnpm-lock.yaml'
+      - '**/package-lock.json'
+
+jobs:
+  fix-hashes:
+    name: 🔧 Fix Flake Hashes
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: cachix/install-nix-action@v31
+
+      - name: Fix SPA hashes (erp, ledger, hr, pos)
+        run: |
+          for app in erp ledger hr pos; do
+            echo "🔧 Building fastfree_${app}..."
+            cd apps/fastfree_${app}
+
+            BUILD_LOG="/tmp/build-${app}.log"
+            if nix build .#frontendImage -o ${app}-image 2>&1 | tee "$BUILD_LOG" | grep -q "hash mismatch"; then
+              echo "📥 Extracting correct hash for ${app}..."
+              NEW_HASH=$(grep "got:" "$BUILD_LOG" | head -1 | awk '{print $2}')
+              echo "✅ New hash: $NEW_HASH"
+
+              # Update the fetchPnpmDeps hash in flake.nix
+              sed -i "s|hash = \".*\"|hash = \"${NEW_HASH}\"|g" flake.nix
+              echo "✅ Updated apps/fastfree_${app}/flake.nix"
+            else
+              echo "✅ ${app} hash is correct"
+            fi
+
+            cd ../..
+          done
+
+      - name: Fix Website hash
+        run: |
+          echo "🔧 Building fastfree_website..."
+          cd apps/fastfree_website
+
+          BUILD_LOG="/tmp/build-website.log"
+          if nix build .#frontendImage -o website-image 2>&1 | tee "$BUILD_LOG" | grep -q "hash mismatch"; then
+            echo "📥 Extracting correct hash for website..."
+            NEW_HASH=$(grep "got:" "$BUILD_LOG" | head -1 | awk '{print $2}')
+            echo "✅ New hash: $NEW_HASH"
+
+            # Update the npmDepsHash in flake.nix
+            sed -i "s|npmDepsHash = \".*\"|npmDepsHash = \"${NEW_HASH}\"|g" flake.nix
+            echo "✅ Updated apps/fastfree_website/flake.nix"
+          else
+            echo "✅ website hash is correct"
+          fi
+
+      - name: Commit and push fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "✅ No hash changes needed"
+          else
+            git commit -m "fix: auto-update flake hashes [skip ci]"
+            git push
+          fi
+
+      - name: Trigger build
+        if: success()
+        run: |
+          gh workflow run "🖥️ بناء FastFree OS + اختبارات" --ref master
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
