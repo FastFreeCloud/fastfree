@@ -114,21 +114,25 @@ in {
 
     # ── Podman subuid/subgid (required for container creation) ──
     system.activationScripts.subuid-subgid = ''
-      if [ ! -f /etc/subuid ]; then
-        cat > /etc/subuid << 'SUBEOF'
-      root:100000:65536
-      admin:100000:65536
-      SUBEOF
-        chmod 644 /etc/subuid
-      fi
-      if [ ! -f /etc/subgid ]; then
-        cat > /etc/subgid << 'SUBEOF'
-      root:100000:65536
-      admin:100000:65536
-      SUBEOF
-        chmod 644 /etc/subgid
-      fi
+      mkdir -p /etc
+      printf 'root:100000:65536\nadmin:100000:65536\n' > /etc/subuid
+      printf 'root:100000:65536\nadmin:100000:65536\n' > /etc/subgid
+      chmod 644 /etc/subuid /etc/subgid
     '';
+
+    # ── Ensure subuid/subgid exist before Podman starts ──
+    systemd.services.podman-setup-subuid = {
+      description = "Create /etc/subuid and /etc/subgid for Podman";
+      wantedBy = [ "multi-user.target" ];
+      before = [ "podman.service" ];
+      serviceConfig.Type = "oneshot";
+      script = ''
+        mkdir -p /etc
+        printf 'root:100000:65536\nadmin:100000:65536\n' > /etc/subuid
+        printf 'root:100000:65536\nadmin:100000:65536\n' > /etc/subgid
+        chmod 644 /etc/subuid /etc/subgid
+      '';
+    };
 
     # ── Podman Docker-compatible TCP socket (for Windows Docker CLI) ──
     systemd.services.podman-docker-tcp = lib.mkIf (config.fastfree.deployType == "wsl") {
