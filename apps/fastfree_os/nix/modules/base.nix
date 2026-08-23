@@ -113,13 +113,21 @@ in {
     virtualisation.oci-containers.backend = "podman";
 
     # ── Podman subuid/subgid (required for container creation) ──
-    environment.etc."subuid".text = ''
+    system.activationScripts.subuid-subgid = ''
+      if [ ! -f /etc/subuid ]; then
+        cat > /etc/subuid << 'SUBEOF'
       root:100000:65536
       admin:100000:65536
-    '';
-    environment.etc."subgid".text = ''
+      SUBEOF
+        chmod 644 /etc/subuid
+      fi
+      if [ ! -f /etc/subgid ]; then
+        cat > /etc/subgid << 'SUBEOF'
       root:100000:65536
       admin:100000:65536
+      SUBEOF
+        chmod 644 /etc/subgid
+      fi
     '';
 
     # ── Podman Docker-compatible TCP socket (for Windows Docker CLI) ──
