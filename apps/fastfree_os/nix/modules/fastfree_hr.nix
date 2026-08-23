@@ -45,6 +45,7 @@ CADDY
     # ── 3. Frontend container (Caddy + built assets) ───────
     virtualisation.oci-containers.containers.fastfree-hr-frontend = {
       image = "ghcr.io/${ghAccount}/fastfree_hr:latest";
+      pullPolicy = "always";
       autoStart = true;
       ports = [ "9002:80" ];
       extraOptions = [

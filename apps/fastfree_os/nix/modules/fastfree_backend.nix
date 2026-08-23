@@ -58,12 +58,14 @@ in {
     # ── 3. Redis containers ────────────────────────────────
     virtualisation.oci-containers.containers.fastfree-redis-cache = {
       image = "redis:8.6-alpine";
+      pullPolicy = "always";
       autoStart = true;
       extraOptions = [ "--network=fastfree-net" ];
     };
 
     virtualisation.oci-containers.containers.fastfree-redis-queue = {
       image = "redis:8.6-alpine";
+      pullPolicy = "always";
       autoStart = true;
       extraOptions = [ "--network=fastfree-net" ];
     };
@@ -83,7 +85,8 @@ in {
     # ── 4. Configurator (common_site_config) ────────────────
     virtualisation.oci-containers.containers.fastfree-backend-configurator = {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
-      autoStart = false;
+      pullPolicy = "always";
+      autoStart = true;
       extraOptions = [ "--network=fastfree-net" "--add-host=host.containers.internal:host-gateway" ];
       entrypoint = "bash";
       cmd = [ "-c" ''
@@ -107,6 +110,7 @@ in {
     systemd.services."fastfree-backend-configurator" = {
       after = [ "fastfree-backend-network.service" "mysql.service" ];
       requires = [ "mysql.service" ];
+      wantedBy = [ "multi-user.target" ];
       serviceConfig.Type = "oneshot";
       serviceConfig.RemainAfterExit = true;
     };
@@ -114,6 +118,7 @@ in {
     # ── 5. Create site (one-shot) ───────────────────────────
     virtualisation.oci-containers.containers.fastfree-backend-create-site = {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
+      pullPolicy = "always";
       autoStart = false;
       extraOptions = [ "--network=fastfree-net" "--add-host=host.containers.internal:host-gateway" ];
       entrypoint = "bash";
@@ -161,7 +166,7 @@ in {
         "fastfree-redis-cache.service"
         "fastfree-redis-queue.service"
       ];
-      requires = [ "mysql.service" ];
+      requires = [ "mysql.service" "fastfree-backend-configurator.service" ];
       serviceConfig.Type = "oneshot";
       serviceConfig.RemainAfterExit = true;
       serviceConfig.Restart = "on-failure";
@@ -171,6 +176,7 @@ in {
     # ── 6. Backend (Gunicorn) ───────────────────────────────
     virtualisation.oci-containers.containers.fastfree-backend-app = {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
+      pullPolicy = "always";
       autoStart = true;
       extraOptions = [ "--network=fastfree-net" "--add-host=host.containers.internal:host-gateway" ];
       environment = {
@@ -200,6 +206,7 @@ in {
     # ── 7. Frontend (Nginx) ─────────────────────────────────
     virtualisation.oci-containers.containers.fastfree-backend-frontend = {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
+      pullPolicy = "always";
       autoStart = true;
       ports = [ "8080:8080" ];
       extraOptions = [ "--network=fastfree-net" ];
@@ -229,6 +236,7 @@ in {
     # ── 8. WebSocket (Socket.IO) ───────────────────────────
     virtualisation.oci-containers.containers.fastfree-backend-websocket = {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
+      pullPolicy = "always";
       autoStart = true;
       extraOptions = [ "--network=fastfree-net" ];
       cmd = [ "node" "/home/frappe/frappe-bench/apps/frappe/socketio.js" ];
@@ -238,7 +246,8 @@ in {
     };
 
     systemd.services."fastfree-backend-websocket" = {
-      after = [ "fastfree-backend-network.service" "fastfree-backend-configurator.service" ];
+      after = [ "fastfree-backend-network.service" "fastfree-backend-configurator.service" "fastfree-backend-create-site.service" ];
+      requires = [ "fastfree-backend-create-site.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "5";
     };
@@ -246,6 +255,7 @@ in {
     # ── 9. Queue Short (Celery worker) ─────────────────────
     virtualisation.oci-containers.containers.fastfree-backend-queue-short = {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
+      pullPolicy = "always";
       autoStart = true;
       extraOptions = [ "--network=fastfree-net" ];
       cmd = [ "bench" "worker" "--queue" "short,default" ];
@@ -265,6 +275,7 @@ in {
     # ── 10. Queue Long (Celery worker) ─────────────────────
     virtualisation.oci-containers.containers.fastfree-backend-queue-long = {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
+      pullPolicy = "always";
       autoStart = true;
       extraOptions = [ "--network=fastfree-net" ];
       cmd = [ "bench" "worker" "--queue" "long,default,short" ];
@@ -284,6 +295,7 @@ in {
     # ── 11. Scheduler ──────────────────────────────────────
     virtualisation.oci-containers.containers.fastfree-backend-scheduler = {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
+      pullPolicy = "always";
       autoStart = true;
       extraOptions = [ "--network=fastfree-net" ];
       cmd = [ "bench" "schedule" ];

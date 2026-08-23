@@ -122,19 +122,6 @@ in {
       };
     };
 
-    # ── Shared Podman network (defined ONCE — used by ERP/Ledger/HR/POS) ──
-    systemd.services.fastfree-network = lib.mkIf
-      (config.fastfree.apps.fastfree_erp || config.fastfree.apps.fastfree_ledger ||
-       config.fastfree.apps.fastfree_hr || config.fastfree.apps.fastfree_pos) {
-        description = "Create shared podman network for FastFree containers";
-        wantedBy = [ "multi-user.target" ];
-        serviceConfig.Type = "oneshot";
-        script = ''
-          ${pkgs.podman}/bin/podman network inspect fastfree-net >/dev/null 2>&1 || \
-            ${pkgs.podman}/bin/podman network create fastfree-net
-        '';
-      };
-
     # ── SSH ───────────────────────────────────────────────
     services.openssh = {
       enable = true;

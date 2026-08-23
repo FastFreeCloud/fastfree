@@ -251,7 +251,7 @@ jobs:
 
   build_wsl_image:
     name: 🪟 بناء صورة WSL
-    uses: ./.github/workflows/build-wsl.yaml
+    uses: ./.github/workflows/build-client1.yaml
     needs: [syntax_check, flake_validate, evaluation]
     secrets: inherit
     permissions:

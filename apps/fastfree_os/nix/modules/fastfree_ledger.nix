@@ -45,6 +45,7 @@ CADDY
     # ── 3. Frontend container (Caddy + built assets) ───────
     virtualisation.oci-containers.containers.fastfree-ledger-frontend = {
       image = "ghcr.io/${ghAccount}/fastfree_ledger:latest";
+      pullPolicy = "always";
       autoStart = true;
       ports = [ "9000:80" ];
       extraOptions = [

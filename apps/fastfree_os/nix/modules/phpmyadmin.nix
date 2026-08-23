@@ -7,6 +7,7 @@ in {
 
     virtualisation.oci-containers.containers.phpmyadmin = {
       image = "docker.io/phpmyadmin:5.2.1";
+      pullPolicy = "always";
       autoStart = true;
       ports = [ "8082:80" ];
       extraOptions = [
@@ -21,7 +22,7 @@ in {
       };
     };
 
-    systemd.services."podman-phpmyadmin" = {
+    systemd.services."phpmyadmin" = {
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "5";
     };

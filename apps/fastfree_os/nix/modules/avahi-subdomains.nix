@@ -39,6 +39,8 @@ in {
         Resolve = {
           LLMNR = "false";            # Avoid conflict with Avahi
           MulticastDNS = "off";       # Avahi handles mDNS
+          DNS = "1.1.1.1 8.8.8.8";
+          FallbackDNS = "9.9.9.9 149.112.112.112";
         };
       };
     };
