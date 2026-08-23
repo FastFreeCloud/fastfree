@@ -43,11 +43,16 @@
 
         buildInputs = [ pkgs.glibc ];
 
-        # sass-embedded ships prebuilt dart binaries that must be extracted
-        # via postinstall. Add it to onlyBuiltDependencies so pnpm runs it.
         pnpmRoot = ".";
 
-        pnpmFlags = [ "--config.onlyBuiltDependencies=['sass-embedded-linux-x64','sass-embedded-linux-arm64','esbuild','@parcel/watcher','vue-demi']" ];
+        pnpmFlags = [ "--config.onlyBuiltDependencies=['esbuild','@parcel/watcher','vue-demi']" ];
+
+        # Remove sass-embedded (requires native Dart binary that Nix sandbox
+        # cannot provide). Vite falls back to the pure-JS `sass` package.
+        postPatch = ''
+          rm -rf node_modules/.pnpm/sass-embedded*
+          rm -rf node_modules/sass-embedded*
+        '';
 
         buildPhase = ''
           runHook preBuild
