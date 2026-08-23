@@ -40,6 +40,8 @@ in {
         networkConfig = {
           DHCP = "no";
           DNS = config.fastfree.networking.nameservers;
+          DNSSEC = "allow-downgrade";
+          DNSOverTLS = "opportunistic";
         };
         address = [ "${config.fastfree.networking.ipv4Address}/${toString config.fastfree.networking.ipv4Prefix}" ];
         routes = [
@@ -109,6 +111,16 @@ in {
       defaultNetwork.settings.dns_enabled = true;
     };
     virtualisation.oci-containers.backend = "podman";
+
+    # ── Podman subuid/subgid (required for container creation) ──
+    environment.etc."subuid".text = ''
+      root:100000:65536
+      admin:100000:65536
+    '';
+    environment.etc."subgid".text = ''
+      root:100000:65536
+      admin:100000:65536
+    '';
 
     # ── Podman Docker-compatible TCP socket (for Windows Docker CLI) ──
     systemd.services.podman-docker-tcp = lib.mkIf (config.fastfree.deployType == "wsl") {

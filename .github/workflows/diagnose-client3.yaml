@@ -79,7 +79,7 @@ jobs:
           
           # ── 9. Systemd Services ──
           echo "═══ 9. SYSTEMD SERVICES ═══"
-          eval $SSH_CMD "systemctl list-units --type=service --state=running | grep -E '(podman|caddy|mariadb|wireguard|avahi|fastfree)' || echo 'No FastFree services'"
+          eval $SSH_CMD "systemctl list-units --type=service --state=running | grep -E '(podman|caddy|mysql|wireguard|avahi|fastfree)' || echo 'No FastFree services'"
           echo ""
           
           # ── 10. Failed Services ──
@@ -94,7 +94,7 @@ jobs:
           
           # ── 12. MariaDB Status ──
           echo "═══ 12. MARIADB STATUS ═══"
-          eval $SSH_CMD "systemctl status mariadb --no-pager -l | head -15 || echo 'MariaDB not running'"
+          eval $SSH_CMD "systemctl status mysql --no-pager -l | head -15 || echo 'MariaDB (mysql) not running'"
           echo ""
           
           # ── 13. WireGuard Status ──
