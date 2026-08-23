@@ -159,7 +159,7 @@ jobs:
         run: |
           echo "🔧 نسخة Frappe: ${{ env.FRAPPE_VERSION }}"
 
-          git clone --depth 1 --branch master \
+          git clone --depth 1 --branch main \
             https://github.com/frappe/frappe_docker.git \
             /tmp/frappe_docker
 
