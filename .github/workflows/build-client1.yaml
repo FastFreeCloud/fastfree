@@ -6,6 +6,7 @@ name: "🪟 Build client1 (WSL)"
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 concurrency:
   group: build-client1-${{ github.ref }}
