@@ -5,11 +5,10 @@ on:
 
 env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
-  GIT_TERMINAL_PROMPT: "0"
 
 jobs:
   update:
-    name: "Deploy client3 via Colmena"
+    name: "Deploy client3 config via SSH"
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -18,26 +17,25 @@ jobs:
       - name: "Install Nix"
         uses: DeterminateSystems/determinate-nix-action@v3
 
-      - name: "Setup SSH key"
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          echo "${{ secrets.CLIENT3_DEPLOY_KEY }}" > ~/.ssh/client3_deploy
-          chmod 600 ~/.ssh/client3_deploy
-          # Pre-add host key
-          ssh-keyscan -H ${{ secrets.CLIENT3_IP }} >> ~/.ssh/known_hosts 2>/dev/null || true
-          ssh-keyscan -H fastfree.cloud >> ~/.ssh/known_hosts 2>/dev/null || true
-
-      - name: "Deploy via Colmena"
-        working-directory: apps/fastfree_os
+      - name: "Deploy via SSH + nixos-rebuild"
         env:
-          NIX_SSHOPTS: "-i $HOME/.ssh/client3_deploy -o StrictHostKeyChecking=no"
+          SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
         run: |
-          # --build-on-target: build on VPS directly (avoids nix copy push)
-          # NIX_SSHOPTS env var tells nix which SSH options to use
-          nix run github:zhaofengli/colmena -- apply --on client3 --build-on-target
+          # Copy flake files to VPS
+          sshpass -p "$SSHPASS" scp -o StrictHostKeyChecking=no -r \
+            apps/fastfree_os/flake.nix \
+            apps/fastfree_os/flake.lock \
+            apps/fastfree_os/nix/ \
+            root@${{ secrets.CLIENT3_IP }}:/tmp/fastfree_os/
+
+          # Run nixos-rebuild on VPS
+          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
+            root@${{ secrets.CLIENT3_IP }} \
+            "cd /tmp/fastfree_os && nixos-rebuild switch --flake .#client3"
 
       - name: "Verify"
         run: |
-          ssh -i ~/.ssh/client3_deploy -o StrictHostKeyChecking=no root@${{ secrets.CLIENT3_IP }} \
+          sshpass -p "${{ secrets.CLIENT3_ROOT_PASSWORD }}" \
+            ssh -o StrictHostKeyChecking=no \
+            root@${{ secrets.CLIENT3_IP }} \
             "systemctl list-units --type=service --state=running | grep -E 'fastfree|caddy|mariadb' || true"
