@@ -30,12 +30,12 @@ jobs:
 
       - name: "Deploy via Colmena"
         working-directory: apps/fastfree_os
+        env:
+          NIX_SSHOPTS: "-i $HOME/.ssh/client3_deploy -o StrictHostKeyChecking=no"
         run: |
-          # --build-on-target: Colmena SSH's to VPS and builds there
-          # This avoids the nix copy push step (which fails with SSH key auth)
-          nix run github:zhaofengli/colmena -- apply --on client3 --build-on-target \
-            --ssh-option "-i" --ssh-option "$HOME/.ssh/client3_deploy" \
-            --ssh-option "-o" --ssh-option "StrictHostKeyChecking=no"
+          # --build-on-target: build on VPS directly (avoids nix copy push)
+          # NIX_SSHOPTS env var tells nix which SSH options to use
+          nix run github:zhaofengli/colmena -- apply --on client3 --build-on-target
 
       - name: "Verify"
         run: |
