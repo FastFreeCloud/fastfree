@@ -31,8 +31,8 @@ jobs:
       - name: "Deploy via Colmena"
         working-directory: apps/fastfree_os
         run: |
-          printf 'Host fastfree.cloud\n  IdentityFile ~/.ssh/client3_deploy\n  StrictHostKeyChecking no\n  User root\n' > ~/.ssh/config
-          chmod 600 ~/.ssh/config
+          # NIX_SSHOPTS is read by nix copy (used internally by Colmena for closure push)
+          export NIX_SSHOPTS="-i $HOME/.ssh/client3_deploy -o StrictHostKeyChecking=no -o User=root"
           nix run github:zhaofengli/colmena -- apply --on client3
 
       - name: "Verify"
