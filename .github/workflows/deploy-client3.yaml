@@ -5,6 +5,7 @@ on:
 
 env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
+  GIT_TERMINAL_PROMPT: "0"
 
 jobs:
   update:
@@ -17,21 +18,24 @@ jobs:
       - name: "Install Nix"
         uses: DeterminateSystems/determinate-nix-action@v3
 
+      - name: "Setup SSH key"
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.CLIENT3_DEPLOY_KEY }}" > ~/.ssh/client3_deploy
+          chmod 600 ~/.ssh/client3_deploy
+          # Pre-add host key
+          ssh-keyscan -H ${{ secrets.CLIENT3_IP }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          ssh-keyscan -H fastfree.cloud >> ~/.ssh/known_hosts 2>/dev/null || true
+
       - name: "Deploy via Colmena"
         working-directory: apps/fastfree_os
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
-          # Setup SSH agent with deploy key
-          eval "$(ssh-agent -s -a $SSH_AUTH_SOCK)"
-          echo "${{ secrets.CLIENT3_DEPLOY_KEY }}" | ssh-add -
-          
-          # Use Colmena from flake input (not nixpkgs)
+          printf 'Host fastfree.cloud\n  IdentityFile ~/.ssh/client3_deploy\n  StrictHostKeyChecking no\n  User root\n' > ~/.ssh/config
+          chmod 600 ~/.ssh/config
           nix run github:zhaofengli/colmena -- apply --on client3
 
       - name: "Verify"
         run: |
-          eval "$(ssh-agent -s -a /tmp/ssh_agent.sock)"
-          echo "${{ secrets.CLIENT3_DEPLOY_KEY }}" | ssh-add -
-          ssh -o StrictHostKeyChecking=no root@${{ secrets.CLIENT3_IP }} \
+          ssh -i ~/.ssh/client3_deploy -o StrictHostKeyChecking=no root@${{ secrets.CLIENT3_IP }} \
             "systemctl list-units --type=service --state=running | grep -E 'fastfree|caddy|mariadb' || true"
