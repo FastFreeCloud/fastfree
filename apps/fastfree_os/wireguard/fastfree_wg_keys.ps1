@@ -55,7 +55,7 @@ $DEVICES = @{
         ip          = "10.100.0.7"
         port        = 51820
         role        = "sub-hub"
-        domain      = "client3.fastfree.cloud"
+        domain      = "fastfree.cloud"
         connects_to = "dev"
     }
     # Direct clients (connect to dev)

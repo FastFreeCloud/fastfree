@@ -1,6 +1,6 @@
 {
   hostName = "client3";
-  domain   = "client3.fastfree.cloud";
+  domain   = "fastfree.cloud";
   wireguardAddress = "10.100.0.7";
 
   deployType = "hostinger";
