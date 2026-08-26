@@ -3,5 +3,7 @@ packages:
   - 'apps/*'
 allowBuilds:
   '@parcel/watcher': true
+  '@tailwindcss/oxide': set this to true or false
   esbuild: true
+  unrs-resolver: set this to true or false
   vue-demi: true

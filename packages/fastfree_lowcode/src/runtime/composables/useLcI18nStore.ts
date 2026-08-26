@@ -256,15 +256,19 @@ export const useLcI18nStore = defineStore('lc-i18n', () => {
   }
 })
 
-// Module-level register function — can be called before store is created
+// Module-level register function — safe to call before Pinia is initialized
+// Messages are saved in the array and merged lazily via getBaseMessages()
 export function registerMessages(namespace: string, en: Record<string, string>, ar: Record<string, string>) {
   registeredMessages.push({ namespace, en, ar })
-  const store = getLcI18nStore()
-  const lang = store.locale.value
-  for (const [key, value] of Object.entries(lang === 'ar' ? ar : en)) {
-    const fullKey = `${namespace}.${key}`
-    ;(store.messages as Record<string, string>)[fullKey] = value
+  // If the store is already created, merge immediately
+  if (_store) {
+    const lang = _store.locale.value
+    for (const [key, value] of Object.entries(lang === 'ar' ? ar : en)) {
+      const fullKey = `${namespace}.${key}`
+      ;(_store.messages as Record<string, string>)[fullKey] = value
+    }
   }
+  // Otherwise, messages will be merged when getBaseMessages() is called during store creation
 }
 
 // Singleton instance — created once, imported anywhere
@@ -272,7 +276,35 @@ let _store: ReturnType<typeof useLcI18nStore> | null = null
 
 export function getLcI18nStore(): ReturnType<typeof useLcI18nStore> {
   if (!_store) {
-    _store = useLcI18nStore()
+    try {
+      _store = useLcI18nStore()
+    } catch {
+      // Pinia not initialized yet — return a minimal proxy that defers to getBaseMessages()
+      // This prevents crashes when boot files call registerMessages() before app.use(pinia)
+      console.warn('[fastfree-lowcode] Pinia not ready yet — translations will be merged later')
+      return createDeferredStore()
+    }
   }
   return _store
+}
+
+// Deferred store — allows registerMessages() to work before Pinia is ready
+// Once Pinia initializes, the real store takes over via getBaseMessages()
+function createDeferredStore() {
+  const pendingMessages: Record<string, string> = {}
+  const deferred = {
+    locale: { value: loadLocale() },
+    messages: pendingMessages,
+    t: (key: string, params?: Record<string, string | number>): string => {
+      const msg = pendingMessages[key]
+      if (msg !== undefined) return replaceParams(msg, params)
+      const fallback = LC_DEFAULT_MESSAGES[key as keyof typeof LC_DEFAULT_MESSAGES]
+      if (fallback !== undefined) return replaceParams(fallback, params)
+      return key
+    },
+  }
+  // Override _store getter so next call returns the deferred proxy
+  // and registerMessages() can populate pendingMessages
+  _store = deferred as unknown as ReturnType<typeof useLcI18nStore>
+  return deferred as unknown as ReturnType<typeof useLcI18nStore>
 }
