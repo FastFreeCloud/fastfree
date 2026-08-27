@@ -18,6 +18,7 @@ export interface FastFreeAuthOptions {
   baseUrl: string
   app?: App
   storagePrefix?: string
+  persistUrl?: boolean
 }
 
 // ------------------------------------------------------------
@@ -67,7 +68,7 @@ export async function initFastFreeAuth(options: FastFreeAuthOptions): Promise<vo
     registerAuthScreens(registerScreen, registerGroup, registerGroupPage)
   }
 
-  if (options.baseUrl) {
+  if (options.baseUrl && options.persistUrl !== false) {
     localStorage.setItem('fastfree_base_url', options.baseUrl)
   }
 
