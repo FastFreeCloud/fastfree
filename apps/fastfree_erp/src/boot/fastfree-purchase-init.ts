@@ -6,5 +6,9 @@
 import { initFastFreePurchase } from 'fastfree-purchase'
 
 export default async () => {
-  await initFastFreePurchase()
+  try {
+    await initFastFreePurchase()
+  } catch (err) {
+    console.warn('[FastFree Purchase] Initialization failed:', err)
+  }
 }

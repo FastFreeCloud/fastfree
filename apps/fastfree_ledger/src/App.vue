@@ -1,5 +1,9 @@
 <template>
-  <div id="q-app">
+  <LcErrorBoundary>
     <router-view />
-  </div>
+  </LcErrorBoundary>
 </template>
+
+<script setup lang="ts">
+import { LcErrorBoundary } from 'quasar-app-extension-fastfree-lowcode'
+</script>

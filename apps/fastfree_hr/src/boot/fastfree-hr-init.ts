@@ -6,5 +6,9 @@
 import { initFastFreeHr } from 'fastfree-hr'
 
 export default async () => {
-  await initFastFreeHr()
+  try {
+    await initFastFreeHr()
+  } catch (err) {
+    console.warn('[FastFree HR] Initialization failed:', err)
+  }
 }

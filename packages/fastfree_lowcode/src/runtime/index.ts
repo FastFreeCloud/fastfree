@@ -6,7 +6,7 @@ export {
   LcSmartPagination, LcSmartFilter, LcPageHeader, LcSplashScreen,
   LcHeaderActions, LcConnectionScreen, LcErrorLogScreen, LcAboutScreen,
   LcSettingsScreen, LcThemeScreen, LcTranslationEditorScreen, LcPwaUpdateScreen,
-  LcShortcutsScreen,
+  LcShortcutsScreen, LcErrorBoundary,
   DynamicTable, DynamicForm, FilterToolbar, PaginationBar,
   EmptyState, AddRowButton,
 } from './components'

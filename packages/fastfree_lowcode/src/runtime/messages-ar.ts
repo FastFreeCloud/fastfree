@@ -143,6 +143,8 @@ const LC_DEFAULT_MESSAGES_AR: LcMessages = {
   "common.confirm": "تأكيد",
   "common.error": "خطأ",
   "common.submit": "إرسال",
+  "common.info": "معلومات",
+  "common.details": "التفاصيل",
 
   "validation.required": "هذا الحقل مطلوب",
   "validation.invalidPhone": "رقم هاتف غير صحيح",
@@ -168,6 +170,10 @@ const LC_DEFAULT_MESSAGES_AR: LcMessages = {
   "error.lostConnection": "فُقد الاتصال بالشبكة",
   "error.connectionRestored": "تم استعادة الاتصال بالشبكة",
   "error.loadedOffline": "تم تحميل التطبيق بدون اتصال بالشبكة",
+  "error.screenTitle": "حدث خطأ ما",
+  "error.retry": "حاول مرة أخرى",
+
+  "screen.errorMessage": "حدث خطأ غير متوقع أثناء تحميل التطبيق. يرجى المحاولة مرة أخرى أو الاتصال بالدعم الفني.",
 
   "system.vueError": "خطأ في {component}: {message}",
   "system.promiseRejected": "Promise مرفوض: {message}",

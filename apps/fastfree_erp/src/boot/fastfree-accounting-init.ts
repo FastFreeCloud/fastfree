@@ -6,5 +6,9 @@
 import { initFastFreeAccounting } from 'fastfree-accounting'
 
 export default async () => {
-  await initFastFreeAccounting()
+  try {
+    await initFastFreeAccounting()
+  } catch (err) {
+    console.warn('[FastFree Accounting] Initialization failed:', err)
+  }
 }

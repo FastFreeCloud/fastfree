@@ -6,5 +6,9 @@
 import { initFastFreeCrm } from 'fastfree-crm'
 
 export default async () => {
-  await initFastFreeCrm()
+  try {
+    await initFastFreeCrm()
+  } catch (err) {
+    console.warn('[FastFree CRM] Initialization failed:', err)
+  }
 }

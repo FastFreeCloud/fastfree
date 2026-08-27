@@ -19,6 +19,7 @@ export { default as LcTranslationEditorScreen } from './LcTranslationEditorScree
 export { default as LcPwaUpdateScreen } from './LcPwaUpdateScreen.vue'
 export { default as LcThemeScreen } from './LcThemeScreen.vue'
 export { default as LcShortcutsScreen } from './LcShortcutsScreen.vue'
+export { default as LcErrorBoundary } from './LcErrorBoundary.vue'
 
 // Base Components
 export { default as DynamicTable } from './DynamicTable.vue'

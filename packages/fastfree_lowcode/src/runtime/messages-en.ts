@@ -144,6 +144,8 @@ const LC_DEFAULT_MESSAGES: LcMessages = {
   "common.confirm": "Confirm",
   "common.error": "Error",
   "common.submit": "Submit",
+  "common.info": "Info",
+  "common.details": "Details",
   "validation.required": "This field is required",
   "validation.invalidPhone": "Invalid phone number",
   "validation.invalidNationalId": "Invalid national ID",
@@ -168,6 +170,10 @@ const LC_DEFAULT_MESSAGES: LcMessages = {
   "error.lostConnection": "Lost network connection",
   "error.connectionRestored": "Network connection restored",
   "error.loadedOffline": "App loaded without network connection",
+  "error.screenTitle": "Something went wrong",
+  "error.retry": "Try again",
+
+  "screen.errorMessage": "An unexpected error occurred while loading the application. Please try again or contact support.",
 
   "system.vueError": "Error in {component}: {message}",
   "system.promiseRejected": "Rejected promise: {message}",

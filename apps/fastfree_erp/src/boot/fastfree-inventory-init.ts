@@ -6,5 +6,9 @@
 import { initFastFreeInventory } from 'fastfree-inventory'
 
 export default async () => {
-  await initFastFreeInventory()
+  try {
+    await initFastFreeInventory()
+  } catch (err) {
+    console.warn('[FastFree Inventory] Initialization failed:', err)
+  }
 }

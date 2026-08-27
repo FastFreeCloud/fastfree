@@ -6,5 +6,9 @@
 import { initFastFreeSales } from 'fastfree-sales'
 
 export default async () => {
-  await initFastFreeSales()
+  try {
+    await initFastFreeSales()
+  } catch (err) {
+    console.warn('[FastFree Sales] Initialization failed:', err)
+  }
 }
