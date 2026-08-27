@@ -109,15 +109,12 @@ in {
       enable = true;
       dockerCompat = lib.mkIf (!config.virtualisation.docker.enable) true;
       defaultNetwork.settings.dns_enabled = true;
+      # Run as root on VPS — no need for rootless user namespaces
+      rootless = false;
     };
     virtualisation.oci-containers.backend = "podman";
 
-    # ── Podman subuid/subgid (required for rootless container creation) ──
-    # Use tmpfiles to create REAL files (not symlinks) that Podman can read
-    systemd.tmpfiles.rules = [
-      "f /etc/subuid 0644 root root - root:100000:65536"
-      "f /etc/subgid 0644 root root - root:100000:65536"
-    ];
+
 
     # ── Podman Docker-compatible TCP socket (for Windows Docker CLI) ──
     systemd.services.podman-docker-tcp = lib.mkIf (config.fastfree.deployType == "wsl") {
