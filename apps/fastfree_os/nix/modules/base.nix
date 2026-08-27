@@ -112,12 +112,19 @@ in {
     };
     virtualisation.oci-containers.backend = "podman";
 
-    # ── Podman subuid/subgid (required for container creation) ──
-    system.activationScripts.subuid-subgid = ''
-      mkdir -p /etc
-      printf 'root:100000:65536\nadmin:100000:65536\n' > /etc/subuid
-      printf 'root:100000:65536\nadmin:100000:65536\n' > /etc/subgid
-      chmod 644 /etc/subuid /etc/subgid
+    systemd.services.podman = {
+      after = [ "podman-setup-subuid.service" ];
+      requires = [ "podman-setup-subuid.service" ];
+    };
+
+    # ── Podman subuid/subgid (required for rootless container creation) ──
+    environment.etc."subuid".text = ''
+      root:100000:65536
+      admin:100000:65536
+    '';
+    environment.etc."subgid".text = ''
+      root:100000:65536
+      admin:100000:65536
     '';
 
     # ── Ensure subuid/subgid exist before Podman starts ──

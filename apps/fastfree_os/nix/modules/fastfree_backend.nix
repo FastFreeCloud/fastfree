@@ -246,10 +246,18 @@ in {
     };
 
     systemd.services."fastfree-backend-websocket" = {
-      after = [ "fastfree-backend-network.service" "fastfree-backend-configurator.service" "fastfree-backend-create-site.service" ];
-      requires = [ "fastfree-backend-create-site.service" ];
+      after = [ 
+        "fastfree-backend-network.service" 
+        "fastfree-backend-configurator.service" 
+        "fastfree-backend-create-site.service"
+        "fastfree-backend-app.service"
+        "fastfree-redis-queue.service"
+      ];
+      requires = [ "fastfree-backend-create-site.service" "mysql.service" ];
       serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "5";
+      serviceConfig.RestartSec = "10";
+      serviceConfig.StartLimitIntervalSec = "300";
+      serviceConfig.StartLimitBurst = "10";
     };
 
     # ── 9. Queue Short (Celery worker) ─────────────────────
@@ -266,10 +274,16 @@ in {
     };
 
     systemd.services."fastfree-backend-queue-short" = {
-      after = [ "fastfree-backend-network.service" "fastfree-backend-create-site.service" ];
-      requires = [ "mysql.service" ];
+      after = [ 
+        "fastfree-backend-network.service" 
+        "fastfree-backend-create-site.service"
+        "fastfree-redis-queue.service"
+      ];
+      requires = [ "mysql.service" "fastfree-redis-queue.service" ];
       serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "5";
+      serviceConfig.RestartSec = "10";
+      serviceConfig.StartLimitIntervalSec = "300";
+      serviceConfig.StartLimitBurst = "10";
     };
 
     # ── 10. Queue Long (Celery worker) ─────────────────────
@@ -286,10 +300,16 @@ in {
     };
 
     systemd.services."fastfree-backend-queue-long" = {
-      after = [ "fastfree-backend-network.service" "fastfree-backend-create-site.service" ];
-      requires = [ "mysql.service" ];
+      after = [ 
+        "fastfree-backend-network.service" 
+        "fastfree-backend-create-site.service"
+        "fastfree-redis-queue.service"
+      ];
+      requires = [ "mysql.service" "fastfree-redis-queue.service" ];
       serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "5";
+      serviceConfig.RestartSec = "10";
+      serviceConfig.StartLimitIntervalSec = "300";
+      serviceConfig.StartLimitBurst = "10";
     };
 
     # ── 11. Scheduler ──────────────────────────────────────
@@ -306,10 +326,14 @@ in {
     };
 
     systemd.services."fastfree-backend-scheduler" = {
-      after = [ "fastfree-backend-network.service" "fastfree-backend-create-site.service" ];
-      requires = [ "mysql.service" ];
+      after = [ 
+        "fastfree-backend-network.service" 
+        "fastfree-backend-create-site.service"
+        "fastfree-redis-queue.service"
+      ];
+      requires = [ "mysql.service" "fastfree-redis-queue.service" ];
       serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "5";
+      serviceConfig.RestartSec = "10";
     };
 
     # ── 12. Backup ──────────────────────────────────────────

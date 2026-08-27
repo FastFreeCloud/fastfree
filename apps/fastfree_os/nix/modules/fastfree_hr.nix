@@ -57,8 +57,8 @@ CADDY
     };
 
     systemd.services."fastfree-hr-frontend" = {
-      after = [ "fastfree-network.service" "fastfree-hr-caddyfile.service" ];
-      requires = [ "fastfree-network.service" ];
+      after = [ "fastfree-backend-network.service" "fastfree-hr-caddyfile.service" ];
+      requires = [ "fastfree-backend-network.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "5";
     };
