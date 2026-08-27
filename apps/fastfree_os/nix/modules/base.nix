@@ -122,6 +122,23 @@ in {
       admin:100000:65536
     '';
 
+    # ── Force Podman to use host user namespace (bypass rootless subuid requirement) ──
+    environment.etc."containers/containers.conf".text = ''
+      [containers]
+      userns = "host"
+
+      [engine]
+      cgroup_manager = "systemd"
+      events_logger = "journald"
+    '';
+
+    environment.etc."containers/storage.conf".text = ''
+      [storage]
+      driver = "overlay"
+      runroot = "/run/containers/storage"
+      graphroot = "/var/lib/containers/storage"
+    '';
+
     # ── Podman Docker-compatible TCP socket (for Windows Docker CLI) ──
     systemd.services.podman-docker-tcp = lib.mkIf (config.fastfree.deployType == "wsl") {
       description = "Podman Docker-compatible API on TCP 127.0.0.1:2375";
