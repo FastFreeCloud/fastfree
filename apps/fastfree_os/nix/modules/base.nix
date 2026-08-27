@@ -112,32 +112,37 @@ in {
     };
     virtualisation.oci-containers.backend = "podman";
 
-    # ── Podman subuid/subgid (required for rootless container creation) ──
-    environment.etc."subuid".text = ''
-      root:100000:65536
-      admin:100000:65536
-    '';
-    environment.etc."subgid".text = ''
-      root:100000:65536
-      admin:100000:65536
+    # ── Force Podman rootful mode (bypass rootless subuid requirement) ──
+    # Tell Podman that user namespace config is already handled
+    environment.variables._CONTAINERS_USERNS_CONFIGURED = "1";
+    environment.variables.CONTAINERS_CONF = "/etc/containers/containers.conf";
+    environment.variables.CONTAINERS_STORAGE_CONF = "/etc/containers/storage.conf";
+
+    # Create REAL files (not NixOS symlinks) for subuid/subgid
+    # Podman can't read Nix store symlinks reliably
+    system.activationScripts.podman-subuid = lib.mkAfter ''
+      rm -f /etc/subuid /etc/subgid
+      printf 'root:100000:65536\nadmin:100000:65536\n' > /etc/subuid
+      printf 'root:100000:65536\nadmin:100000:65536\n' > /etc/subgid
+      chmod 644 /etc/subuid /etc/subgid
     '';
 
-    # ── Force Podman to use host user namespace (bypass rootless subuid requirement) ──
-    environment.etc."containers/containers.conf".source = lib.mkForce (pkgs.writeText "containers.conf" ''
+    # Override NixOS containers.conf with rootful settings
+    environment.etc."containers/containers.conf".text = lib.mkForce ''
       [containers]
       userns = "host"
 
       [engine]
       cgroup_manager = "systemd"
       events_logger = "journald"
-    '');
+    '';
 
-    environment.etc."containers/storage.conf".source = lib.mkForce (pkgs.writeText "storage.conf" ''
+    environment.etc."containers/storage.conf".text = lib.mkForce ''
       [storage]
       driver = "overlay"
       runroot = "/run/containers/storage"
       graphroot = "/var/lib/containers/storage"
-    '');
+    '';
 
     # ── Podman Docker-compatible TCP socket (for Windows Docker CLI) ──
     systemd.services.podman-docker-tcp = lib.mkIf (config.fastfree.deployType == "wsl") {
