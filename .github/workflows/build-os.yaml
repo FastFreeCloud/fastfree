@@ -5,18 +5,6 @@
 name: "🖥️ بناء FastFree OS + اختبارات"
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - "apps/fastfree_os/nix/**"
-      - "apps/fastfree_os/flake.nix"
-      - "apps/fastfree_os/flake.lock"
-  pull_request:
-    branches: [main, master]
-    paths:
-      - "apps/fastfree_os/nix/**"
-      - "apps/fastfree_os/flake.nix"
-      - "apps/fastfree_os/flake.lock"
   workflow_dispatch:
 
 concurrency:

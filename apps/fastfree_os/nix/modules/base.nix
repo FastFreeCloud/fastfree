@@ -123,21 +123,21 @@ in {
     '';
 
     # ── Force Podman to use host user namespace (bypass rootless subuid requirement) ──
-    environment.etc."containers/containers.conf".text = ''
+    environment.etc."containers/containers.conf".source = lib.mkForce (pkgs.writeText "containers.conf" ''
       [containers]
       userns = "host"
 
       [engine]
       cgroup_manager = "systemd"
       events_logger = "journald"
-    '';
+    '');
 
-    environment.etc."containers/storage.conf".text = ''
+    environment.etc."containers/storage.conf".source = lib.mkForce (pkgs.writeText "storage.conf" ''
       [storage]
       driver = "overlay"
       runroot = "/run/containers/storage"
       graphroot = "/var/lib/containers/storage"
-    '';
+    '');
 
     # ── Podman Docker-compatible TCP socket (for Windows Docker CLI) ──
     systemd.services.podman-docker-tcp = lib.mkIf (config.fastfree.deployType == "wsl") {
