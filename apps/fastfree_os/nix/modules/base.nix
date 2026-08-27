@@ -113,14 +113,11 @@ in {
     virtualisation.oci-containers.backend = "podman";
 
     # ── Podman subuid/subgid (required for rootless container creation) ──
-    environment.etc."subuid".text = ''
-      root:100000:65536
-      admin:100000:65536
-    '';
-    environment.etc."subgid".text = ''
-      root:100000:65536
-      admin:100000:65536
-    '';
+    # Use tmpfiles to create REAL files (not symlinks) that Podman can read
+    systemd.tmpfiles.rules = [
+      "f /etc/subuid 0644 root root - root:100000:65536"
+      "f /etc/subgid 0644 root root - root:100000:65536"
+    ];
 
     # ── Podman Docker-compatible TCP socket (for Windows Docker CLI) ──
     systemd.services.podman-docker-tcp = lib.mkIf (config.fastfree.deployType == "wsl") {
