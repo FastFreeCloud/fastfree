@@ -112,11 +112,6 @@ in {
     };
     virtualisation.oci-containers.backend = "podman";
 
-    systemd.services.podman = {
-      after = [ "podman-setup-subuid.service" ];
-      requires = [ "podman-setup-subuid.service" ];
-    };
-
     # ── Podman subuid/subgid (required for rootless container creation) ──
     environment.etc."subuid".text = ''
       root:100000:65536
@@ -126,20 +121,6 @@ in {
       root:100000:65536
       admin:100000:65536
     '';
-
-    # ── Ensure subuid/subgid exist before Podman starts ──
-    systemd.services.podman-setup-subuid = {
-      description = "Create /etc/subuid and /etc/subgid for Podman";
-      wantedBy = [ "multi-user.target" ];
-      before = [ "podman.service" ];
-      serviceConfig.Type = "oneshot";
-      script = ''
-        mkdir -p /etc
-        printf 'root:100000:65536\nadmin:100000:65536\n' > /etc/subuid
-        printf 'root:100000:65536\nadmin:100000:65536\n' > /etc/subgid
-        chmod 644 /etc/subuid /etc/subgid
-      '';
-    };
 
     # ── Podman Docker-compatible TCP socket (for Windows Docker CLI) ──
     systemd.services.podman-docker-tcp = lib.mkIf (config.fastfree.deployType == "wsl") {
