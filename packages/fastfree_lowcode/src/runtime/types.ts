@@ -49,6 +49,8 @@ export interface LcMessages {
   "common.confirm": string;
   "common.error": string;
   "common.submit": string;
+  "common.info": string;
+  "common.details": string;
 
   "validation.required": string;
   "validation.invalidPhone": string;
@@ -74,6 +76,10 @@ export interface LcMessages {
   "error.lostConnection": string;
   "error.connectionRestored": string;
   "error.loadedOffline": string;
+  "error.screenTitle": string;
+  "error.retry": string;
+
+  "screen.errorMessage": string;
 
   "system.vueError": string;
   "system.promiseRejected": string;
