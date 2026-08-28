@@ -2,67 +2,36 @@
 
 let
   ghAccount = lib.strings.toLower config.fastfree.githubAccount;
+  spaDir = "/srv/fastfree-erp";
 in {
   config = lib.mkIf config.fastfree.apps.fastfree_erp {
 
-    # ── 1. Caddyfile generation ────────────────────────────
-    systemd.services."fastfree-erp-caddyfile" = {
-      description = "Generate Caddyfile for ERP Frontend";
-      before = [ "fastfree-erp-frontend.service" ];
+    # ── 1. Extract SPA files from GHCR image to host ──────
+    systemd.services."fastfree-erp-spa" = {
+      description = "Extract ERP SPA files from container image";
+      after = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig.Type = "oneshot";
+      serviceConfig.RemainAfterExit = true;
+      path = [ pkgs.podman pkgs.coreutils ];
       script = ''
-        mkdir -p /etc/fastfree/caddy
-        cat > /etc/fastfree/caddy/erp-Caddyfile << 'CADDY'
-{
-    admin off
-}
-:9001 {
-    root * /srv
-
-    @api path /api/*
-    handle @api {
-        reverse_proxy 127.0.0.1:8000
-    }
-
-    @socketio path /socket.io/*
-    handle @socketio {
-        reverse_proxy 127.0.0.1:9000
-    }
-
-    handle {
-        try_files {path} /index.html
-        file_server
-    }
-
-    log {
-        output stdout
-        format console
-        level info
-    }
-}
-CADDY
+        mkdir -p ${spaDir}
+        IMAGE="ghcr.io/${ghAccount}/fastfree_erp:latest"
+        CID=$(podman create "$IMAGE" 2>/dev/null || true)
+        if [ -n "$CID" ]; then
+          podman cp "$CID:/srv/." "${spaDir}/"
+          podman rm "$CID" >/dev/null 2>&1 || true
+          echo "ERP SPA files extracted to ${spaDir}"
+        else
+          echo "WARNING: Could not create container from $IMAGE"
+        fi
       '';
     };
 
-    # ── 3. Frontend container (Caddy + built assets) ───────
-    virtualisation.oci-containers.containers.fastfree-erp-frontend = {
-      image = "ghcr.io/${ghAccount}/fastfree_erp:latest";
-      pull = "always";
-      autoStart = true;
-      extraOptions = [
-        "--network=host"
-      ];
-      volumes = [
-        "/etc/fastfree/caddy/erp-Caddyfile:/etc/caddy/Caddyfile:ro"
-      ];
-    };
-
-    systemd.services."fastfree-erp-frontend" = {
-      after = [ "fastfree-backend-network.service" "fastfree-erp-caddyfile.service" ];
-      requires = [ "fastfree-backend-network.service" ];
-      serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "5";
+    # ── 2. Ensure directory exists before Caddy starts ────
+    systemd.services.caddy = {
+      after = [ "fastfree-erp-spa.service" ];
+      requires = [ "fastfree-erp-spa.service" ];
     };
   };
 }

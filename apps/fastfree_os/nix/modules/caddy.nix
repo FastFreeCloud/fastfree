@@ -9,6 +9,26 @@ let
       ca https://acme.zerossl.com/v2/DV90
     }
   '';
+
+  # SPA config helper: serves static files + proxies API to backend
+  spaConfig = spaDir: ''
+    root * ${spaDir}
+
+    @api path /api/*
+    handle @api {
+      reverse_proxy 127.0.0.1:8000
+    }
+
+    @socketio path /socket.io/*
+    handle @socketio {
+      reverse_proxy 127.0.0.1:8000
+    }
+
+    handle {
+      try_files {path} /index.html
+      file_server
+    }
+  '';
 in {
   config = lib.mkIf config.fastfree.apps.caddy {
 
@@ -39,7 +59,7 @@ in {
       "erp.${domain}" = lib.mkIf config.fastfree.apps.fastfree_erp {
         extraConfig = ''
           ${tlsConfig}
-          reverse_proxy 127.0.0.1:9001
+          ${spaConfig "/srv/fastfree-erp"}
         '';
       };
 
@@ -47,7 +67,7 @@ in {
       "ledger.${domain}" = lib.mkIf config.fastfree.apps.fastfree_ledger {
         extraConfig = ''
           ${tlsConfig}
-          reverse_proxy 127.0.0.1:9000
+          ${spaConfig "/srv/fastfree-ledger"}
         '';
       };
 
@@ -55,7 +75,7 @@ in {
       "hr.${domain}" = lib.mkIf config.fastfree.apps.fastfree_hr {
         extraConfig = ''
           ${tlsConfig}
-          reverse_proxy 127.0.0.1:9002
+          ${spaConfig "/srv/fastfree-hr"}
         '';
       };
 
@@ -63,7 +83,7 @@ in {
       "pos.${domain}" = lib.mkIf config.fastfree.apps.fastfree_pos {
         extraConfig = ''
           ${tlsConfig}
-          reverse_proxy 127.0.0.1:9003
+          ${spaConfig "/srv/fastfree-pos"}
         '';
       };
 

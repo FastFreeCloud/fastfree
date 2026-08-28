@@ -2,67 +2,36 @@
 
 let
   ghAccount = lib.strings.toLower config.fastfree.githubAccount;
+  spaDir = "/srv/fastfree-ledger";
 in {
   config = lib.mkIf config.fastfree.apps.fastfree_ledger {
 
-    # ── 1. Caddyfile generation ────────────────────────────
-    systemd.services."fastfree-ledger-caddyfile" = {
-      description = "Generate Caddyfile for Ledger Frontend";
-      before = [ "fastfree-ledger-frontend.service" ];
+    # ── 1. Extract SPA files from GHCR image to host ──────
+    systemd.services."fastfree-ledger-spa" = {
+      description = "Extract Ledger SPA files from container image";
+      after = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig.Type = "oneshot";
+      serviceConfig.RemainAfterExit = true;
+      path = [ pkgs.podman pkgs.coreutils ];
       script = ''
-        mkdir -p /etc/fastfree/caddy
-        cat > /etc/fastfree/caddy/ledger-Caddyfile << 'CADDY'
-{
-    admin off
-}
-:9000 {
-    root * /srv
-
-    @api path /api/*
-    handle @api {
-        reverse_proxy 127.0.0.1:8000
-    }
-
-    @socketio path /socket.io/*
-    handle @socketio {
-        reverse_proxy 127.0.0.1:9000
-    }
-
-    handle {
-        try_files {path} /index.html
-        file_server
-    }
-
-    log {
-        output stdout
-        format console
-        level info
-    }
-}
-CADDY
+        mkdir -p ${spaDir}
+        IMAGE="ghcr.io/${ghAccount}/fastfree_ledger:latest"
+        CID=$(podman create "$IMAGE" 2>/dev/null || true)
+        if [ -n "$CID" ]; then
+          podman cp "$CID:/srv/." "${spaDir}/"
+          podman rm "$CID" >/dev/null 2>&1 || true
+          echo "Ledger SPA files extracted to ${spaDir}"
+        else
+          echo "WARNING: Could not create container from $IMAGE"
+        fi
       '';
     };
 
-    # ── 3. Frontend container (Caddy + built assets) ───────
-    virtualisation.oci-containers.containers.fastfree-ledger-frontend = {
-      image = "ghcr.io/${ghAccount}/fastfree_ledger:latest";
-      pull = "always";
-      autoStart = true;
-      extraOptions = [
-        "--network=host"
-      ];
-      volumes = [
-        "/etc/fastfree/caddy/ledger-Caddyfile:/etc/caddy/Caddyfile:ro"
-      ];
-    };
-
-    systemd.services."fastfree-ledger-frontend" = {
-      after = [ "fastfree-backend-network.service" "fastfree-ledger-caddyfile.service" ];
-      requires = [ "fastfree-backend-network.service" ];
-      serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "5";
+    # ── 2. Ensure directory exists before Caddy starts ────
+    systemd.services.caddy = {
+      after = [ "fastfree-ledger-spa.service" ];
+      requires = [ "fastfree-ledger-spa.service" ];
     };
   };
 }

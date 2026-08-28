@@ -28,23 +28,24 @@ jobs:
             apps/fastfree_os/nix/ \
             root@${{ secrets.CLIENT3_IP }}:/tmp/fastfree_os/
 
-          # Full cleanup: stop, reset, remove everything, flush stale nftables
+          # Cleanup: stop old SPA container services + remove containers
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} << 'RESET'
             for svc in hr erp pos ledger; do
               systemctl stop "podman-fastfree-${svc}-frontend.service" 2>/dev/null || true
               systemctl reset-failed "podman-fastfree-${svc}-frontend.service" 2>/dev/null || true
+              systemctl disable "podman-fastfree-${svc}-frontend.service" 2>/dev/null || true
             done
             systemctl daemon-reload
             podman rm -f fastfree-hr-frontend fastfree-erp-frontend fastfree-pos-frontend fastfree-ledger-frontend 2>/dev/null || true
-            # Remove stale podman NAT rules (old port-mapping) — safe, won't kill SSH
+            # Remove stale podman NAT rules
             nft delete table ip nat 2>/dev/null || true
             nft delete table ip6 nat 2>/dev/null || true
             podman network rm fastfree-net 2>/dev/null || true
-            echo 'All SPA services stopped, containers removed, stale NAT rules cleaned'
+            echo 'Cleanup done: old SPA containers removed'
           RESET
 
-          # Pull images
+          # Pull SPA images (needed for podman cp extraction)
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} << 'PULL'
             podman pull --quiet ghcr.io/fastfreecloud/fastfree_hr:latest || true
@@ -54,21 +55,24 @@ jobs:
             echo 'All images pulled'
           PULL
 
-          # Run nixos-rebuild (allow failure, we'll restart services after)
+          # Run nixos-rebuild (extracts SPA files + configures host Caddy)
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} \
             "cd /tmp/fastfree_os && nixos-rebuild switch --flake .#client3 || true"
 
-          # Reset any failed units from rebuild and start services manually
+          # Reset any failed units from rebuild, ensure caddy is running
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} << 'START'
-            for svc in hr erp pos ledger; do
-              systemctl reset-failed "podman-fastfree-${svc}-frontend.service" 2>/dev/null || true
-            done
             systemctl daemon-reload
-            for svc in hr erp pos ledger; do
-              systemctl start "podman-fastfree-${svc}-frontend.service" 2>/dev/null || echo "FAILED: ${svc}"
-            done
+            systemctl reset-failed fastfree-hr-spa.service 2>/dev/null || true
+            systemctl reset-failed fastfree-erp-spa.service 2>/dev/null || true
+            systemctl reset-failed fastfree-pos-spa.service 2>/dev/null || true
+            systemctl reset-failed fastfree-ledger-spa.service 2>/dev/null || true
+            # Re-run SPA extraction if needed
+            systemctl start fastfree-hr-spa.service 2>/dev/null || true
+            systemctl start fastfree-erp-spa.service 2>/dev/null || true
+            systemctl start fastfree-pos-spa.service 2>/dev/null || true
+            systemctl start fastfree-ledger-spa.service 2>/dev/null || true
             systemctl restart caddy
             echo 'All services started'
           START
@@ -80,37 +84,29 @@ jobs:
           root@${{ secrets.CLIENT3_IP }} \
           "systemctl list-units --type=service --state=running | grep -E 'fastfree|caddy|mariadb' || true"
 
-      - name: "Diagnostic - Deep Network & Firewall"
+      - name: "Diagnostic"
         run: |
           sshpass -p "${{ secrets.CLIENT3_ROOT_PASSWORD }}" \
           ssh -o StrictHostKeyChecking=no \
           root@${{ secrets.CLIENT3_IP }} << 'DIAG'
-          echo "=== ALL NFTABLES RULES ==="
-          nft list ruleset 2>&1 | head -80 || echo "nft not available"
+          echo "=== SPA FILES ON HOST ==="
+          for app in hr erp ledger pos; do
+            dir="/srv/fastfree-${app}"
+            if [ -d "$dir" ]; then
+              echo "$dir: $(ls "$dir" 2>/dev/null | head -5)..."
+            else
+              echo "$dir: MISSING"
+            fi
+          done
           echo ""
-          echo "=== IPTABLES NAT ==="
-          iptables -t nat -L -n -v 2>&1 | head -30 || echo "iptables not available"
-          echo ""
-          echo "=== IPTABLES FILTER ==="
-          iptables -t filter -L -n -v 2>&1 | head -30 || echo "iptables not available"
-          echo ""
-          echo "=== CURL WITH TIMEOUT 3s ==="
-          curl -m 3 -sI http://127.0.0.1:9002/ 2>&1 || echo "TIMEOUT/FAILED: 9002"
-          curl -m 3 -sI http://127.0.0.1:9001/ 2>&1 || echo "TIMEOUT/FAILED: 9001"
-          curl -m 3 -sI http://127.0.0.1:9000/ 2>&1 || echo "TIMEOUT/FAILED: 9000"
-          curl -m 3 -sI http://127.0.0.1:9003/ 2>&1 || echo "TIMEOUT/FAILED: 9003"
-          echo ""
-          echo "=== CURL FROM INSIDE CONTAINER ==="
-          podman exec fastfree-hr-frontend curl -m 3 -sI http://127.0.0.1:9002/ 2>&1 || echo "TIMEOUT/FAILED: container curl"
-          echo ""
-          echo "=== CADDY CONTAINER CADDYFILE ==="
-          podman exec fastfree-hr-frontend cat /etc/caddy/Caddyfile 2>&1 || true
+          echo "=== CURL TESTS (host Caddy) ==="
+          curl -m 5 -sI https://hr.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: hr"
+          curl -m 5 -sI https://erp.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: erp"
+          curl -m 5 -sI https://ledger.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: ledger"
+          curl -m 5 -sI https://pos.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: pos"
           echo ""
           echo "=== PODMAN CONTAINERS ==="
-          podman ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-          echo ""
-          echo "=== PORTS LISTENING ==="
-          ss -tlnp | grep -E '80|443|900[0-4]|3306|6379' 2>&1 || true
+          podman ps -a --format "table {{.Names}}\t{{.Status}}"
           echo ""
           echo "=== HOST CADDY ERRORS (last 10) ==="
           journalctl -u caddy --no-pager -n 10 --since "2 min ago" 2>&1 || true
