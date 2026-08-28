@@ -14,7 +14,7 @@ in {
       script = ''
         mkdir -p /etc/fastfree/caddy
         cat > /etc/fastfree/caddy/pos-Caddyfile << 'CADDY'
-:80 {
+:9003 {
     root * /srv
 
     @api path /api/*
@@ -47,9 +47,8 @@ CADDY
       image = "ghcr.io/${ghAccount}/fastfree_pos:latest";
       pull = "always";
       autoStart = true;
-      ports = [ "9003:80" ];
       extraOptions = [
-        "--network=fastfree-net"
+        "--network=host"
       ];
       volumes = [
         "/etc/fastfree/caddy/pos-Caddyfile:/etc/caddy/Caddyfile:ro"
