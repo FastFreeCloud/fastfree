@@ -80,29 +80,40 @@ jobs:
           root@${{ secrets.CLIENT3_IP }} \
           "systemctl list-units --type=service --state=running | grep -E 'fastfree|caddy|mariadb' || true"
 
-      - name: "Diagnostic - Container Logs & Errors"
+      - name: "Diagnostic - Deep Network & Firewall"
         run: |
           sshpass -p "${{ secrets.CLIENT3_ROOT_PASSWORD }}" \
           ssh -o StrictHostKeyChecking=no \
           root@${{ secrets.CLIENT3_IP }} << 'DIAG'
-          echo "=== LOCAL CURL TESTS ==="
-          curl -sI http://127.0.0.1:9002/ 2>&1 | head -5 || echo "FAILED: 9002"
-          curl -sI http://127.0.0.1:9001/ 2>&1 | head -5 || echo "FAILED: 9001"
-          curl -sI http://127.0.0.1:9000/ 2>&1 | head -5 || echo "FAILED: 9000"
-          curl -sI http://127.0.0.1:9003/ 2>&1 | head -5 || echo "FAILED: 9003"
+          echo "=== ALL NFTABLES RULES ==="
+          nft list ruleset 2>&1 | head -80 || echo "nft not available"
           echo ""
-          echo "=== HOST CADDY VIA DOMAIN ==="
-          curl -sI http://hr.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED"
-          curl -sI https://hr.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED"
+          echo "=== IPTABLES NAT ==="
+          iptables -t nat -L -n -v 2>&1 | head -30 || echo "iptables not available"
+          echo ""
+          echo "=== IPTABLES FILTER ==="
+          iptables -t filter -L -n -v 2>&1 | head -30 || echo "iptables not available"
+          echo ""
+          echo "=== CURL WITH TIMEOUT 3s ==="
+          curl -m 3 -sI http://127.0.0.1:9002/ 2>&1 || echo "TIMEOUT/FAILED: 9002"
+          curl -m 3 -sI http://127.0.0.1:9001/ 2>&1 || echo "TIMEOUT/FAILED: 9001"
+          curl -m 3 -sI http://127.0.0.1:9000/ 2>&1 || echo "TIMEOUT/FAILED: 9000"
+          curl -m 3 -sI http://127.0.0.1:9003/ 2>&1 || echo "TIMEOUT/FAILED: 9003"
+          echo ""
+          echo "=== CURL FROM INSIDE CONTAINER ==="
+          podman exec fastfree-hr-frontend curl -m 3 -sI http://127.0.0.1:9002/ 2>&1 || echo "TIMEOUT/FAILED: container curl"
+          echo ""
+          echo "=== CADDY CONTAINER CADDYFILE ==="
+          podman exec fastfree-hr-frontend cat /etc/caddy/Caddyfile 2>&1 || true
           echo ""
           echo "=== PODMAN CONTAINERS ==="
           podman ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
           echo ""
-          echo "=== HOST CADDY ERRORS (last 30) ==="
-          journalctl -u caddy --no-pager -n 30 --since "1 min ago" 2>&1 || true
-          echo ""
           echo "=== PORTS LISTENING ==="
-          ss -tlnp | grep -E '80|443|8080|8082|9000|9001|9002|9003|9004|3306|6379' 2>&1 || true
+          ss -tlnp | grep -E '80|443|900[0-4]|3306|6379' 2>&1 || true
+          echo ""
+          echo "=== HOST CADDY ERRORS (last 10) ==="
+          journalctl -u caddy --no-pager -n 10 --since "2 min ago" 2>&1 || true
           echo ""
           echo "=== FAILED SYSTEMD UNITS ==="
           systemctl --failed 2>&1 || true
