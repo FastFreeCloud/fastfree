@@ -81,27 +81,24 @@ jobs:
           sshpass -p "${{ secrets.CLIENT3_ROOT_PASSWORD }}" \
           ssh -o StrictHostKeyChecking=no \
           root@${{ secrets.CLIENT3_IP }} << 'DIAG'
+          echo "=== LOCAL CURL TESTS ==="
+          curl -sI http://127.0.0.1:9002/ 2>&1 | head -5 || echo "FAILED: 9002"
+          curl -sI http://127.0.0.1:9001/ 2>&1 | head -5 || echo "FAILED: 9001"
+          curl -sI http://127.0.0.1:9000/ 2>&1 | head -5 || echo "FAILED: 9000"
+          curl -sI http://127.0.0.1:9003/ 2>&1 | head -5 || echo "FAILED: 9003"
+          echo ""
+          echo "=== HOST CADDY VIA DOMAIN ==="
+          curl -sI http://hr.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED"
+          curl -sI https://hr.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED"
+          echo ""
           echo "=== PODMAN CONTAINERS ==="
           podman ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
           echo ""
-          echo "=== CADDY ERRORS ==="
-          journalctl -u caddy --no-pager -n 20 2>&1 || true
-          echo ""
-          echo "=== CONTAINER LOGS (last 10 lines each) ==="
-          for c in $(podman ps --format '{{.Names}}'); do
-            echo "--- $c ---"
-            podman logs --tail 10 "$c" 2>&1 || true
-            echo ""
-          done
-          echo ""
-          echo "=== MARIADB STATUS ==="
-          systemctl is-active mysql 2>&1 || true
+          echo "=== HOST CADDY ERRORS (last 30) ==="
+          journalctl -u caddy --no-pager -n 30 --since "1 min ago" 2>&1 || true
           echo ""
           echo "=== PORTS LISTENING ==="
           ss -tlnp | grep -E '80|443|8080|8082|9000|9001|9002|9003|9004|3306|6379' 2>&1 || true
-          echo ""
-          echo "=== DISK SPACE ==="
-          df -h / 2>&1 || true
           echo ""
           echo "=== FAILED SYSTEMD UNITS ==="
           systemctl --failed 2>&1 || true
