@@ -13,19 +13,15 @@ let
   spaServer = name: spaDir: ''
     ${name}.${domain} {
       ${tlsBlock}
-
       root * ${spaDir}
-
       @api path /api/*
       handle @api {
         reverse_proxy 127.0.0.1:8000
       }
-
       @socketio path /socket.io/*
       handle @socketio {
         reverse_proxy 127.0.0.1:8000
       }
-
       handle {
         try_files {path} /index.html
         file_server
@@ -33,7 +29,7 @@ let
     }
   '';
 
-  caddyfile = ''
+  caddyfileText = ''
     ${domain} {
       ${tlsBlock}
       ${if config.fastfree.apps.fastfree_website then ''
@@ -62,7 +58,18 @@ in {
   config = lib.mkIf config.fastfree.apps.caddy {
 
     services.caddy.enable = true;
-    services.caddy.config = caddyfile;
+
+    # Write Caddyfile directly to /etc/caddy
+    environment.etc."caddy/Caddyfile".text = caddyfileText;
+
+    # Point Caddy at our Caddyfile
+    systemd.services.caddy = {
+      serviceConfig = {
+        ExecStart = lib.mkForce [
+          "" "${pkgs.caddy}/bin/caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"
+        ];
+      };
+    };
 
     networking.firewall.allowedTCPPorts = [ 80 443 ];
   };
