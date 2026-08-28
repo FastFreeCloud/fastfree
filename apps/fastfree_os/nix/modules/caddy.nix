@@ -20,7 +20,7 @@ in {
         extraConfig = ''
           ${tlsConfig}
           ${if config.fastfree.apps.fastfree_website then ''
-            reverse_proxy localhost:9004
+            reverse_proxy 127.0.0.1:9004
           '' else ''
             redir https://{host}{uri} permanent
           ''}
@@ -31,7 +31,7 @@ in {
       "backend.${domain}" = {
         extraConfig = ''
           ${tlsConfig}
-          reverse_proxy localhost:8080
+          reverse_proxy 127.0.0.1:8080
         '';
       };
 
@@ -39,7 +39,7 @@ in {
       "erp.${domain}" = lib.mkIf config.fastfree.apps.fastfree_erp {
         extraConfig = ''
           ${tlsConfig}
-          reverse_proxy localhost:9001
+          reverse_proxy 127.0.0.1:9001
         '';
       };
 
@@ -47,7 +47,7 @@ in {
       "ledger.${domain}" = lib.mkIf config.fastfree.apps.fastfree_ledger {
         extraConfig = ''
           ${tlsConfig}
-          reverse_proxy localhost:9000
+          reverse_proxy 127.0.0.1:9000
         '';
       };
 
@@ -55,7 +55,7 @@ in {
       "hr.${domain}" = lib.mkIf config.fastfree.apps.fastfree_hr {
         extraConfig = ''
           ${tlsConfig}
-          reverse_proxy localhost:9002
+          reverse_proxy 127.0.0.1:9002
         '';
       };
 
@@ -63,7 +63,7 @@ in {
       "pos.${domain}" = lib.mkIf config.fastfree.apps.fastfree_pos {
         extraConfig = ''
           ${tlsConfig}
-          reverse_proxy localhost:9003
+          reverse_proxy 127.0.0.1:9003
         '';
       };
 
@@ -71,7 +71,7 @@ in {
       "${sd.db}.${domain}" = lib.mkIf config.fastfree.apps.phpmyadmin {
         extraConfig = ''
           ${tlsConfig}
-          reverse_proxy localhost:8082
+          reverse_proxy 127.0.0.1:8082
         '';
       };
     };
