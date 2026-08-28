@@ -35,7 +35,9 @@ jobs:
              podman pull --quiet ghcr.io/fastfreecloud/fastfree_erp:latest && \
              podman pull --quiet ghcr.io/fastfreecloud/fastfree_pos:latest && \
              podman pull --quiet ghcr.io/fastfreecloud/fastfree_ledger:latest && \
-             echo 'All images pulled'"
+             echo 'All images pulled' && \
+             podman rm -f fastfree-hr-frontend fastfree-erp-frontend fastfree-pos-frontend fastfree-ledger-frontend 2>/dev/null || true && \
+             echo 'Old containers removed'"
 
           # Run nixos-rebuild on VPS
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
