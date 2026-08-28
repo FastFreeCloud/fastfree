@@ -57,12 +57,22 @@ jobs:
             for app in hr erp ledger pos; do
               IMAGE="ghcr.io/fastfreecloud/fastfree_${app}:latest"
               DEST="/srv/fastfree-${app}"
+              rm -rf "$DEST"
               mkdir -p "$DEST"
               CID=$(podman create "$IMAGE" 2>/dev/null || true)
               if [ -n "$CID" ]; then
-                podman export "$CID" | tar -x --strip-components=1 -C "$DEST" srv/
+                TMPDIR=$(mktemp -d)
+                podman export "$CID" | tar -xf - -C "$TMPDIR"
+                SRV_SRC=$(find "$TMPDIR" -maxdepth 5 -type d -name srv -path "*/nix/store/*" | head -1)
+                if [ -n "$SRV_SRC" ]; then
+                  cp -a "$SRV_SRC"/* "$DEST/"
+                  echo "EXTRACTED ${app}: $(ls "$DEST")"
+                else
+                  echo "FAILED: srv/ directory not found in $IMAGE"
+                  find "$TMPDIR" -maxdepth 3 -type d | head -20
+                fi
+                rm -rf "$TMPDIR"
                 podman rm "$CID" >/dev/null 2>&1 || true
-                echo "EXTRACTED ${app}: $(ls "$DEST")"
               else
                 echo "FAILED: Could not create container from $IMAGE"
               fi
@@ -110,8 +120,14 @@ jobs:
           curl -m 5 -sI https://ledger.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: ledger"
           curl -m 5 -sI https://pos.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: pos"
           echo ""
+          echo "=== CADDY CONFIG FILE ==="
+          cat /etc/caddy/Caddyfile 2>/dev/null | head -40 || echo "NOT FOUND"
+          echo ""
           echo "=== CADDY ERRORS (last 10) ==="
           journalctl -u caddy --no-pager -n 10 --since "2 min ago" 2>&1 || true
+          echo ""
+          echo "=== CADDY SERVICE STATUS ==="
+          systemctl status caddy --no-pager 2>&1 | head -15 || true
           echo ""
           echo "=== FAILED SYSTEMD UNITS ==="
           systemctl --failed 2>&1 || true
