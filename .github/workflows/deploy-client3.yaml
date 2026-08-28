@@ -43,7 +43,7 @@ jobs:
           # Run nixos-rebuild on VPS
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} \
-            "cd /tmp/fastfree_os && nixos-rebuild switch --flake .#client3"
+            "cd /tmp/fastfree_os && nixos-rebuild switch --flake .#client3 && systemctl restart caddy"
 
       - name: "Verify"
         run: |
