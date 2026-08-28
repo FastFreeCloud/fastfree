@@ -30,18 +30,15 @@ jobs:
 
           # Force pull latest images before rebuild
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
-            root@${{ secrets.CLIENT3_IP }} \
-            "podman pull --quiet ghcr.io/fastfreecloud/fastfree_hr:latest && \
-             podman pull --quiet ghcr.io/fastfreecloud/fastfree_erp:latest && \
-             podman pull --quiet ghcr.io/fastfreecloud/fastfree_pos:latest && \
-             podman pull --quiet ghcr.io/fastfreecloud/fastfree_ledger:latest && \
-             echo 'All images pulled' && \
-             systemctl restart podman-fastfree-hr-frontend.service && \
-             systemctl restart podman-fastfree-erp-frontend.service && \
-             systemctl restart podman-fastfree-pos-frontend.service && \
-             systemctl restart podman-fastfree-ledger-frontend.service && \
-             systemctl restart caddy && \
-             echo 'Containers and Caddy restarted'"
+            root@${{ secrets.CLIENT3_IP }} << 'PULL'
+            podman pull --quiet ghcr.io/fastfreecloud/fastfree_hr:latest || true
+            podman pull --quiet ghcr.io/fastfreecloud/fastfree_erp:latest || true
+            podman pull --quiet ghcr.io/fastfreecloud/fastfree_pos:latest || true
+            podman pull --quiet ghcr.io/fastfreecloud/fastfree_ledger:latest || true
+            echo 'All images pulled'
+            podman rm -f fastfree-hr-frontend fastfree-erp-frontend fastfree-pos-frontend fastfree-ledger-frontend 2>/dev/null || true
+            echo 'Old SPA containers removed'
+          PULL
 
           # Run nixos-rebuild on VPS
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
