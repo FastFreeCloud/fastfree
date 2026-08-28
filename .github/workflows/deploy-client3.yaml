@@ -105,6 +105,12 @@ jobs:
           curl -m 5 -sI https://ledger.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: ledger"
           curl -m 5 -sI https://pos.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: pos"
           echo ""
+          echo "=== CADDY CONFIG ==="
+          cat /etc/caddy/Caddyfile 2>/dev/null || journalctl -u caddy --no-pager -n 5 2>&1
+          echo ""
+          echo "=== FILE PERMISSIONS ==="
+          ls -la /srv/fastfree-hr/ 2>&1 | head -5
+          echo ""
           echo "=== PODMAN CONTAINERS ==="
           podman ps -a --format "table {{.Names}}\t{{.Status}}"
           echo ""
