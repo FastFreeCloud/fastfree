@@ -28,7 +28,7 @@ jobs:
             apps/fastfree_os/nix/ \
             root@${{ secrets.CLIENT3_IP }}:/tmp/fastfree_os/
 
-          # Full cleanup: stop, reset, remove everything
+          # Full cleanup: stop, reset, remove everything, flush stale nftables
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} << 'RESET'
             for svc in hr erp pos ledger; do
@@ -37,7 +37,9 @@ jobs:
             done
             systemctl daemon-reload
             podman rm -f fastfree-hr-frontend fastfree-erp-frontend fastfree-pos-frontend fastfree-ledger-frontend 2>/dev/null || true
-            echo 'All SPA services stopped, reset, and containers removed'
+            # Flush stale nftables rules left by old podman port-mapping
+            nft flush ruleset 2>/dev/null || true
+            echo 'All SPA services stopped, containers removed, nftables flushed'
           RESET
 
           # Pull images
