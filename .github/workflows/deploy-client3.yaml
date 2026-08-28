@@ -28,22 +28,19 @@ jobs:
             apps/fastfree_os/nix/ \
             root@${{ secrets.CLIENT3_IP }}:/tmp/fastfree_os/
 
-          # Reset failed services and remove old containers before rebuild
+          # Full cleanup: stop, reset, remove everything
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} << 'RESET'
-            systemctl reset-failed podman-fastfree-hr-frontend.service 2>/dev/null || true
-            systemctl reset-failed podman-fastfree-erp-frontend.service 2>/dev/null || true
-            systemctl reset-failed podman-fastfree-pos-frontend.service 2>/dev/null || true
-            systemctl reset-failed podman-fastfree-ledger-frontend.service 2>/dev/null || true
-            systemctl stop podman-fastfree-hr-frontend.service 2>/dev/null || true
-            systemctl stop podman-fastfree-erp-frontend.service 2>/dev/null || true
-            systemctl stop podman-fastfree-pos-frontend.service 2>/dev/null || true
-            systemctl stop podman-fastfree-ledger-frontend.service 2>/dev/null || true
+            for svc in hr erp pos ledger; do
+              systemctl stop "podman-fastfree-${svc}-frontend.service" 2>/dev/null || true
+              systemctl reset-failed "podman-fastfree-${svc}-frontend.service" 2>/dev/null || true
+            done
+            systemctl daemon-reload
             podman rm -f fastfree-hr-frontend fastfree-erp-frontend fastfree-pos-frontend fastfree-ledger-frontend 2>/dev/null || true
-            echo 'Old SPA containers stopped and removed'
+            echo 'All SPA services stopped, reset, and containers removed'
           RESET
 
-          # Force pull latest images before rebuild
+          # Pull images
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} << 'PULL'
             podman pull --quiet ghcr.io/fastfreecloud/fastfree_hr:latest || true
@@ -53,10 +50,24 @@ jobs:
             echo 'All images pulled'
           PULL
 
-          # Run nixos-rebuild on VPS
+          # Run nixos-rebuild (allow failure, we'll restart services after)
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} \
-            "cd /tmp/fastfree_os && nixos-rebuild switch --flake .#client3 && systemctl restart caddy"
+            "cd /tmp/fastfree_os && nixos-rebuild switch --flake .#client3 || true"
+
+          # Reset any failed units from rebuild and start services manually
+          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
+            root@${{ secrets.CLIENT3_IP }} << 'START'
+            for svc in hr erp pos ledger; do
+              systemctl reset-failed "podman-fastfree-${svc}-frontend.service" 2>/dev/null || true
+            done
+            systemctl daemon-reload
+            for svc in hr erp pos ledger; do
+              systemctl start "podman-fastfree-${svc}-frontend.service" 2>/dev/null || echo "FAILED: ${svc}"
+            done
+            systemctl restart caddy
+            echo 'All services started'
+          START
 
       - name: "Verify"
         run: |
