@@ -34,14 +34,6 @@ let
   '';
 
   caddyfile = ''
-    {
-      ${if isLocal then "" else ''email admin@fastfree.cloud''}
-    }
-
-    :80 {
-      redir https://{host}{uri} permanent
-    }
-
     ${domain} {
       ${tlsBlock}
       ${if config.fastfree.apps.fastfree_website then ''
