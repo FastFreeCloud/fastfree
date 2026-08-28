@@ -14,7 +14,7 @@ in {
     # ── Networking ────────────────────────────────────────
     networking = {
       hostName                     = config.fastfree.identity.name;
-      firewall.allowedTCPPorts     = [ 22 443 8080 9000 9001 9002 9003 9004 ];
+      firewall.enable              = false;
       useDHCP                      = false;
       useNetworkd                  = true;
       hosts                        = hosts;
