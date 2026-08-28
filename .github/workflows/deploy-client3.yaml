@@ -28,6 +28,15 @@ jobs:
             apps/fastfree_os/nix/ \
             root@${{ secrets.CLIENT3_IP }}:/tmp/fastfree_os/
 
+          # Force pull latest images before rebuild
+          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
+            root@${{ secrets.CLIENT3_IP }} \
+            "podman pull --quiet ghcr.io/fastfreecloud/fastfree-hr-frontend:latest && \
+             podman pull --quiet ghcr.io/fastfreecloud/fastfree-erp-frontend:latest && \
+             podman pull --quiet ghcr.io/fastfreecloud/fastfree-pos-frontend:latest && \
+             podman pull --quiet ghcr.io/fastfreecloud/fastfree-ledger-frontend:latest && \
+             echo 'All images pulled'"
+
           # Run nixos-rebuild on VPS
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} \
