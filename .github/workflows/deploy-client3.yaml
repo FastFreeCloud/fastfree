@@ -37,9 +37,11 @@ jobs:
             done
             systemctl daemon-reload
             podman rm -f fastfree-hr-frontend fastfree-erp-frontend fastfree-pos-frontend fastfree-ledger-frontend 2>/dev/null || true
-            # Flush stale nftables rules left by old podman port-mapping
-            nft flush ruleset 2>/dev/null || true
-            echo 'All SPA services stopped, containers removed, nftables flushed'
+            # Remove stale podman NAT rules (old port-mapping) — safe, won't kill SSH
+            nft delete table ip nat 2>/dev/null || true
+            nft delete table ip6 nat 2>/dev/null || true
+            podman network rm fastfree-net 2>/dev/null || true
+            echo 'All SPA services stopped, containers removed, stale NAT rules cleaned'
           RESET
 
           # Pull images
