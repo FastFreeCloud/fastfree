@@ -19,12 +19,12 @@ in {
 
     @api path /api/*
     handle @api {
-        reverse_proxy fastfree-backend-app:8000
+        reverse_proxy 127.0.0.1:8000
     }
 
     @socketio path /socket.io/*
     handle @socketio {
-        reverse_proxy fastfree-backend-websocket:9000
+        reverse_proxy 127.0.0.1:9000
     }
 
     handle {

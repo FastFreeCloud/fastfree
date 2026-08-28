@@ -28,6 +28,21 @@ jobs:
             apps/fastfree_os/nix/ \
             root@${{ secrets.CLIENT3_IP }}:/tmp/fastfree_os/
 
+          # Reset failed services and remove old containers before rebuild
+          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
+            root@${{ secrets.CLIENT3_IP }} << 'RESET'
+            systemctl reset-failed podman-fastfree-hr-frontend.service 2>/dev/null || true
+            systemctl reset-failed podman-fastfree-erp-frontend.service 2>/dev/null || true
+            systemctl reset-failed podman-fastfree-pos-frontend.service 2>/dev/null || true
+            systemctl reset-failed podman-fastfree-ledger-frontend.service 2>/dev/null || true
+            systemctl stop podman-fastfree-hr-frontend.service 2>/dev/null || true
+            systemctl stop podman-fastfree-erp-frontend.service 2>/dev/null || true
+            systemctl stop podman-fastfree-pos-frontend.service 2>/dev/null || true
+            systemctl stop podman-fastfree-ledger-frontend.service 2>/dev/null || true
+            podman rm -f fastfree-hr-frontend fastfree-erp-frontend fastfree-pos-frontend fastfree-ledger-frontend 2>/dev/null || true
+            echo 'Old SPA containers stopped and removed'
+          RESET
+
           # Force pull latest images before rebuild
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} << 'PULL'
@@ -36,8 +51,6 @@ jobs:
             podman pull --quiet ghcr.io/fastfreecloud/fastfree_pos:latest || true
             podman pull --quiet ghcr.io/fastfreecloud/fastfree_ledger:latest || true
             echo 'All images pulled'
-            podman rm -f fastfree-hr-frontend fastfree-erp-frontend fastfree-pos-frontend fastfree-ledger-frontend 2>/dev/null || true
-            echo 'Old SPA containers removed'
           PULL
 
           # Run nixos-rebuild on VPS
