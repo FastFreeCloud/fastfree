@@ -52,11 +52,9 @@
 
 <script setup lang="ts">
 import { ref, onErrorCaptured, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useLcI18n } from '../i18n'
 
 const { t } = useLcI18n()
-const router = useRouter()
 
 const error = ref<Error | null>(null)
 const errorInfo = ref('')
@@ -85,7 +83,14 @@ function retry() {
 function goHome() {
   error.value = null
   errorInfo.value = ''
-  router.push('/')
+  try {
+    const router = (globalThis as Record<string, unknown>).__VUE_ROUTER__
+    if (router && typeof (router as { push: unknown }).push === 'function') {
+      (router as { push: (path: string) => void }).push('/')
+      return
+    }
+  } catch { /* ignore */ }
+  window.location.href = '/'
 }
 </script>
 

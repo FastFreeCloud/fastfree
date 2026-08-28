@@ -22,7 +22,7 @@ export default function (api: ExtensionApi) {
 
   api.extendQuasarConf((conf: QuasarConf) => {
     conf.boot ??= []
-    conf.boot.push(
+    conf.boot.unshift(
       '~quasar-app-extension-fastfree-lowcode/src/runtime/boot.register.ts'
     )
 
