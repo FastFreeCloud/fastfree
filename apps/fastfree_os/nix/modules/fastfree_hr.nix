@@ -14,6 +14,9 @@ in {
       script = ''
         mkdir -p /etc/fastfree/caddy
         cat > /etc/fastfree/caddy/hr-Caddyfile << 'CADDY'
+{
+    admin off
+}
 :9002 {
     root * /srv
 

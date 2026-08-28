@@ -75,6 +75,9 @@
       # Static-only Caddyfile. API / socket.io proxying is handled by the
       # host's single edge Caddy (services.caddy), not inside the container.
       caddyfile = pkgs.writeText "Caddyfile" ''
+        {
+            admin off
+        }
         :9001 {
             root * /srv
 

@@ -68,6 +68,9 @@
       };
 
       caddyfile = pkgs.writeText "Caddyfile" ''
+        {
+            admin off
+        }
         :9003 {
             root * /srv
 
