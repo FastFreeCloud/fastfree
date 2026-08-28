@@ -28,7 +28,7 @@ jobs:
             apps/fastfree_os/nix/ \
             root@${{ secrets.CLIENT3_IP }}:/tmp/fastfree_os/
 
-          # Cleanup: stop old SPA container services + remove containers
+          # Cleanup old SPA containers
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} << 'RESET'
             for svc in hr erp pos ledger; do
@@ -38,14 +38,10 @@ jobs:
             done
             systemctl daemon-reload
             podman rm -f fastfree-hr-frontend fastfree-erp-frontend fastfree-pos-frontend fastfree-ledger-frontend 2>/dev/null || true
-            # Remove stale podman NAT rules
-            nft delete table ip nat 2>/dev/null || true
-            nft delete table ip6 nat 2>/dev/null || true
-            podman network rm fastfree-net 2>/dev/null || true
-            echo 'Cleanup done: old SPA containers removed'
+            echo 'Cleanup done'
           RESET
 
-          # Pull SPA images (needed for podman cp extraction)
+          # Pull SPA images
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} << 'PULL'
             podman pull --quiet ghcr.io/fastfreecloud/fastfree_hr:latest || true
@@ -55,26 +51,35 @@ jobs:
             echo 'All images pulled'
           PULL
 
-          # Run nixos-rebuild (extracts SPA files + configures host Caddy)
+          # Extract SPA files from images to host
+          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
+            root@${{ secrets.CLIENT3_IP }} << 'EXTRACT'
+            for app in hr erp ledger pos; do
+              IMAGE="ghcr.io/fastfreecloud/fastfree_${app}:latest"
+              DEST="/srv/fastfree-${app}"
+              mkdir -p "$DEST"
+              CID=$(podman create "$IMAGE" 2>/dev/null || true)
+              if [ -n "$CID" ]; then
+                podman export "$CID" | tar -x --strip-components=1 -C "$DEST" srv/
+                podman rm "$CID" >/dev/null 2>&1 || true
+                echo "EXTRACTED ${app}: $(ls "$DEST")"
+              else
+                echo "FAILED: Could not create container from $IMAGE"
+              fi
+            done
+          EXTRACT
+
+          # Run nixos-rebuild
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} \
             "cd /tmp/fastfree_os && nixos-rebuild switch --flake .#client3 || true"
 
-          # Reset any failed units from rebuild, ensure caddy is running
+          # Reset failed units and restart caddy
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} << 'START'
             systemctl daemon-reload
-            systemctl reset-failed fastfree-hr-spa.service 2>/dev/null || true
-            systemctl reset-failed fastfree-erp-spa.service 2>/dev/null || true
-            systemctl reset-failed fastfree-pos-spa.service 2>/dev/null || true
-            systemctl reset-failed fastfree-ledger-spa.service 2>/dev/null || true
-            # Re-run SPA extraction if needed
-            systemctl start fastfree-hr-spa.service 2>/dev/null || true
-            systemctl start fastfree-erp-spa.service 2>/dev/null || true
-            systemctl start fastfree-pos-spa.service 2>/dev/null || true
-            systemctl start fastfree-ledger-spa.service 2>/dev/null || true
             systemctl restart caddy
-            echo 'All services started'
+            echo 'Caddy restarted'
           START
 
       - name: "Verify"
@@ -93,7 +98,7 @@ jobs:
           for app in hr erp ledger pos; do
             dir="/srv/fastfree-${app}"
             if [ -d "$dir" ]; then
-              echo "$dir: $(ls "$dir" 2>/dev/null | head -5)..."
+              echo "$dir: $(ls "$dir" 2>/dev/null | head -5)"
             else
               echo "$dir: MISSING"
             fi
@@ -105,16 +110,7 @@ jobs:
           curl -m 5 -sI https://ledger.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: ledger"
           curl -m 5 -sI https://pos.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: pos"
           echo ""
-          echo "=== CADDY CONFIG ==="
-          cat /etc/caddy/Caddyfile 2>/dev/null || journalctl -u caddy --no-pager -n 5 2>&1
-          echo ""
-          echo "=== FILE PERMISSIONS ==="
-          ls -la /srv/fastfree-hr/ 2>&1 | head -5
-          echo ""
-          echo "=== PODMAN CONTAINERS ==="
-          podman ps -a --format "table {{.Names}}\t{{.Status}}"
-          echo ""
-          echo "=== HOST CADDY ERRORS (last 10) ==="
+          echo "=== CADDY ERRORS (last 10) ==="
           journalctl -u caddy --no-pager -n 10 --since "2 min ago" 2>&1 || true
           echo ""
           echo "=== FAILED SYSTEMD UNITS ==="
