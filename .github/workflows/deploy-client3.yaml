@@ -36,8 +36,12 @@ jobs:
              podman pull --quiet ghcr.io/fastfreecloud/fastfree_pos:latest && \
              podman pull --quiet ghcr.io/fastfreecloud/fastfree_ledger:latest && \
              echo 'All images pulled' && \
-             podman rm -f fastfree-hr-frontend fastfree-erp-frontend fastfree-pos-frontend fastfree-ledger-frontend 2>/dev/null || true && \
-             echo 'Old containers removed'"
+             systemctl restart podman-fastfree-hr-frontend.service && \
+             systemctl restart podman-fastfree-erp-frontend.service && \
+             systemctl restart podman-fastfree-pos-frontend.service && \
+             systemctl restart podman-fastfree-ledger-frontend.service && \
+             systemctl restart caddy && \
+             echo 'Containers and Caddy restarted'"
 
           # Run nixos-rebuild on VPS
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
