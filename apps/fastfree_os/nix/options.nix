@@ -72,6 +72,7 @@
       fastfree_pos     = lib.mkEnableOption "FastFree POS (Point of Sale)";
       fastfree_website = lib.mkEnableOption "FastFree Website (Next.js public website)";
       phpmyadmin   = lib.mkEnableOption "phpMyAdmin";
+      cockpit      = lib.mkEnableOption "Cockpit web-based server management";
       wireguard    = lib.mkEnableOption "WireGuard VPN";
       avahi        = lib.mkEnableOption "Avahi mDNS/DNS-SD";
     };
@@ -81,6 +82,11 @@
         type = lib.types.str;
         default = "db";
         description = "phpMyAdmin subdomain prefix.";
+      };
+      panel = lib.mkOption {
+        type = lib.types.str;
+        default = "panel";
+        description = "Cockpit panel subdomain prefix.";
       };
     };
 

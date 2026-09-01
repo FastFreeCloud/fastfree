@@ -53,6 +53,11 @@ let
       ${tlsBlock}
       reverse_proxy 127.0.0.1:8082
     }
+
+    ${sd.panel}.${domain} {
+      ${tlsBlock}
+      reverse_proxy 127.0.0.1:9090
+    }
   '';
 in {
   config = lib.mkIf config.fastfree.apps.caddy {

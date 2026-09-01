@@ -19,6 +19,7 @@
     mariadb     = true;
     caddy       = true;
     phpmyadmin  = true;
+    cockpit     = true;
     fastfree_backend = true;
     fastfree_ledger  = true;
     fastfree_erp     = true;
@@ -31,6 +32,7 @@
 
   subdomains = {
     db    = "db";
+    panel = "panel";
   };
 
   githubAccount = "FastFreeCloud";
