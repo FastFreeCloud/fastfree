@@ -115,6 +115,7 @@ in {
 
         echo "[setup] Running setup container..."
         ${pkgs.podman}/bin/podman run --rm \
+          --network podman \
           --add-host=host.containers.internal:host-gateway \
           -v fastfree-backend-sites:/home/frappe/frappe-bench/sites \
           -v fastfree-backend-logs:/home/frappe/frappe-bench/logs \
