@@ -10,7 +10,7 @@ in {
     systemd.services."fastfree-backend-db" = {
       description = "Create FastFree Backend database and user in MariaDB";
       after       = [ "mysql.service" ];
-      before      = [ "fastfree-backend-app.service" ];
+      before      = [ "podman-fastfree-backend-app.service" ];
       wantedBy    = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
@@ -41,12 +41,12 @@ in {
       description = "Create fastfree-net podman network with DNS for backend containers";
       wantedBy = [ "multi-user.target" ];
       before = [
-        "fastfree-backend-app.service"
-        "fastfree-backend-frontend.service"
-        "fastfree-backend-websocket.service"
-        "fastfree-backend-queue-short.service"
-        "fastfree-backend-queue-long.service"
-        "fastfree-backend-scheduler.service"
+        "podman-fastfree-backend-app.service"
+        "podman-fastfree-backend-frontend.service"
+        "podman-fastfree-backend-websocket.service"
+        "podman-fastfree-backend-queue-short.service"
+        "podman-fastfree-backend-queue-long.service"
+        "podman-fastfree-backend-scheduler.service"
       ];
       serviceConfig.Type = "oneshot";
       script = ''
@@ -200,7 +200,7 @@ in {
       ];
     };
 
-    systemd.services."fastfree-backend-app" = {
+    systemd.services."podman-fastfree-backend-app" = {
       after = [
         "fastfree-backend-network.service"
         "fastfree-backend-db.service"
@@ -236,9 +236,9 @@ in {
       ];
     };
 
-    systemd.services."fastfree-backend-frontend" = {
-      after = [ "fastfree-backend-network.service" "fastfree-backend-app.service" "fastfree-backend-setup.service" ];
-      requires = [ "fastfree-backend-app.service" "fastfree-backend-setup.service" ];
+    systemd.services."podman-fastfree-backend-frontend" = {
+      after = [ "fastfree-backend-network.service" "podman-fastfree-backend-app.service" "fastfree-backend-setup.service" ];
+      requires = [ "podman-fastfree-backend-app.service" "fastfree-backend-setup.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "5";
     };
@@ -255,12 +255,12 @@ in {
       ];
     };
 
-    systemd.services."fastfree-backend-websocket" = {
+    systemd.services."podman-fastfree-backend-websocket" = {
       after = [ 
         "fastfree-backend-network.service" 
         "fastfree-backend-setup.service"
-        "fastfree-backend-app.service"
-        "fastfree-redis-queue.service"
+        "podman-fastfree-backend-app.service"
+        "podman-fastfree-redis-queue.service"
       ];
       requires = [ "fastfree-backend-setup.service" "mysql.service" ];
       serviceConfig.Restart = "on-failure";
@@ -282,7 +282,7 @@ in {
       ];
     };
 
-    systemd.services."fastfree-backend-queue-short" = {
+    systemd.services."podman-fastfree-backend-queue-short" = {
       after = [ 
         "fastfree-backend-network.service" 
         "fastfree-backend-setup.service"
@@ -308,7 +308,7 @@ in {
       ];
     };
 
-    systemd.services."fastfree-backend-queue-long" = {
+    systemd.services."podman-fastfree-backend-queue-long" = {
       after = [ 
         "fastfree-backend-network.service" 
         "fastfree-backend-setup.service"
@@ -334,7 +334,7 @@ in {
       ];
     };
 
-    systemd.services."fastfree-backend-scheduler" = {
+    systemd.services."podman-fastfree-backend-scheduler" = {
       after = [ 
         "fastfree-backend-network.service" 
         "fastfree-backend-setup.service"
