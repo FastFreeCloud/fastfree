@@ -36,9 +36,9 @@ in {
       '';
     };
 
-    # ── 2. Shared Podman network ───────────────────────────
+    # ── 2. Cleanup old custom network (use default podman network with DNS) ──
     systemd.services."fastfree-backend-network" = {
-      description = "Create shared podman network for Backend containers";
+      description = "Remove old fastfree-net network (containers use default podman network)";
       wantedBy = [ "multi-user.target" ];
       before = [
         "fastfree-backend-app.service"
@@ -50,8 +50,7 @@ in {
       ];
       serviceConfig.Type = "oneshot";
       script = ''
-        ${pkgs.podman}/bin/podman network inspect fastfree-net >/dev/null 2>&1 || \
-          ${pkgs.podman}/bin/podman network create fastfree-net
+        ${pkgs.podman}/bin/podman network rm fastfree-net 2>/dev/null || true
       '';
     };
 
@@ -60,23 +59,23 @@ in {
       image = "redis:8.6-alpine";
       pull = "always";
       autoStart = true;
-      extraOptions = [ "--network=fastfree-net" ];
+      extraOptions = [];
     };
 
     virtualisation.oci-containers.containers.fastfree-redis-queue = {
       image = "redis:8.6-alpine";
       pull = "always";
       autoStart = true;
-      extraOptions = [ "--network=fastfree-net" ];
+      extraOptions = [];
     };
 
-    systemd.services."fastfree-redis-cache" = {
+    systemd.services."podman-fastfree-redis-cache" = {
       after = [ "fastfree-backend-network.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "5";
     };
 
-    systemd.services."fastfree-redis-queue" = {
+    systemd.services."podman-fastfree-redis-queue" = {
       after = [ "fastfree-backend-network.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "5";
@@ -88,8 +87,8 @@ in {
       after = [
         "fastfree-backend-network.service"
         "mysql.service"
-        "fastfree-redis-cache.service"
-        "fastfree-redis-queue.service"
+        "podman-fastfree-redis-cache.service"
+        "podman-fastfree-redis-queue.service"
       ];
       requires = [ "mysql.service" ];
       wantedBy = [ "multi-user.target" ];
@@ -116,7 +115,6 @@ in {
 
         echo "[setup] Running setup container..."
         ${pkgs.podman}/bin/podman run --rm \
-          --network fastfree-net \
           --add-host=host.containers.internal:host-gateway \
           -v fastfree-backend-sites:/home/frappe/frappe-bench/sites \
           -v fastfree-backend-logs:/home/frappe/frappe-bench/logs \
@@ -174,7 +172,7 @@ in {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       pull = "always";
       autoStart = true;
-      extraOptions = [ "--network=fastfree-net" "--add-host=host.containers.internal:host-gateway" ];
+      extraOptions = [ "--add-host=host.containers.internal:host-gateway" ];
       environment = {
         GUNICORN_THREADS = "4";
         GUNICORN_WORKERS = "2";
@@ -191,8 +189,8 @@ in {
         "fastfree-backend-network.service"
         "fastfree-backend-db.service"
         "fastfree-backend-setup.service"
-        "fastfree-redis-cache.service"
-        "fastfree-redis-queue.service"
+        "podman-fastfree-redis-cache.service"
+        "podman-fastfree-redis-queue.service"
       ];
       requires = [ "mysql.service" "fastfree-backend-setup.service" ];
       serviceConfig.Restart = "on-failure";
@@ -205,7 +203,7 @@ in {
       pull = "always";
       autoStart = true;
       ports = [ "8080:8080" ];
-      extraOptions = [ "--network=fastfree-net" ];
+      extraOptions = [];
       cmd = [ "nginx-entrypoint.sh" ];
       environment = {
         BACKEND = "fastfree-backend-app:8000";
@@ -234,7 +232,7 @@ in {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       pull = "always";
       autoStart = true;
-      extraOptions = [ "--network=fastfree-net" ];
+      extraOptions = [];
       cmd = [ "node" "/home/frappe/frappe-bench/apps/frappe/socketio.js" ];
       volumes = [
         "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
@@ -260,7 +258,7 @@ in {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       pull = "always";
       autoStart = true;
-      extraOptions = [ "--network=fastfree-net" ];
+      extraOptions = [];
       cmd = [ "bench" "worker" "--queue" "short,default" ];
       volumes = [
         "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
@@ -272,9 +270,9 @@ in {
       after = [ 
         "fastfree-backend-network.service" 
         "fastfree-backend-setup.service"
-        "fastfree-redis-queue.service"
+        "podman-fastfree-redis-queue.service"
       ];
-      requires = [ "mysql.service" "fastfree-redis-queue.service" ];
+      requires = [ "mysql.service" "podman-fastfree-redis-queue.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "10";
       serviceConfig.StartLimitIntervalSec = "300";
@@ -286,7 +284,7 @@ in {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       pull = "always";
       autoStart = true;
-      extraOptions = [ "--network=fastfree-net" ];
+      extraOptions = [];
       cmd = [ "bench" "worker" "--queue" "long,default,short" ];
       volumes = [
         "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
@@ -298,9 +296,9 @@ in {
       after = [ 
         "fastfree-backend-network.service" 
         "fastfree-backend-setup.service"
-        "fastfree-redis-queue.service"
+        "podman-fastfree-redis-queue.service"
       ];
-      requires = [ "mysql.service" "fastfree-redis-queue.service" ];
+      requires = [ "mysql.service" "podman-fastfree-redis-queue.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "10";
       serviceConfig.StartLimitIntervalSec = "300";
@@ -312,7 +310,7 @@ in {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       pull = "always";
       autoStart = true;
-      extraOptions = [ "--network=fastfree-net" ];
+      extraOptions = [];
       cmd = [ "bench" "schedule" ];
       volumes = [
         "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
@@ -324,9 +322,9 @@ in {
       after = [ 
         "fastfree-backend-network.service" 
         "fastfree-backend-setup.service"
-        "fastfree-redis-queue.service"
+        "podman-fastfree-redis-queue.service"
       ];
-      requires = [ "mysql.service" "fastfree-redis-queue.service" ];
+      requires = [ "mysql.service" "podman-fastfree-redis-queue.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "10";
     };
