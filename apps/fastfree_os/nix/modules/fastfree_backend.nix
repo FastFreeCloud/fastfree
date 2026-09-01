@@ -153,10 +153,39 @@ in {
             bench set-config -g redis_socketio "redis://fastfree-redis-queue:6379"
             bench set-config -gp socketio_port 9000
 
-            echo "[setup] Checking if site $FRAPPE_SITE_NAME_HEADER exists..."
-            if [ -d "/home/frappe/frappe-bench/sites/$FRAPPE_SITE_NAME_HEADER" ]; then
-              echo "[setup] Site $FRAPPE_SITE_NAME_HEADER already exists, skipping creation."
-            else
+            echo "[setup] Checking if site $FRAPPE_SITE_NAME_HEADER exists and is healthy..."
+            SITE_DIR="/home/frappe/frappe-bench/sites/$FRAPPE_SITE_NAME_HEADER"
+            SITE_BROKEN=false
+            
+            if [ -d "$SITE_DIR" ]; then
+              echo "[setup] Site directory exists, checking if apps are installed..."
+              # Check if site_config.json exists and has proper DB settings
+              if [ ! -f "$SITE_DIR/site_config.json" ]; then
+                echo "[setup] WARNING: site_config.json missing — site is broken"
+                SITE_BROKEN=true
+              elif ! grep -q "db_host" "$SITE_DIR/site_config.json" 2>/dev/null; then
+                echo "[setup] WARNING: site_config.json missing db_host — site is broken"
+                SITE_BROKEN=true
+              fi
+              
+              # Check if erpnext app is installed
+              if [ -d "$SITE_DIR/apps/erpnext" ]; then
+                echo "[setup] erpnext app found."
+              else
+                echo "[setup] WARNING: erpnext app NOT installed — site is broken"
+                SITE_BROKEN=true
+              fi
+              
+              if [ "$SITE_BROKEN" = true ]; then
+                echo "[setup] Dropping broken site $FRAPPE_SITE_NAME_HEADER..."
+                bench drop-site "$FRAPPE_SITE_NAME_HEADER" \
+                  --db-root-username=root \
+                  --db-root-password="$DB_PASSWORD" || true
+                rm -rf "$SITE_DIR" || true
+              fi
+            fi
+            
+            if [ ! -d "$SITE_DIR" ] || [ "$SITE_BROKEN" = true ]; then
               echo "[setup] Creating site $FRAPPE_SITE_NAME_HEADER..."
               bench new-site "$FRAPPE_SITE_NAME_HEADER" \
                 --mariadb-user-host-login-scope="%" \
@@ -167,7 +196,7 @@ in {
                 --install-app fastfree_backend \
                 --set-default || {
                 echo "[setup] bench new-site exited non-zero, checking if site was created anyway..."
-                if [ -d "/home/frappe/frappe-bench/sites/$FRAPPE_SITE_NAME_HEADER" ]; then
+                if [ -d "$SITE_DIR" ]; then
                   echo "[setup] Site exists on disk, continuing."
                 else
                   echo "[setup] ERROR: Site creation failed."
@@ -175,6 +204,8 @@ in {
                 fi
               }
               echo "[setup] Site $FRAPPE_SITE_NAME_HEADER created successfully."
+            else
+              echo "[setup] Site $FRAPPE_SITE_NAME_HEADER is healthy, skipping creation."
             fi
 
             echo "[setup] Done."
