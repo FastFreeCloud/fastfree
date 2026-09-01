@@ -83,67 +83,6 @@ in {
     };
 
     # ── 4+5. Setup site (configure + create in one service) ──
-    virtualisation.oci-containers.containers.fastfree-backend-setup = {
-      image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
-      pull = "always";
-      autoStart = false;
-      extraOptions = [ "--network=fastfree-net" "--add-host=host.containers.internal:host-gateway" ];
-      entrypoint = "bash";
-      cmd = [ "-c" ''
-        set -e
-        SITE="$FRAPPE_SITE_NAME_HEADER"
-
-        echo "[setup] Waiting for MariaDB..."
-        for i in $(seq 1 60); do
-          if mysqladmin ping -h host.containers.internal --silent 2>/dev/null; then break; fi
-          if [ "$i" -eq 60 ]; then echo "[setup] ERROR: MariaDB timeout"; exit 1; fi
-          sleep 2
-        done
-
-        echo "[setup] Waiting for Redis..."
-        for i in $(seq 1 30); do
-          if redis-cli -h fastfree-redis-cache ping 2>/dev/null | grep -q PONG; then break; fi
-          if [ "$i" -eq 30 ]; then echo "[setup] ERROR: Redis timeout"; exit 1; fi
-          sleep 2
-        done
-
-        echo "[setup] Configuring bench globals..."
-        bench set-config -g db_host host.containers.internal
-        bench set-config -gp db_port 3306
-        bench set-config -g redis_cache "redis://fastfree-redis-cache:6379"
-        bench set-config -g redis_queue "redis://fastfree-redis-queue:6379"
-        bench set-config -g redis_socketio "redis://fastfree-redis-queue:6379"
-        bench set-config -gp socketio_port 9000
-
-        echo "[setup] Checking if site exists..."
-        if bench --site "$SITE" ping 2>/dev/null; then
-          echo "[setup] Site $SITE already exists, skipping creation."
-        else
-          echo "[setup] Creating site $SITE..."
-          bench new-site "$SITE" \
-            --mariadb-user-host-login-scope='%' \
-            --admin-password="$ADMIN_PASSWORD" \
-            --db-root-username=root \
-            --db-root-password="$DB_PASSWORD" \
-            --install-app erpnext \
-            --install-app fastfree_backend \
-            --set-default
-          echo "[setup] Site $SITE created successfully."
-        fi
-
-        echo "[setup] Done."
-      '' ];
-      environment = {
-        DB_PASSWORD = pw.mariadbRoot;
-        ADMIN_PASSWORD = pw.admin;
-        FRAPPE_SITE_NAME_HEADER = "backend.${config.fastfree.identity.domain}";
-      };
-      volumes = [
-        "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
-        "fastfree-backend-logs:/home/frappe/frappe-bench/logs"
-      ];
-    };
-
     systemd.services."fastfree-backend-setup" = {
       description = "Configure bench globals and create Frappe site";
       after = [
@@ -154,12 +93,80 @@ in {
       ];
       requires = [ "mysql.service" ];
       wantedBy = [ "multi-user.target" ];
-      serviceConfig.Type = "oneshot";
-      serviceConfig.RemainAfterExit = true;
-      serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "15";
-      serviceConfig.StartLimitIntervalSec = "300";
-      serviceConfig.StartLimitBurst = "5";
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        Restart = "on-failure";
+        RestartSec = "15";
+        StartLimitIntervalSec = "300";
+        StartLimitBurst = "5";
+      };
+      path = [ pkgs.podman pkgs.coreutils pkgs.gnused ];
+      script = let
+        siteName = "backend.${config.fastfree.identity.domain}";
+        dbPass = pw.mariadbRoot;
+        adminPass = pw.admin;
+        ghAcc = ghAccount;
+      in ''
+        SITE="${siteName}"
+        IMAGE="ghcr.io/${ghAcc}/fastfree_backend:latest"
+
+        echo "[setup] Pulling image..."
+        ${pkgs.podman}/bin/podman pull --quiet "$IMAGE" || true
+
+        echo "[setup] Running setup container..."
+        ${pkgs.podman}/bin/podman run --rm \
+          --network fastfree-net \
+          --add-host=host.containers.internal:host-gateway \
+          -v fastfree-backend-sites:/home/frappe/frappe-bench/sites \
+          -v fastfree-backend-logs:/home/frappe/frappe-bench/logs \
+          -e "DB_PASSWORD=${dbPass}" \
+          -e "ADMIN_PASSWORD=${adminPass}" \
+          -e "FRAPPE_SITE_NAME_HEADER=$SITE" \
+          "$IMAGE" bash -c '
+            set -e
+            echo "[setup] Waiting for MariaDB..."
+            for i in $(seq 1 60); do
+              if mysqladmin ping -h host.containers.internal --silent 2>/dev/null; then break; fi
+              if [ "$i" -eq 60 ]; then echo "[setup] ERROR: MariaDB timeout"; exit 1; fi
+              sleep 2
+            done
+
+            echo "[setup] Waiting for Redis..."
+            for i in $(seq 1 30); do
+              if redis-cli -h fastfree-redis-cache ping 2>/dev/null | grep -q PONG; then break; fi
+              if [ "$i" -eq 30 ]; then echo "[setup] ERROR: Redis timeout"; exit 1; fi
+              sleep 2
+            done
+
+            echo "[setup] Configuring bench globals..."
+            bench set-config -g db_host host.containers.internal
+            bench set-config -gp db_port 3306
+            bench set-config -g redis_cache "redis://fastfree-redis-cache:6379"
+            bench set-config -g redis_queue "redis://fastfree-redis-queue:6379"
+            bench set-config -g redis_socketio "redis://fastfree-redis-queue:6379"
+            bench set-config -gp socketio_port 9000
+
+            echo "[setup] Checking if site $FRAPPE_SITE_NAME_HEADER exists..."
+            if bench --site "$FRAPPE_SITE_NAME_HEADER" ping 2>/dev/null; then
+              echo "[setup] Site $FRAPPE_SITE_NAME_HEADER already exists, skipping creation."
+            else
+              echo "[setup] Creating site $FRAPPE_SITE_NAME_HEADER..."
+              bench new-site "$FRAPPE_SITE_NAME_HEADER" \
+                --mariadb-user-host-login-scope="%" \
+                --admin-password="$ADMIN_PASSWORD" \
+                --db-root-username=root \
+                --db-root-password="$DB_PASSWORD" \
+                --install-app erpnext \
+                --install-app fastfree_backend \
+                --set-default
+              echo "[setup] Site $FRAPPE_SITE_NAME_HEADER created successfully."
+            fi
+
+            echo "[setup] Done."
+          '
+        echo "[setup] Setup container finished."
+      '';
     };
 
     # ── 6. Backend (Gunicorn) ───────────────────────────────
