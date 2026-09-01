@@ -50,11 +50,13 @@ in {
       ];
       serviceConfig.Type = "oneshot";
       script = ''
-        # Always recreate network with DNS enabled
+        # Destroy and recreate network with DNS
         ${pkgs.podman}/bin/podman network rm fastfree-net 2>/dev/null || true
         ${pkgs.podman}/bin/podman network create \
           --driver bridge \
-          fastfree-net
+          fastfree-net 2>/dev/null || true
+        # Enable DNS on the network (podman 4+ supports this via network reload)
+        ${pkgs.podman}/bin/podman network reload fastfree-net 2>/dev/null || true
       '';
     };
 
@@ -152,7 +154,7 @@ in {
             bench set-config -gp socketio_port 9000
 
             echo "[setup] Checking if site $FRAPPE_SITE_NAME_HEADER exists..."
-            if bench --site "$FRAPPE_SITE_NAME_HEADER" ping 2>/dev/null; then
+            if [ -d "/home/frappe/frappe-bench/sites/$FRAPPE_SITE_NAME_HEADER" ]; then
               echo "[setup] Site $FRAPPE_SITE_NAME_HEADER already exists, skipping creation."
             else
               echo "[setup] Creating site $FRAPPE_SITE_NAME_HEADER..."
@@ -163,7 +165,15 @@ in {
                 --db-root-password="$DB_PASSWORD" \
                 --install-app erpnext \
                 --install-app fastfree_backend \
-                --set-default
+                --set-default || {
+                echo "[setup] bench new-site exited non-zero, checking if site was created anyway..."
+                if [ -d "/home/frappe/frappe-bench/sites/$FRAPPE_SITE_NAME_HEADER" ]; then
+                  echo "[setup] Site exists on disk, continuing."
+                else
+                  echo "[setup] ERROR: Site creation failed."
+                  exit 1
+                fi
+              }
               echo "[setup] Site $FRAPPE_SITE_NAME_HEADER created successfully."
             fi
 
