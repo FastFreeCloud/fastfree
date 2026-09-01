@@ -137,6 +137,26 @@ jobs:
           eval $SSH_CMD "journalctl -p err --no-pager -n 20 2>/dev/null || echo 'journalctl not available'"
           echo ""
           
+          # ── 20. External Curl Tests ──
+          echo "═══ 20. EXTERNAL CURL TESTS ═══"
+          for domain in hr.fastfree.cloud erp.fastfree.cloud ledger.fastfree.cloud pos.fastfree.cloud backend.fastfree.cloud fastfree.cloud; do
+            CODE=$(curl -m 5 -sI "https://$domain/" 2>&1 | head -1 || echo "TIMEOUT")
+            echo "  $domain: $CODE"
+          done
+          echo ""
+          
+          # ── 21. Redis DNS Test ──
+          echo "═══ 21. REDIS DNS TEST ═══"
+          eval $SSH_CMD "
+            if podman ps --format '{{.Names}}' | grep -q redis; then
+              echo 'Redis containers running. Testing DNS from setup...'
+              podman run --rm --network fastfree-net docker.io/library/redis:8.6-alpine redis-cli -h fastfree-redis-cache ping 2>&1 || echo 'DNS failed (timing issue)'
+            else
+              echo 'No Redis containers found'
+            fi
+          "
+          echo ""
+          
           echo "════════════════════════════════════════════════════════"
           echo "  ✅ Diagnostic Complete"
           echo "════════════════════════════════════════════════════════"

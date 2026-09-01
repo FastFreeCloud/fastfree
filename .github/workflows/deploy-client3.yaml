@@ -123,6 +123,8 @@ jobs:
           curl -m 5 -sI https://erp.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: erp"
           curl -m 5 -sI https://ledger.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: ledger"
           curl -m 5 -sI https://pos.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: pos"
+          curl -m 5 -sI https://backend.fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: backend"
+          curl -m 5 -sI https://fastfree.cloud/ 2>&1 | head -5 || echo "FAILED: website"
           echo ""
           echo "=== CADDY CONFIG FILE ==="
           cat /etc/caddy/Caddyfile 2>/dev/null | head -40 || echo "NOT FOUND"
