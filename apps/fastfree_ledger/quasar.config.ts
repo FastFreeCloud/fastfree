@@ -293,7 +293,7 @@ export default defineConfig((ctx) => {
             },
           },
           {
-            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
+            urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/api/'),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-responses',

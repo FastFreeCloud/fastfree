@@ -310,13 +310,13 @@ const snapshot = ref<Record<string, unknown> | null>(null)
 const diffResult = ref<DiffEntry[]>([])
 
 const selectedStore = computed((): Store | null =>
-  selectedStoreId.value ? stores.value.get(selectedStoreId.value) ?? null : null
+  (selectedStoreId.value ? stores.value.get(selectedStoreId.value) ?? null : null) as Store | null
 )
 
 const storeList = computed((): StoreDebugInfo[] =>
   Array.from(stores.value.values()).map(s => ({
     id: s.$id,
-    store: s,
+    store: s as unknown as Store,
     stateKeys: Object.keys(s.$state),
     getterKeys: Object.keys(s).filter(k => !k.startsWith('$') && !Object.keys(s.$state).includes(k)),
     actionKeys: Object.keys(s).filter(k => typeof (s as Record<string, unknown>)[k] === 'function' && !k.startsWith('$'))
@@ -402,6 +402,7 @@ function init() {
   if (!piniaInternal._debuggerInitialized) {
     piniaInternal._debuggerInitialized = true
     p.use(({ store }: { store: Store }) => {
+      // @ts-expect-error pnpm duplicate pinia instances — works at runtime
       stores.value = new Map(stores.value).set(store.$id, store)
       store.$subscribe((mutation: { type: string; storeId: string; payload?: unknown }, _state) => {
         mutationLog.value.unshift({

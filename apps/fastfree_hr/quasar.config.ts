@@ -152,7 +152,7 @@ export default defineConfig((ctx) => {
           { urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i, handler: 'StaleWhileRevalidate', options: { cacheName: 'google-fonts-stylesheets', expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 } } },
           { urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i, handler: 'CacheFirst', options: { cacheName: 'google-fonts-webfonts', expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 } } },
           { urlPattern: /^https:\/\/cdn\./i, handler: 'StaleWhileRevalidate', options: { cacheName: 'cdn-resources', expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 30 } } },
-          { urlPattern: ({ url }) => url.pathname.startsWith('/api/'), handler: 'NetworkFirst', options: { cacheName: 'api-responses', networkTimeoutSeconds: 10, expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 } } },
+          { urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/api/'), handler: 'NetworkFirst', options: { cacheName: 'api-responses', networkTimeoutSeconds: 10, expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 } } },
         ];
       },
       extendPWAManifestJson(json) {

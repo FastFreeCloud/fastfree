@@ -16,6 +16,7 @@ import {
  * with the Router instance.
  */
 
+// @ts-expect-error pnpm duplicate instances — works at runtime
 export default defineRouter((/* { store, ssrContext } */) => {
   const createHistory = import.meta.env.QUASAR_SERVER
     ? createMemoryHistory

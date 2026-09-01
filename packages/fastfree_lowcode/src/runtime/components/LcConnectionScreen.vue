@@ -161,7 +161,8 @@ let timer: ReturnType<typeof setInterval> | null = null
  */
 async function defaultHealthCheck(): Promise<boolean> {
   try {
-    const res = await fetch('/api/health', { method: 'GET', signal: AbortSignal.timeout(5000) })
+    const baseUrl = localStorage.getItem('fastfree_base_url') || window.location.origin
+    const res = await fetch(`${baseUrl}/api/method/ping`, { method: 'GET', signal: AbortSignal.timeout(5000) })
     return res.ok
   } catch {
     return false

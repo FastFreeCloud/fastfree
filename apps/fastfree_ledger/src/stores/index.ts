@@ -24,6 +24,7 @@ declare module 'pinia' {
 
 export { useAppStore } from './useAppStore'
 
+// @ts-expect-error pnpm duplicate instances — works at runtime
 export default defineStore((/* { ssrContext } */) => {
   const pinia = createPinia();
 
