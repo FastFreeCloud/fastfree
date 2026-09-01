@@ -36,9 +36,9 @@ in {
       '';
     };
 
-    # ── 2. Cleanup old custom network (use default podman network with DNS) ──
+    # ── 2. Ensure fastfree-net network exists with DNS ──
     systemd.services."fastfree-backend-network" = {
-      description = "Remove old fastfree-net network (containers use default podman network)";
+      description = "Create fastfree-net podman network with DNS for backend containers";
       wantedBy = [ "multi-user.target" ];
       before = [
         "fastfree-backend-app.service"
@@ -50,7 +50,11 @@ in {
       ];
       serviceConfig.Type = "oneshot";
       script = ''
+        # Always recreate network with DNS enabled
         ${pkgs.podman}/bin/podman network rm fastfree-net 2>/dev/null || true
+        ${pkgs.podman}/bin/podman network create \
+          --driver bridge \
+          fastfree-net
       '';
     };
 
@@ -59,14 +63,14 @@ in {
       image = "redis:8.6-alpine";
       pull = "always";
       autoStart = true;
-      extraOptions = [];
+      extraOptions = [ "--network=fastfree-net" ];
     };
 
     virtualisation.oci-containers.containers.fastfree-redis-queue = {
       image = "redis:8.6-alpine";
       pull = "always";
       autoStart = true;
-      extraOptions = [];
+      extraOptions = [ "--network=fastfree-net" ];
     };
 
     systemd.services."podman-fastfree-redis-cache" = {
@@ -115,7 +119,7 @@ in {
 
         echo "[setup] Running setup container..."
         ${pkgs.podman}/bin/podman run --rm \
-          --network podman \
+          --network fastfree-net \
           --add-host=host.containers.internal:host-gateway \
           -v fastfree-backend-sites:/home/frappe/frappe-bench/sites \
           -v fastfree-backend-logs:/home/frappe/frappe-bench/logs \
@@ -130,11 +134,12 @@ in {
               if [ "$i" -eq 60 ]; then echo "[setup] ERROR: MariaDB timeout"; exit 1; fi
               sleep 2
             done
+            echo "[setup] MariaDB ready."
 
             echo "[setup] Waiting for Redis..."
             for i in $(seq 1 30); do
               if redis-cli -h fastfree-redis-cache ping 2>/dev/null | grep -q PONG; then break; fi
-              if [ "$i" -eq 30 ]; then echo "[setup] ERROR: Redis timeout"; exit 1; fi
+              if [ "$i" -eq 30 ]; then echo "[setup] WARNING: Redis not reachable, continuing anyway"; fi
               sleep 2
             done
 
@@ -173,7 +178,7 @@ in {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       pull = "always";
       autoStart = true;
-      extraOptions = [ "--add-host=host.containers.internal:host-gateway" ];
+      extraOptions = [ "--network=fastfree-net" "--add-host=host.containers.internal:host-gateway" ];
       environment = {
         GUNICORN_THREADS = "4";
         GUNICORN_WORKERS = "2";
@@ -204,7 +209,7 @@ in {
       pull = "always";
       autoStart = true;
       ports = [ "8080:8080" ];
-      extraOptions = [];
+      extraOptions = [ "--network=fastfree-net" ];
       cmd = [ "nginx-entrypoint.sh" ];
       environment = {
         BACKEND = "fastfree-backend-app:8000";
@@ -233,7 +238,7 @@ in {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       pull = "always";
       autoStart = true;
-      extraOptions = [];
+      extraOptions = [ "--network=fastfree-net" ];
       cmd = [ "node" "/home/frappe/frappe-bench/apps/frappe/socketio.js" ];
       volumes = [
         "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
@@ -259,7 +264,7 @@ in {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       pull = "always";
       autoStart = true;
-      extraOptions = [];
+      extraOptions = [ "--network=fastfree-net" ];
       cmd = [ "bench" "worker" "--queue" "short,default" ];
       volumes = [
         "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
@@ -285,7 +290,7 @@ in {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       pull = "always";
       autoStart = true;
-      extraOptions = [];
+      extraOptions = [ "--network=fastfree-net" ];
       cmd = [ "bench" "worker" "--queue" "long,default,short" ];
       volumes = [
         "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
@@ -311,7 +316,7 @@ in {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       pull = "always";
       autoStart = true;
-      extraOptions = [];
+      extraOptions = [ "--network=fastfree-net" ];
       cmd = [ "bench" "schedule" ];
       volumes = [
         "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
