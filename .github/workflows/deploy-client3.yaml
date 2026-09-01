@@ -88,8 +88,12 @@ jobs:
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} << 'START'
             systemctl daemon-reload
+            systemctl reset-failed fastfree-backend-websocket.service 2>/dev/null || true
+            systemctl reset-failed fastfree-backend-setup.service 2>/dev/null || true
+            systemctl restart fastfree-backend-setup.service 2>/dev/null || true
+            sleep 5
             systemctl restart caddy
-            echo 'Caddy restarted'
+            echo 'Services restarted'
           START
 
       - name: "Verify"
@@ -131,4 +135,10 @@ jobs:
           echo ""
           echo "=== FAILED SYSTEMD UNITS ==="
           systemctl --failed 2>&1 || true
+          echo ""
+          echo "=== BACKEND SETUP LOG (last 20) ==="
+          journalctl -u fastfree-backend-setup.service --no-pager -n 20 2>&1 || true
+          echo ""
+          echo "=== BACKEND WEBSOCKET STATUS ==="
+          systemctl status podman-fastfree-backend-websocket.service --no-pager 2>&1 | head -15 || true
           DIAG

@@ -82,41 +82,8 @@ in {
       serviceConfig.RestartSec = "5";
     };
 
-    # ── 4. Configurator (common_site_config) ────────────────
-    virtualisation.oci-containers.containers.fastfree-backend-configurator = {
-      image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
-      pull = "always";
-      autoStart = true;
-      extraOptions = [ "--network=fastfree-net" "--add-host=host.containers.internal:host-gateway" ];
-      entrypoint = "bash";
-      cmd = [ "-c" ''
-        ls -1 apps > sites/apps.txt;
-        bench set-config -g db_host host.containers.internal;
-        bench set-config -gp db_port 3306;
-        bench set-config -g redis_cache "redis://fastfree-redis-cache:6379";
-        bench set-config -g redis_queue "redis://fastfree-redis-queue:6379";
-        bench set-config -g redis_socketio "redis://fastfree-redis-queue:6379";
-        bench set-config -gp socketio_port 9000;
-      '' ];
-      environment = {
-        DB_HOST = "host.containers.internal";
-        DB_PORT = "3306";
-        REDIS_CACHE = "fastfree-redis-cache:6379";
-        REDIS_QUEUE = "fastfree-redis-queue:6379";
-        SOCKETIO_PORT = "9000";
-      };
-    };
-
-    systemd.services."fastfree-backend-configurator" = {
-      after = [ "fastfree-backend-network.service" "mysql.service" ];
-      requires = [ "mysql.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig.Type = "oneshot";
-      serviceConfig.RemainAfterExit = true;
-    };
-
-    # ── 5. Create site (one-shot) ───────────────────────────
-    virtualisation.oci-containers.containers.fastfree-backend-create-site = {
+    # ── 4+5. Setup site (configure + create in one service) ──
+    virtualisation.oci-containers.containers.fastfree-backend-setup = {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       pull = "always";
       autoStart = false;
@@ -124,28 +91,47 @@ in {
       entrypoint = "bash";
       cmd = [ "-c" ''
         set -e
-        echo "Waiting for MariaDB...";
-        for i in $(seq 1 30); do
+        SITE="$FRAPPE_SITE_NAME_HEADER"
+
+        echo "[setup] Waiting for MariaDB..."
+        for i in $(seq 1 60); do
           if mysqladmin ping -h host.containers.internal --silent 2>/dev/null; then break; fi
-          sleep 2;
-        done;
-        echo "Waiting for Redis...";
-        for i in $(seq 1 15); do
+          if [ "$i" -eq 60 ]; then echo "[setup] ERROR: MariaDB timeout"; exit 1; fi
+          sleep 2
+        done
+
+        echo "[setup] Waiting for Redis..."
+        for i in $(seq 1 30); do
           if redis-cli -h fastfree-redis-cache ping 2>/dev/null | grep -q PONG; then break; fi
-          sleep 2;
-        done;
-        if bench --site $FRAPPE_SITE_NAME_HEADER ping 2>/dev/null; then
-          echo "Site already exists, skipping creation.";
+          if [ "$i" -eq 30 ]; then echo "[setup] ERROR: Redis timeout"; exit 1; fi
+          sleep 2
+        done
+
+        echo "[setup] Configuring bench globals..."
+        bench set-config -g db_host host.containers.internal
+        bench set-config -gp db_port 3306
+        bench set-config -g redis_cache "redis://fastfree-redis-cache:6379"
+        bench set-config -g redis_queue "redis://fastfree-redis-queue:6379"
+        bench set-config -g redis_socketio "redis://fastfree-redis-queue:6379"
+        bench set-config -gp socketio_port 9000
+
+        echo "[setup] Checking if site exists..."
+        if bench --site "$SITE" ping 2>/dev/null; then
+          echo "[setup] Site $SITE already exists, skipping creation."
         else
-          bench new-site \
+          echo "[setup] Creating site $SITE..."
+          bench new-site "$SITE" \
             --mariadb-user-host-login-scope='%' \
-            --admin-password=$ADMIN_PASSWORD \
+            --admin-password="$ADMIN_PASSWORD" \
             --db-root-username=root \
-            --db-root-password=$DB_PASSWORD \
+            --db-root-password="$DB_PASSWORD" \
             --install-app erpnext \
             --install-app fastfree_backend \
-            --set-default $FRAPPE_SITE_NAME_HEADER;
-        fi;
+            --set-default
+          echo "[setup] Site $SITE created successfully."
+        fi
+
+        echo "[setup] Done."
       '' ];
       environment = {
         DB_PASSWORD = pw.mariadbRoot;
@@ -158,19 +144,22 @@ in {
       ];
     };
 
-    systemd.services."fastfree-backend-create-site" = {
+    systemd.services."fastfree-backend-setup" = {
+      description = "Configure bench globals and create Frappe site";
       after = [
         "fastfree-backend-network.service"
         "mysql.service"
-        "fastfree-backend-configurator.service"
         "fastfree-redis-cache.service"
         "fastfree-redis-queue.service"
       ];
-      requires = [ "mysql.service" "fastfree-backend-configurator.service" ];
+      requires = [ "mysql.service" ];
+      wantedBy = [ "multi-user.target" ];
       serviceConfig.Type = "oneshot";
       serviceConfig.RemainAfterExit = true;
       serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "10";
+      serviceConfig.RestartSec = "15";
+      serviceConfig.StartLimitIntervalSec = "300";
+      serviceConfig.StartLimitBurst = "5";
     };
 
     # ── 6. Backend (Gunicorn) ───────────────────────────────
@@ -194,11 +183,11 @@ in {
       after = [
         "fastfree-backend-network.service"
         "fastfree-backend-db.service"
-        "fastfree-backend-create-site.service"
+        "fastfree-backend-setup.service"
         "fastfree-redis-cache.service"
         "fastfree-redis-queue.service"
       ];
-      requires = [ "mysql.service" "fastfree-backend-create-site.service" ];
+      requires = [ "mysql.service" "fastfree-backend-setup.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "5";
     };
@@ -227,8 +216,8 @@ in {
     };
 
     systemd.services."fastfree-backend-frontend" = {
-      after = [ "fastfree-backend-network.service" "fastfree-backend-app.service" ];
-      requires = [ "fastfree-backend-app.service" ];
+      after = [ "fastfree-backend-network.service" "fastfree-backend-app.service" "fastfree-backend-setup.service" ];
+      requires = [ "fastfree-backend-app.service" "fastfree-backend-setup.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "5";
     };
@@ -248,12 +237,11 @@ in {
     systemd.services."fastfree-backend-websocket" = {
       after = [ 
         "fastfree-backend-network.service" 
-        "fastfree-backend-configurator.service" 
-        "fastfree-backend-create-site.service"
+        "fastfree-backend-setup.service"
         "fastfree-backend-app.service"
         "fastfree-redis-queue.service"
       ];
-      requires = [ "fastfree-backend-create-site.service" "mysql.service" ];
+      requires = [ "fastfree-backend-setup.service" "mysql.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "10";
       serviceConfig.StartLimitIntervalSec = "300";
@@ -276,7 +264,7 @@ in {
     systemd.services."fastfree-backend-queue-short" = {
       after = [ 
         "fastfree-backend-network.service" 
-        "fastfree-backend-create-site.service"
+        "fastfree-backend-setup.service"
         "fastfree-redis-queue.service"
       ];
       requires = [ "mysql.service" "fastfree-redis-queue.service" ];
@@ -302,7 +290,7 @@ in {
     systemd.services."fastfree-backend-queue-long" = {
       after = [ 
         "fastfree-backend-network.service" 
-        "fastfree-backend-create-site.service"
+        "fastfree-backend-setup.service"
         "fastfree-redis-queue.service"
       ];
       requires = [ "mysql.service" "fastfree-redis-queue.service" ];
@@ -328,7 +316,7 @@ in {
     systemd.services."fastfree-backend-scheduler" = {
       after = [ 
         "fastfree-backend-network.service" 
-        "fastfree-backend-create-site.service"
+        "fastfree-backend-setup.service"
         "fastfree-redis-queue.service"
       ];
       requires = [ "mysql.service" "fastfree-redis-queue.service" ];
