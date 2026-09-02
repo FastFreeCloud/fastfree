@@ -1,0 +1,36 @@
+{
+  "name": "quasar-app-extension-fastfree_vpn",
+  "version": "0.1.0",
+  "description": "WireGuard VPN integration for FastFree Quasar apps",
+  "keywords": [
+    "wireguard",
+    "vpn",
+    "quasar",
+    "capacitor",
+    "android",
+    "fastfree"
+  ],
+  "license": "MIT",
+  "author": "FastFree <mohamed.fastfree@gmail.com>",
+  "type": "module",
+  "scripts": {
+    "lint": "oxfmt && oxlint --fix",
+    "lint:check": "oxfmt --check && oxlint",
+    "typecheck": "vue-tsc --noEmit",
+    "dev": "pnpm --filter playground dev",
+    "invoke": "pnpm --filter playground invoke",
+    "cycle": "pnpm --filter playground cycle",
+    "postinstall": "pnpm --filter playground prepare"
+  },
+  "devDependencies": {
+    "oxfmt": "^0.x",
+    "oxlint": "^1.x",
+    "oxlint-tsgolint": "^7.0.2001",
+    "typescript": "^6.0.0",
+    "vue-tsc": "^3.3.3"
+  },
+  "engines": {
+    "node": ">= 26 || ^24 || ^22.12"
+  },
+  "productName": "FastFree VPN"
+}

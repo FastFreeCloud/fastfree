@@ -295,6 +295,9 @@ importers:
       quasar-app-extension-fastfree-lowcode:
         specifier: workspace:*
         version: link:../../packages/fastfree_lowcode
+      quasar-app-extension-fastfree_vpn:
+        specifier: workspace:*
+        version: link:../../packages/fastfree_vpn
       typescript:
         specifier: ^6.0.0
         version: 6.0.3
@@ -386,6 +389,9 @@ importers:
       quasar-app-extension-fastfree-lowcode:
         specifier: workspace:*
         version: link:../../packages/fastfree_lowcode
+      quasar-app-extension-fastfree_vpn:
+        specifier: workspace:*
+        version: link:../../packages/fastfree_vpn
       typescript:
         specifier: ^6.0.0
         version: 6.0.3
@@ -471,6 +477,9 @@ importers:
       quasar-app-extension-fastfree-lowcode:
         specifier: workspace:*
         version: link:../../packages/fastfree_lowcode
+      quasar-app-extension-fastfree_vpn:
+        specifier: workspace:*
+        version: link:../../packages/fastfree_vpn
       typescript:
         specifier: ^6.0.0
         version: 6.0.3
@@ -559,6 +568,9 @@ importers:
       quasar-app-extension-fastfree-lowcode:
         specifier: workspace:*
         version: link:../../packages/fastfree_lowcode
+      quasar-app-extension-fastfree_vpn:
+        specifier: workspace:*
+        version: link:../../packages/fastfree_vpn
       typescript:
         specifier: ^6.0.0
         version: 6.0.3
@@ -855,6 +867,24 @@ importers:
       vue-router:
         specifier: 5.2.0
         version: 5.2.0(@vue/compiler-sfc@3.5.40)(esbuild@0.28.2)(pinia@4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.40(typescript@6.0.3)))(rolldown@1.2.2)(rollup@4.62.2)(vite@8.2.0(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.100.0)(sass@1.100.0)(terser@5.49.0)(tsx@4.23.12)(yaml@2.9.0))(vue@3.5.40(typescript@6.0.3))
+
+  packages/fastfree_vpn:
+    devDependencies:
+      oxfmt:
+        specifier: ^0.x
+        version: 0.62.0
+      oxlint:
+        specifier: ^1.x
+        version: 1.77.0(oxlint-tsgolint@7.0.2001)
+      oxlint-tsgolint:
+        specifier: ^7.0.2001
+        version: 7.0.2001
+      typescript:
+        specifier: ^6.0.0
+        version: 6.0.3
+      vue-tsc:
+        specifier: ^3.3.3
+        version: 3.3.8(typescript@6.0.3)
 
 packages:
 

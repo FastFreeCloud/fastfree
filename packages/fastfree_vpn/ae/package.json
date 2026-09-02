@@ -1,0 +1,41 @@
+{
+  "name": "quasar-app-extension-fastfree_vpn",
+  "version": "0.1.0",
+  "description": "WireGuard VPN integration for FastFree Quasar apps — Android native support",
+  "keywords": [
+    "quasar",
+    "quasar-app-extension",
+    "quasar-app-vite",
+    "quasar-cli",
+    "vue",
+    "vuejs",
+    "wireguard",
+    "vpn",
+    "android",
+    "capacitor"
+  ],
+  "license": "MIT",
+  "author": "FastFree <mohamed.fastfree@gmail.com>",
+  "type": "module",
+  "main": "src/index.ts",
+  "imports": {
+    "#q-app": "@quasar/app-vite"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.4.0",
+    "@capacitor/core": "^7.0.0"
+  },
+  "devDependencies": {
+    "@quasar/app-vite": "catalog:",
+    "quasar": "catalog:",
+    "vue": "catalog:",
+    "@capacitor/cli": "^7.0.0"
+  },
+  "peerDependencies": {
+    "@quasar/app-vite": "^3.5.0",
+    "@capacitor/core": "^7.0.0"
+  },
+  "engines": {
+    "node": ">= 26 || ^24 || ^22.12"
+  }
+}
