@@ -19,8 +19,7 @@
     "typecheck": "vue-tsc --noEmit",
     "dev": "pnpm --filter playground dev",
     "invoke": "pnpm --filter playground invoke",
-    "cycle": "pnpm --filter playground cycle",
-    "postinstall": "pnpm --filter playground prepare"
+    "cycle": "pnpm --filter playground cycle"
   },
   "devDependencies": {
     "oxfmt": "^0.x",
