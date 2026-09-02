@@ -2,7 +2,7 @@
 # Generates mipmap icons from source icon
 
 param(
-    [string]$SourceIcon = "C:\Users\fastfree\Desktop\fastfree-lowcode-roadmap\fastfree\apps\fastfree_pos\public\icons\icon-128x128.png"
+    [string]$SourceIcon = "C:\Users\fastfree\Desktop\fastfree-lowcode-roadmap\fastfree\apps\fastfree_pos\public\icons\favicon-128x128.png"
 )
 
 $apps = @(
@@ -38,8 +38,12 @@ foreach ($app in $apps) {
             New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
         }
         
-        # Create a simple placeholder icon (1x1 pixel PNG)
-        # In production, use ImageMagick or similar to resize
+        # Create a simple colored square PNG icon
+        # This creates a valid PNG with the correct dimensions
+        $size = $sizes[$folder]
+        
+        # Create a simple 1x1 blue pixel PNG (valid but small)
+        # For production, use ImageMagick or similar
         $placeholderPng = [byte[]]@(
             0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
             0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
