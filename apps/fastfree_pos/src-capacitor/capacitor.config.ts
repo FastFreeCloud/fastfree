@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.fastfree.pos',
   appName: 'FastFree POS',
-  webDir: 'dist/spa',
+  webDir: '../dist/spa',
   server: {
     androidScheme: 'https'
   },
@@ -20,4 +20,5 @@ const config: CapacitorConfig = {
 };
 
 export default config;
+
 
