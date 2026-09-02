@@ -1,16 +1,16 @@
-name: 08-build-hr-android
+name: 13-build-ledger-android
 
 on:
   workflow_dispatch:
 
 concurrency:
-  group: build-hr-android-${{ github.ref }}
+  group: build-ledger-android-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  APP_DIR: fastfree_hr
-  APP_NAME: "FastFree HR"
-  APP_ID: com.fastfree.hr
+  APP_DIR: fastfree_ledger
+  APP_NAME: "FastFree Ledger"
+  APP_ID: com.fastfree.ledger
   JAVA_VERSION: "17"
   NODE_VERSION: "22"
   PNPM_VERSION: "11.11.0"
@@ -99,16 +99,16 @@ jobs:
         run: |
           mkdir -p ../../dist-apk
           if [ -f app/build/outputs/apk/release/app-release-unsigned.apk ]; then
-            cp app/build/outputs/apk/release/app-release-unsigned.apk ../../dist-apk/fastfree-hr.apk
+            cp app/build/outputs/apk/release/app-release-unsigned.apk ../../dist-apk/fastfree-ledger.apk
           elif [ -f app/build/outputs/apk/debug/app-debug.apk ]; then
-            cp app/build/outputs/apk/debug/app-debug.apk ../../dist-apk/fastfree-hr.apk
+            cp app/build/outputs/apk/debug/app-debug.apk ../../dist-apk/fastfree-ledger.apk
           fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: fastfree-hr-apk
-          path: apps/${{ env.APP_DIR }}/dist-apk/fastfree-hr.apk
+          name: fastfree-ledger-apk
+          path: apps/${{ env.APP_DIR }}/dist-apk/fastfree-ledger.apk
           retention-days: 30
 
       - name: Upload AAB
@@ -155,7 +155,7 @@ jobs:
       - name: Download APK
         uses: actions/download-artifact@v4
         with:
-          name: fastfree-hr-apk
+          name: fastfree-ledger-apk
           path: release
 
       - name: Get version
@@ -167,9 +167,9 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: hr-v${{ steps.version.outputs.version }}
-          name: "FastFree HR v${{ steps.version.outputs.version }}"
-          files: release/fastfree-hr.apk
+          tag_name: ledger-v${{ steps.version.outputs.version }}
+          name: "FastFree Ledger v${{ steps.version.outputs.version }}"
+          files: release/fastfree-ledger.apk
           generate_release_notes: true
 
 

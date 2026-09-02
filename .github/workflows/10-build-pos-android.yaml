@@ -1,4 +1,4 @@
-name: 06-build-pos-android
+name: 10-build-pos-android
 
 on:
   workflow_dispatch:

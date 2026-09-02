@@ -1,4 +1,4 @@
-name: 10-build-website
+name: 06-build-website
 
 on:
   workflow_dispatch:
