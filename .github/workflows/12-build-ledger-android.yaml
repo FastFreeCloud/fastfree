@@ -84,25 +84,21 @@ jobs:
             echo "Keystore generated"
           fi
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Build release APK
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
         run: |
-          mkdir -p gradle/wrapper
-          curl -L -o gradle/wrapper/gradle-wrapper.jar https://github.com/gradle/gradle/raw/v8.11.1/gradle/wrapper/gradle-wrapper.jar
-          chmod +x gradlew
-          ./gradlew assembleRelease \
+          gradle assembleRelease \
             -Pandroid.injected.signing.store.file=app/release.jks \
             -Pandroid.injected.signing.store.password=FastFree@2026 \
             -Pandroid.injected.signing.key.alias=fastfree \
             -Pandroid.injected.signing.key.password=FastFree@2026
 
       - name: Build AAB for Google Play
-        run: |
-          cd apps/${{ env.APP_DIR }}/src-capacitor/android
-          mkdir -p gradle/wrapper
-          curl -L -o gradle/wrapper/gradle-wrapper.jar https://github.com/gradle/gradle/raw/v8.11.1/gradle/wrapper/gradle-wrapper.jar
-          chmod +x gradlew
-          ./gradlew bundleRelease
+        working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
+        run: gradle bundleRelease
 
       - name: Collect APK
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
