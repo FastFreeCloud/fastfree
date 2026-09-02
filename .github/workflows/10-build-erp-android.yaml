@@ -87,6 +87,8 @@ jobs:
       - name: Build release APK
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
         run: |
+          mkdir -p gradle/wrapper
+          curl -L -o gradle/wrapper/gradle-wrapper.jar https://github.com/gradle/gradle/raw/v8.11.1/gradle/wrapper/gradle-wrapper.jar
           chmod +x gradlew
           ./gradlew assembleRelease \
             -Pandroid.injected.signing.store.file=app/release.jks \
@@ -97,6 +99,8 @@ jobs:
       - name: Build AAB for Google Play
         run: |
           cd apps/${{ env.APP_DIR }}/src-capacitor/android
+          mkdir -p gradle/wrapper
+          curl -L -o gradle/wrapper/gradle-wrapper.jar https://github.com/gradle/gradle/raw/v8.11.1/gradle/wrapper/gradle-wrapper.jar
           chmod +x gradlew
           ./gradlew bundleRelease
 
