@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.fastfree.ledger',
   appName: 'FastFree Ledger',
-  webDir: 'dist',
+  webDir: 'dist/spa',
   server: {
     androidScheme: 'https'
   },
@@ -20,3 +20,4 @@ const config: CapacitorConfig = {
 };
 
 export default config;
+
