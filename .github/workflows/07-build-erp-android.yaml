@@ -89,6 +89,11 @@ jobs:
             ./gradlew assembleDebug
           fi
 
+      - name: Build AAB for Google Play
+        run: |
+          cd apps/${{ env.APP_DIR }}/src-capacitor/android
+          ./gradlew bundleRelease
+
       - name: Collect APK
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
         run: |
@@ -105,6 +110,36 @@ jobs:
           name: fastfree-erp-apk
           path: apps/${{ env.APP_DIR }}/dist-apk/fastfree-erp.apk
           retention-days: 30
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_ID }}-aab
+          path: apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+
+      - name: Upload Keystore as TXT
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" > keystore_base64.txt
+          echo "${{ secrets.ANDROID_KEY_ALIAS }}" > keystore_alias.txt
+          echo "${{ secrets.ANDROID_KEY_PASSWORD }}" > keystore_password.txt
+          echo "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" > keystore_store_password.txt
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+
+      - name: Upload Keystore TXT Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_ID }}-keystore-txt
+          path: |
+            keystore_base64.txt
+            keystore_alias.txt
+            keystore_password.txt
+            keystore_store_password.txt
+          if-no-files-found: error
 
   release:
     needs: build
