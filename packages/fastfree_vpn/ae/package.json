@@ -17,7 +17,7 @@
   "license": "MIT",
   "author": "FastFree <mohamed.fastfree@gmail.com>",
   "type": "module",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "imports": {
     "#q-app": "@quasar/app-vite"
   },
@@ -30,6 +30,10 @@
     "quasar": "catalog:",
     "vue": "catalog:",
     "@capacitor/cli": "^7.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
   },
   "peerDependencies": {
     "@quasar/app-vite": "^3.5.0",

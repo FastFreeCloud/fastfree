@@ -9,7 +9,8 @@
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "module": "preserve",
-    "noEmit": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
     "lib": ["esnext", "dom", "dom.iterable"],
     "strict": true,
     "allowUnreachableCode": false,
@@ -19,5 +20,5 @@
     "noUncheckedIndexedAccess": true
   },
   "include": ["./src/**/*"],
-  "exclude": ["./node_modules"]
+  "exclude": ["./node_modules", "./dist"]
 }
