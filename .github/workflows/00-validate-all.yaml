@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile --ignore-scripts
 
+      - name: Prepare Quasar
+        run: pnpm exec quasar prepare
+
       - name: Check fastfree_pos TypeScript
         working-directory: apps/fastfree_pos
         run: pnpm exec vue-tsc --noEmit
