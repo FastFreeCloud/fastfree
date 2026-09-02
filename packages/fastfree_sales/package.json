@@ -6,6 +6,7 @@
   "main": "src/index.ts",
   "dependencies": {
     "fastfree-auth": "workspace:*",
+    "quasar-app-extension-fastfree-lowcode": "workspace:*",
     "vue": "^3.5.22",
     "vue-router": "^5.0.6",
     "pinia": "^4.0.2",
