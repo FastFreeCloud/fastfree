@@ -1,11 +1,6 @@
 name: build-erp
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - "apps/fastfree_erp/**"
-      - ".github/workflows/build-erp.yaml"
   workflow_dispatch:
   workflow_call:
 
@@ -171,3 +166,5 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }}
           generate_release_notes: true
+
+

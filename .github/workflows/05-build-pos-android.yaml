@@ -1,11 +1,6 @@
 name: build-pos-android
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - "apps/fastfree_pos/**"
-      - ".github/workflows/build-pos-android.yaml"
   workflow_dispatch:
 
 concurrency:
@@ -138,3 +133,4 @@ jobs:
           name: "FastFree POS v${{ steps.version.outputs.version }}"
           files: release/fastfree-pos.apk
           generate_release_notes: true
+

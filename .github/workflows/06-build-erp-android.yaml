@@ -1,11 +1,6 @@
 name: build-erp-android
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - "apps/fastfree_erp/**"
-      - ".github/workflows/build-erp-android.yaml"
   workflow_dispatch:
 
 concurrency:
@@ -141,4 +136,6 @@ jobs:
           name: "FastFree ERP v${{ steps.version.outputs.version }}"
           files: release/fastfree-erp.apk
           generate_release_notes: true
+
+
 

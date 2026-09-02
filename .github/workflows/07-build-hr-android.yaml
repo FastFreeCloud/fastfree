@@ -1,11 +1,6 @@
 name: build-hr-android
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - "apps/fastfree_hr/**"
-      - ".github/workflows/build-hr-android.yaml"
   workflow_dispatch:
 
 concurrency:
@@ -141,4 +136,6 @@ jobs:
           name: "FastFree HR v${{ steps.version.outputs.version }}"
           files: release/fastfree-hr.apk
           generate_release_notes: true
+
+
 

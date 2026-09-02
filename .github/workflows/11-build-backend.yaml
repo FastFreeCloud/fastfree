@@ -463,3 +463,4 @@ jobs:
             echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.auto_tag.outputs.TAG }}"
             echo "\`\`\`"
           } >> "$GITHUB_STEP_SUMMARY"
+

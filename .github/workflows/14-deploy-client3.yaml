@@ -144,3 +144,4 @@ jobs:
           echo "=== BACKEND WEBSOCKET STATUS ==="
           systemctl status podman-fastfree-backend-websocket.service --no-pager 2>&1 | head -15 || true
           DIAG
+

@@ -55,3 +55,4 @@ jobs:
           name: fastfree_client2.vhdx.7z
           path: apps/fastfree_os/result/fastfree_client2.vhdx.7z
           retention-days: 30
+

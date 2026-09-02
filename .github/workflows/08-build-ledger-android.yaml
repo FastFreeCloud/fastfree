@@ -1,11 +1,6 @@
 name: build-ledger-android
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - "apps/fastfree_ledger/**"
-      - ".github/workflows/build-ledger-android.yaml"
   workflow_dispatch:
 
 concurrency:
@@ -141,4 +136,6 @@ jobs:
           name: "FastFree Ledger v${{ steps.version.outputs.version }}"
           files: release/fastfree-ledger.apk
           generate_release_notes: true
+
+
 

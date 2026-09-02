@@ -39,3 +39,4 @@ jobs:
           chmod 600 ~/.ssh/client3
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/client3 \
             root@${{ secrets.CLIENT3_IP }} "nixos-version && hostname && echo DEPLOY_OK"
+

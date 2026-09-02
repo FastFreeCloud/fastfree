@@ -1,9 +1,7 @@
 name: build-website
 
 on:
-  push:
-    branches: [main, master]
-    paths:
+  workflow_dispatch:
       - "apps/fastfree_website/**"
       - ".github/workflows/build-website.yaml"
   workflow_dispatch:
@@ -155,3 +153,4 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }}
           generate_release_notes: true
+
