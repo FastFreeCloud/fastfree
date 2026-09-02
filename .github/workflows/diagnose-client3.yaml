@@ -59,7 +59,7 @@ jobs:
           
           # ── 5. Listening Ports ──
           echo "═══ 5. LISTENING PORTS ═══"
-          eval $SSH_CMD "ss -tlnp | grep -E '(22|80|443|3306|51820|8080|8082|9000|9001|9002|9003|9004)' || echo 'No services listening'"
+          eval $SSH_CMD "ss -tlnp | grep -E '(22|80|443|3306|51820|8080|8082|9000|9001|9002|9003|9004|9090)' || echo 'No services listening'"
           echo ""
           
           # ── 6. Podman Containers ──
@@ -79,7 +79,7 @@ jobs:
           
           # ── 9. Systemd Services ──
           echo "═══ 9. SYSTEMD SERVICES ═══"
-          eval $SSH_CMD "systemctl list-units --type=service --state=running | grep -E '(podman|caddy|mysql|wireguard|avahi|fastfree)' || echo 'No FastFree services'"
+          eval $SSH_CMD "systemctl list-units --type=service --state=running | grep -E '(podman|caddy|mysql|wireguard|avahi|fastfree|cockpit)' || echo 'No FastFree services'"
           echo ""
           
           # ── 10. Failed Services ──
@@ -139,7 +139,7 @@ jobs:
           
           # ── 20. External Curl Tests ──
           echo "═══ 20. EXTERNAL CURL TESTS ═══"
-          for domain in hr.fastfree.cloud erp.fastfree.cloud ledger.fastfree.cloud pos.fastfree.cloud backend.fastfree.cloud fastfree.cloud; do
+          for domain in hr.fastfree.cloud erp.fastfree.cloud ledger.fastfree.cloud pos.fastfree.cloud backend.fastfree.cloud fastfree.cloud db.fastfree.cloud panel.fastfree.cloud phpmyadmin.fastfree.cloud www.fastfree.cloud; do
             CODE=$(curl -m 5 -sI "https://$domain/" 2>&1 | head -1 || echo "TIMEOUT")
             echo "  $domain: $CODE"
           done
@@ -154,6 +154,24 @@ jobs:
             else
               echo 'No Redis containers found'
             fi
+          "
+          echo ""
+          
+          # ── 22. Cockpit Status ──
+          echo "═══ 22. COCKPIT STATUS ═══"
+          eval $SSH_CMD "
+            systemctl status cockpit.socket --no-pager -l 2>/dev/null | head -10 || echo 'cockpit.socket not found'
+            echo '---'
+            systemctl status cockpit-wsinstance-http.service --no-pager -l 2>/dev/null | head -5 || echo 'cockpit-wsinstance-http not found'
+            echo '---'
+            curl -s -o /dev/null -w 'Cockpit local (9090): HTTP %{http_code}' http://localhost:9090/ 2>/dev/null || echo 'Cockpit not reachable on 9090'
+          "
+          echo ""
+          
+          # ── 23. Backend Error Log ──
+          echo "═══ 23. BACKEND RECENT ERRORS ═══"
+          eval $SSH_CMD "
+            podman logs --tail 20 fastfree-backend-app 2>&1 | tail -15 || echo 'No backend logs'
           "
           echo ""
           

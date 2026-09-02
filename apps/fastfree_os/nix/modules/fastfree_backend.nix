@@ -54,6 +54,8 @@ in {
         ${pkgs.podman}/bin/podman network rm fastfree-net 2>/dev/null || true
         ${pkgs.podman}/bin/podman network create \
           --driver bridge \
+          --subnet 10.89.0.0/24 \
+          --dns 10.89.0.1 \
           fastfree-net 2>/dev/null || true
         # Enable DNS on the network (podman 4+ supports this via network reload)
         ${pkgs.podman}/bin/podman network reload fastfree-net 2>/dev/null || true
