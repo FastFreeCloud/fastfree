@@ -2,7 +2,7 @@
 # بناء صورة Hyper-V — FastFree OS for Hyper-V (client2)
 ###############################################################################
 
-name: "🖥️ Build client2 (Hyper-V)"
+name: 18-build-client2
 
 on:
   workflow_dispatch:

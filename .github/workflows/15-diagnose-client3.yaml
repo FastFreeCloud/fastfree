@@ -3,7 +3,7 @@
 # Fihss kol shay 3la client3: containers, services, network, ports
 ###############################################################################
 
-name: "🔍 Diagnose client3"
+name: 15-diagnose-client3
 
 on:
   workflow_dispatch:

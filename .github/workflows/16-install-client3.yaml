@@ -1,4 +1,4 @@
-name: "📥 Install client3 (nixos-anywhere)"
+name: 16-install-client3
 
 on:
   workflow_dispatch:

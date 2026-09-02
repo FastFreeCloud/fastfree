@@ -1,4 +1,4 @@
-name: "Deploy client3"
+name: 14-deploy-client3
 
 on:
   workflow_dispatch:

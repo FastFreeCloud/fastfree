@@ -1,16 +1,16 @@
-name: build-ledger
+name: 02-build-pos
 
 on:
   workflow_dispatch:
   workflow_call:
 
 concurrency:
-  group: build-ledger-${{ github.ref }}
+  group: build-pos-${{ github.ref }}
   cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ghcr.io/fastfreecloud/fastfree_ledger
+  IMAGE_PREFIX: ghcr.io/fastfreecloud/fastfree_pos
 
 jobs:
   lint-and-build:
@@ -43,18 +43,18 @@ jobs:
           PNPM_SKIP_POSTINSTALL: ""
 
       - name: Prepare Quasar
-        working-directory: apps/fastfree_ledger
+        working-directory: apps/fastfree_pos
         run: |
           mkdir -p .quasar
           echo '{"compilerOptions":{}}' > .quasar/tsconfig.json
           pnpm exec quasar prepare --silent
 
       - name: TypeScript check
-        working-directory: apps/fastfree_ledger
+        working-directory: apps/fastfree_pos
         run: pnpm exec vue-tsc --noEmit
 
       - name: Lint check
-        working-directory: apps/fastfree_ledger
+        working-directory: apps/fastfree_pos
         run: pnpm run lint:check
 
       - uses: cachix/install-nix-action@v31
@@ -65,7 +65,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y skopeo
 
       - name: Build frontend image
-        working-directory: apps/fastfree_ledger
+        working-directory: apps/fastfree_pos
         run: nix build .#frontendImage -o frontend-image --print-build-logs
 
       - name: Login to GHCR
@@ -78,7 +78,7 @@ jobs:
       - name: Ensure GHCR package exists
         continue-on-error: true
         run: |
-          PKG="fastfree_ledger"
+          PKG="fastfree_pos"
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
@@ -97,11 +97,11 @@ jobs:
           fi
 
       - name: Save frontend image to tarball
-        working-directory: apps/fastfree_ledger
+        working-directory: apps/fastfree_pos
         run: ./frontend-image > frontend-image.tar
 
       - name: Push frontend image (latest)
-        working-directory: apps/fastfree_ledger
+        working-directory: apps/fastfree_pos
         env:
           SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -111,7 +111,7 @@ jobs:
             docker://${{ env.IMAGE_PREFIX }}:latest
 
       - name: Push frontend image (sha)
-        working-directory: apps/fastfree_ledger
+        working-directory: apps/fastfree_pos
         env:
           SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -137,15 +137,15 @@ jobs:
       - name: Compute next version
         id: version
         run: |
-          LATEST_TAG=$(git tag -l "ledger-v1.0.*" --sort=-v:refname | head -n1)
+          LATEST_TAG=$(git tag -l "pos-v1.0.*" --sort=-v:refname | head -n1)
           if [ -z "$LATEST_TAG" ]; then
             NEXT=1
           else
-            CURR=${LATEST_TAG#ledger-v1.0.}
+            CURR=${LATEST_TAG#pos-v1.0.}
             NEXT=$((CURR + 1))
           fi
-          echo "tag=ledger-v1.0.$NEXT" >> "$GITHUB_OUTPUT"
-          echo "Version: ledger-v1.0.$NEXT"
+          echo "tag=pos-v1.0.$NEXT" >> "$GITHUB_OUTPUT"
+          echo "Version: pos-v1.0.$NEXT"
 
       - name: Create tag and push
         run: |

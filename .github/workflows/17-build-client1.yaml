@@ -2,7 +2,7 @@
 # بناء صورة WSL — FastFree OS for Windows Subsystem for Linux (client1)
 ###############################################################################
 
-name: "🪟 Build client1 (WSL)"
+name: 17-build-client1
 
 on:
   workflow_dispatch:

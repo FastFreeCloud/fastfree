@@ -1,4 +1,4 @@
-name: "🐳 بناء Docker Image + Release تلقائي"
+name: 12-build-backend
 
 # ═══════════════════════════════════════════════════════════
 #   بناء صورة Docker + إنشاء Tag + Release تلقائي

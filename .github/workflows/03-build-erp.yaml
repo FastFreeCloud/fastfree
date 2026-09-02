@@ -1,4 +1,4 @@
-name: build-erp
+name: 03-build-erp
 
 on:
   workflow_dispatch:
