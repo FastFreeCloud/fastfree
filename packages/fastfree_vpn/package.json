@@ -12,7 +12,6 @@
   ],
   "license": "MIT",
   "author": "FastFree <mohamed.fastfree@gmail.com>",
-  "type": "module",
   "main": "ae/dist/index.js",
   "scripts": {
     "lint": "oxfmt && oxlint --fix",

@@ -44,7 +44,6 @@
     "@intlify/unplugin-vue-i18n": "^11.0.0",
     "@quasar/app-vite": "^3.2.0",
     "quasar-app-extension-fastfree-lowcode": "workspace:*",
-    "quasar-app-extension-fastfree_vpn": "workspace:*",
     "autoprefixer": "^10.4.27",
     "postcss": "^8.5.8",
     "typescript": "^6.0.0"
@@ -62,3 +61,4 @@
     "node": ">= 22.12"
   }
 }
+
