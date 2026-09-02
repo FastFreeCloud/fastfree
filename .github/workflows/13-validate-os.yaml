@@ -2,7 +2,7 @@
 # اختبارات FastFree OS — فحص شامل واحترافي لنظام NixOS
 ###############################################################################
 
-name: 07-validate-os
+name: 13-validate-os
 
 on:
   workflow_dispatch:
@@ -181,84 +181,12 @@ jobs:
         shell: bash
 
   # ═══════════════════════════════════════════════════════════════
-  #  المرحلة 2: بناء صور Docker
-  # ═══════════════════════════════════════════════════════════════
-  build_backend_image:
-    name: 🐳 بناء صورة Backend
-    uses: ./.github/workflows/build-backend.yaml
-    needs: [syntax_check, flake_validate, evaluation]
-    if: always() && !cancelled() && needs.evaluation.result == 'success'
-    secrets: inherit
-    permissions:
-      contents: write
-      packages: write
-
-  build_erp_image:
-    name: 🐳 بناء صورة ERP
-    uses: ./.github/workflows/build-erp.yaml
-    needs: [syntax_check, flake_validate, evaluation]
-    if: always() && !cancelled() && needs.evaluation.result == 'success'
-    secrets: inherit
-    permissions:
-      contents: write
-      packages: write
-
-  build_ledger_image:
-    name: 🐳 بناء صورة Ledger
-    uses: ./.github/workflows/build-ledger.yaml
-    needs: [syntax_check, flake_validate, evaluation]
-    if: always() && !cancelled() && needs.evaluation.result == 'success'
-    secrets: inherit
-    permissions:
-      contents: write
-      packages: write
-
-  build_hr_image:
-    name: 🐳 بناء صورة HR
-    uses: ./.github/workflows/build-hr.yaml
-    needs: [syntax_check, flake_validate, evaluation]
-    if: always() && !cancelled() && needs.evaluation.result == 'success'
-    secrets: inherit
-    permissions:
-      contents: write
-      packages: write
-
-  build_pos_image:
-    name: 🐳 بناء صورة POS
-    uses: ./.github/workflows/build-pos.yaml
-    needs: [syntax_check, flake_validate, evaluation]
-    if: always() && !cancelled() && needs.evaluation.result == 'success'
-    secrets: inherit
-    permissions:
-      contents: write
-      packages: write
-
-  build_website_image:
-    name: 🐳 بناء صورة Website
-    uses: ./.github/workflows/build-website.yaml
-    needs: [syntax_check, flake_validate, evaluation]
-    if: always() && !cancelled() && needs.evaluation.result == 'success'
-    secrets: inherit
-    permissions:
-      contents: write
-      packages: write
-
-  build_wsl_image:
-    name: 🪟 بناء صورة WSL
-    uses: ./.github/workflows/build-client1.yaml
-    needs: [syntax_check, flake_validate, evaluation]
-    if: always() && !cancelled() && needs.evaluation.result == 'success'
-    secrets: inherit
-    permissions:
-      contents: write
-
-  # ═══════════════════════════════════════════════════════════════
-  #  المرحلة 3: التقرير
+  #  التقرير النهائي
   # ═══════════════════════════════════════════════════════════════
   test_report:
     name: 📊 التقرير النهائي
     runs-on: ubuntu-latest
-    needs: [syntax_check, flake_validate, evaluation, build_backend_image, build_erp_image, build_ledger_image, build_hr_image, build_pos_image, build_website_image, build_wsl_image]
+    needs: [syntax_check, flake_validate, evaluation]
     if: always()
     steps:
       - name: إنشاء التقرير
@@ -271,13 +199,6 @@ jobs:
             echo "| فحص النحو | ${{ needs.syntax_check.result == 'success' && '✅' || '❌' }} |"
             echo "| فحص Flake | ${{ needs.flake_validate.result == 'success' && '✅' || '❌' }} |"
             echo "| تقييم التكوينات | ${{ needs.evaluation.result == 'success' && '✅' || '❌' }} |"
-            echo "| بناء Backend | ${{ needs.build_backend_image.result == 'success' && '✅' || '❌' }} |"
-            echo "| بناء ERP | ${{ needs.build_erp_image.result == 'success' && '✅' || '❌' }} |"
-            echo "| بناء Ledger | ${{ needs.build_ledger_image.result == 'success' && '✅' || '❌' }} |"
-            echo "| بناء HR | ${{ needs.build_hr_image.result == 'success' && '✅' || '❌' }} |"
-            echo "| بناء POS | ${{ needs.build_pos_image.result == 'success' && '✅' || '❌' }} |"
-            echo "| بناء Website | ${{ needs.build_website_image.result == 'success' && '✅' || '❌' }} |"
-            echo "| بناء WSL | ${{ needs.build_wsl_image.result == 'success' && '✅' || '❌' }} |"
           } >> "$GITHUB_STEP_SUMMARY"
         shell: bash
 

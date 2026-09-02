@@ -1,4 +1,4 @@
-name: 11-build-erp-android
+name: 10-build-erp-android
 
 on:
   workflow_dispatch:
