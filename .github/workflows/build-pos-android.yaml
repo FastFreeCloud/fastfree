@@ -74,11 +74,8 @@ jobs:
         run: npx cap sync android
 
       - name: Decode keystore
-        if: ${{ env.ANDROID_KEYSTORE_BASE64 != '' }}
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
-        run: echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: echo "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" | base64 -d > app/release.keystore
 
       - name: Build release APK
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
@@ -86,9 +83,9 @@ jobs:
           if [ -f app/release.keystore ]; then
             ./gradlew assembleRelease \
               -Pandroid.injected.signing.store.file=app/release.keystore \
-              -Pandroid.injected.signing.store.password=${{ secrets.ANDROID_KEYSTORE_PASSWORD }} \
-              -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_KEY_ALIAS }} \
-              -Pandroid.injected.signing.key.password=${{ secrets.ANDROID_KEY_PASSWORD }}
+              -Pandroid.injected.signing.store.password=FastFree@2026 \
+              -Pandroid.injected.signing.key.alias=fastfree \
+              -Pandroid.injected.signing.key.password=FastFree@2026
           else
             echo "No keystore found, building debug APK"
             ./gradlew assembleDebug
