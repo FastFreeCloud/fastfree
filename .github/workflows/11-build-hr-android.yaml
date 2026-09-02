@@ -87,6 +87,7 @@ jobs:
       - name: Build release APK
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
         run: |
+          chmod +x gradlew
           ./gradlew assembleRelease \
             -Pandroid.injected.signing.store.file=app/release.jks \
             -Pandroid.injected.signing.store.password=FastFree@2026 \
@@ -96,6 +97,7 @@ jobs:
       - name: Build AAB for Google Play
         run: |
           cd apps/${{ env.APP_DIR }}/src-capacitor/android
+          chmod +x gradlew
           ./gradlew bundleRelease
 
       - name: Collect APK
