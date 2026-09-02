@@ -16,6 +16,7 @@
   ],
   "license": "MIT",
   "author": "FastFree <mohamed.fastfree@gmail.com>",
+  "type": "module",
   "main": "dist/index.js",
   "imports": {
     "#q-app": "@quasar/app-vite"
