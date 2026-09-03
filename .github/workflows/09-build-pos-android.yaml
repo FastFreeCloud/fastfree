@@ -11,7 +11,7 @@ env:
   APP_DIR: fastfree_pos
   APP_NAME: "FastFree POS"
   APP_ID: com.fastfree.pos
-  JAVA_VERSION: "17"
+  JAVA_VERSION: "21"
   NODE_VERSION: "22"
   PNPM_VERSION: "11.11.0"
 
