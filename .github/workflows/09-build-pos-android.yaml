@@ -64,6 +64,10 @@ jobs:
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor
         run: npm install
 
+      - name: Add Android Platform
+        working-directory: apps/${{ env.APP_DIR }}/src-capacitor
+        run: npx cap add android
+
       - name: Sync Capacitor
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor
         run: npx cap sync android
