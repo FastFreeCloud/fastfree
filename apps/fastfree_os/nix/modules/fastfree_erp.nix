@@ -9,6 +9,8 @@ in {
     systemd.services."fastfree-erp-spa" = {
       description = "Extract ERP SPA files from container image";
       after = [ "network-online.target" ];
+      requires = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig.Type = "oneshot";
       serviceConfig.RemainAfterExit = true;

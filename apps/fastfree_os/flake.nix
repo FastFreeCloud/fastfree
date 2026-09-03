@@ -219,11 +219,6 @@
         }).config.system.build.tarballBuilder;
 
     in {
-      # -- Colmena (deploy to running machines via SSH) --
-      colmenaHive = colmena.lib.makeHive (import ./nix/colmena.nix {
-        inherit nixpkgs clients mkClientModules system;
-      });
-
       # -- VHDX packages (hyperv clients only, where build=true) --
       packages.${system} = lib.mapAttrs mkVHDX
         (lib.filterAttrs (name: cfg: (cfg.deployType or "hyperv") == "hyperv" && (cfg.build or true)) clients)

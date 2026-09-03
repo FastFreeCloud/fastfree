@@ -45,10 +45,9 @@ in {
         };
         address = [ "${config.fastfree.networking.ipv4Address}/${toString config.fastfree.networking.ipv4Prefix}" ];
         routes = [
-          { routeConfig = {
-              Gateway = config.fastfree.networking.ipv4Gateway;
-              GatewayOnLink = true;
-            };
+          {
+            Gateway = config.fastfree.networking.ipv4Gateway;
+            GatewayOnLink = true;
           }
         ];
       };
