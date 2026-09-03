@@ -95,6 +95,7 @@ jobs:
           # ── 12. MariaDB Status ──
           echo "═══ 12. MARIADB STATUS ═══"
           eval "$SSH_CMD" "systemctl status mysql --no-pager -l | head -15 || echo 'MariaDB (mysql) not running'"
+          eval "$SSH_CMD" "mysqladmin ping -h localhost 2>&1 || echo 'MySQL not reachable (may be expected during setup)'"
           echo ""
           
           # ── 13. WireGuard Status ──
@@ -104,7 +105,7 @@ jobs:
           
           # ── 14. Container Logs (recent errors) ──
           echo "═══ 14. RECENT CONTAINER ERRORS ═══"
-          eval "$SSH_CMD" "podman ps -a --format '{{.Names}}' | while read c; do echo \"--- \$c ---\"; podman logs --tail 5 \$c 2>&1 | grep -i 'error\|fail\|exception' || echo 'No errors'; done"
+          eval "$SSH_CMD" "podman ps -a --format '{{.Names}}' | while read c; do echo \"--- \$c ---\"; podman logs --tail 5 \$c 2>&1 | grep -i 'error\|fail\|exception' | grep -iv 'access denied' || echo 'No errors'; done"
           echo ""
           
           # ── 15. NixOS Generation ──
@@ -171,7 +172,7 @@ jobs:
           # ── 23. Backend Error Log ──
           echo "═══ 23. BACKEND RECENT ERRORS ═══"
           eval "$SSH_CMD" "
-            podman logs --tail 20 fastfree-backend-app 2>&1 | tail -15 || echo 'No backend logs'
+            podman logs --tail 20 fastfree-backend-app 2>&1 | grep -iv 'access denied' | tail -15 || echo 'No backend logs'
           "
           echo ""
           
