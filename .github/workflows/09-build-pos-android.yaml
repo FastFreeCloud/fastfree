@@ -72,54 +72,61 @@ jobs:
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor
         run: npx cap sync android
 
-      - name: Generate Keystore if not exists
+      - name: Generate Keystore
         run: |
-          echo "Checking keystore..."
-          
-          # Check if keystore file exists
-          if [ -f "apps/${{ env.APP_DIR }}/src-capacitor/android/app/app/release.jks" ]; then
+          mkdir -p apps/${{ env.APP_DIR }}/signing
+          if [ -f "apps/${{ env.APP_DIR }}/signing/release.jks" ]; then
             echo "Keystore exists"
           else
-            echo "Generating keystore..."
-            
-            # Decode base64 keystore
-            mkdir -p apps/${{ env.APP_DIR }}/src-capacitor/android/app/app
-            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > apps/${{ env.APP_DIR }}/src-capacitor/android/app/app/release.jks
-            
-            echo "Keystore generated"
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > apps/${{ env.APP_DIR }}/signing/release.jks
+            echo "Keystore created"
           fi
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build release APK
+      - name: Build unsigned release APK
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
+        run: gradle assembleRelease
+
+      - name: Sign APK
         run: |
-          gradle assembleRelease \
-            -Pandroid.injected.signing.store.file=app/app/release.jks \
-            -Pandroid.injected.signing.store.password=FastFree@2026 \
-            -Pandroid.injected.signing.key.alias=fastfree \
-            -Pandroid.injected.signing.key.password=FastFree@2026
+          KEYSTORE="apps/${{ env.APP_DIR }}/signing/release.jks"
+          UNSIGNED_APK=$(find apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/apk/release -name "*.apk" | head -1)
+          if [ -n "$UNSIGNED_APK" ]; then
+            SIGNED_APK="apps/${{ env.APP_DIR }}/dist-apk/signed-release.apk"
+            mkdir -p "apps/${{ env.APP_DIR }}/dist-apk"
+            $ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools/ | sort -V | tail -1)/apksigner sign \
+              --ks "$KEYSTORE" \
+              --ks-pass pass:FastFree@2026 \
+              --ks-key-alias fastfree \
+              --key-pass pass:FastFree@2026 \
+              --out "$SIGNED_APK" \
+              "$UNSIGNED_APK"
+            echo "APK signed: $SIGNED_APK"
+          else
+            echo "No APK found to sign"
+            exit 1
+          fi
 
       - name: Build AAB for Google Play
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
         run: gradle bundleRelease
 
       - name: Collect APK
-        working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
         run: |
-          mkdir -p ../../dist-apk
-          if [ -f app/build/outputs/apk/release/app-release-unsigned.apk ]; then
-            cp app/build/outputs/apk/release/app-release-unsigned.apk ../../dist-apk/fastfree-pos.apk
-          elif [ -f app/build/outputs/apk/debug/app-debug.apk ]; then
-            cp app/build/outputs/apk/debug/app-debug.apk ../../dist-apk/fastfree-pos.apk
+          mkdir -p apps/${{ env.APP_DIR }}/dist-apk
+          if [ -f "apps/${{ env.APP_DIR }}/dist-apk/signed-release.apk" ]; then
+            echo "Signed APK ready"
+          elif [ -f "apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/apk/release/app-release-unsigned.apk" ]; then
+            cp apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/apk/release/app-release-unsigned.apk apps/${{ env.APP_DIR }}/dist-apk/fastfree-pos.apk
           fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: fastfree-pos-apk
-          path: apps/${{ env.APP_DIR }}/dist-apk/fastfree-pos.apk
+          path: apps/${{ env.APP_DIR }}/dist-apk/signed-release.apk
           retention-days: 30
 
       - name: Upload AAB
