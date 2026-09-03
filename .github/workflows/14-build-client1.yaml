@@ -13,6 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  NODE_OPTIONS: "--no-deprecation"
   WSL_CLIENT: client1
   WSL_TARBALL: fastfree_client1.wsl
   WSL_ARCHIVE: fastfree_client1.wsl.7z

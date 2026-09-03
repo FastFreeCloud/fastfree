@@ -9,6 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  NODE_OPTIONS: "--no-deprecation"
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ghcr.io/fastfreecloud/fastfree_erp
 

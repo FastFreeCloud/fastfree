@@ -8,6 +8,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  NODE_OPTIONS: "--no-deprecation"
   APP_DIR: fastfree_pos
   APP_NAME: "FastFree POS"
   APP_ID: com.fastfree.pos
@@ -25,6 +26,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
+      - name: Safe directory
+        run: git config --global safe.directory '*'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -175,6 +179,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
+      - name: Safe directory
+        run: git config --global safe.directory '*'
 
       - name: Download APK
         uses: actions/download-artifact@v5
