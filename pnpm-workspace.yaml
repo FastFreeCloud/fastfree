@@ -10,3 +10,4 @@ allowBuilds:
 overrides:
   vue-router: 5.2.0
   pinia: 4.0.2
+  sass: ^1.80.0

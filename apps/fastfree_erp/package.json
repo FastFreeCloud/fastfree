@@ -14,39 +14,39 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "fastfree-auth": "workspace:*",
-    "fastfree-accounting": "workspace:*",
-    "fastfree-inventory": "workspace:*",
-    "fastfree-sales": "workspace:*",
-    "fastfree-purchase": "workspace:*",
-    "fastfree-hr": "workspace:*",
-    "fastfree-crm": "workspace:*",
     "@fontsource-variable/cairo": "^5.1.1",
-    "vue-i18n": "^11.3.0",
-    "pinia": "^4.0.2",
     "@quasar/extras": "^2.0.0",
+    "fastfree-accounting": "workspace:*",
+    "fastfree-auth": "workspace:*",
+    "fastfree-crm": "workspace:*",
+    "fastfree-hr": "workspace:*",
+    "fastfree-inventory": "workspace:*",
+    "fastfree-purchase": "workspace:*",
+    "fastfree-sales": "workspace:*",
+    "pinia": "^4.0.2",
     "quasar": "^2.23.1",
     "vue": "^3.5.22",
+    "vue-i18n": "^11.3.0",
     "vue-router": "^5.0.6"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
-    "eslint": "^9.39.4",
-    "eslint-plugin-vue": "^10.8.0",
-    "globals": "^17.4.0",
-    "@vue/eslint-config-typescript": "^14.7.0",
-    "vite-plugin-checker": "^0.12.0",
-    "vue-eslint-parser": "^10.4.0",
-    "@vue/eslint-config-prettier": "^10.2.0",
-    "prettier": "^3.8.1",
-    "vue-tsc": "^3.3.3",
-    "@types/node": "^22.19.11",
+    "@eslint/js": "^10.0.1",
     "@intlify/unplugin-vue-i18n": "^11.0.0",
     "@quasar/app-vite": "^3.2.0",
-    "quasar-app-extension-fastfree-lowcode": "workspace:*",
+    "@types/node": "^22.19.11",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/eslint-config-typescript": "^14.7.0",
     "autoprefixer": "^10.4.27",
+    "eslint": "^10.9.1",
+    "eslint-plugin-vue": "^10.8.0",
+    "globals": "^17.4.0",
     "postcss": "^8.5.8",
-    "typescript": "^6.0.0"
+    "prettier": "^3.8.1",
+    "quasar-app-extension-fastfree-lowcode": "workspace:*",
+    "typescript": "^6.0.0",
+    "vite-plugin-checker": "^0.12.0",
+    "vue-eslint-parser": "^10.4.0",
+    "vue-tsc": "^3.3.3"
   },
   "keywords": [
     "quasar",
@@ -61,4 +61,3 @@
     "node": ">= 22.12"
   }
 }
-
