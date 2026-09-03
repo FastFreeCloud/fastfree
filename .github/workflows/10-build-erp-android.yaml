@@ -74,11 +74,22 @@ jobs:
 
       - name: Generate Keystore
         run: |
-          mkdir -p apps/${{ env.APP_DIR }}/signing
-          if [ -f "apps/${{ env.APP_DIR }}/signing/release.jks" ]; then
+          KEYSTORE_DIR="apps/${{ env.APP_DIR }}/signing"
+          KEYSTORE="$KEYSTORE_DIR/release.jks"
+          mkdir -p "$KEYSTORE_DIR"
+          
+          if [ -f "$KEYSTORE" ]; then
             echo "Keystore exists"
           else
-            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > apps/${{ env.APP_DIR }}/signing/release.jks
+            keytool -genkeypair \
+              -alias fastfree \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -keystore "$KEYSTORE" \
+              -storepass FastFree@2026 \
+              -keypass FastFree@2026 \
+              -dname "CN=FastFree, OU=IT, O=FastFree, L=Riyadh, ST=Riyadh, C=SA"
             echo "Keystore created"
           fi
 
