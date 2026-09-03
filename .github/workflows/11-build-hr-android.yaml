@@ -107,17 +107,18 @@ jobs:
       - name: Sign APK
         run: |
           KEYSTORE="apps/${{ env.APP_DIR }}/signing/release.jks"
-          UNSIGNED_APK=$(find apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/apk/release -name "*.apk" | head -1)
+          UNSIGNED_APK=$(find "apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/apk/release" -name "*.apk" | head -1)
           if [ -n "$UNSIGNED_APK" ]; then
             SIGNED_APK="apps/${{ env.APP_DIR }}/dist-apk/signed-release.apk"
             mkdir -p "apps/${{ env.APP_DIR }}/dist-apk"
-            "$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools/" | sort -V | tail -1)/apksigner sign" \
-              --ks "$KEYSTORE" \
-              --ks-pass pass:FastFree@2026 \
-              --ks-key-alias fastfree \
-              --key-pass pass:FastFree@2026 \
-              --out "$SIGNED_APK" \
-              "$UNSIGNED_APK"
+            
+            jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+              -keystore "$KEYSTORE" \
+              -storepass FastFree@2026 \
+              -keypass FastFree@2026 \
+              "$UNSIGNED_APK" fastfree
+            
+            cp "$UNSIGNED_APK" "$SIGNED_APK"
             echo "APK signed: $SIGNED_APK"
           else
             echo "No APK found to sign"
