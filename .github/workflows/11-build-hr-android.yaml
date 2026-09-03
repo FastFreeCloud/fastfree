@@ -77,13 +77,14 @@ jobs:
           echo "Checking keystore..."
           
           # Check if keystore file exists
-          if [ -f "apps/${{ env.APP_DIR }}/src-capacitor/android/app/release.jks" ]; then
+          if [ -f "apps/${{ env.APP_DIR }}/src-capacitor/android/app/app/release.jks" ]; then
             echo "Keystore exists"
           else
             echo "Generating keystore..."
             
             # Decode base64 keystore
-            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > apps/${{ env.APP_DIR }}/src-capacitor/android/app/release.jks
+            mkdir -p apps/${{ env.APP_DIR }}/src-capacitor/android/app/app
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > apps/${{ env.APP_DIR }}/src-capacitor/android/app/app/release.jks
             
             echo "Keystore generated"
           fi
@@ -95,7 +96,7 @@ jobs:
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
         run: |
           gradle assembleRelease \
-            -Pandroid.injected.signing.store.file=app/release.jks \
+            -Pandroid.injected.signing.store.file=app/app/release.jks \
             -Pandroid.injected.signing.store.password=FastFree@2026 \
             -Pandroid.injected.signing.key.alias=fastfree \
             -Pandroid.injected.signing.key.password=FastFree@2026
