@@ -46,6 +46,7 @@ in {
         Type = "oneshot";
         RemainAfterExit = true;
       };
+      path = [ pkgs.podman pkgs.coreutils pkgs.gnused ];
       script = let siteName = "backend.${config.fastfree.identity.domain}"; in ''
         for i in $(seq 1 30); do
           if ${config.services.mysql.package}/bin/mysqladmin ping -h localhost --silent 2>/dev/null; then break; fi
@@ -67,14 +68,14 @@ in {
         fi
 
         echo "[mysql-user] Ensuring user $FRAPPE_DB_NAME exists with correct password..."
-        ${config.services.mysql.package}/bin/mysql -u root -p"${pw.mariadbRoot}" <<MYSQL
-          CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS');
-          CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS');
-          GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'%';
-          GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'localhost';
-          FLUSH PRIVILEGES;
-        MYSQL
-        echo "[mysql-user] Done."
+
+        SQL="CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS');"
+        SQL="$SQL CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS');"
+        SQL="$SQL GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'%';"
+        SQL="$SQL GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'localhost';"
+        SQL="$SQL FLUSH PRIVILEGES;"
+
+        echo "$SQL" | ${config.services.mysql.package}/bin/mysql -u root -p"${pw.mariadbRoot}" 2>&1 && echo "[mysql-user] Done." || echo "[mysql-user] FAILED"
       '';
     };
 
