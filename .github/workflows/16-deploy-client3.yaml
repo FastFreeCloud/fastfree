@@ -111,16 +111,24 @@ jobs:
             if [ -f "$SITE_CFG" ]; then
               DB_NAME=$(grep -o '"db_name"[[:space:]]*:[[:space:]]*"[^"]*"' "$SITE_CFG" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
               DB_PASS=$(grep -o '"db_password"[[:space:]]*:[[:space:]]*"[^"]*"' "$SITE_CFG" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
-              echo "After rebuild: db_name=$DB_NAME db_password=$DB_PASS"
+              echo "db_name=$DB_NAME db_password=$DB_PASS"
+              
+              SQL_FILE=$(mktemp /tmp/fix-mysql-XXXXXX.sql)
+              cat > "$SQL_FILE" << SQL
+CREATE USER IF NOT EXISTS '${DB_NAME}'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('${DB_PASS}');
+CREATE USER IF NOT EXISTS '${DB_NAME}'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('${DB_PASS}');
+GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_NAME}'@'%';
+GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_NAME}'@'localhost';
+FLUSH PRIVILEGES;
+SQL
+              cat "$SQL_FILE"
+              
               MYSQL_BIN=$(which mysql 2>/dev/null || find /nix/store -name "mysql" -type f 2>/dev/null | head -1)
-              if [ -n "$MYSQL_BIN" ]; then
-                echo "CREATE USER IF NOT EXISTS '$DB_NAME'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$DB_PASS');" | $MYSQL_BIN -u root -p"Fastfree@2026" 2>&1
-                echo "CREATE USER IF NOT EXISTS '$DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$DB_PASS');" | $MYSQL_BIN -u root -p"Fastfree@2026" 2>&1
-                echo "GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$DB_NAME'@'%';" | $MYSQL_BIN -u root -p"Fastfree@2026" 2>&1
-                echo "GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$DB_NAME'@'localhost';" | $MYSQL_BIN -u root -p"Fastfree@2026" 2>&1
-                echo "FLUSH PRIVILEGES;" | $MYSQL_BIN -u root -p"Fastfree@2026" 2>&1
-                echo "MySQL fix done for $DB_NAME"
-              fi
+              $MYSQL_BIN -u root -p"Fastfree@2026" < "$SQL_FILE" 2>&1
+              rm -f "$SQL_FILE"
+              echo "MySQL fix applied"
+            else
+              echo "site_config.json not found"
             fi
           FIXMYSQL
 
