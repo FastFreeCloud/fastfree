@@ -1,4 +1,4 @@
 {
   "extends": "./.quasar/tsconfig.json",
-  "exclude": ["quasar.config.ts"]
+  "exclude": ["quasar.config.ts", "src-capacitor"]
 }
