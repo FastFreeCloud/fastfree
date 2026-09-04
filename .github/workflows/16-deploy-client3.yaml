@@ -92,6 +92,43 @@ jobs:
             done
           EXTRACT
 
+      - name: Fix MySQL Frappe user
+        env:
+          SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
+        run: |
+          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
+            root@${{ secrets.CLIENT3_IP }} << 'FIXMYSQL'
+            SITE_CFG="/var/lib/containers/storage/volumes/fastfree-backend-sites/_data/backend.fastfree.cloud/site_config.json"
+            if [ -f "$SITE_CFG" ]; then
+              DB_NAME=$(grep -o '"db_name"[[:space:]]*:[[:space:]]*"[^"]*"' "$SITE_CFG" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
+              DB_PASS=$(grep -o '"db_password"[[:space:]]*:[[:space:]]*"[^"]*"' "$SITE_CFG" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
+              echo "site_config: db_name=$DB_NAME db_password=$DB_PASS"
+              
+              # Find the mariadb/mysql binary
+              MYSQL_BIN=$(which mysql 2>/dev/null || which mariadb 2>/dev/null || find /nix/store -name "mysql" -type f 2>/dev/null | head -1)
+              echo "MySQL binary: $MYSQL_BIN"
+              
+              if [ -n "$MYSQL_BIN" ]; then
+                # Create/fix user
+                echo "CREATE USER IF NOT EXISTS '$DB_NAME'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$DB_PASS');" | $MYSQL_BIN -u root -p"Fastfree@2026" 2>&1
+                echo "CREATE USER IF NOT EXISTS '$DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$DB_PASS');" | $MYSQL_BIN -u root -p"Fastfree@2026" 2>&1
+                echo "GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$DB_NAME'@'%';" | $MYSQL_BIN -u root -p"Fastfree@2026" 2>&1
+                echo "GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$DB_NAME'@'localhost';" | $MYSQL_BIN -u root -p"Fastfree@2026" 2>&1
+                echo "FLUSH PRIVILEGES;" | $MYSQL_BIN -u root -p"Fastfree@2026" 2>&1
+                echo "MySQL fix done for $DB_NAME"
+              else
+                echo "MySQL binary not found!"
+              fi
+            fi
+          FIXMYSQL
+
+      - name: Restart backend
+        env:
+          SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
+        run: |
+          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
+            root@${{ secrets.CLIENT3_IP }} "systemctl restart podman-fastfree-backend-app.service 2>/dev/null; sleep 3; echo 'Backend restarted'"
+
       - name: Run nixos-rebuild
         env:
           SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
