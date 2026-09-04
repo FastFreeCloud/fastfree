@@ -18,11 +18,11 @@
       title="FastFree POS"
       subtitle="Checking server connection..."
       icon="mdi-point-of-sale"
-      :max-attempts="5"
-      :interval-ms="5000"
+      :max-attempts="1"
+      :interval-ms="3000"
       :allow-offline="true"
       @connected="onServerConnected"
-      @failed="onServerFailed"
+      @failed="onServerOffline"
       @offline="onServerOffline"
     />
 
@@ -69,10 +69,6 @@ function onConnected() {
 
 function onServerConnected() {
   isServerUp.value = true
-}
-
-function onServerFailed() {
-  isServerUp.value = false
 }
 
 function onServerOffline() {
