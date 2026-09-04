@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 // ============================================================
 // FastFree HR — Quasar Configuration (HR + CRM)
 // ============================================================

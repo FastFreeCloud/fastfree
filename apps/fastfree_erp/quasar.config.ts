@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 // ============================================================
 // FastFree ERP — Quasar Configuration (Full ERP)
 // ============================================================
