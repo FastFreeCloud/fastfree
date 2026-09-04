@@ -31,7 +31,7 @@ export default defineBoot(({ app }) => {
   });
 
   // Set i18n instance on app
-  app.use(i18n as never);
+  app.use(i18n);
 
   // Sync vue-i18n locale with package's i18n store
   const i18nStore = getLcI18nStore();
