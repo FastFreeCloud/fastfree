@@ -16,11 +16,11 @@ let
       root * ${spaDir}
       @api path /api/*
       handle @api {
-        reverse_proxy 127.0.0.1:8000
+        reverse_proxy 127.0.0.1:8080
       }
       @socketio path /socket.io/*
       handle @socketio {
-        reverse_proxy 127.0.0.1:8000
+        reverse_proxy 127.0.0.1:8080
       }
       handle {
         try_files {path} /index.html
