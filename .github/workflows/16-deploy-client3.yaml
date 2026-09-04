@@ -124,20 +124,23 @@ jobs:
             fi
           FIXMYSQL
 
-      - name: Restart services
+      - name: Restart ALL backend services
         env:
           SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
         run: |
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
-            root@${{ secrets.CLIENT3_IP }} << 'START'
-            systemctl daemon-reload
-            systemctl reset-failed fastfree-backend-websocket.service 2>/dev/null || true
-            systemctl reset-failed fastfree-backend-setup.service 2>/dev/null || true
-            systemctl restart fastfree-backend-setup.service 2>/dev/null || true
+            root@${{ secrets.CLIENT3_IP }} << 'RESTART'
+            echo "Restarting all backend services..."
+            systemctl restart podman-fastfree-backend-app.service 2>/dev/null || true
+            systemctl restart podman-fastfree-backend-frontend.service 2>/dev/null || true
+            systemctl restart podman-fastfree-backend-websocket.service 2>/dev/null || true
+            systemctl restart podman-fastfree-backend-queue-short.service 2>/dev/null || true
+            systemctl restart podman-fastfree-backend-queue-long.service 2>/dev/null || true
+            systemctl restart podman-fastfree-backend-scheduler.service 2>/dev/null || true
             sleep 5
             systemctl restart caddy
-            echo 'Services restarted'
-          START
+            echo "All services restarted"
+          RESTART
 
   diagnose:
     name: "Diagnostic — client3"
