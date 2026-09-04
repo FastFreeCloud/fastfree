@@ -197,10 +197,10 @@ in {
             echo "[setup] Checking if site $FRAPPE_SITE_NAME_HEADER exists and is healthy..."
             SITE_DIR="/home/frappe/frappe-bench/sites/$FRAPPE_SITE_NAME_HEADER"
             SITE_BROKEN=false
-            
+
             if [ -d "$SITE_DIR" ]; then
-              echo "[setup] Site directory exists, checking if apps are installed..."
-              # Check if site_config.json exists and has proper DB settings
+              echo "[setup] Site directory exists, checking health..."
+
               if [ ! -f "$SITE_DIR/site_config.json" ]; then
                 echo "[setup] WARNING: site_config.json missing — site is broken"
                 SITE_BROKEN=true
@@ -208,15 +208,28 @@ in {
                 echo "[setup] WARNING: site_config.json missing db_host — site is broken"
                 SITE_BROKEN=true
               fi
-              
-              # Check if erpnext app is installed
+
               if [ -d "$SITE_DIR/apps/erpnext" ]; then
                 echo "[setup] erpnext app found."
               else
                 echo "[setup] WARNING: erpnext app NOT installed — site is broken"
                 SITE_BROKEN=true
               fi
-              
+
+              if [ "$SITE_BROKEN" = false ]; then
+                echo "[setup] Checking if database actually exists in MariaDB..."
+                SITE_DB_NAME=$(sed -n "s/.*\"db_name\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" "$SITE_DIR/site_config.json")
+                if [ -z "$SITE_DB_NAME" ]; then
+                  echo "[setup] WARNING: db_name empty in site_config.json — site is broken"
+                  SITE_BROKEN=true
+                elif mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "USE \`$SITE_DB_NAME\`" 2>/dev/null; then
+                  echo "[setup] Database $SITE_DB_NAME exists and is accessible."
+                else
+                  echo "[setup] WARNING: database $SITE_DB_NAME does not exist — site is broken"
+                  SITE_BROKEN=true
+                fi
+              fi
+
               if [ "$SITE_BROKEN" = true ]; then
                 echo "[setup] Dropping broken site $FRAPPE_SITE_NAME_HEADER..."
                 bench drop-site "$FRAPPE_SITE_NAME_HEADER" \
@@ -225,7 +238,7 @@ in {
                 rm -rf "$SITE_DIR" || true
               fi
             fi
-            
+
             if [ ! -d "$SITE_DIR" ] || [ "$SITE_BROKEN" = true ]; then
               echo "[setup] Creating site $FRAPPE_SITE_NAME_HEADER..."
               bench new-site "$FRAPPE_SITE_NAME_HEADER" \
@@ -237,14 +250,34 @@ in {
                 --install-app fastfree_backend \
                 --set-default || {
                 echo "[setup] bench new-site exited non-zero, checking if site was created anyway..."
-                if [ -d "$SITE_DIR" ]; then
-                  echo "[setup] Site exists on disk, continuing."
+                if [ -d "$SITE_DIR" ] && mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "USE \`$FRAPPE_SITE_NAME_HEADER\`" 2>/dev/null; then
+                  echo "[setup] Site and database exist on disk, continuing."
                 else
                   echo "[setup] ERROR: Site creation failed."
                   exit 1
                 fi
               }
-              echo "[setup] Site $FRAPPE_SITE_NAME_HEADER created successfully."
+              echo "[setup] Verifying site $FRAPPE_SITE_NAME_HEADER was created..."
+              if [ ! -d "$SITE_DIR" ]; then
+                echo "[setup] ERROR: Site directory not found after creation."
+                exit 1
+              fi
+              SITE_DB_NAME=$(sed -n "s/.*\"db_name\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" "$SITE_DIR/site_config.json")
+              if [ -z "$SITE_DB_NAME" ] || ! mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "USE \`$SITE_DB_NAME\`" 2>/dev/null; then
+                echo "[setup] ERROR: Database not created. Retrying bench new-site..."
+                bench new-site "$FRAPPE_SITE_NAME_HEADER" \
+                  --mariadb-user-host-login-scope="%" \
+                  --admin-password="$ADMIN_PASSWORD" \
+                  --db-root-username=root \
+                  --db-root-password="$DB_PASSWORD" \
+                  --install-app erpnext \
+                  --install-app fastfree_backend \
+                  --set-default || {
+                  echo "[setup] FATAL: bench new-site retry failed."
+                  exit 1
+                }
+              fi
+              echo "[setup] Site $FRAPPE_SITE_NAME_HEADER created and verified."
             else
               echo "[setup] Site $FRAPPE_SITE_NAME_HEADER is healthy, skipping creation."
             fi
