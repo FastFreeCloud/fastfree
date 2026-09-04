@@ -14,7 +14,6 @@ in {
       wantedBy    = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
-        RemainAfterExit = true;
       };
       script = ''
         for i in $(seq 1 30); do
