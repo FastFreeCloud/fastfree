@@ -69,13 +69,9 @@ in {
 
         echo "[mysql-user] Ensuring user $FRAPPE_DB_NAME exists with correct password..."
 
-        SQL="CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS');"
-        SQL="$SQL CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS');"
-        SQL="$SQL GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'%';"
-        SQL="$SQL GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'localhost';"
-        SQL="$SQL FLUSH PRIVILEGES;"
+        SQL="CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS'); CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS'); GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'%'; GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'localhost'; FLUSH PRIVILEGES;"
 
-        echo "$SQL" | ${config.services.mysql.package}/bin/mysql -u root -p"${pw.mariadbRoot}" 2>&1 && echo "[mysql-user] Done." || echo "[mysql-user] FAILED"
+        ${config.services.mysql.package}/bin/mysql --user=root --password="${pw.mariadbRoot}" -e "$SQL" 2>&1 && echo "[mysql-user] Done." || echo "[mysql-user] FAILED"
       '';
     };
 
