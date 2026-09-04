@@ -36,6 +36,48 @@ in {
       '';
     };
 
+    # ── 1b. Ensure Frappe MySQL user matches site_config.json ──
+    systemd.services."fastfree-backend-mysql-user" = {
+      description = "Ensure Frappe MySQL user exists and password matches site_config.json";
+      after       = [ "mysql.service" "fastfree-backend-setup.service" ];
+      before      = [ "podman-fastfree-backend-app.service" ];
+      wantedBy    = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      script = let siteName = "backend.${config.fastfree.identity.domain}"; in ''
+        for i in $(seq 1 30); do
+          if ${config.services.mysql.package}/bin/mysqladmin ping -h localhost --silent 2>/dev/null; then break; fi
+          sleep 1
+        done
+
+        SITE_CFG="/var/lib/containers/storage/volumes/fastfree-backend-sites/_data/${siteName}/site_config.json"
+        if [ ! -f "$SITE_CFG" ]; then
+          echo "[mysql-user] site_config.json not found — skipping"
+          exit 0
+        fi
+
+        FRAPPE_DB_NAME=$(grep -o '"db_name"[[:space:]]*:[[:space:]]*"[^"]*"' "$SITE_CFG" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
+        FRAPPE_DB_PASS=$(grep -o '"db_password"[[:space:]]*:[[:space:]]*"[^"]*"' "$SITE_CFG" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
+
+        if [ -z "$FRAPPE_DB_NAME" ] || [ -z "$FRAPPE_DB_PASS" ]; then
+          echo "[mysql-user] db_name or db_password empty — skipping"
+          exit 0
+        fi
+
+        echo "[mysql-user] Ensuring user $FRAPPE_DB_NAME exists with correct password..."
+        ${config.services.mysql.package}/bin/mysql -u root -p"${pw.mariadbRoot}" <<MYSQL
+          CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS');
+          CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS');
+          GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'%';
+          GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'localhost';
+          FLUSH PRIVILEGES;
+        MYSQL
+        echo "[mysql-user] Done."
+      '';
+    };
+
     # ── 2. Ensure fastfree-net network exists with DNS ──
     systemd.services."fastfree-backend-network" = {
       description = "Create fastfree-net podman network with DNS for backend containers";
@@ -210,24 +252,6 @@ in {
               echo "[setup] Site $FRAPPE_SITE_NAME_HEADER is healthy, skipping creation."
             fi
 
-            echo "[setup] Ensuring MySQL user matches site_config.json..."
-            SITE_CFG="$SITE_DIR/site_config.json"
-            if [ -f "$SITE_CFG" ]; then
-              FRAPPE_DB_NAME=$(grep -o '"db_name"[[:space:]]*:[[:space:]]*"[^"]*"' "$SITE_CFG" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
-              FRAPPE_DB_PASS=$(grep -o '"db_password"[[:space:]]*:[[:space:]]*"[^"]*"' "$SITE_CFG" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
-              if [ -n "$FRAPPE_DB_NAME" ] && [ -n "$FRAPPE_DB_PASS" ]; then
-                echo "[setup] db_name=$FRAPPE_DB_NAME — creating/fixing MySQL user..."
-                mysql -h host.containers.internal -u root -p"$DB_PASSWORD" <<MYSQL
-                  CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS');
-                  CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS');
-                  GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'%';
-                  GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'localhost';
-                  FLUSH PRIVILEGES;
-MYSQL
-                echo "[setup] MySQL user $FRAPPE_DB_NAME ready."
-              fi
-            fi
-
             echo "[setup] Done."
           '
         echo "[setup] Setup container finished."
@@ -255,11 +279,12 @@ MYSQL
       after = [
         "fastfree-backend-network.service"
         "fastfree-backend-db.service"
+        "fastfree-backend-mysql-user.service"
         "fastfree-backend-setup.service"
         "podman-fastfree-redis-cache.service"
         "podman-fastfree-redis-queue.service"
       ];
-      requires = [ "mysql.service" "fastfree-backend-setup.service" ];
+      requires = [ "mysql.service" "fastfree-backend-setup.service" "fastfree-backend-mysql-user.service" ];
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "5";
     };
