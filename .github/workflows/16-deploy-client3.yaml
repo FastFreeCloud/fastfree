@@ -92,6 +92,36 @@ jobs:
             done
           EXTRACT
 
+      - name: Fix MySQL password for Frappe
+        env:
+          SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
+        run: |
+          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
+            root@${{ secrets.CLIENT3_IP }} << 'MYSQLFIX'
+            # Get the db_password from site_config.json
+            SITE_DIR=$(find /var/lib/containers/storage/volumes/fastfree-backend-sites/_data -name "site_config.json" -path "*/backend.fastfree.cloud/*" 2>/dev/null | head -1)
+            if [ -n "$SITE_DIR" ]; then
+              DB_PASS=$(grep -o '"db_password"[[:space:]]*:[[:space:]]*"[^"]*"' "$SITE_DIR" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
+              echo "Found db_password in site_config.json: $DB_PASS"
+              
+              # Find the Frappe user in MariaDB
+              FRAPPE_USER=$(mysql -u root -p"Fastfree@2026" -e "SELECT user FROM mysql.user WHERE user LIKE '_4d%';" -N 2>/dev/null | head -1)
+              echo "Found Frappe DB user: $FRAPPE_USER"
+              
+              if [ -n "$FRAPPE_USER" ] && [ -n "$DB_PASS" ]; then
+                # Reset password to match site_config.json
+                mysql -u root -p"Fastfree@2026" -e "
+                  ALTER USER '$FRAPPE_USER'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$DB_PASS');
+                  FLUSH PRIVILEGES;
+                " 2>&1 && echo "MySQL password reset for $FRAPPE_USER" || echo "Failed to reset password"
+              else
+                echo "Could not find user or password — skipping"
+              fi
+            else
+              echo "site_config.json not found — backend may not be set up yet"
+            fi
+          MYSQLFIX
+
       - name: Run nixos-rebuild
         env:
           SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
