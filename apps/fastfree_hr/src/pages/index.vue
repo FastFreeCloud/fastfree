@@ -20,9 +20,10 @@
       icon="mdi-account-group"
       :max-attempts="5"
       :interval-ms="5000"
-      :allow-offline="false"
+      :allow-offline="true"
       @connected="onServerConnected"
       @failed="onServerFailed"
+      @offline="onServerOffline"
     />
 
     <DesktopShell
@@ -72,5 +73,9 @@ function onServerConnected() {
 
 function onServerFailed() {
   isServerUp.value = false
+}
+
+function onServerOffline() {
+  isServerUp.value = true
 }
 </script>

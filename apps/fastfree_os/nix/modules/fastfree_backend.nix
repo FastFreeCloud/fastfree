@@ -210,6 +210,24 @@ in {
               echo "[setup] Site $FRAPPE_SITE_NAME_HEADER is healthy, skipping creation."
             fi
 
+            echo "[setup] Ensuring MySQL user matches site_config.json..."
+            SITE_CFG="$SITE_DIR/site_config.json"
+            if [ -f "$SITE_CFG" ]; then
+              FRAPPE_DB_NAME=$(grep -o '"db_name"[[:space:]]*:[[:space:]]*"[^"]*"' "$SITE_CFG" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
+              FRAPPE_DB_PASS=$(grep -o '"db_password"[[:space:]]*:[[:space:]]*"[^"]*"' "$SITE_CFG" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
+              if [ -n "$FRAPPE_DB_NAME" ] && [ -n "$FRAPPE_DB_PASS" ]; then
+                echo "[setup] db_name=$FRAPPE_DB_NAME — creating/fixing MySQL user..."
+                mysql -h host.containers.internal -u root -p"$DB_PASSWORD" <<MYSQL
+                  CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS');
+                  CREATE USER IF NOT EXISTS '$FRAPPE_DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS');
+                  GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'%';
+                  GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'localhost';
+                  FLUSH PRIVILEGES;
+MYSQL
+                echo "[setup] MySQL user $FRAPPE_DB_NAME ready."
+              fi
+            fi
+
             echo "[setup] Done."
           '
         echo "[setup] Setup container finished."

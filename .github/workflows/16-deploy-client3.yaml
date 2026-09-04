@@ -92,50 +92,6 @@ jobs:
             done
           EXTRACT
 
-      - name: Fix MySQL for Frappe
-        env:
-          SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
-        run: |
-          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
-            root@${{ secrets.CLIENT3_IP }} << 'MYSQLFIX'
-            SITE_DIR=$(find /var/lib/containers/storage/volumes/fastfree-backend-sites/_data -name "site_config.json" -path "*/backend.fastfree.cloud/*" 2>/dev/null | head -1)
-            DB_PASS=$(grep -o '"db_password"[[:space:]]*:[[:space:]]*"[^"]*"' "$SITE_DIR" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
-            DB_NAME=$(grep -o '"db_name"[[:space:]]*:[[:space:]]*"[^"]*"' "$SITE_DIR" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
-            echo "site_config: db_password=$DB_PASS db_name=$DB_NAME"
-
-            # Create/fix all _4d users
-            EXISTING=$(mysql -u root -p"Fastfree@2026" -N -e "SELECT user FROM mysql.user WHERE user LIKE '_4d%';" 2>/dev/null)
-            if [ -n "$EXISTING" ]; then
-              for U in $EXISTING; do
-                echo "Fixing existing user: $U"
-                mysql -u root -p"Fastfree@2026" -e "
-                  ALTER USER '$U'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$DB_PASS');
-                  ALTER USER '$U'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$DB_PASS');
-                  GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$U'@'%';
-                  FLUSH PRIVILEGES;" 2>&1
-              done
-            else
-              # No _4d users exist — find what user the backend container expects
-              # The backend container logs show: _4d26834d5dde140d
-              # Extract from the most recent error log
-              EXPECTED_USER=$(journalctl -u podman-fastfree-backend-app.service --no-pager -n 50 2>/dev/null | grep -oP "user '\K[^']*" | grep "^_4d" | head -1)
-              if [ -z "$EXPECTED_USER" ]; then
-                EXPECTED_USER="_4d26834d5dde140d"
-              fi
-              echo "Creating missing user: $EXPECTED_USER"
-              mysql -u root -p"Fastfree@2026" -e "
-                CREATE USER '$EXPECTED_USER'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$DB_PASS');
-                CREATE USER '$EXPECTED_USER'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$DB_PASS');
-                GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$EXPECTED_USER'@'%';
-                GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$EXPECTED_USER'@'localhost';
-                FLUSH PRIVILEGES;" 2>&1 && echo "User created: $EXPECTED_USER" || echo "Failed to create user"
-            fi
-
-            # Restart backend to pick up the fix
-            systemctl restart podman-fastfree-backend-app.service 2>/dev/null || true
-            echo "MySQL fix complete"
-          MYSQLFIX
-
       - name: Run nixos-rebuild
         env:
           SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
