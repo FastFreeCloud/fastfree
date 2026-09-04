@@ -53,6 +53,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile --ignore-scripts
 
+      - name: Install Capacitor dependencies
+        working-directory: apps/${{ env.APP_DIR }}/src-capacitor
+        run: npm install
+
       - name: Prepare Quasar
         working-directory: apps/${{ env.APP_DIR }}
         run: |
@@ -63,10 +67,6 @@ jobs:
       - name: Build web assets
         working-directory: apps/${{ env.APP_DIR }}
         run: pnpm exec quasar build
-
-      - name: Install Capacitor dependencies
-        working-directory: apps/${{ env.APP_DIR }}/src-capacitor
-        run: npm install
 
       - name: Add Android Platform
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor
