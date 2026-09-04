@@ -28,6 +28,9 @@ in {
           sleep 1
         done
         ${config.services.mysql.package}/bin/mysql <<SQL
+          CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('${pw.mariadbRoot}');
+          GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+          FLUSH PRIVILEGES;
           CREATE DATABASE IF NOT EXISTS fastfree_backend;
           CREATE USER IF NOT EXISTS 'fastfree_backend'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('${pw.mariadbUser}');
           GRANT ALL PRIVILEGES ON fastfree_backend.* TO 'fastfree_backend'@'%';
