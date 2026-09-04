@@ -1,0 +1,52 @@
+name: 99-debug-mysql
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Debug MySQL
+        env:
+          SSH_PASSWORD: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
+        run: |
+          set -e
+          IP="${{ secrets.CLIENT3_IP }}"
+          USER="root"
+          SSH_CMD="sshpass -p '$SSH_PASSWORD' ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 $USER@$IP"
+
+          echo "═══ 1. site_config.json ═══"
+          eval "$SSH_CMD" "cat /var/lib/containers/storage/volumes/fastfree-backend-sites/_data/backend.fastfree.cloud/site_config.json 2>/dev/null | head -25"
+
+          echo ""
+          echo "═══ 2. ALL MySQL users ═══"
+          eval "$SSH_CMD" "mysql -u root -p'Fastfree@2026' -e 'SELECT user, host, plugin FROM mysql.user;' 2>&1"
+
+          echo ""
+          echo "═══ 3. MySQL databases ═══"
+          eval "$SSH_CMD" "mysql -u root -p'Fastfree@2026' -e 'SHOW DATABASES;' 2>&1"
+
+          echo ""
+          echo "═══ 4. Backend env (DB related) ═══"
+          eval "$SSH_CMD" "podman exec fastfree-backend-app env 2>/dev/null | grep -iE 'DB|MYSQL|PASSWORD|FRAPPE' || echo 'Cannot exec'"
+
+          echo ""
+          echo "═══ 5. sites directory listing ═══"
+          eval "$SSH_CMD" "ls -la /var/lib/containers/storage/volumes/fastfree-backend-sites/_data/backend.fastfree.cloud/ 2>/dev/null | head -20"
+
+          echo ""
+          echo "═══ 6. mysql-user service logs ═══"
+          eval "$SSH_CMD" "journalctl -u fastfree-backend-mysql-user.service --no-pager -n 30 2>&1"
+
+          echo ""
+          echo "═══ 7. backend-app journal errors ═══"
+          eval "$SSH_CMD" "journalctl -u podman-fastfree-backend-app.service --no-pager -n 10 2>&1 | grep -i 'access denied\|error\|failed' | tail -5"
+
+          echo ""
+          echo "═══ 8. fastfree-backend-setup service logs ═══"
+          eval "$SSH_CMD" "journalctl -u fastfree-backend-setup.service --no-pager -n 30 2>&1 | tail -20"
