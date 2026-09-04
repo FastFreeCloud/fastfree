@@ -112,11 +112,9 @@ jobs:
             SIGNED_APK="apps/${{ env.APP_DIR }}/dist-apk/signed-release.apk"
             mkdir -p "apps/${{ env.APP_DIR }}/dist-apk"
             
-            # Find apksigner
             APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name "apksigner" -type f | head -1)
             
             if [ -n "$APKSIGNER" ]; then
-              chmod +x "$APKSIGNER"
               "$APKSIGNER" sign \
                 --ks "$KEYSTORE" \
                 --ks-pass pass:FastFree@2026 \
@@ -126,14 +124,14 @@ jobs:
               cp "$UNSIGNED_APK" "$SIGNED_APK"
               echo "APK signed with apksigner: $SIGNED_APK"
             else
-              echo "apksigner not found, trying jarsigner as fallback"
+              echo "apksigner not found, using jarsigner"
               jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
                 -keystore "$KEYSTORE" \
                 -storepass FastFree@2026 \
                 -keypass FastFree@2026 \
                 "$UNSIGNED_APK" fastfree
               cp "$UNSIGNED_APK" "$SIGNED_APK"
-              echo "APK signed with jarsigner (fallback): $SIGNED_APK"
+              echo "APK signed with jarsigner: $SIGNED_APK"
             fi
           else
             echo "No APK found to sign"
