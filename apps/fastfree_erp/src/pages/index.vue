@@ -7,6 +7,7 @@
 
     <LcSplashScreen
       v-else-if="showSplash"
+      :visible="showSplash"
       title="FastFree ERP"
       :message="t('splash.loading')"
       icon="mdi-office-building"
@@ -56,6 +57,11 @@ onMounted(() => {
   if (!envUrl && !appStore.hasServerUrl) {
     needsServerUrl.value = true
     showSplash.value = false
+  } else {
+    // URL already configured — splash briefly, then connection check takes over.
+    setTimeout(() => {
+      showSplash.value = false
+    }, SPLASH_DURATION)
   }
 })
 
