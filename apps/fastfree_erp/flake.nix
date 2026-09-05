@@ -58,6 +58,7 @@
           mkdir -p .quasar
           [ -f .quasar/tsconfig.json ] || echo '{"compilerOptions":{}}' > .quasar/tsconfig.json
           pnpm exec quasar prepare
+          export VITE_API_BASE_URL="https://backend.fastfree.cloud"
           pnpm exec quasar build -m spa
           runHook postBuild
         '';
