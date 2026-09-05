@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { siteConfig } from '@/src/data/siteConfig';
 
 export const runtime = 'nodejs';
 
@@ -56,8 +57,8 @@ export async function POST(request: Request) {
       if (Resend) {
         const resend = new Resend(apiKey);
         await resend.emails.send({
-          from: 'contact@fastfree.com',
-          to: 'contact@fastfree.com',
+          from: siteConfig.email,
+          to: siteConfig.email,
           subject: subject ? `New contact: ${subject} (from ${name})` : `New contact message from ${name}`,
           replyTo: email,
           text: `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\nSubject: ${subject}\n\n${message}`,

@@ -9,6 +9,8 @@ import {
   Contact,
   ShieldCheck,
   Cloud,
+  Globe,
+  Palette,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -23,4 +25,6 @@ export const serviceIconMap: Record<string, LucideIcon> = {
   Contact,
   ShieldCheck,
   Cloud,
+  Globe,
+  Palette,
 };

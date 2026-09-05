@@ -321,4 +321,40 @@ To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
     published_at: '2026-09-10',
     views: 540,
   },
+  {
+    id: 'web10',
+    title_ar: 'مواقع نصممها ونبنيها: تعريفية ومتاجر سريعة ثنائية اللغة',
+    title_en: 'Websites We Design and Build: Fast Bilingual Corporate Sites and Stores',
+    slug: 'custom-websites-showcase',
+    content_ar: `نبني في FastFree مواقع تعريفية للشركات ومتاجر إلكترونية مصممة للسوق العربي: عربية أولاً مع نسخة إنجليزية كاملة، واتجاه RTL صحيح، وخطوط عربية واضحة.
+
+كل موقع يخرج سريعاً: صفحات خفيفة، صور محسّنة، ونتائج بحث أفضل عبر أساسيات SEO (عناوين ووصف وبيانات منظمة وخريطة موقع). السرعة ليست رفاهية — الزائر يغادر الصفحة البطيئة قبل أن يقرأ عرضك.
+
+المتاجر تشمل سلة ودفع وطلبات وإشعارات، ولوحة تحكم سهلة يحدّث منها العميل المحتوى والمنتجات بنفسه دون أن يتصل بنا كل مرة.
+
+منهجيتنا ثابتة: استشارة نفهم فيها النشاط، ثم تصميم يوافق الهوية، ثم تطوير واختبار على الموبايل أولاً، ثم إطلاق ومتابعة وقياس.
+
+صممنا وبنينا بهذا الأسلوب مواقع تعريفية وواجهات أنظمة تعمل يومياً لدى عملائنا، ونطبق نفس المعايير على كل مشروع جديد.
+
+لنتحدث عن موقعك ببساطة، واتساب +201091999937 أو admin@fastfree.cloud.`,
+    content_en: `At FastFree we design and build corporate websites and e-commerce stores made for the Arab market: Arabic-first with a full English version, correct RTL layout, and clear Arabic typography.
+
+Every site ships fast: lightweight pages, optimized images, and better search visibility through SEO basics (titles, descriptions, structured data, sitemap). Speed is not a luxury — visitors leave slow pages before reading your offer.
+
+Stores include cart, payments, orders, and notifications, plus an easy dashboard so clients update content and products themselves without calling us every time.
+
+Our method is fixed: a consultation to understand the business, then identity-matching design, then mobile-first development and testing, then launch, follow-up, and measurement.
+
+We have designed and built corporate sites and system front-ends this way that serve our clients daily, and we apply the same standards to every new project.
+
+To talk about your website simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
+    excerpt_ar: 'مواقع تعريفية ومتاجر إلكترونية سريعة ثنائية اللغة نبنيها بمنهجية ثابتة من الاستشارة حتى الإطلاق.',
+    excerpt_en: 'Fast bilingual corporate sites and stores we build with a fixed method from consultation to launch.',
+    cover_image: null,
+    category: 'WEB_DEVELOPMENT',
+    tags: ['Websites', 'SEO', 'Design'],
+    is_published: true,
+    published_at: '2026-09-05',
+    views: 150,
+  },
 ];

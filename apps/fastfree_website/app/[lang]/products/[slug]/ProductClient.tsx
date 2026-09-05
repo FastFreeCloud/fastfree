@@ -162,7 +162,7 @@ export default function ProductDetailPage() {
           {displayImage && (
             <div className={`${product.type === 'APP' ? 'flex justify-center' : ''}`}>
               {product.type === 'APP' ? (
-                <div className="relative w-[300px]">
+                <div className="relative w-full max-w-[300px] sm:w-[300px]">
                   <div className="rounded-[3rem] border-[3px] border-slate-600 bg-slate-800 p-2 shadow-2xl shadow-blue-500/10">
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-slate-800 rounded-b-2xl z-10 flex items-center justify-center gap-1.5">
                       <div className="w-2 h-2 rounded-full bg-slate-600" />

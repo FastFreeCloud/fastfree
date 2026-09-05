@@ -122,11 +122,11 @@ export default function BlogPage() {
                       {post.tags && post.tags.length > 0 ? (
                         <div className="flex flex-wrap gap-1.5 mb-3">
                           {post.tags.map((tag, idx) => (
-                            <span key={idx} className="text-[10px] font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15">{tag}</span>
+                            <span key={idx} className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15">{tag}</span>
                           ))}
                         </div>
                       ) : (
-                        <span className="text-[10px] font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15 mb-3 inline-block">{post.category}</span>
+                        <span className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15 mb-3 inline-block">{post.category}</span>
                       )}
                       <h3 className="text-lg font-bold mb-3 leading-snug group-hover:text-[var(--ff-accent)] transition-colors">{lang === 'ar' ? post.title_ar : post.title_en}</h3>
                       <p className="text-slate-400 text-sm leading-relaxed line-clamp-3">{lang === 'ar' ? post.excerpt_ar : post.excerpt_en}</p>

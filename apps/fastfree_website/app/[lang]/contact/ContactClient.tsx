@@ -81,7 +81,7 @@ export default function ContactPage() {
     { icon: Phone, labelAr: 'الهاتف', labelEn: 'Phone', value: siteSettings.phone, href: `tel:${siteSettings.phone.replace(/[^0-9+]/g, '')}`, color: 'text-blue-400', bg: 'bg-blue-500/10' },
     { icon: MessageCircle, labelAr: 'الواتساب', labelEn: 'WhatsApp', value: siteSettings.phone, href: `https://wa.me/${(siteSettings.whatsapp || siteSettings.phone || '').replace(/[^0-9]/g, '')}`, color: 'text-green-400', bg: 'bg-green-500/10' },
     { icon: Mail, labelAr: 'البريد الإلكتروني', labelEn: 'Email', value: siteSettings.email, href: `mailto:${siteSettings.email}`, color: 'text-[var(--ff-accent)]', bg: 'bg-[var(--ff-accent)]/10' },
-    { icon: MapPin, labelAr: 'العنوان', labelEn: 'Address', value: siteSettings.address, href: '#', color: 'text-purple-400', bg: 'bg-purple-500/10' },
+    { icon: MapPin, labelAr: 'العنوان', labelEn: 'Address', value: siteSettings.address, href: null as string | null, color: 'text-purple-400', bg: 'bg-purple-500/10' },
   ];
 
   return (
@@ -124,14 +124,12 @@ export default function ContactPage() {
       {/* Quick Contact Cards */}
       <section className="max-w-7xl mx-auto px-6 py-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {contactMethods.map((method, i) => (
-            <FadeInSection key={i} delay={i * 0.1}>
-              <a
-                href={method.href}
-                target={method.href.startsWith('http') ? '_blank' : undefined}
-                rel={method.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                className="flex items-center gap-4 p-5 rounded-2xl bg-slate-900/40 border border-white/10 backdrop-blur-xl hover:border-[var(--ff-accent)]/30 transition-all duration-300 group"
-              >
+          {contactMethods.map((method, i) => {
+            const isLink = !!method.href && /^(https?:|mailto:|tel:)/.test(method.href);
+            const cardClassName =
+              'flex items-center gap-4 p-5 rounded-2xl bg-slate-900/40 border border-white/10 backdrop-blur-xl hover:border-[var(--ff-accent)]/30 transition-all duration-300 group';
+            const cardContent = (
+              <>
                 <div className={`w-12 h-12 rounded-xl ${method.bg} ${method.color} flex items-center justify-center shrink-0`}>
                   <method.icon size={22} />
                 </div>
@@ -139,9 +137,25 @@ export default function ContactPage() {
                   <span className="text-xs text-slate-400 block">{lang === 'ar' ? method.labelAr : method.labelEn}</span>
                   <span className="font-bold text-sm truncate block">{method.value}</span>
                 </div>
-              </a>
-            </FadeInSection>
-          ))}
+              </>
+            );
+            return (
+              <FadeInSection key={i} delay={i * 0.1}>
+                {isLink ? (
+                  <a
+                    href={method.href as string}
+                    target={(method.href as string).startsWith('http') ? '_blank' : undefined}
+                    rel={(method.href as string).startsWith('http') ? 'noopener noreferrer' : undefined}
+                    className={cardClassName}
+                  >
+                    {cardContent}
+                  </a>
+                ) : (
+                  <div className={cardClassName}>{cardContent}</div>
+                )}
+              </FadeInSection>
+            );
+          })}
         </div>
       </section>
 

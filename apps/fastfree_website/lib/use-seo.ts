@@ -51,7 +51,10 @@ export function useSEOMeta(
     document.documentElement.lang = lang;
 
     const path = resolvePath(entity_type, entity_id);
-    const canonical = `${SITE_URL}${path}`;
+    const base = path === '/' ? '' : path;
+    const canonical = `${SITE_URL}/${lang}${base}`;
+    const arUrl = `${SITE_URL}/ar${base}`;
+    const enUrl = `${SITE_URL}/en${base}`;
     const description = resolveDescription(entity_type, entity_id, lang, title);
     const ogType = entity_type === 'post' ? 'article' : 'website';
     const ogLocale = lang === 'ar' ? 'ar_SA' : 'en_US';
@@ -81,8 +84,8 @@ export function useSEOMeta(
 
     // Best-effort hreflang (server Metadata API emits the authoritative,
     // locale-prefixed alternates for crawler indexing).
-    upsertLink('alternate', 'hreflang', 'ar', canonical);
-    upsertLink('alternate', 'hreflang', 'en', canonical);
-    upsertLink('alternate', 'hreflang', 'x-default', canonical);
+    upsertLink('alternate', 'hreflang', 'ar', arUrl);
+    upsertLink('alternate', 'hreflang', 'en', enUrl);
+    upsertLink('alternate', 'hreflang', 'x-default', arUrl);
   }, [entity_type, entity_id, lang, title, ogImage]);
 }

@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { Layers, Code, Megaphone, Palette, Building2, Headphones, HelpCircle, Users, Clock, Star, Package, TrendingUp, BarChart3, Shield, Check, ArrowLeft, MessageSquare, Pencil, Rocket, Globe, Smartphone, Server, Search, Feather } from 'lucide-react';
+import { Layers, Code, Palette, Building2, HelpCircle, Users, Clock, Star, Package, TrendingUp, BarChart3, Shield, Check, ArrowLeft, MessageSquare, Pencil, Rocket, Globe } from 'lucide-react';
 import { serviceIconMap } from '@/lib/service-icons';
 import { useLanguage } from '@/lib/language-provider';
 import { useSEOMeta } from '@/lib/use-seo';
@@ -29,19 +29,15 @@ function FadeIn({ children, delay = 0, className = '' }: { children: React.React
 
 const CATEGORIES = [
   { key: 'all', icon: Layers, labelAr: 'الكل', labelEn: 'All' },
-  { key: 'dev', icon: Code, labelAr: 'تطوير', labelEn: 'Development' },
-  { key: 'marketing', icon: Megaphone, labelAr: 'تسويق', labelEn: 'Marketing' },
+  { key: 'websites', icon: Globe, labelAr: 'مواقع', labelEn: 'Websites' },
   { key: 'design', icon: Palette, labelAr: 'تصميم', labelEn: 'Design' },
   { key: 'systems', icon: Building2, labelAr: 'أنظمة', labelEn: 'Systems' },
-  { key: 'support', icon: Headphones, labelAr: 'دعم', labelEn: 'Support' },
 ];
 
 const CATEGORY_MAP: Record<string, string[]> = {
-  dev: ['Globe', 'Smartphone', 'Server'],
-  marketing: ['Megaphone', 'Search', 'Feather'],
+  websites: ['Globe'],
   design: ['Palette'],
-  systems: ['Building2', 'Users'],
-  support: ['Headphones'],
+  systems: ['Blocks', 'LayoutDashboard', 'Calculator', 'Package', 'ShoppingCart', 'Truck', 'Users', 'Contact', 'ShieldCheck', 'Cloud'],
 };
 
 export default function ServicesPage() {
@@ -69,13 +65,13 @@ export default function ServicesPage() {
         <div className="relative max-w-7xl mx-auto px-6 z-10">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="inline-flex items-center gap-2 bg-[var(--ff-accent)]/10 border border-[var(--ff-accent)]/20 text-[var(--ff-accent)] px-5 py-2 rounded-full text-sm font-medium mb-8">
             <Layers size={16} />
-            {t('SERVICES_BADGE', '10 خدمات احترافية', '10 Professional Services')}
+              {t('SERVICES_BADGE', '12 خدمة احترافية', '12 Professional Services')}
           </motion.div>
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold mb-6 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
             <TextReveal text={t('SERVICES_PAGE_TITLE', 'خدماتنا الرقمية', 'Our Digital Services')} />
           </h1>
           <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
-            {t('SERVICES_PAGE_DESC', 'نقدم حلولاً متكاملة تشمل التصميم والتطوير والتسويق والأنظمة الذكية لنجاح علامتك التجارية في السوق الرقمي.', 'We offer integrated solutions including design, development, marketing, and smart systems for your brand success in the digital market.')}
+              {t('SERVICES_PAGE_DESC', 'نقدم حلولاً متكاملة تشمل تصميم وتطوير المواقع والهوية البصرية والأنظمة الذكية لنجاح علامتك التجارية في السوق الرقمي.', 'We offer integrated solutions including website design and development, brand identity, and smart systems for your brand success in the digital market.')}
           </p>
         </div>
       </section>
@@ -84,7 +80,7 @@ export default function ServicesPage() {
       <section className="py-10 border-y border-white/5 bg-[#080c16]">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
-            { icon: Layers, value: '10+', label: t('SERVICES_COUNT', 'خدمة متخصصة', 'Specialized Services') },
+              { icon: Layers, value: '12+', label: t('SERVICES_COUNT', 'خدمة متخصصة', 'Specialized Services') },
             { icon: Code, value: '150+', label: t('PROJECTS_COUNT', 'مشروع منجز', 'Completed Projects') },
             { icon: Users, value: '120+', label: t('CLIENTS_COUNT', 'عميل سعيد', 'Happy Clients') },
             { icon: Clock, value: '24/7', label: t('SUPPORT_COUNT', 'دعم فني', 'Tech Support') },
@@ -209,7 +205,7 @@ export default function ServicesPage() {
                       <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 group-hover:scale-110 transition-transform">
                         <IconComponent name={service.icon} className="w-7 h-7" />
                       </div>
-                      {['Building2', 'Users'].includes(service.icon) && (
+                      {['LayoutDashboard', 'Users'].includes(service.icon) && (
                         <span className="px-2.5 py-1 rounded-full bg-[var(--ff-accent)]/10 border border-[var(--ff-accent)]/20 text-[var(--ff-accent)] text-[10px] font-bold">
                           {t('FEATURED', 'مميز', 'Featured')}
                         </span>

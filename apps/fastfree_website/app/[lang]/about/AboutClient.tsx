@@ -81,11 +81,11 @@ export default function AboutPage() {
       {/* Stats */}
       <section className="py-16 relative">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((stat, i) => (
               <FadeInSection key={i} delay={i * 0.1}>
-                <div className="text-center p-8 rounded-3xl bg-slate-900/40 border border-white/10 backdrop-blur-xl hover:border-[var(--ff-accent)]/30 transition-all duration-300 group">
-                  <div className="text-4xl md:text-5xl font-extrabold text-[var(--ff-accent)] mb-2" style={{ fontFamily: 'var(--ff-font-heading)' }}>
+                <div className="text-center p-6 md:p-8 rounded-3xl bg-slate-900/40 border border-white/10 backdrop-blur-xl hover:border-[var(--ff-accent)]/30 transition-all duration-300 group">
+                  <div className="text-3xl md:text-5xl font-extrabold text-[var(--ff-accent)] mb-2" style={{ fontFamily: 'var(--ff-font-heading)' }}>
                     <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                   </div>
                   <p className="text-slate-400 text-sm">{lang === 'ar' ? stat.labelAr : stat.labelEn}</p>
@@ -109,7 +109,7 @@ export default function AboutPage() {
                <p className="text-slate-300 leading-relaxed mb-6 text-lg">
                 {aboutText}
               </p>
-              <div className="flex gap-4 mt-8">
+              <div className="flex flex-wrap gap-4 mt-8">
                 <Link href={`/${lang}/contact`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-[#030712] transition-all hover:scale-105" style={{ background: 'var(--ff-gradient)' }}>
                   {t('ABOUT_CTA', 'تواصل معنا', 'Contact Us')}
                   <ArrowLeft size={16} className={lang === 'ar' ? '' : 'rotate-180'} />
@@ -131,7 +131,7 @@ export default function AboutPage() {
                   <div className="w-3 h-3 rounded-full bg-red-400" />
                   <div className="w-3 h-3 rounded-full bg-yellow-400" />
                   <div className="w-3 h-3 rounded-full bg-green-400" />
-                  <span className="text-[10px] text-slate-400 ml-2 font-mono">FastFree Projects</span>
+                  <span className="text-[11px] sm:text-xs text-slate-400 ml-2 font-mono">FastFree Projects</span>
                 </div>
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   {[
@@ -141,7 +141,7 @@ export default function AboutPage() {
                   ].map((item, j) => (
                     <motion.div key={j} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + j * 0.2 }} className={`h-20 rounded-xl bg-gradient-to-br ${item.color} border border-white/5 flex flex-col items-center justify-center gap-2 group-hover:scale-105 transition-transform`}>
                       <item.icon size={20} className={item.text} />
-                      <span className="text-[10px] font-bold text-slate-300">{item.label}</span>
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-300">{item.label}</span>
                     </motion.div>
                   ))}
                 </div>

@@ -156,7 +156,7 @@ export default function Home() {
                   <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
                   <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
                 </div>
-                <span className="text-[10px] text-slate-400 font-mono tracking-wider">FASTFREE_DASHBOARD</span>
+                <span className="text-[10px] sm:text-xs text-slate-400 font-mono tracking-wider">FASTFREE_DASHBOARD</span>
               </div>
               {/* Project Cards */}
               <div className="grid grid-cols-2 gap-3 mb-4">
@@ -171,11 +171,11 @@ export default function Home() {
                       <div className={`w-6 h-6 rounded-lg ${project.bg} ${project.color} flex items-center justify-center`}>
                         <project.icon size={12} />
                       </div>
-                      <span className="text-[10px] font-bold text-white truncate">{project.label}</span>
+                      <span className="text-[10px] sm:text-xs font-bold text-white truncate">{project.label}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <div className={`w-1.5 h-1.5 rounded-full ${project.status === 'active' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-                      <span className="text-[9px] text-slate-400">{project.status === 'active' ? t('ACTIVE', 'نشط', 'Active') : t('BUILDING', 'قيد البناء', 'Building')}</span>
+                      <span className="text-[10px] sm:text-xs text-slate-400">{project.status === 'active' ? t('ACTIVE', 'نشط', 'Active') : t('BUILDING', 'قيد البناء', 'Building')}</span>
                     </div>
                   </motion.div>
                 ))}
@@ -189,8 +189,8 @@ export default function Home() {
                 ].map((bar, j) => (
                   <div key={j}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] text-slate-400 font-medium">{bar.label}</span>
-                      <span className="text-[9px] text-slate-400 font-bold">{bar.w}</span>
+                      <span className="text-[10px] sm:text-xs text-slate-400 font-medium">{bar.label}</span>
+                      <span className="text-[10px] sm:text-xs text-slate-400 font-bold">{bar.w}</span>
                     </div>
                     <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
                       <motion.div initial={{ width: 0 }} animate={{ width: bar.w }} transition={{ delay: 1.2 + j * 0.3, duration: 1.5, ease: 'easeOut' }} className={`h-full rounded-full bg-gradient-to-r ${bar.color}`} />
@@ -458,7 +458,7 @@ export default function Home() {
                   {product.type === 'APP' ? t('PRODUCT_TYPE_APP', 'تطبيق', 'App') : product.type === 'WEBSITE' ? t('PRODUCT_TYPE_WEBSITE', 'موقع', 'Website') : t('PRODUCT_TYPE_PROGRAM', 'برنامج', 'Program')}
                 </div>
                 {product.version && (
-                  <span className="absolute top-4 left-4 px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/10 backdrop-blur-sm text-slate-300 border border-white/10">v{product.version}</span>
+                  <span className="absolute top-4 left-4 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-white/10 backdrop-blur-sm text-slate-300 border border-white/10">v{product.version}</span>
                 )}
               </div>
               <div className="p-6">
@@ -486,7 +486,7 @@ export default function Home() {
               </div>
             </FadeIn>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {testimonials.map((testimonial) => (
+              {testimonials.filter((t) => t.isActive).slice(0, 3).map((testimonial) => (
                 <SpotlightCard key={testimonial.id} className="flex flex-col justify-between">
                   <div>
                     <div className="flex gap-1 mb-4 text-yellow-500">
@@ -537,7 +537,7 @@ export default function Home() {
           variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } }}
           className="grid grid-cols-1 md:grid-cols-3 gap-8"
         >
-          {posts.map((post) => (
+          {posts.filter((p) => p.is_published).slice(0, 3).map((post) => (
             <motion.div
               key={post.id}
               variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } } }}

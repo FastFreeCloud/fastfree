@@ -157,7 +157,7 @@ export default function ProductsPage() {
                         <div className="absolute top-4 right-4 bg-[#030712]/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[var(--ff-accent)] border border-white/10 flex items-center gap-1.5">
                           <TypeIcon size={12} /> {config.label}
                         </div>
-                        {product.version && <span className="absolute top-4 left-4 px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/10 backdrop-blur-sm text-slate-300 border border-white/10">v{product.version}</span>}
+                        {product.version && <span className="absolute top-4 left-4 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-white/10 backdrop-blur-sm text-slate-300 border border-white/10">v{product.version}</span>}
                       </div>
                       <div className={`p-6 ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
                         <h3 className="text-lg font-bold mb-2 group-hover:text-[var(--ff-accent)] transition-colors">{lang === 'ar' ? product.name_ar : product.name_en}</h3>
@@ -165,7 +165,7 @@ export default function ProductsPage() {
                         {product.tags && product.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1.5 mb-4">
                             {product.tags.map((pt, idx) => (
-                              <span key={idx} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400">{pt}</span>
+                              <span key={idx} className="px-2 py-0.5 rounded-md text-[11px] sm:text-xs font-bold bg-white/5 border border-white/10 text-slate-400">{pt}</span>
                             ))}
                           </div>
                         )}

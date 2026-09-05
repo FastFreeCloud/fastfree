@@ -76,7 +76,7 @@ export default function BlogPostPage() {
             <TextReveal text={lang === 'ar' ? post.title_ar : post.title_en} />
           </h1>
 
-          <div className="flex items-center gap-6 text-sm text-slate-400 border-b border-white/5 pb-6">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-400 border-b border-white/5 pb-6">
             <span>{t('BLOG_AUTHOR', 'الكاتب:', 'Author:')} {siteConfig.siteName}</span>
             <span>•</span>
             <span>{post.published_at ? new Date(post.published_at).toLocaleDateString('ar-EG') : ''}</span>

@@ -57,7 +57,7 @@ export default function ServiceDetailPage() {
           <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
             {lang === 'ar' ? service.description_ar : service.description_en}
           </p>
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 mt-8">
             <Link href={`/${lang}/contact`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-[#030712] transition-all hover:scale-105" style={{ background: 'var(--ff-gradient)' }}>
               {t('REQUEST_QUOTE', 'طلب عرض سعر', 'Request Quote')}
               <ArrowLeft size={16} className={lang === 'ar' ? '' : 'rotate-180'} />

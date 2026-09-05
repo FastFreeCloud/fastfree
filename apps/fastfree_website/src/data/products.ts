@@ -72,7 +72,7 @@ export const products: Product[] = [
     content_en: 'FastFree Backend targets FastFree Cloud (erp.fastfree.cloud) and is built on Frappe Framework version-15 and ERPNext v15. It uses GitHub Actions for encrypted CI/CD (app creation + Docker build + release) using only GITHUB_TOKEN, with healthchecks for MariaDB/Redis and a GHCR image. Pre-commit tooling includes Ruff, ESLint, Prettier, and pyupgrade.',
     images: ['/assets/product-backend.svg'],
     cover_image: '/assets/product-backend.svg',
-    link: 'http://erp.fastfree.cloud',
+    link: 'https://erp.fastfree.cloud',
     google_play_link: null,
     apple_store_link: null,
     github_link: 'https://github.com/FastFreeCloud/fastfree_backend.git',
