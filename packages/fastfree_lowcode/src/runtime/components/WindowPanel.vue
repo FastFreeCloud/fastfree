@@ -12,7 +12,7 @@
         <div class="resize-handle bottom-left" @mousedown.stop="startResize($event, 'bottom-left')" @touchstart.prevent.stop="startResize($event, 'bottom-left')" />
         <div class="resize-handle bottom-right" @mousedown.stop="startResize($event, 'bottom-right')" @touchstart.prevent.stop="startResize($event, 'bottom-right')" />
       </template>
-      <div class="window-titlebar" @mousedown="startDrag" @touchstart.prevent="startDrag">
+      <div class="window-titlebar" @mousedown="startDrag" @touchstart="startDrag">
         <div class="titlebar-left">
           <q-icon :name="info.icon" size="16px" color="white" />
           <span class="titlebar-title">{{ info.title }}</span>
@@ -53,7 +53,11 @@
           <q-btn round flat dense size="xs" icon="mdi-minus" color="white"
             @click.stop="desktop.toggleMinimize(info.id)" />
           <q-btn round flat dense size="xs" icon="mdi-fullscreen-exit" color="white"
+            :aria-label="t('common.maximize')"
             @click.stop="desktop.toggleMaximize(info.id)" />
+          <q-btn round flat dense size="xs" icon="mdi-close" color="white"
+            :aria-label="t('common.close')"
+            @click.stop="desktop.closeWindow(info.id)" />
         </div>
       </div>
     </div>
@@ -132,6 +136,9 @@ function getClientXY(e: MouseEvent | TouchEvent): { clientX: number; clientY: nu
 function startDrag(e: MouseEvent | TouchEvent) {
   if (props.info.isMaximized) return
   if ((e.target as HTMLElement).closest('.q-btn')) return
+  // Prevent touch scrolling only when actually starting a drag on the
+  // titlebar background — never on buttons, or taps won't produce clicks.
+  if ('touches' in e) e.preventDefault()
   const { clientX, clientY } = getClientXY(e)
   dragState = { startX: clientX, startY: clientY, left: props.info.left, top: props.info.top }
   dragMoved = false

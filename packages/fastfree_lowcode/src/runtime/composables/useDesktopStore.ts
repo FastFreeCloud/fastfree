@@ -220,6 +220,7 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
         };
       }
       delete windows.value[id];
+      delete preMaximizedBounds.value[id];
       openedOrder.value = openedOrder.value.filter((w) => w !== id);
 
       if (activeWindowId.value === id) {
@@ -232,6 +233,7 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
     }
 
     function bringToFront(id: string) {
+      if (!windows.value[id]) return;
       openedOrder.value = openedOrder.value.filter((w) => w !== id);
       openedOrder.value.push(id);
       activeWindowId.value = id;
@@ -286,6 +288,7 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
       } else {
         bringToFront(id);
       }
+      saveSessionState();
     }
 
     function bringToFrontIfOpen(screenType: string): boolean {

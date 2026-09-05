@@ -234,7 +234,7 @@ const customGroups = computed(() => {
 })
 
 const windowTabs = computed(() => {
-  return desktop.sortedWindows.filter(w => !w.isMinimized && !w.groupId)
+  return desktop.sortedWindows.filter(w => !w.groupId)
 })
 
 function translatedName(groupId: string): string {
@@ -276,7 +276,7 @@ function activateTab(tab: WindowInfo) {
 
 function minimizeAll() {
   for (const w of windowTabs.value) {
-    desktop.toggleMinimize(w.id)
+    if (!w.isMinimized) desktop.toggleMinimize(w.id)
   }
 }
 

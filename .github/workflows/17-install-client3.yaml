@@ -10,7 +10,6 @@ on:
 
 env:
   NODE_OPTIONS: "--no-deprecation"
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
 
 jobs:
   install:
@@ -19,7 +18,7 @@ jobs:
     if: ${{ inputs.confirm == 'INSTALL' }}
     steps:
       - name: "📥 Checkout"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: "🔧 Install Nix"
         uses: DeterminateSystems/determinate-nix-action@v3

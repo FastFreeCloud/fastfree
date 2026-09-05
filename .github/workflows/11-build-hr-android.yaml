@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Safe directory
         run: git config --global safe.directory '*'
@@ -36,7 +36,7 @@ jobs:
           version: ${{ env.PNPM_VERSION }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -154,14 +154,14 @@ jobs:
           fi
 
       - name: Upload APK
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: fastfree-hr-apk
           path: apps/${{ env.APP_DIR }}/dist-apk/signed-release.apk
           retention-days: 30
 
       - name: Upload AAB
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.APP_ID }}-aab
           path: apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/bundle/release/*.aab
@@ -175,7 +175,7 @@ jobs:
           echo "FastFree@2026" > keystore_store_password.txt
 
       - name: Upload Keystore TXT Files
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.APP_ID }}-keystore-txt
           path: |
@@ -194,13 +194,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Safe directory
         run: git config --global safe.directory '*'
 
       - name: Download APK
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: fastfree-hr-apk
           path: release

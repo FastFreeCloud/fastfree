@@ -79,7 +79,7 @@ const tabs = computed(() => {
   if (props.windowFilter) {
     return desktop.sortedWindows.filter(props.windowFilter);
   }
-  return desktop.sortedWindows.filter((w) => !w.isMinimized && !w.groupId);
+  return desktop.sortedWindows.filter((w) => !w.groupId);
 });
 
 const scrollRef = ref<HTMLElement | null>(null);

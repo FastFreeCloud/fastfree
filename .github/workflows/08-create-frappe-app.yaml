@@ -81,7 +81,7 @@ jobs:
       # ╚═══════════════════════════════════════╝
 
       - name: "1️⃣ تحميل الـ Repo"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -224,13 +224,13 @@ jobs:
 
       - name: "3️⃣ إعداد Python"
         if: steps.check.outputs.should_create == 'true'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
       - name: "4️⃣ إعداد Node.js"
         if: steps.check.outputs.should_create == 'true'
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: 22
 
