@@ -70,8 +70,9 @@ in {
         fi
 
         echo "[mysql-user] Ensuring user $FRAPPE_DB_NAME exists with correct password..."
+        echo "[mysql-user] NOTE: database creation is bench new-site's job — never create an empty DB here."
 
-        SQL="CREATE DATABASE IF NOT EXISTS \`$FRAPPE_DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; DROP USER IF EXISTS '$FRAPPE_DB_NAME'@'%'; DROP USER IF EXISTS '$FRAPPE_DB_NAME'@'localhost'; CREATE USER '$FRAPPE_DB_NAME'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS'); CREATE USER '$FRAPPE_DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS'); GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'%'; GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'localhost'; FLUSH PRIVILEGES;"
+        SQL="DROP USER IF EXISTS '$FRAPPE_DB_NAME'@'%'; DROP USER IF EXISTS '$FRAPPE_DB_NAME'@'localhost'; CREATE USER '$FRAPPE_DB_NAME'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS'); CREATE USER '$FRAPPE_DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS'); GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'%'; GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'localhost'; FLUSH PRIVILEGES;"
 
         ${config.services.mysql.package}/bin/mysql --user=root --password="${pw.mariadbRoot}" -e "$SQL" 2>&1 && echo "[mysql-user] Done." || echo "[mysql-user] FAILED"
       '';
@@ -136,10 +137,11 @@ in {
       after = [
         "fastfree-backend-network.service"
         "mysql.service"
+        "fastfree-backend-db.service"
         "podman-fastfree-redis-cache.service"
         "podman-fastfree-redis-queue.service"
       ];
-      requires = [ "mysql.service" ];
+      requires = [ "mysql.service" "fastfree-backend-db.service" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
@@ -224,19 +226,27 @@ in {
                 if [ -z "$SITE_DB_NAME" ]; then
                   echo "[setup] WARNING: db_name empty in site_config.json — site is broken"
                   SITE_BROKEN=true
-                elif mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "USE \`$SITE_DB_NAME\`" 2>/dev/null; then
-                  echo "[setup] Database $SITE_DB_NAME exists and is accessible."
-                else
+                elif ! mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "USE \`$SITE_DB_NAME\`" 2>/dev/null; then
                   echo "[setup] WARNING: database $SITE_DB_NAME does not exist — site is broken"
+                  SITE_BROKEN=true
+                elif mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "SELECT 1 FROM \`$SITE_DB_NAME\`.tabDocType LIMIT 1" 2>/dev/null | grep -q 1; then
+                  echo "[setup] Database $SITE_DB_NAME exists and has tables."
+                else
+                  echo "[setup] WARNING: database $SITE_DB_NAME is empty (no tables) — site is broken"
                   SITE_BROKEN=true
                 fi
               fi
 
               if [ "$SITE_BROKEN" = true ]; then
                 echo "[setup] Dropping broken site $FRAPPE_SITE_NAME_HEADER..."
+                STALE_DB_NAME=$(sed -n "s/.*\"db_name\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" "$SITE_DIR/site_config.json" 2>/dev/null)
                 bench drop-site "$FRAPPE_SITE_NAME_HEADER" \
                   --db-root-username=root \
                   --db-root-password="$DB_PASSWORD" || true
+                if [ -n "$STALE_DB_NAME" ]; then
+                  echo "[setup] Dropping stale database $STALE_DB_NAME explicitly..."
+                  mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "DROP DATABASE IF EXISTS \`$STALE_DB_NAME\`" 2>/dev/null || true
+                fi
                 rm -rf "$SITE_DIR" || true
               fi
             fi
@@ -251,12 +261,30 @@ in {
                 --install-app erpnext \
                 --install-app fastfree_backend \
                 --set-default || {
-                echo "[setup] bench new-site exited non-zero, checking if site was created anyway..."
-                if [ -d "$SITE_DIR" ] && mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "USE \`$FRAPPE_SITE_NAME_HEADER\`" 2>/dev/null; then
-                  echo "[setup] Site and database exist on disk, continuing."
+                echo "[setup] bench new-site exited non-zero, checking if site was fully created anyway..."
+                CREATED_DB_NAME=$(sed -n "s/.*\"db_name\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" "$SITE_DIR/site_config.json" 2>/dev/null)
+                if [ -d "$SITE_DIR" ] && [ -n "$CREATED_DB_NAME" ] && mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "SELECT 1 FROM \`$CREATED_DB_NAME\`.tabDocType LIMIT 1" 2>/dev/null | grep -q 1; then
+                  echo "[setup] Site exists with tables, continuing."
                 else
-                  echo "[setup] ERROR: Site creation failed."
-                  exit 1
+                  echo "[setup] Dropping partial site and retrying bench new-site once..."
+                  bench drop-site "$FRAPPE_SITE_NAME_HEADER" \
+                    --db-root-username=root \
+                    --db-root-password="$DB_PASSWORD" || true
+                  if [ -n "$CREATED_DB_NAME" ]; then
+                    mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "DROP DATABASE IF EXISTS \`$CREATED_DB_NAME\`" 2>/dev/null || true
+                  fi
+                  rm -rf "$SITE_DIR" || true
+                  bench new-site "$FRAPPE_SITE_NAME_HEADER" \
+                    --mariadb-user-host-login-scope="%" \
+                    --admin-password="$ADMIN_PASSWORD" \
+                    --db-root-username=root \
+                    --db-root-password="$DB_PASSWORD" \
+                    --install-app erpnext \
+                    --install-app fastfree_backend \
+                    --set-default || {
+                    echo "[setup] FATAL: bench new-site retry failed."
+                    exit 1
+                  }
                 fi
               }
               echo "[setup] Verifying site $FRAPPE_SITE_NAME_HEADER was created..."
@@ -265,19 +293,9 @@ in {
                 exit 1
               fi
               SITE_DB_NAME=$(sed -n "s/.*\"db_name\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" "$SITE_DIR/site_config.json")
-              if [ -z "$SITE_DB_NAME" ] || ! mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "USE \`$SITE_DB_NAME\`" 2>/dev/null; then
-                echo "[setup] ERROR: Database not created. Retrying bench new-site..."
-                bench new-site "$FRAPPE_SITE_NAME_HEADER" \
-                  --mariadb-user-host-login-scope="%" \
-                  --admin-password="$ADMIN_PASSWORD" \
-                  --db-root-username=root \
-                  --db-root-password="$DB_PASSWORD" \
-                  --install-app erpnext \
-                  --install-app fastfree_backend \
-                  --set-default || {
-                  echo "[setup] FATAL: bench new-site retry failed."
-                  exit 1
-                }
+              if [ -z "$SITE_DB_NAME" ] || ! mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "SELECT 1 FROM \`$SITE_DB_NAME\`.tabDocType LIMIT 1" 2>/dev/null | grep -q 1; then
+                echo "[setup] ERROR: Database has no tables — site creation incomplete."
+                exit 1
               fi
               echo "[setup] Site $FRAPPE_SITE_NAME_HEADER created and verified."
             else
