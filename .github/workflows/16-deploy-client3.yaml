@@ -58,6 +58,7 @@ jobs:
             podman pull --quiet ghcr.io/fastfreecloud/fastfree_erp:latest || true
             podman pull --quiet ghcr.io/fastfreecloud/fastfree_pos:latest || true
             podman pull --quiet ghcr.io/fastfreecloud/fastfree_ledger:latest || true
+            podman pull --quiet ghcr.io/fastfreecloud/fastfree_website:latest || true
             echo 'All images pulled'
           PULL
 
@@ -129,6 +130,7 @@ jobs:
             systemctl restart podman-fastfree-backend-queue-short.service 2>/dev/null || true
             systemctl restart podman-fastfree-backend-queue-long.service 2>/dev/null || true
             systemctl restart podman-fastfree-backend-scheduler.service 2>/dev/null || true
+            systemctl restart podman-fastfree-website-frontend.service 2>/dev/null || true
             sleep 5
             systemctl restart caddy
             echo "All services restarted"

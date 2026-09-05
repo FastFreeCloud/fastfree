@@ -5,14 +5,11 @@ import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Layers, Cpu, BookOpen, Newspaper, Megaphone, Globe, Smartphone, Lightbulb, Search, Eye, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '@/lib/language-provider';
-import SharedFooter from '@/components/SharedFooter';
-import SharedNavbar from '@/components/SharedNavbar';
 import { useSEOMeta } from '@/lib/use-seo';
 import { motion, useInView } from 'framer-motion';
 import { TextReveal } from '@/components/ui/TextReveal';
 import { BreadcrumbSchema } from '@/components/SEO/StructuredData';
 import { blogPosts, type BlogPost } from '@/src/data/blog';
-import { services } from '@/src/data/services';
 
 function FadeIn({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef(null);
@@ -57,7 +54,6 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-[#030712] bg-grid-pattern text-white selection:bg-[var(--ff-primary-light)] selection:text-[#030712] relative overflow-hidden" style={{ fontFamily: "var(--ff-font-body)" }}>
-      <SharedNavbar activePage="blog" />
       <BreadcrumbSchema items={[{ name: lang === 'ar' ? 'الرئيسية' : 'Home', url: 'https://fastfree.cloud/' }, { name: lang === 'ar' ? 'المدونة' : 'Blog', url: 'https://fastfree.cloud/blog' }]} />
 
       {/* Hero */}
@@ -70,7 +66,7 @@ export default function BlogPage() {
             <BookOpen size={16} />
             {t('BLOG_BADGE', 'مقالات تقنية', 'Technical Articles')}
           </motion.div>
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold mb-6 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
             <TextReveal text={t('BLOG_TITLE', 'المدونة التقنية', 'Tech Blog')} />
           </h1>
           <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed mb-8">
@@ -151,8 +147,6 @@ export default function BlogPage() {
           </div>
         )}
       </section>
-
-      <SharedFooter t={t} lang={lang} services={services} />
     </div>
   );
 }

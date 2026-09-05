@@ -4,15 +4,12 @@ import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, ArrowRight } from 'lucide-react';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/lib/language-provider';
-import SharedFooter from '@/components/SharedFooter';
 import { useSEOMeta } from '@/lib/use-seo';
 import { motion } from 'framer-motion';
 import { TextReveal } from '@/components/ui/TextReveal';
 import { blogPosts, type BlogPost } from '@/src/data/blog';
 import { ArticleSchema, BreadcrumbSchema } from '@/components/SEO/StructuredData';
-import { services } from '@/src/data/services';
 import { siteConfig } from '@/src/data/siteConfig';
 import { notFound } from 'next/navigation';
 
@@ -45,31 +42,9 @@ export default function BlogPostPage() {
         { name: lang === 'ar' ? 'المدونة' : 'Blog', url: 'https://fastfree.cloud/blog' },
         { name: lang === 'ar' ? post.title_ar : post.title_en, url: `https://fastfree.cloud/blog/${post.slug}` },
       ]} />
-      {/* Navigation */}
-      <nav className="fixed w-full bg-[#030712]/80 backdrop-blur-xl z-50 border-b border-white/5 shadow-2xl">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <Link href={`/${lang}`} className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-[#030712] text-lg" style={{ background: 'var(--ff-gradient)' }}>
-              FF
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-white" style={{ fontFamily: 'var(--ff-font-heading)' }}>
-              FastFree
-            </span>
-          </Link>
-          <div className="flex items-center gap-8 text-sm font-medium text-slate-300">
-            <Link href={`/${lang}`} className="hover:text-[var(--ff-accent)] transition">{t('NAV_HOME', 'الرئيسية', 'Home')}</Link>
-            <Link href={`/${lang}/services`} className="hover:text-[var(--ff-accent)] transition">{t('NAV_SERVICES', 'خدماتنا', 'Services')}</Link>
-            <Link href={`/${lang}/products`} className="hover:text-[var(--ff-accent)] transition">{t('NAV_PRODUCTS', 'منتجاتنا', 'Products')}</Link>
-            <Link href={`/${lang}/blog`} className="hover:text-[var(--ff-accent)] transition text-[var(--ff-accent)]">{t('NAV_BLOG', 'المدونة', 'Blog')}</Link>
-            <Link href={`/${lang}/about`} className="hover:text-[var(--ff-accent)] transition">{t('NAV_ABOUT', 'من نحن', 'About Us')}</Link>
-            <Link href={`/${lang}/contact`} className="hover:text-[var(--ff-accent)] transition">{t('NAV_CONTACT', 'اتصل بنا', 'Contact Us')}</Link>
-            <LanguageSwitcher />
-          </div>
-        </div>
-      </nav>
 
       {/* Article Hero */}
-      <section className="relative pt-36 pb-12 overflow-hidden text-right bg-[#030712]">
+      <section className={`relative pt-36 pb-12 overflow-hidden ${lang === 'ar' ? 'text-right' : 'text-left'} bg-[#030712]`}>
         {/* Dynamic Nebula Glowing Orbs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
           <motion.div
@@ -115,7 +90,7 @@ export default function BlogPostPage() {
       </section>
 
       {/* Main Content */}
-      <section className="max-w-4xl mx-auto px-6 py-8 text-right space-y-12">
+      <section className={`max-w-4xl mx-auto px-6 py-8 ${lang === 'ar' ? 'text-right' : 'text-left'} space-y-12`}>
         {/* Cover Image */}
         <div className="rounded-3xl border border-white/10 overflow-hidden shadow-2xl bg-slate-900 aspect-[21/9] relative">
           <Image src={post.cover_image || '/assets/og-default.svg'} alt={lang === 'ar' ? post.title_ar : post.title_en} fill className="object-cover" sizes="(max-width: 768px) 100vw, 75vw" />
@@ -155,8 +130,6 @@ export default function BlogPostPage() {
           </div>
         )}
       </section>
-
-      <SharedFooter t={t} lang={lang} services={services} />
     </div>
   );
 }

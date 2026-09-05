@@ -6,13 +6,10 @@ import Link from 'next/link';
 import { Smartphone, Globe, Monitor, Github, ShoppingCart, ExternalLink, Video } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '@/lib/language-provider';
-import SharedFooter from '@/components/SharedFooter';
-import SharedNavbar from '@/components/SharedNavbar';
 import { useSEOMeta } from '@/lib/use-seo';
 import { motion } from 'framer-motion';
 import { TextReveal } from '@/components/ui/TextReveal';
 import { products as allProducts, type Product } from '@/src/data/products';
-import { services } from '@/src/data/services';
 import { notFound, useParams } from 'next/navigation';
 import { ProductSchema, BreadcrumbSchema } from '@/components/SEO/StructuredData';
 
@@ -58,7 +55,6 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#030712] bg-grid-pattern text-white selection:bg-[var(--ff-primary-light)] selection:text-[#030712] relative overflow-hidden" style={{ fontFamily: "var(--ff-font-body)" }}>
-      <SharedNavbar activePage="products" />
       <ProductSchema
         name={lang === 'ar' ? product.name_ar : product.name_en}
         description={lang === 'ar' ? (product.short_description_ar || product.description_ar || '') : (product.short_description_en || product.description_en || '')}
@@ -106,7 +102,7 @@ export default function ProductDetailPage() {
         </div>
       </section>
 
-      <section className="py-16 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 text-right">
+      <section className={`py-16 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
         <div className="lg:col-span-1 space-y-8 order-last lg:order-first">
           <div className="p-8 rounded-3xl bg-white/5 border border-white/10 shadow-2xl space-y-6">
             <h3 className="text-xl font-bold border-b border-white/5 pb-4 mb-4">{t('PRODUCT_INFO', 'معلومات المنتج', 'Product Information')}</h3>
@@ -246,8 +242,6 @@ export default function ProductDetailPage() {
           )}
         </div>
       </section>
-
-      <SharedFooter t={t} lang={lang} services={services} />
     </div>
   );
 }

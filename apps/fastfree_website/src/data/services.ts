@@ -15,8 +15,8 @@ export const services: Service[] = [
     id: '1',
     title_ar: 'منصّة منخفضة الكود',
     title_en: 'Low-Code Platform',
-    description_ar: 'محرك Quasar/Vue قابل لإعادة الاستخدام يوفّر مدير نوافذ وجداول CRUD وإنشاء نماذج ديناميكي وتصميماً ودعماً للعربية/الإنجليزية لبناء التطبيقات في وقت قياسي.',
-    description_en: 'A reusable Quasar/Vue engine providing a window manager, CRUD tables, dynamic form generation, theming, and EN/AR i18n so business apps are built in record time.',
+    description_ar: 'محرك واجهات Vue قابل لإعادة الاستخدام يوفّر مدير نوافذ وجداول CRUD وإنشاء نماذج ديناميكي وتصميماً ودعماً للعربية/الإنجليزية لبناء التطبيقات في وقت قياسي.',
+    description_en: 'A reusable Vue engine providing a window manager, CRUD tables, dynamic form generation, theming, and EN/AR i18n so business apps are built in record time.',
     icon: 'Blocks',
     features: [
       { ar: 'مدير نوافذ وجداول ديناميكية', en: 'Window Manager + Dynamic Tables' },

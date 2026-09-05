@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import '../globals.css';
 import { LanguageProvider } from '@/lib/language-provider';
 import { ThemeProvider } from '@/lib/theme-provider';
@@ -31,6 +31,8 @@ export const metadata: Metadata = {
   },
   other: { 'theme-color': '#030712' },
 };
+
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#030712' };
 
 export default async function RootLayout({
   children,

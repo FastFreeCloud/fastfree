@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { Layers, Code, Megaphone, Palette, Building2, Headphones, HelpCircle, Users, Clock, Star, Package, TrendingUp, BarChart3, Shield, Check, ArrowLeft, MessageSquare, Pencil, Rocket, Globe, Smartphone, Server, Search, Feather } from 'lucide-react';
 import { serviceIconMap } from '@/lib/service-icons';
 import { useLanguage } from '@/lib/language-provider';
-import SharedFooter from '@/components/SharedFooter';
-import SharedNavbar from '@/components/SharedNavbar';
 import { useSEOMeta } from '@/lib/use-seo';
 import { motion, useInView } from 'framer-motion';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
@@ -57,7 +55,6 @@ export default function ServicesPage() {
 
   return (
     <div className="min-h-screen bg-[#030712] bg-grid-pattern text-white selection:bg-[var(--ff-primary-light)] selection:text-[#030712] relative overflow-hidden" style={{ fontFamily: "var(--ff-font-body)" }}>
-      <SharedNavbar activePage="services" />
       <BreadcrumbSchema items={[{ name: lang === 'ar' ? 'الرئيسية' : 'Home', url: 'https://fastfree.cloud/' }, { name: lang === 'ar' ? 'خدماتنا' : 'Services', url: 'https://fastfree.cloud/services' }]} />
 
       {/* Hero */}
@@ -74,7 +71,7 @@ export default function ServicesPage() {
             <Layers size={16} />
             {t('SERVICES_BADGE', '10 خدمات احترافية', '10 Professional Services')}
           </motion.div>
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold mb-6 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
             <TextReveal text={t('SERVICES_PAGE_TITLE', 'خدماتنا الرقمية', 'Our Digital Services')} />
           </h1>
           <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
@@ -305,8 +302,6 @@ export default function ServicesPage() {
           </div>
         </FadeIn>
       </section>
-
-      <SharedFooter t={t} lang={lang} services={allServices} />
     </div>
   );
 }

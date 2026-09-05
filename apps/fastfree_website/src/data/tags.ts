@@ -2,7 +2,6 @@ export type Tag = { id: string; title_ar: string; title_en: string; type: string
 
 export const tags: Tag[] = [
   { id: '1', title_ar: 'Vue', title_en: 'Vue', type: 'tech' },
-  { id: '2', title_ar: 'Quasar', title_en: 'Quasar', type: 'tech' },
   { id: '3', title_ar: 'TypeScript', title_en: 'TypeScript', type: 'tech' },
   { id: '4', title_ar: 'نظام ERP', title_en: 'ERP', type: 'domain' },
   { id: '5', title_ar: 'Frappe', title_en: 'Frappe', type: 'tech' },

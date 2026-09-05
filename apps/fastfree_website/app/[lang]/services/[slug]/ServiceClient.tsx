@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { HelpCircle, ArrowLeft, Check, FileText, Code, Rocket, Globe, Smartphone, Server, Megaphone, Search, Feather, Palette, Building2, Users, Headphones, Layers, Clock, Star, Package, TrendingUp, BarChart3, Shield, MessageSquare, Pencil } from 'lucide-react';
 import { serviceIconMap } from '@/lib/service-icons';
 import { useLanguage } from '@/lib/language-provider';
-import SharedFooter from '@/components/SharedFooter';
-import SharedNavbar from '@/components/SharedNavbar';
 import { useSEOMeta } from '@/lib/use-seo';
 import { motion } from 'framer-motion';
 import { TextReveal } from '@/components/ui/TextReveal';
@@ -36,7 +34,6 @@ export default function ServiceDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#030712] bg-grid-pattern text-white selection:bg-[var(--ff-primary-light)] selection:text-[#030712] relative overflow-hidden" style={{ fontFamily: "var(--ff-font-body)" }}>
-      <SharedNavbar activePage="services" />
       <BreadcrumbSchema items={[{ name: lang === 'ar' ? 'الرئيسية' : 'Home', url: 'https://fastfree.cloud/' }, { name: lang === 'ar' ? 'خدماتنا' : 'Services', url: 'https://fastfree.cloud/services' }, { name: lang === 'ar' ? service.title_ar : service.title_en, url: `https://fastfree.cloud/services/${service.id}` }]} />
 
       {/* Hero */}
@@ -172,8 +169,6 @@ export default function ServiceDetailPage() {
           </div>
         </div>
       </section>
-
-      <SharedFooter t={t} lang={lang} services={allServices} />
     </div>
   );
 }

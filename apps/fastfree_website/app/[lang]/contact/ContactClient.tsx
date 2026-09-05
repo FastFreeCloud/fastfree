@@ -3,12 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Phone, MessageCircle, Mail, MapPin, Headphones, CheckCircle, User, Tag, Loader2, ArrowLeft, Clock, Facebook, Linkedin, Github, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/lib/language-provider';
-import SharedFooter from '@/components/SharedFooter';
-import SharedNavbar from '@/components/SharedNavbar';
 import { useSEOMeta } from '@/lib/use-seo';
 import { motion, useInView } from 'framer-motion';
 import { TextReveal } from '@/components/ui/TextReveal';
-import { services } from '@/src/data/services';
 import { siteConfig } from '@/src/data/siteConfig';
 import { BreadcrumbSchema } from '@/components/SEO/StructuredData';
 
@@ -89,7 +86,6 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-[#030712] bg-grid-pattern text-white selection:bg-[var(--ff-primary-light)] selection:text-[#030712] relative overflow-hidden" style={{ fontFamily: "var(--ff-font-body)" }}>
-      <SharedNavbar activePage="contact" />
       <BreadcrumbSchema items={[{ name: lang === 'ar' ? 'الرئيسية' : 'Home', url: 'https://fastfree.cloud/' }, { name: lang === 'ar' ? 'اتصل بنا' : 'Contact Us', url: 'https://fastfree.cloud/contact' }]} />
 
       {/* Hero */}
@@ -116,7 +112,7 @@ export default function ContactPage() {
             <Headphones size={16} />
             {t('CONTACT_BADGE', 'نحن هنا لمساعدتك', "We're Here to Help")}
           </motion.div>
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold mb-6 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
             <TextReveal text={t('CONTACT_PAGE_TITLE', 'تواصل معنا', 'Contact Us')} />
           </h1>
           <p className="text-slate-400 max-w-xl mx-auto text-lg leading-relaxed">
@@ -370,8 +366,6 @@ export default function ContactPage() {
           ))}
         </div>
       </section>
-
-      <SharedFooter t={t} lang={lang} services={services} />
     </div>
   );
 }

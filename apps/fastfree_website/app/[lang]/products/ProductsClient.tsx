@@ -5,15 +5,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Smartphone, Globe, Monitor, Package, Tags, Github, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '@/lib/language-provider';
-import SharedFooter from '@/components/SharedFooter';
-import SharedNavbar from '@/components/SharedNavbar';
 import { useSEOMeta } from '@/lib/use-seo';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TextReveal } from '@/components/ui/TextReveal';
 import { products as allProducts, type Product } from '@/src/data/products';
 import { BreadcrumbSchema } from '@/components/SEO/StructuredData';
 import { tags as allTagsData, type Tag } from '@/src/data/tags';
-import { services } from '@/src/data/services';
 
 export default function ProductsPage() {
   const { t, lang } = useLanguage();
@@ -53,7 +50,6 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-[#030712] bg-grid-pattern text-white selection:bg-[var(--ff-primary-light)] selection:text-[#030712] relative overflow-hidden" style={{ fontFamily: "var(--ff-font-body)" }}>
-      <SharedNavbar activePage="products" />
       <BreadcrumbSchema items={[{ name: lang === 'ar' ? 'الرئيسية' : 'Home', url: 'https://fastfree.cloud/' }, { name: lang === 'ar' ? 'منتجاتنا' : 'Products', url: 'https://fastfree.cloud/products' }]} />
 
       {/* Hero */}
@@ -66,7 +62,7 @@ export default function ProductsPage() {
             <Package size={16} />
             {t('PRODUCTS_BADGE', `${totalProducts} منتجات رقمية`, `${totalProducts} Digital Products`)}
           </motion.div>
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold mb-6 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
             <TextReveal text={t('PRODUCTS_PAGE_TITLE', 'منتجاتنا الرقمية', 'Our Digital Products')} />
           </h1>
           <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
@@ -77,7 +73,7 @@ export default function ProductsPage() {
 
       {/* Quick Stats */}
       <section className="py-8 border-y border-white/5 bg-[#080c16]">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-3 gap-6 text-center">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
           {[
             { icon: Smartphone, value: String(appCount), label: t('APPS', 'تطبيقات', 'Apps') },
             { icon: Globe, value: String(websiteCount), label: t('WEBSITES', 'مواقع', 'Websites') },
@@ -204,8 +200,6 @@ export default function ProductsPage() {
           </motion.div>
         )}
       </section>
-
-      <SharedFooter t={t} lang={lang} services={services} />
     </div>
   );
 }

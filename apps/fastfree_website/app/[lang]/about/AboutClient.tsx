@@ -3,15 +3,12 @@
 import Link from 'next/link';
 import { ArrowLeft, BookOpen, Building2, Code, Eye, Gem, Globe, Smartphone, Target } from 'lucide-react';
 import { useLanguage } from '@/lib/language-provider';
-import SharedFooter from '@/components/SharedFooter';
-import SharedNavbar from '@/components/SharedNavbar';
 import { useSEOMeta } from '@/lib/use-seo';
 import { motion, useInView } from 'framer-motion';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { TextReveal } from '@/components/ui/TextReveal';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
 import { useRef } from 'react';
-import { services } from '@/src/data/services';
 import { siteConfig } from '@/src/data/siteConfig';
 import { BreadcrumbSchema } from '@/components/SEO/StructuredData';
 
@@ -46,7 +43,6 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-[#030712] bg-grid-pattern text-white selection:bg-[var(--ff-primary-light)] selection:text-[#030712] relative overflow-hidden" style={{ fontFamily: "var(--ff-font-body)" }}>
-      <SharedNavbar activePage="about" />
       <BreadcrumbSchema items={[{ name: lang === 'ar' ? 'الرئيسية' : 'Home', url: 'https://fastfree.cloud/' }, { name: lang === 'ar' ? 'من نحن' : 'About Us', url: 'https://fastfree.cloud/about' }]} />
 
       {/* Hero */}
@@ -73,7 +69,7 @@ export default function AboutPage() {
             <Building2 size={16} />
             {t('ABOUT_BADGE', 'تعرف على فريقنا', 'Meet Our Team')}
           </motion.div>
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold mb-6 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
             <TextReveal text={t('ABOUT_TITLE', 'من نحن', 'About Us')} />
           </h1>
           <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
@@ -240,8 +236,6 @@ export default function AboutPage() {
           </div>
         </FadeInSection>
       </section>
-
-      <SharedFooter t={t} lang={lang} services={services} />
     </div>
   );
 }

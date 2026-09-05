@@ -11,8 +11,6 @@ import { products } from '@/src/data/products';
 import { blogPosts as posts } from '@/src/data/blog';
 import { testimonials } from '@/src/data/testimonials';
 import { useSEOMeta } from '@/lib/use-seo';
-import SharedFooter from '@/components/SharedFooter';
-import SharedNavbar from '@/components/SharedNavbar';
 import { motion } from 'framer-motion';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
@@ -77,10 +75,9 @@ export default function Home() {
       <OrganizationSchema />
       <WebSiteSchema />
       <BreadcrumbSchema items={[{ name: 'Home', url: 'https://fastfree.cloud/' }]} />
-      <SharedNavbar activePage="home" />
 
       {/* Hero */}
-      <section className="relative pt-20 overflow-hidden flex items-center bg-[#030712]" style={{ minHeight: '100vh' }}>
+      <section className="relative pt-20 overflow-hidden flex items-center bg-[#030712]" style={{ minHeight: '100svh' }}>
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
           <motion.div
             className="absolute -top-[20%] -left-[10%] w-[500px] h-[500px] rounded-full bg-gradient-to-r from-[var(--ff-accent)]/20 to-[var(--ff-primary)]/20 blur-[120px]"
@@ -585,8 +582,6 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-
-      <SharedFooter t={t} lang={lang} services={services} />
     </div>
   );
 }
