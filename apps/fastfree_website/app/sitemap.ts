@@ -58,7 +58,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       path: `/blog/${b.slug}`,
       priority: 0.6,
       changeFrequency: 'weekly',
-      lastModified: b.published_at ? new Date(b.published_at) : STABLE_DATE,
+      lastModified: b.published_at ? new Date(Math.min(new Date(b.published_at).getTime(), Date.now())) : STABLE_DATE,
     }));
 
   const serviceRoutes: Route[] = services

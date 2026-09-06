@@ -24,7 +24,6 @@ function FadeIn({ children, delay = 0, className = '' }: { children: React.React
 const CATEGORIES = [
   { key: 'ALL', icon: Layers, labelAr: 'الكل', labelEn: 'All' },
   { key: 'TECHNOLOGY', icon: Cpu, labelAr: 'تقنية', labelEn: 'Technology' },
-  { key: 'TUTORIALS', icon: BookOpen, labelAr: 'شروحات', labelEn: 'Tutorials' },
   { key: 'COMPANY_NEWS', icon: Newspaper, labelAr: 'أخبار', labelEn: 'News' },
   { key: 'DIGITAL_MARKETING', icon: Megaphone, labelAr: 'تسويق', labelEn: 'Marketing' },
   { key: 'WEB_DEVELOPMENT', icon: Globe, labelAr: 'ويب', labelEn: 'Web Dev' },
@@ -38,7 +37,9 @@ export default function BlogPage() {
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const publishedPosts = blogPosts.filter((p) => p.is_published);
+  const publishedPosts = blogPosts
+    .filter((p) => p.is_published)
+    .sort((a, b) => (b.published_at || '').localeCompare(a.published_at || ''));
 
   const filteredPosts = publishedPosts.filter((p) => {
     const categoryOk = activeCategory === 'ALL' || p.category === activeCategory;
@@ -48,7 +49,9 @@ export default function BlogPage() {
       (p.title_ar.toLowerCase().includes(query) ||
         p.title_en.toLowerCase().includes(query) ||
         (p.excerpt_ar || '').toLowerCase().includes(query) ||
-        (p.excerpt_en || '').toLowerCase().includes(query));
+        (p.excerpt_en || '').toLowerCase().includes(query) ||
+        (p.tags || []).some((tag) => tag.toLowerCase().includes(query)) ||
+        (p.category || '').toLowerCase().includes(query));
     return categoryOk && searchOk;
   });
 
@@ -96,6 +99,7 @@ export default function BlogPage() {
               <button
                 key={cat.key}
                 onClick={() => { setActiveCategory(cat.key); }}
+                aria-pressed={isActive}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${isActive ? 'bg-[var(--ff-accent)] text-[#030712] shadow-lg shadow-[var(--ff-accent)]/20' : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white'}`}
               >
                 <cat.icon size={16} />
@@ -108,9 +112,17 @@ export default function BlogPage() {
 
       {/* Blog Grid */}
       <section className="max-w-7xl mx-auto px-6 pb-20">
-        {filteredPosts.length === 0 ? (
-          <div className="text-center py-20 text-slate-400">{t('BLOG_EMPTY', 'لا توجد مقالات حالياً.', 'No articles currently.')}</div>
-        ) : (
+          {filteredPosts.length === 0 ? (
+            <div className="text-center py-20 text-slate-400">
+              <p className="mb-6">{t('BLOG_EMPTY', 'لا توجد مقالات حالياً.', 'No articles currently.')}</p>
+              <button
+                onClick={() => { setSearchQuery(''); setActiveCategory('ALL'); }}
+                className="px-6 py-2.5 rounded-xl text-sm font-medium bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
+              >
+                {t('BLOG_RESET', 'عرض كل المقالات', 'Show all articles')}
+              </button>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredPosts.map((post, i) => (
               <FadeIn key={post.id} delay={i * 0.08}>
@@ -129,11 +141,11 @@ export default function BlogPage() {
                       ) : (
                         <span className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15 mb-3 inline-block">{post.category}</span>
                       )}
-                      <h3 className="text-lg font-bold mb-3 leading-snug group-hover:text-[var(--ff-accent)] transition-colors">{lang === 'ar' ? post.title_ar : post.title_en}</h3>
+                      <h3 className="text-lg font-bold mb-3 leading-snug line-clamp-2 group-hover:text-[var(--ff-accent)] transition-colors">{lang === 'ar' ? post.title_ar : post.title_en}</h3>
                       <p className="text-slate-400 text-sm leading-relaxed line-clamp-3">{lang === 'ar' ? post.excerpt_ar : post.excerpt_en}</p>
                     </div>
                   </div>
-                  <div className={`p-6 border-t border-white/5 flex items-center justify-between text-xs text-slate-400 ${lang === 'ar' ? '' : ''}`}>
+                  <div className="p-6 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
                     <div className="flex items-center gap-4">
                       <span>{post.published_at ? new Date(post.published_at).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US') : ''}</span>
                       <span className="flex items-center gap-1"><Eye size={12} /> {post.views}</span>

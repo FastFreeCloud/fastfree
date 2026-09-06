@@ -85,6 +85,12 @@ export default function BlogPostPage() {
 
   const suggestedPosts = blogPosts
     .filter((p) => p.is_published && p.slug !== post.slug)
+    .sort((a, b) => {
+      const aSame = a.category && a.category === post.category ? 0 : 1;
+      const bSame = b.category && b.category === post.category ? 0 : 1;
+      if (aSame !== bSame) return aSame - bSame;
+      return (b.published_at || '').localeCompare(a.published_at || '');
+    })
     .slice(0, 3);
 
   return (

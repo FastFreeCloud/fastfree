@@ -318,7 +318,7 @@ To talk with us simply, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or
     category: 'WEB_DEVELOPMENT',
     tags: ['Low-Code', 'Docker'],
     is_published: true,
-    published_at: '2026-09-10',
+    published_at: '2026-09-06',
     views: 540,
   },
   {

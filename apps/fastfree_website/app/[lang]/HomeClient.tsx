@@ -347,8 +347,8 @@ export default function Home() {
                       </div>
                     )}
                   </div>
-                  <Link href={`/${lang}/services?service=${service.id}`} className="text-sm font-semibold text-[var(--ff-accent)] flex items-center gap-2 hover:underline">
-                    {t('SERVICE_VIEW_DETAILS', 'اعرف المزيد', 'Learn More')} <ArrowLeft size={14} className={lang === 'ar' ? 'rotate-180' : ''} />
+                  <Link href={`/${lang}/services/${service.id}`} className="text-sm font-semibold text-[var(--ff-accent)] flex items-center gap-2 hover:underline">
+                    {t('SERVICE_VIEW_DETAILS', 'اعرف المزيد', 'Learn More')} <ArrowLeft size={14} className={lang === 'ar' ? '' : 'rotate-180'} />
                   </Link>
                 </SpotlightCard>
               </motion.div>
@@ -358,7 +358,7 @@ export default function Home() {
             <div className="text-center mt-10">
               <Link href={`/${lang}/services`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-white font-medium hover:bg-white/5 transition-all">
                 {t('VIEW_ALL_SERVICES', 'عرض جميع الخدمات', 'View All Services')}
-                <ArrowLeft size={16} className={lang === 'ar' ? 'rotate-180' : ''} />
+                <ArrowLeft size={16} className={lang === 'ar' ? '' : 'rotate-180'} />
               </Link>
             </div>
           </FadeIn>
@@ -430,7 +430,7 @@ export default function Home() {
             </div>
             <Link href={`/${lang}/products`} className="mt-6 md:mt-0 text-sm font-bold text-[var(--ff-accent)] flex items-center gap-2 hover:underline">
               {t('VIEW_ALL_PRODUCTS', 'عرض جميع المنتجات', 'View All Products')}
-              <ArrowLeft size={14} className={lang === 'ar' ? 'rotate-180' : ''} />
+              <ArrowLeft size={14} className={lang === 'ar' ? '' : 'rotate-180'} />
             </Link>
           </div>
         </FadeIn>
@@ -465,7 +465,7 @@ export default function Home() {
                 <p className="text-slate-400 text-sm mb-4 leading-relaxed">{lang === 'ar' ? product.short_description_ar : product.short_description_en}</p>
                 <Link href={`/${lang}/products/${product.slug}`} className="text-sm font-bold text-white flex items-center gap-2 group-hover:text-[var(--ff-accent)] transition-colors">
                   {t('PRODUCT_DETAILS', 'تفاصيل', 'Details')}
-                  <ArrowLeft size={14} className={lang === 'ar' ? 'rotate-180' : ''} />
+                  <ArrowLeft size={14} className={lang === 'ar' ? '' : 'rotate-180'} />
                 </Link>
               </div>
             </motion.div>
@@ -525,7 +525,7 @@ export default function Home() {
             </div>
             <Link href={`/${lang}/blog`} className="mt-6 md:mt-0 text-sm font-bold text-[var(--ff-accent)] flex items-center gap-2 hover:underline">
               {t('MORE_ARTICLES', 'عرض كل المقالات', 'More Articles')}
-              <ArrowLeft size={14} className={lang === 'ar' ? 'rotate-180' : ''} />
+              <ArrowLeft size={14} className={lang === 'ar' ? '' : 'rotate-180'} />
             </Link>
           </div>
         </FadeIn>
@@ -536,7 +536,7 @@ export default function Home() {
           variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } }}
           className="grid grid-cols-1 md:grid-cols-3 gap-8"
         >
-          {posts.filter((p) => p.is_published).slice(0, 3).map((post) => (
+          {posts.filter((p) => p.is_published).sort((a, b) => (b.published_at || '').localeCompare(a.published_at || '')).slice(0, 3).map((post) => (
             <motion.div
               key={post.id}
               variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } } }}
@@ -555,7 +555,7 @@ export default function Home() {
               <div className="px-6 pb-6 flex items-center justify-between text-xs text-slate-400">
                  <span>{post.published_at ? new Date(post.published_at).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US') : ''}</span>
                 <Link href={`/${lang}/blog/${post.slug}`} className="font-bold text-white hover:text-[var(--ff-accent)] flex items-center gap-1">
-                  {t('READ', 'اقرأ', 'Read')} <ArrowLeft size={12} className={lang === 'ar' ? 'rotate-180' : ''} />
+                  {t('READ', 'اقرأ', 'Read')} <ArrowLeft size={12} className={lang === 'ar' ? '' : 'rotate-180'} />
                 </Link>
               </div>
             </motion.div>

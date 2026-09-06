@@ -8,7 +8,7 @@ export const dynamicParams = false;
 
 export async function generateStaticParams() {
   const langs: Locale[] = ['ar', 'en'];
-  return blogPosts.flatMap((p) => langs.map((lang) => ({ lang, slug: p.slug })));
+  return blogPosts.filter((p) => p.is_published).flatMap((p) => langs.map((lang) => ({ lang, slug: p.slug })));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string; slug: string }> }) {
@@ -19,6 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
 
 export default async function Page({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const { slug } = await params;
-  if (!blogPosts.find((p) => p.slug === slug)) notFound();
+  const post = blogPosts.find((p) => p.slug === slug);
+  if (!post || !post.is_published) notFound();
   return <BlogPostClient />;
 }

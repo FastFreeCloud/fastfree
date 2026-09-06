@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { Sun, Moon, X, Menu } from 'lucide-react';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/lib/language-provider';
@@ -45,6 +46,11 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
     { href: `/${lang}/contact`, key: 'contact', label: t('NAV_CONTACT', 'تواصل معنا', 'Contact Us') },
   ];
 
+  // Derive the active page from the URL when the prop isn't passed
+  // (layout renders <SharedNavbar /> without props).
+  const pathname = usePathname();
+  const activeKey = activePage ?? pathname?.split('/').filter(Boolean)[1] ?? 'home';
+
   return (
     <nav aria-label={t('NAV_MAIN', 'التنقل الرئيسي', 'Main navigation')} className={`fixed w-full z-50 transition-all duration-300 ${
       scrolled
@@ -76,15 +82,16 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
             <div key={link.key} className="relative group py-2">
               <Link
                 href={link.href}
+                aria-current={activeKey === link.key ? 'page' : undefined}
                 className={`transition-colors duration-200 ${
-                  activePage === link.key
+                  activeKey === link.key
                     ? 'text-[var(--ff-accent)]'
                     : 'text-slate-300 hover:text-white'
                 }`}
               >
                 {link.label}
               </Link>
-              {activePage === link.key && (
+              {activeKey === link.key && (
                 <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[var(--ff-accent)] rounded-full" />
               )}
             </div>
@@ -148,7 +155,7 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
                 className={`py-3 px-4 rounded-xl text-sm font-medium transition-all ${
-                  activePage === link.key
+                  activeKey === link.key
                     ? 'bg-[var(--ff-accent)]/10 text-[var(--ff-accent)]'
                     : 'text-slate-300 hover:bg-white/5 hover:text-white'
                 }`}

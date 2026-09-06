@@ -150,7 +150,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
               <ul className="space-y-2 text-xs text-slate-400">
                 {servicesData.slice(0, 5).map(s => (
                   <li key={s.id}>
-                    <Link href={`/${lang}/services`} className="hover:text-white hover:pl-1 transition-all">{lang === 'ar' ? s.title_ar : s.title_en}</Link>
+                    <Link href={`/${lang}/services/${s.id}`} className="hover:text-white hover:pl-1 transition-all">{lang === 'ar' ? s.title_ar : s.title_en}</Link>
                   </li>
                 ))}
               </ul>
