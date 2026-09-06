@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { Sun, Moon, X, Menu } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/lib/language-provider';
 import { useTheme } from '@/lib/theme-provider';
@@ -51,13 +51,18 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
   const pathname = usePathname();
   const activeKey = activePage ?? pathname?.split('/').filter(Boolean)[1] ?? 'home';
 
+  // Close mobile menu on any route change (back/forward, programmatic nav, locale switch)
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   return (
     <nav aria-label={t('NAV_MAIN', 'التنقل الرئيسي', 'Main navigation')} className={`fixed w-full z-50 transition-all duration-300 ${
       scrolled
         ? 'bg-[#030712]/80 backdrop-blur-xl border-b border-white/10 shadow-2xl'
         : 'bg-transparent border-b border-transparent'
     }`}>
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div className={`max-w-7xl mx-auto px-6 flex items-center justify-between transition-[height] duration-300 ${scrolled ? 'h-16' : 'h-20'}`}>
         <Link href={`/${lang}`} className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-[#070b19] border border-white/10 shadow-lg shadow-[var(--ff-accent)]/10 group-hover:border-[var(--ff-accent)]/30 transition-all relative">
             <Image
@@ -91,28 +96,29 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
               >
                 {link.label}
               </Link>
-              {activeKey === link.key && (
-                <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[var(--ff-accent)] rounded-full" />
+              {activeKey === link.key ? (
+                <span aria-hidden="true" className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[var(--ff-accent)] rounded-full" />
+              ) : (
+                <span aria-hidden="true" className="absolute -bottom-1 left-0 right-0 h-0.5 rounded-full bg-[var(--ff-accent)]/70 origin-center scale-x-0 transition-transform duration-300 group-hover:scale-x-100" />
               )}
             </div>
           ))}
           <LanguageSwitcher />
           <button
             onClick={toggleTheme}
-            className="group relative w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 transition-all duration-300 cursor-pointer"
-            aria-label="Toggle theme"
+            aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="group relative w-11 h-11 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 transition-all duration-300 cursor-pointer"
           >
-            <div className="relative w-4 h-4">
+            <span className="relative block w-4 h-4" aria-hidden="true">
               {mounted ? (
-                theme === 'dark' ? (
-                  <Sun size={16} className="absolute inset-0 animate-[spin_8s_linear_infinite] group-hover:text-amber-400 transition-colors" />
-                ) : (
-                  <Moon size={16} className="absolute inset-0 group-hover:text-[var(--ff-primary)] transition-colors" />
-                )
+                <>
+                  <Sun size={16} className={`absolute inset-0 transition-all duration-300 ${theme === 'dark' ? 'opacity-100 rotate-0 scale-100 group-hover:text-amber-400' : 'opacity-0 rotate-90 scale-50 pointer-events-none'}`} />
+                  <Moon size={16} className={`absolute inset-0 transition-all duration-300 ${theme === 'dark' ? 'opacity-0 -rotate-90 scale-50 pointer-events-none' : 'opacity-100 rotate-0 scale-100 group-hover:text-[var(--ff-primary)]'}`} />
+                </>
               ) : (
-                <Moon size={16} />
+                <Moon size={16} className="absolute inset-0" />
               )}
-            </div>
+            </span>
           </button>
         </div>
 
@@ -120,40 +126,58 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
         <div className="flex items-center gap-2 md:hidden">
           <button
             onClick={toggleTheme}
-            className="group relative w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 transition-all duration-300 cursor-pointer"
-            aria-label="Toggle theme"
+            aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="group relative w-11 h-11 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 transition-all duration-300 cursor-pointer"
           >
-            <div className="relative w-4 h-4">
+            <span className="relative block w-4 h-4" aria-hidden="true">
               {mounted ? (
-                theme === 'dark' ? (
-                  <Sun size={16} className="absolute inset-0 animate-[spin_8s_linear_infinite] group-hover:text-amber-400 transition-colors" />
-                ) : (
-                  <Moon size={16} className="absolute inset-0 group-hover:text-[var(--ff-primary)] transition-colors" />
-                )
+                <>
+                  <Sun size={16} className={`absolute inset-0 transition-all duration-300 ${theme === 'dark' ? 'opacity-100 rotate-0 scale-100 group-hover:text-amber-400' : 'opacity-0 rotate-90 scale-50 pointer-events-none'}`} />
+                  <Moon size={16} className={`absolute inset-0 transition-all duration-300 ${theme === 'dark' ? 'opacity-0 -rotate-90 scale-50 pointer-events-none' : 'opacity-100 rotate-0 scale-100 group-hover:text-[var(--ff-primary)]'}`} />
+                </>
               ) : (
-                <Moon size={16} />
+                <Moon size={16} className="absolute inset-0" />
               )}
-            </div>
+            </span>
           </button>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-white transition"
-            aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-menu"
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition"
           >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            <span className="relative block w-6 h-6" aria-hidden="true">
+              <span className={`absolute left-0 h-0.5 w-6 rounded-full bg-current transition-all duration-300 ${mobileOpen ? 'top-[11px] rotate-45' : 'top-[7px]'}`} />
+              <span className={`absolute left-0 top-[11px] h-0.5 w-6 rounded-full bg-current transition-all duration-300 ${mobileOpen ? 'opacity-0 scale-x-0' : 'opacity-100 scale-x-100'}`} />
+              <span className={`absolute left-0 h-0.5 w-6 rounded-full bg-current transition-all duration-300 ${mobileOpen ? 'top-[11px] -rotate-45' : 'top-[15px]'}`} />
+            </span>
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu backdrop */}
       {mobileOpen && (
-        <div className="md:hidden bg-[#030712]/95 backdrop-blur-xl border-t border-white/5 px-6 pb-6 pt-4 max-h-[calc(100svh-5rem)] overflow-y-auto">
+        <div
+          aria-hidden="true"
+          onClick={() => setMobileOpen(false)}
+          className={`md:hidden fixed inset-x-0 bottom-0 animate-fade-in bg-black/40 cursor-default ${scrolled ? 'top-16' : 'top-20'}`}
+        />
+      )}
+      {/* Mobile Menu — always mounted for grid-rows open/close animation */}
+      <div
+        id="mobile-menu"
+        className={`md:hidden grid transition-all duration-300 ease-out ${mobileOpen ? 'grid-rows-[1fr] opacity-100 visible' : 'grid-rows-[0fr] opacity-0 invisible'}`}
+      >
+        <div className="overflow-hidden min-h-0">
+          <div className="bg-[#030712]/95 backdrop-blur-xl border-t border-white/5 px-6 pb-6 pt-4 max-h-[calc(100svh-5rem)] overflow-y-auto">
           <div className="flex flex-col gap-1">
             {links.map((link) => (
               <Link
                 key={link.key}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
+                aria-current={activeKey === link.key ? 'page' : undefined}
                 className={`py-3 px-4 rounded-xl text-sm font-medium transition-all ${
                   activeKey === link.key
                     ? 'bg-[var(--ff-accent)]/10 text-[var(--ff-accent)]'
@@ -167,8 +191,9 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
               <LanguageSwitcher />
             </div>
           </div>
+          </div>
         </div>
-      )}
+      </div>
     </nav>
   );
 }
