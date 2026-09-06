@@ -11,7 +11,7 @@ export default function LanguageSwitcher() {
       onClick={toggleLang}
       aria-pressed={lang === 'ar'}
       aria-label={lang === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
-      className="flex items-center justify-center gap-1.5 px-3 rounded-lg text-xs font-bold transition-all hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white min-h-[44px] min-w-[44px]"
+      className="flex items-center justify-center gap-1.5 px-3 rounded-lg text-xs font-bold transition-all duration-300 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white min-h-[44px] min-w-[44px] active:scale-95"
       title={lang === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
     >
       <Languages size={14} aria-hidden="true" />

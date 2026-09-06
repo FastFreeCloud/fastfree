@@ -482,20 +482,35 @@ export default function Home() {
                 </h2>
               </div>
             </FadeIn>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: '-100px' }}
+              variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.12 } } }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            >
               {testimonials.filter((t) => t.isActive).slice(0, 3).map((testimonial) => (
-                <SpotlightCard key={testimonial.id} className="flex flex-col justify-between">
+                <motion.div
+                  key={testimonial.id}
+                  variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0 } }}
+                  className="h-full"
+                >
+                <SpotlightCard className="flex flex-col justify-between h-full">
                   <div>
-                    <div className="flex gap-1 mb-4 text-yellow-500">
-                      {Array.from({ length: testimonial.rating }).map((_, i) => (
-                        <Star key={i} size={16} fill="currentColor" />
+                    <div className="flex gap-1 mb-4 text-yellow-500" aria-label={`${testimonial.rating} / 5`}>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} size={16} fill="currentColor" className={i < testimonial.rating ? '' : 'opacity-25'} />
                       ))}
                     </div>
-                    <p className="text-slate-300 text-sm leading-relaxed mb-4 italic">&ldquo;{testimonial.content}&rdquo;</p>
+                    <p className={`text-slate-300 text-sm leading-relaxed mb-4 ${lang === 'ar' ? '' : 'italic'}`}>&ldquo;{testimonial.content}&rdquo;</p>
                   </div>
                   <div className="flex items-center gap-3 border-t border-white/5 pt-4">
-                    {testimonial.clientAvatar && (
-                      <Image src={testimonial.clientAvatar || '/assets/og-default.svg'} alt={testimonial.clientName} width={40} height={40} className="w-10 h-10 rounded-full object-cover" sizes="(max-width: 768px) 100vw, 200px" />
+                    {testimonial.clientAvatar ? (
+                      <Image src={testimonial.clientAvatar} alt={testimonial.clientName} width={40} height={40} className="w-10 h-10 rounded-full object-cover" sizes="(max-width: 768px) 100vw, 200px" />
+                    ) : (
+                      <div aria-hidden="true" className="w-10 h-10 rounded-full bg-[var(--ff-accent)]/15 text-[var(--ff-accent)] flex items-center justify-center text-sm font-bold shrink-0">
+                        {testimonial.clientName.charAt(0)}
+                      </div>
                     )}
                     <div>
                       <h4 className="font-bold text-white text-sm">{testimonial.clientName}</h4>
@@ -503,8 +518,9 @@ export default function Home() {
                     </div>
                   </div>
                 </SpotlightCard>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
       )}
