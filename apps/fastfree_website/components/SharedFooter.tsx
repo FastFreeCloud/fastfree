@@ -74,24 +74,46 @@ export default function SharedFooter(_props: SharedFooterProps) {
   return (
     <>
       {whatsappRaw && (
-        <a
-          href={whatsappHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="wa-float fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 hover:scale-110 transition-all shadow-green-500/30"
-          aria-label="WhatsApp"
-        >
-          <MessageCircle size={22} />
-        </a>
+        <div className="fixed bottom-6 left-6 z-50 flex flex-col gap-3">
+          <motion.a
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1, type: 'spring', stiffness: 260, damping: 20 }}
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="wa-float relative w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 hover:scale-110 transition-all shadow-green-500/30"
+            aria-label={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'}
+            title={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'}
+          >
+            <MessageCircle size={22} />
+            <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-base leading-none">🇪🇬</span>
+          </motion.a>
+          <motion.a
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1.15, type: 'spring', stiffness: 260, damping: 20 }}
+            href={whatsappSaHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="wa-float relative w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 hover:scale-110 transition-all shadow-green-500/30"
+            aria-label={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'}
+            title={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'}
+          >
+            <MessageCircle size={22} />
+            <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-base leading-none">🇸🇦</span>
+          </motion.a>
+        </div>
       )}
 
       {showTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 z-50 w-10 h-10 rounded-full bg-[var(--ff-accent)]/90 text-[#030712] flex items-center justify-center shadow-lg hover:bg-[var(--ff-accent)] hover:scale-110 transition-all cursor-pointer"
-          aria-label="Back to top"
+          className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-[var(--ff-accent)]/90 text-[#030712] flex items-center justify-center shadow-lg hover:bg-[var(--ff-accent)] hover:scale-110 transition-all cursor-pointer"
+          aria-label={lang === 'ar' ? 'العودة للأعلى' : 'Back to top'}
+          title={lang === 'ar' ? 'العودة للأعلى' : 'Back to top'}
         >
-          <ArrowUp size={18} />
+          <ArrowUp size={20} />
         </button>
       )}
 
