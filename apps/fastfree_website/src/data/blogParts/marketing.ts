@@ -14,7 +14,7 @@ export const blogMarketing: BlogPost[] = [
 
 تحليل معدل التحويل يوضّح أين تُفقد الفرص: هل عند عرض السعر أم عند الدفع؟ بهذا تعرف أين تركّز جهد الفريق. الربط بين CRM والمبيعات والمحاسبة يجعل الصورة كاملة دون جداول منفصلة.
 
-نحن نساعد شركات على ربط مبيعاتها بعملائها ببساطة؛ للحديث عن حالتك، واتساب +201091999937 أو admin@fastfree.cloud.`,
+نحن نساعد شركات على ربط مبيعاتها بعملائها ببساطة؛ للحديث عن حالتك، واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
     content_en: `Many companies record sales but do not track the lead's journey. CRM starts at the moment of appearance: where the customer came from, their current state, and the next step. Tracking these paths prevents opportunities from being lost simply because someone forgot to follow up.
 
 The first step is documenting leads and opportunities in one place instead of scattered messages. When a customer requests a quote, it becomes an opportunity, then a sales order, then an invoice, all connected so data is never re-entered.
@@ -23,7 +23,7 @@ Campaigns and regular follow-up turn a one-time buyer into a repeat customer. A 
 
 Conversion-rate analysis shows where opportunities are lost: at quoting or at payment? This tells you where to focus the team's effort. Linking CRM with sales and accounting gives a complete picture without separate sheets.
 
-We help companies connect their sales with their customers simply; to discuss your case, WhatsApp +201091999937 or admin@fastfree.cloud.`,
+We help companies connect their sales with their customers simply; to discuss your case, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or admin@fastfree.cloud.`,
     excerpt_ar: 'كيف تتابع مسار العميل المحتمل وتحوّله إلى زبون دائم عبر CRM مترابط.',
     excerpt_en: 'How to follow a leads path and turn it into a repeat customer with connected CRM.',
     cover_image: '/assets/blog-sales-crm-repeat-customers.svg',
@@ -46,7 +46,7 @@ We help companies connect their sales with their customers simply; to discuss yo
 
 منصّة FastFree تضم وحدة إدارة العملاء (CRM) ضمن أكثر من 60 شاشة و43 خدمة، ويمكن ربط بيانات العملاء بمسار المبيعات لتتبّع المتابعة دون جداول منفصلة.
 
-للحديث معنا ببساطة، واتساب +201091999937 أو admin@fastfree.cloud.`,
+للحديث معنا ببساطة، واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
     content_en: `Email remains a widely used channel for reaching customers, and a large share of small businesses include it in their plan. The idea is simple: send a useful message to people who agreed to receive it, and build a relationship over time rather than a one-off ad.
 
 Industry reports suggest the average email open rate is around 43% across sectors, though numbers vary by activity. What matters in practice is consistency and segmentation: sending relevant content to a defined group usually performs better than blasting the same message to the whole list. Some studies note that segmented messages generate more opens and clicks than generic ones.
@@ -55,7 +55,7 @@ Keep the message short and clear, with a direct subject line and a recognizable 
 
 The FastFree platform includes a CRM module among its 60+ screens and 43 services, and customer data can be linked to the sales pipeline to track follow-up without separate sheets.
 
-To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
+To talk with us simply, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or admin@fastfree.cloud.`,
     excerpt_ar: 'أساسيات البريد الإلكتروني للشركات الصغيرة: الموافقة والتجزئة والتنسيق المتجاوب.',
     excerpt_en: 'Email basics for small businesses: consent, segmentation, and responsive layout.',
     cover_image: '/assets/blog-email-campaigns-sme-basics.svg',
@@ -78,7 +78,7 @@ To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
 
 عندما تنمو، يمكن ربط حملاتك وتحليلاتها بوحدة إدارة العملاء في FastFree لترى المسار كاملاً من المنشور إلى الفرصة.
 
-للحديث معنا ببساطة، واتساب +201091999937 أو admin@fastfree.cloud.`,
+للحديث معنا ببساطة، واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
     content_en: `A small business does not need accounts on every platform. Usually the better choice is one or two places your customers actually use, and posting there with a simple, steady rhythm. A consistent presence reads clearer than silence followed by bursts.
 
 Helpful content generally outperforms pure promotion. Answering a common question, a short explanation of a service, or sharing a real experience builds trust more than repeated ads. Replying to comments and messages in reasonable time shows a real team behind the account.
@@ -87,7 +87,7 @@ It helps to connect what you post with your data: which posts drew enquiries, wh
 
 As you grow, campaign and analytics data can be linked to the FastFree CRM module so you see the full path from post to opportunity.
 
-To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
+To talk with us simply, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or admin@fastfree.cloud.`,
     excerpt_ar: 'حضور متواضع ومستمر على وسائل التواصل أفضل من الانقطاع والإعلان المتكرر.',
     excerpt_en: 'A modest, steady social presence beats silence and repeated advertising.',
     cover_image: '/assets/blog-social-media-sme-steady-presence.svg',
@@ -110,7 +110,7 @@ To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
 
 منصّة FastFree مبنية بلغة عربية تدعم الاتجاه من اليمين إلى اليسار (RTL) وأكثر من 1,253 مفتاح ترجمة، ما يسهّل كتابة محتوى ثنائي اللغة لفريقك وعملائك.
 
-للحديث معنا ببساطة، واتساب +201091999937 أو admin@fastfree.cloud.`,
+للحديث معنا ببساطة، واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
     content_en: `Content marketing means offering useful information to your audience before they buy. A short guide, an article answering a repeated question, or a video explaining a practical step all help a prospect understand their problem and options. This kind builds trust that direct advertising alone does not.
 
 The key is consistency and honesty. A single post every few months has little effect, while a simple, regular series builds a reader habit. Start with what you know well about your field, and avoid exaggerated claims that are hard to prove.
@@ -119,7 +119,7 @@ Impact can be measured simply: how many enquiries followed a post, how many repe
 
 The FastFree platform is built with Arabic right-to-left (RTL) support and more than 1,253 translation keys, which makes writing bilingual content for your team and customers easier.
 
-To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
+To talk with us simply, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or admin@fastfree.cloud.`,
     excerpt_ar: 'التسويق بالمحتوى يقدّم قيمة قبل البيع ويبني ثقة بصدق واستمرارية.',
     excerpt_en: 'Content marketing delivers value before the sale and builds trust through honesty.',
     cover_image: '/assets/blog-content-marketing-honest-value.svg',
@@ -142,7 +142,7 @@ To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
 
 وحدة إدارة العملاء في FastFree تتتبّع مسار العميل المحتمل والفرصة والاتصالات، ضمن منظومة تشمل المبيعات والمحاسبة في مكان واحد.
 
-للحديث معنا ببساطة، واتساب +201091999937 أو admin@fastfree.cloud.`,
+للحديث معنا ببساطة، واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
     content_en: `Lead generation is the process of getting an interested person to leave you a way to follow up. It does not require paid ads; sometimes a simple form on the site, or a reply that invites further contact, does the job.
 
 The important point is defining who the right customer is. Trying to reach everyone wastes effort. Focus on those who have the problem you solve, and describe the solution in words they understand. When a customer shows interest, record their details in one place so nothing is lost.
@@ -151,7 +151,7 @@ Follow-up is where the customer is won or lost. A short review shows whether int
 
 The FastFree CRM module tracks the lead, opportunity, and contact history, within a suite that includes sales and accounting in one place.
 
-To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
+To talk with us simply, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or admin@fastfree.cloud.`,
     excerpt_ar: 'توليد العملاء المحتملين يبدأ بفهم الجمهور المناسب وتسجيل المتابعة في مكان واحد.',
     excerpt_en: 'Lead generation starts with the right audience and recording follow-up in one place.',
     cover_image: '/assets/blog-lead-generation-basics-sme.svg',
@@ -174,7 +174,7 @@ To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
 
 ربط بيانات العملاء بمسار المبيعات في FastFree يسهّل تتبّع من اشترى سابقاً ومن يحتاج متابعة، ضمن نظام عربي RTL بـ 0 أخطاء TypeScript.
 
-للحديث معنا ببساطة، واتساب +201091999937 أو admin@fastfree.cloud.`,
+للحديث معنا ببساطة، واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
     content_en: `Many small businesses spend their budget on attracting new customers, while existing customers are cheaper to serve. Research indicates acquiring a new customer can cost from five to twenty-five times more than retaining an existing one, depending on the sector.
 
 Another useful figure: improving retention by 5% can raise profit across a wide range, reaching 25% or more in some studies. Returning customers also tend to spend more than first-time buyers. These numbers vary by industry, but the direction is consistent: an ongoing relationship is cheaper.
@@ -183,7 +183,7 @@ Retention need not mean a complex points program. Sometimes a simple post-sale c
 
 Linking customer data to the sales pipeline in FastFree makes it easier to track who bought before and who needs follow-up, within an Arabic RTL system with 0 TypeScript errors.
 
-To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
+To talk with us simply, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or admin@fastfree.cloud.`,
     excerpt_ar: 'الاحتفاظ بالعملاء أوفر من جذب الجديد، ومتابعة بسيطة تصنع الفرق.',
     excerpt_en: 'Retaining customers costs less than acquiring new ones; simple follow-up makes the difference.',
     cover_image: '/assets/blog-customer-retention-sme.svg',
@@ -206,7 +206,7 @@ To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
 
 منصّة FastFree تعمل بخلفية مبنية على إطار Frappe، ويمكن ربط حالات العملاء بالمبيعات والمحاسبة لتنبيهات دقيقة.
 
-للحديث معنا ببساطة، واتساب +201091999937 أو admin@fastfree.cloud.`,
+للحديث معنا ببساطة، واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
     content_en: `Marketing automation means actions that happen automatically on a trigger: a welcome message on sign-up, a reminder after an abandoned cart, or a follow-up after an invoice. The aim is that not everything depends on one person's memory.
 
 A useful start is modest: one automated message sent at the right moment beats a complex system the team does not understand. Always confirm the customer consented to receive it, and offer a way to stop. Poor, repetitive automation harms more than it helps.
@@ -215,7 +215,7 @@ It helps when automation connects to real customer data. When you know each cust
 
 The FastFree platform runs on a Frappe-based backend, and customer states can be linked to sales and accounting for precise alerts.
 
-To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
+To talk with us simply, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or admin@fastfree.cloud.`,
     excerpt_ar: 'الأتمتة تبدأ بخطوة بسيطة وموافقة العميل، وترتبط ببياناته الحقيقية.',
     excerpt_en: 'Automation starts small with consent, and connects to real customer data.',
     cover_image: '/assets/blog-marketing-automation-beginners.svg',
@@ -238,7 +238,7 @@ To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
 
 منظومة FastFree تربط المبيعات والمحاسبة وإدارة العملاء، ما يجعل قياس المسار من العميل المحتمل إلى الفاتورة أسهل في مكان واحد.
 
-للحديث معنا ببساطة، واتساب +201091999937 أو admin@fastfree.cloud.`,
+للحديث معنا ببساطة، واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
     content_en: `Analytics does not mean collecting many numbers, but understanding a few useful ones. For sales, the conversion rate is the share of those who saw the offer and actually bought. A small improvement in this rate sometimes matters more than doubling visitor counts.
 
 Start with practical questions: where do the higher-quality customers come from? Which message led to a sales conversation? At which step do many customers leave? The answer redirects effort toward what works.
@@ -247,7 +247,7 @@ Do not trust a single number out of context. A high email open rate helps little
 
 The FastFree suite links sales, accounting, and CRM, making it easier to measure the path from lead to invoice in one place.
 
-To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
+To talk with us simply, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or admin@fastfree.cloud.`,
     excerpt_ar: 'قِس معدل التحويل وسلسلة المسار كاملة بدل الغرق في أرقام منفصلة.',
     excerpt_en: 'Measure conversion and the full path, not isolated numbers.',
     cover_image: '/assets/blog-marketing-analytics-basics.svg',
@@ -270,7 +270,7 @@ To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
 
 ربط استفسارات الموقع بوحدة إدارة العملاء في FastFree يحوّل من وجدك عبر البحث إلى فرصة متابَعة منظّمة.
 
-للحديث معنا ببساطة، واتساب +201091999937 أو admin@fastfree.cloud.`,
+للحديث معنا ببساطة، واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
     content_en: `Many customers search for "a shop near me" or "a service in my city". Local SEO helps your business appear in those results. The first and basic step is a Google Business Profile: an exact name, an address and phone that match everywhere, and correct opening hours.
 
 Industry reports note that a large share of consumers read reviews when searching for a local business, and that a complete profile increases the chance the business is taken seriously. The same reports show a meaningful share of small businesses still lack an organized profile, which is a simple chance to stand out.
@@ -279,7 +279,7 @@ The practical elements: consistent information across sites, encouraging genuine
 
 Linking location enquiries to the FastFree CRM module turns someone who found you via search into an organized follow-up opportunity.
 
-To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
+To talk with us simply, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or admin@fastfree.cloud.`,
     excerpt_ar: 'التحسين المحلي يبدأ بملف عمل كامل وثابت وتقييمات حقيقية، لا بشراء المرتبة.',
     excerpt_en: 'Local SEO starts with a complete, consistent profile and real reviews, not buying rank.',
     cover_image: '/assets/blog-local-seo-sme-guide.svg',
@@ -302,7 +302,7 @@ To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
 
 وحدة إدارة العملاء في FastFree يمكن أن تربط المحادثات بمسار المبيعات والفواتير، ضمن منظومة عربية RTL تدعم العمل ثنائي اللغة.
 
-للحديث معنا ببساطة، واتساب +201091999937 أو admin@fastfree.cloud.`,
+للحديث معنا ببساطة، واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
     content_en: `WhatsApp has become an everyday messaging tool, which makes it suitable as a sales and support channel. The difference between the regular app and the business platform is that the latter allows a shared team inbox, approved messages, and organized follow-up, instead of relying on one person's phone.
 
 The first rule is consent: do not message people who did not agree to receive from you. Short, useful messages (order confirmation, appointment reminder, post-quote follow-up) are better received than frequent promotional blasts. Always offer a way to opt out.
@@ -311,7 +311,7 @@ Value appears when conversations connect to the customer record. When the team k
 
 The FastFree CRM module can link conversations to the sales pipeline and invoices, within an Arabic RTL suite that supports bilingual work.
 
-To talk with us simply, WhatsApp +201091999937 or admin@fastfree.cloud.`,
+To talk with us simply, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or admin@fastfree.cloud.`,
     excerpt_ar: 'واتساب للأعمال يصلح قناة بيع منظّمة بموافقة العميل وربط بسجلّه.',
     excerpt_en: 'Business WhatsApp works as an organized sales channel with consent and a customer record.',
     cover_image: '/assets/blog-whatsapp-business-sales-sme.svg',

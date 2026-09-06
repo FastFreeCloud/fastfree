@@ -16,7 +16,7 @@ export const blogMobile: BlogPost[] = [
 
 ابدأ بتطبيق واحد — غالباً نقاط البيع — ثم أضف الباقي عندما يكبر فريقك، فكلها تشترك نفس الدخول ونفس البيانات.
 
-للتجربة أو الطلب، واتساب +201091999937 أو admin@fastfree.cloud.`,
+للتجربة أو الطلب، واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
     content_en: `At FastFree we build four Android apps for small and medium businesses: Point of Sale (POS) for cashier and stock, an ERP app for invoices and orders, an HR app for attendance, leave, and payroll, and a Ledger app for daily accounting.
 
 All apps are Arabic-first and work offline: the cashier keeps issuing invoices even when the internet drops, and data syncs automatically when the connection returns. Your work never stops because of the network.
@@ -27,7 +27,7 @@ We sign every release and update regularly: speed and screen improvements, quick
 
 Start with one app — usually Point of Sale — then add the rest as your team grows; they all share the same login and the same data.
 
-To try or order, WhatsApp +201091999937 or admin@fastfree.cloud.`,
+To try or order, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or admin@fastfree.cloud.`,
     excerpt_ar: 'أربعة تطبيقات أندرويد عربية تعمل دون اتصال: نقاط بيع وERP وموارد بشرية ودفاتر على نفس البيانات.',
     excerpt_en: 'Four Arabic Android apps that work offline: POS, ERP, HR, and Ledger on the same data.',
     cover_image: null,

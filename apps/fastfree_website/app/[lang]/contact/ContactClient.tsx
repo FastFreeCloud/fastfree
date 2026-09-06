@@ -78,8 +78,10 @@ export default function ContactPage() {
   };
 
   const contactMethods = [
-    { icon: Phone, labelAr: 'الهاتف', labelEn: 'Phone', value: siteSettings.phone, href: `tel:${siteSettings.phone.replace(/[^0-9+]/g, '')}`, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { icon: MessageCircle, labelAr: 'الواتساب', labelEn: 'WhatsApp', value: siteSettings.phone, href: `https://wa.me/${(siteSettings.whatsapp || siteSettings.phone || '').replace(/[^0-9]/g, '')}`, color: 'text-green-400', bg: 'bg-green-500/10' },
+    { icon: Phone, labelAr: 'هاتف مصر', labelEn: 'Phone Egypt', value: siteSettings.phone_eg, href: 'tel:+201091999937', color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { icon: Phone, labelAr: 'هاتف السعودية', labelEn: 'Phone Saudi Arabia', value: siteSettings.phone_sa, href: 'tel:+966572293845', color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { icon: MessageCircle, labelAr: 'واتساب مصر', labelEn: 'WhatsApp Egypt', value: siteSettings.phone_eg, href: siteSettings.whatsapp_eg, color: 'text-green-400', bg: 'bg-green-500/10' },
+    { icon: MessageCircle, labelAr: 'واتساب السعودية', labelEn: 'WhatsApp Saudi Arabia', value: siteSettings.phone_sa, href: siteSettings.whatsapp_sa, color: 'text-green-400', bg: 'bg-green-500/10' },
     { icon: Mail, labelAr: 'البريد الإلكتروني', labelEn: 'Email', value: siteSettings.email, href: `mailto:${siteSettings.email}`, color: 'text-[var(--ff-accent)]', bg: 'bg-[var(--ff-accent)]/10' },
     { icon: MapPin, labelAr: 'العنوان', labelEn: 'Address', value: siteSettings.address, href: null as string | null, color: 'text-purple-400', bg: 'bg-purple-500/10' },
   ];

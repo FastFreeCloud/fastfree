@@ -19,9 +19,10 @@ export default function OrganizationSchema({
   email = 'contact@fastfree.cloud',
   address = 'القاهرة، جمهورية مصر العربية',
 }: OrganizationSchemaProps) {
+  // Canonical social URLs — using canonical literals, keeping GitHub from config.
   const sameAs = [
-    siteConfig.socialLinks.facebook,
-    siteConfig.socialLinks.linkedin,
+    'https://www.facebook.com/share/1DHAKK2ek1/',
+    'https://www.linkedin.com/company/fastfree-cloud/',
     siteConfig.socialLinks.github,
   ].filter((link): link is string => Boolean(link));
   const schema = {
@@ -42,8 +43,9 @@ export default function OrganizationSchema({
     sameAs,
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: phone,
+      telephone: '+201091999937',
       contactType: 'customer service',
+      areaServed: ['EG', 'SA'],
       availableLanguage: ['Arabic', 'English'],
     },
   };

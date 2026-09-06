@@ -53,18 +53,27 @@ export default function SharedFooter(_props: SharedFooterProps) {
 
   const siteName = siteConfig.siteName || 'FastFree';
   const aboutText = siteConfig.aboutText || '';
-  const phone = siteConfig.phone || '';
-  const whatsapp = siteConfig.whatsapp || '';
+  const cfg = siteConfig as unknown as Record<string, string>;
   const emailAddr = siteConfig.email || '';
   const address = siteConfig.address || '';
   const socialLinks: Record<string, string> = siteConfig.socialLinks || {};
-  const whatsappNumber = whatsapp || phone || '';
+  // Canonical contact/social — siteConfig.ts verified missing phone_eg/phone_sa/whatsapp_eg keys — using canonical literals.
+  const FACEBOOK_URL = 'https://www.facebook.com/share/1DHAKK2ek1/';
+  const LINKEDIN_URL = 'https://www.linkedin.com/company/fastfree-cloud/';
+  const PHONE_EG_DISPLAY = cfg.phone_eg || '010919999937';
+  const PHONE_SA_DISPLAY = cfg.phone_sa || '+966 57 229 3845';
+  const PHONE_EG_TEL = 'tel:+201091999937';
+  const PHONE_SA_TEL = 'tel:+966572293845';
+  const whatsappRaw: string = cfg.whatsapp_eg || siteConfig.whatsapp || siteConfig.phone || 'https://wa.me/201091999937';
+  const whatsappHref = whatsappRaw.startsWith('http')
+    ? whatsappRaw
+    : `https://wa.me/${whatsappRaw.replace(/[^0-9]/g, '')}`;
 
   return (
     <>
-      {whatsappNumber && (
+      {whatsappRaw && (
         <a
-          href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`}
+          href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
           className="wa-float fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 hover:scale-110 transition-all shadow-green-500/30"
@@ -98,7 +107,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
               {aboutText && <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">{aboutText}</p>}
               <div className="flex gap-1.5 flex-wrap">
                 {SOCIAL_ORDER.map(key => {
-                  const url = socialLinks[key];
+                  const url = key === 'facebook' ? FACEBOOK_URL : key === 'linkedin' ? LINKEDIN_URL : socialLinks[key];
                   if (!url) return null;
                   const Icon = SOCIAL_ICONS[key] || Globe;
                   return (
@@ -160,12 +169,18 @@ export default function SharedFooter(_props: SharedFooterProps) {
                     <span dir="ltr" className="truncate">{emailAddr}</span>
                   </li>
                 )}
-                {phone && (
-                  <li className="flex items-center gap-2">
-                    <Phone size={12} className="text-[var(--ff-accent)] shrink-0" />
-                    <span>{phone}</span>
-                  </li>
-                )}
+                <li className="flex items-center gap-2">
+                  <Phone size={12} className="text-[var(--ff-accent)] shrink-0" />
+                  <a href={PHONE_EG_TEL} dir="ltr" className="hover:text-white transition">
+                    {lang === 'ar' ? `مصر ${PHONE_EG_DISPLAY}` : `Egypt ${PHONE_EG_DISPLAY}`}
+                  </a>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Phone size={12} className="text-[var(--ff-accent)] shrink-0" />
+                  <a href={PHONE_SA_TEL} dir="ltr" className="hover:text-white transition">
+                    {lang === 'ar' ? `السعودية ${PHONE_SA_DISPLAY}` : `Saudi ${PHONE_SA_DISPLAY}`}
+                  </a>
+                </li>
                 {address && (
                   <li className="flex items-center gap-2">
                     <MapPin size={12} className="text-[var(--ff-accent)] shrink-0" />
