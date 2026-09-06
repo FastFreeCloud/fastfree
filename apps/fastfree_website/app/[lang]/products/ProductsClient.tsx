@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Smartphone, Globe, Monitor, Package, Tags, ArrowLeft } from 'lucide-react';
+import { Smartphone, Globe, Monitor, Package, Tags, ArrowLeft, Download } from 'lucide-react';
 import { useLanguage } from '@/lib/language-provider';
 import { useSEOMeta } from '@/lib/use-seo';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -181,6 +181,13 @@ export default function ProductsPage() {
                         {product.apple_store_link && (
                           <a href={product.apple_store_link} target="_blank" rel="noopener noreferrer" className="transition hover:scale-105">
                             <Image src="/assets/apple_store_button.png" alt="App Store" width={110} height={32} className="h-8 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
+                          </a>
+                        )}
+                        {product.apk_url && (
+                          <a href={product.apk_url} download rel="noopener noreferrer" className="inline-flex items-center gap-2 h-8 px-3 rounded-lg bg-[var(--ff-accent)] text-[#030712] text-xs font-bold transition hover:scale-105">
+                            <Download size={14} />
+                            {t('PRODUCT_DOWNLOAD_APK', 'تحميل APK', 'Download APK')}
+                            {product.version && <span className="opacity-70">v{product.version}</span>}
                           </a>
                         )}
                       </div>

@@ -7,4 +7,5 @@ export const tags: Tag[] = [
   { id: '8', title_ar: 'منخفض الكود', title_en: 'Low-Code', type: 'domain' },
   { id: '9', title_ar: 'الذكاء الاصطناعي', title_en: 'AI', type: 'tech' },
   { id: '10', title_ar: 'الحوسبة السحابية', title_en: 'Cloud', type: 'infra' },
+  { id: '11', title_ar: 'أندرويد', title_en: 'Android', type: 'tech' },
 ];

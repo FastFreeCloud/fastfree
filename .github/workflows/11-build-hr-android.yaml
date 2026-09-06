@@ -205,6 +205,9 @@ jobs:
           name: fastfree-hr-apk
           path: release
 
+      - name: Rename APK for release
+        run: mv release/signed-release.apk release/fastfree-hr.apk
+
       - name: Get version
         id: version
         run: |

@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Smartphone, Globe, Monitor, ShoppingCart, ExternalLink, Video } from 'lucide-react';
+import { Smartphone, Globe, Monitor, ShoppingCart, ExternalLink, Video, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '@/lib/language-provider';
 import { useSEOMeta } from '@/lib/use-seo';
@@ -123,6 +123,18 @@ export default function ProductDetailPage() {
                 <a href={product.apple_store_link} target="_blank" rel="noopener noreferrer" className="transition hover:scale-105">
                   <Image src="/assets/apple_store_button.png" alt="App Store" width={165} height={48} className="h-12 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
                 </a>
+              )}
+              {product.apk_url && (
+                <div className="space-y-1.5">
+                  <a href={product.apk_url} download rel="noopener noreferrer" className="w-full py-3.5 text-center flex items-center justify-center gap-2 text-[#070b19] font-bold rounded-xl shadow-lg transition-all hover:scale-[1.02]" style={{ background: 'var(--ff-gradient)' }}>
+                    <Download size={16} />
+                    {t('PRODUCT_DOWNLOAD_APK', 'تحميل تطبيق أندرويد (APK)', 'Download Android app (APK)')}
+                    {product.version && <span className="text-xs opacity-70">v{product.version}</span>}
+                  </a>
+                  <p className="text-[11px] leading-relaxed text-slate-500">
+                    {t('PRODUCT_APK_NOTE', 'ملف APK مباشر — ليس على Google Play. فعّل «التثبيت من مصادر غير معروفة».', 'Direct APK — not on Google Play. Enable “Install unknown apps”.')}
+                  </p>
+                </div>
               )}
             </div>
 
