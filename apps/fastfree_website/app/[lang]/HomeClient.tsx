@@ -97,7 +97,7 @@ export default function Home() {
             transition={{ duration: 0.8, ease: 'easeOut' }}
             className={lang === 'ar' ? 'text-right' : 'text-left'}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 text-sm font-semibold" style={{ background: 'rgba(6, 182, 212, 0.1)', color: 'var(--ff-accent)', border: '1px solid rgba(6, 182, 212, 0.2)' }}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 text-sm font-semibold" style={{ background: 'color-mix(in srgb, var(--ff-accent) 12%, transparent)', color: 'var(--ff-accent)', border: '1px solid color-mix(in srgb, var(--ff-accent) 20%, transparent)' }}>
               <Zap size={14} className="text-[var(--ff-accent)]" />
               {t('HERO_BADGE', 'نحوّل أفكارك إلى منتجات رقمية', 'We Transform Your Ideas Into Digital Products')}
             </div>

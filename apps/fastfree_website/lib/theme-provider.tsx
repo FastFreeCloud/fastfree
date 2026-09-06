@@ -61,6 +61,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     currentTheme = next;
     localStorage.setItem('ff_theme', next);
     document.documentElement.classList.toggle('light', next === 'light');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', next === 'light' ? '#f8fafc' : '#030712');
     emitChange();
   }, []);
 

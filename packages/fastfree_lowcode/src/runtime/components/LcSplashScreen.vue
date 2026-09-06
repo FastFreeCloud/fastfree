@@ -150,4 +150,12 @@ function onBackdropClick() {
 .lc-splash-fade-leave-to {
   opacity: 0;
 }
+
+// Light mode overrides — purple brand gradient stays in both modes,
+// only text/logo surfaces adapt
+body:not(.body--dark) .lc-splash-content { color: var(--lc-on-surface); }
+body:not(.body--dark) .lc-splash-logo { background: var(--lc-surface-container); }
+body:not(.body--dark) .lc-splash-icon-text { color: var(--lc-on-surface); }
+body:not(.body--dark) .lc-splash-title { color: var(--lc-on-surface); }
+body:not(.body--dark) .lc-splash-message { color: var(--lc-on-surface-muted); }
 </style>

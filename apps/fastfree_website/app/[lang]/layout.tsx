@@ -52,6 +52,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <script dangerouslySetInnerHTML={{ __html: "(function(){try{if(localStorage.getItem('ff_theme')==='light'){document.documentElement.classList.add('light')}}catch(e){}})()" }} />
         <link rel="preconnect" href={SITE_URL} />
         <link rel="dns-prefetch" href={SITE_URL} />
         <link rel="preconnect" href="https://picsum.photos" />

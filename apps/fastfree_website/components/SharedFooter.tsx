@@ -67,7 +67,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
           href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 hover:scale-110 transition-all shadow-green-500/30"
+          className="wa-float fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 hover:scale-110 transition-all shadow-green-500/30"
           aria-label="WhatsApp"
         >
           <MessageCircle size={22} />

@@ -50,12 +50,12 @@
         <div class="restore-bar-inner" @click="desktop.toggleMaximize(info.id)">
           <q-icon :name="info.icon" size="14px" color="white" />
           <span class="restore-title">{{ info.title }}</span>
-          <q-btn round flat dense size="xs" icon="mdi-minus" color="white"
+          <q-btn round flat dense size="xs" icon="mdi-minus"
             @click.stop="desktop.toggleMinimize(info.id)" />
-          <q-btn round flat dense size="xs" icon="mdi-fullscreen-exit" color="white"
+          <q-btn round flat dense size="xs" icon="mdi-fullscreen-exit"
             :aria-label="t('common.maximize')"
             @click.stop="desktop.toggleMaximize(info.id)" />
-          <q-btn round flat dense size="xs" icon="mdi-close" color="white"
+          <q-btn round flat dense size="xs" icon="mdi-close"
             :aria-label="t('common.close')"
             @click.stop="desktop.closeWindow(info.id)" />
         </div>
@@ -376,6 +376,10 @@ onUnmounted(() => {
   min-height: 36px;
 }
 
+body.body--dark .window-titlebar {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--lc-primary-dark, #0D47A1) 65%, black), color-mix(in srgb, var(--lc-primary, #1565C0) 65%, black));
+}
+
 .titlebar-left {
   display: flex;
   align-items: center;
@@ -450,9 +454,10 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 4px 12px;
-  background: color-mix(in srgb, var(--lc-surface-alt, #000000) 80%, transparent);
+  background: color-mix(in srgb, var(--lc-surface) 85%, transparent);
   backdrop-filter: blur(4px);
-  color: var(--lc-on-primary, #ffffff);
+  color: var(--lc-on-surface);
+  border: 1px solid var(--lc-border);
   border-radius: 0 0 8px 8px;
   font-size: 12px;
   cursor: pointer;

@@ -103,7 +103,7 @@
             v-for="tab in windowTabs"
             :key="tab.id"
             class="dock-tab"
-            :class="{ active: tab.id === desktop.activeWindowId }"
+            :class="{ active: tab.id === desktop.activeWindowId, minimized: tab.isMinimized }"
             role="tab"
             :aria-selected="tab.id === desktop.activeWindowId"
             :aria-label="tab.title"
@@ -115,7 +115,7 @@
             <q-icon
               :name="tab.icon"
               :size="isMobile ? '16px' : '14px'"
-              :color="tab.id === desktop.activeWindowId ? 'white' : tab.iconColor"
+              :color="tab.id === desktop.activeWindowId ? undefined : tab.iconColor"
             />
             <span class="dock-tab-title" :title="tab.title">{{ tab.title }}</span>
             <q-btn
@@ -462,7 +462,7 @@ function onResize() {
   border-radius: 16px;
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+    0 0 0 1px color-mix(in srgb, var(--lc-on-surface) 8%, transparent) inset;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 
   .is-mobile & {
@@ -692,12 +692,16 @@ function onResize() {
     font-weight: 500;
     box-shadow: 0 2px 8px color-mix(in srgb, var(--lc-primary, #1565c0) 25%, transparent);
 
+    .q-icon { color: var(--lc-on-primary, white); }
     .dock-tab-minimize, .dock-tab-close { color: rgba(255,255,255,0.7); }
     .dock-tab-minimize:hover, .dock-tab-close:hover { opacity: 1 !important; color: white; }
   }
 
   .q-icon { pointer-events: none; font-size: 1em; }
 }
+
+.dock-tab.minimized { opacity: .55; }
+.dock-tab.minimized .dock-tab-title { font-style: italic; }
 
 .dock-tab-title {
   max-width: 100px;

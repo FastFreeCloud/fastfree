@@ -393,7 +393,7 @@ onMounted(() => {
 }
 
 .lc-section-icon {
-  color: var(--q-grey-7);
+  color: var(--lc-on-surface-muted);
 }
 
 .lc-section-indicator {
@@ -408,7 +408,7 @@ onMounted(() => {
 }
 
 .lc-section-indicator--custom {
-  background: #ab47bc;
+  background: var(--lc-accent, #ab47bc);
 }
 
 .lc-section-indicator--data {
@@ -479,7 +479,7 @@ onMounted(() => {
   font-size: 11px;
   text-align: center;
   line-height: 1.2;
-  color: var(--q-grey-8);
+  color: var(--lc-on-surface);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -496,7 +496,7 @@ onMounted(() => {
   transition: background 0.15s;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.04);
+    background: color-mix(in srgb, var(--lc-on-surface) 6%, transparent);
   }
 }
 
@@ -504,7 +504,7 @@ onMounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid rgba(0, 0, 0, 0.08);
+  border: 2px solid var(--lc-border);
   transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
 
   .color-picker-item:hover & {
@@ -517,13 +517,13 @@ onMounted(() => {
 .color-hex {
   font-size: 10px;
   font-family: monospace;
-  color: var(--q-grey-6);
+  color: var(--lc-on-surface-muted);
   margin-top: 4px;
 }
 
 .color-label {
   font-size: 10px;
-  color: var(--q-grey-7);
+  color: var(--lc-on-surface-muted);
 }
 
 .hidden {
@@ -531,7 +531,7 @@ onMounted(() => {
 }
 
 /* Dark mode overrides */
-:root &.q-dark {
+body.body--dark & {
   .lc-settings-footer {
     border-top-color: rgba(255, 255, 255, 0.08);
   }

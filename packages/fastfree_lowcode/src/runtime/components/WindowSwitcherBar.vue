@@ -18,7 +18,7 @@
               :key="tab.id"
               class="switcher-tab"
               tabindex="0"
-              :class="{ active: tab.id === desktop.activeWindowId }"
+              :class="{ active: tab.id === desktop.activeWindowId, minimized: tab.isMinimized }"
               @click.stop="activateTab(tab)"
               @keydown.enter.prevent="activateTab(tab)"
             >
@@ -27,7 +27,7 @@
                 class="tab-color-dot"
                 :style="{ background: tab.iconColor }"
               />
-              <q-icon :name="tab.icon" size="14px" :color="tab.id === desktop.activeWindowId ? 'white' : tab.iconColor" />
+              <q-icon :name="tab.icon" size="14px" :color="tab.id === desktop.activeWindowId ? undefined : tab.iconColor" />
               <span class="tab-title">
                 {{ tab.title }}
                 <q-tooltip
@@ -154,7 +154,7 @@ function activateTab(tab: WindowInfo) {
     border-radius: 14px;
     box-shadow:
       0 -2px 8px rgba(0, 0, 0, 0.06),
-      0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+      0 0 0 1px color-mix(in srgb, var(--lc-on-surface) 8%, transparent) inset;
     z-index: 10;
     margin-bottom: 4px;
   }
@@ -263,6 +263,8 @@ function activateTab(tab: WindowInfo) {
     font-weight: 500;
     box-shadow: 0 2px 8px color-mix(in srgb, var(--lc-primary, #1565c0) 30%, transparent);
 
+    .q-icon { color: var(--lc-on-primary, white); }
+
     .tab-color-dot {
       display: none;
     }
@@ -282,6 +284,9 @@ function activateTab(tab: WindowInfo) {
     font-size: 1em;
   }
 }
+
+.switcher-tab.minimized { opacity: .55; }
+.switcher-tab.minimized .tab-title { font-style: italic; }
 
 .tab-color-dot {
   width: 6px;

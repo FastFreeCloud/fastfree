@@ -17,7 +17,7 @@
 
     <q-btn flat round dense :icon="store.isDark ? icons.lightMode : icons.darkMode" color="white" size="16px"
       :aria-label="store.isDark ? t('common.lightMode') : t('common.darkMode')"
-      @click="store.toggleMode">
+      @click="store.setMode(store.isDark ? 'light' : 'dark')">
       <q-tooltip>{{ store.isDark ? t('common.lightMode') : t('common.darkMode') }}</q-tooltip>
     </q-btn>
 

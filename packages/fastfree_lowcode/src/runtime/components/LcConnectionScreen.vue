@@ -351,4 +351,15 @@ defineExpose({ retry, goOffline, startPolling, stopPolling, state })
 .fade-leave-to {
   opacity: 0;
 }
+
+// Light mode overrides — navy/dark look above is untouched
+body:not(.body--dark) .lc-connection-screen { background: var(--lc-surface); }
+body:not(.body--dark) .lc-connection-card { background: var(--lc-surface-container) !important; color: var(--lc-on-surface); }
+body:not(.body--dark) .lc-connection-title { color: var(--lc-on-surface); }
+body:not(.body--dark) .lc-connection-subtitle { color: var(--lc-on-surface-muted); }
+body:not(.body--dark) .lc-status-text { color: var(--lc-on-surface-muted); }
+body:not(.body--dark) .lc-status-row.failed .lc-status-text,
+body:not(.body--dark) .lc-status-row.offline .lc-status-text { color: var(--lc-on-surface); }
+body:not(.body--dark) .lc-attempt-info { color: var(--lc-on-surface-muted); }
+body:not(.body--dark) .lc-server-url { color: var(--lc-on-surface-muted); }
 </style>

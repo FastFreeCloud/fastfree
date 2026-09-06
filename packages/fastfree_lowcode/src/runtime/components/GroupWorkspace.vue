@@ -117,7 +117,7 @@
       <div v-else-if="group && searchQuery" class="empty-state">
         <q-icon name="mdi-file-search-outline" size="64px" />
         <div class="text-subtitle1 q-mt-sm">{{ t("groups.noResults") }}</div>
-        <div class="text-caption text-grey-5">{{ t("groups.tryDifferent") }}</div>
+        <div class="text-caption" style="color: var(--lc-on-surface-muted)">{{ t("groups.tryDifferent") }}</div>
       </div>
 
       <div v-else-if="group" class="empty-state">
@@ -401,6 +401,10 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
+body.body--dark .cosmic-app-icon {
+  filter: brightness(1.4) saturate(1.1);
+}
+
 .cosmic-action-btn {
   position: absolute;
   top: 2px;
@@ -435,14 +439,14 @@ onMounted(() => {
   &.is-fav:hover {
     opacity: 1 !important;
     transform: scale(1) !important;
-    color: #ffd700 !important;
+    color: var(--q-warning, #ffc107) !important;
   }
 
   &.is-pinned,
   &.is-pinned:hover {
     opacity: 1 !important;
     transform: scale(1) !important;
-    color: var(--q-color-primary, #1976d2) !important;
+    color: var(--q-primary, #1976d2) !important;
   }
 
   .cosmic-app-item:hover &.is-fav,
@@ -516,7 +520,7 @@ onMounted(() => {
       opacity: 1;
     }
 
-    .cosmic-fav-btn { inset-inline-end: -4px; color: #ffd700 !important; }
+    .cosmic-fav-btn { inset-inline-end: -4px; color: var(--q-warning, #ffc107) !important; }
     .cosmic-pin-btn { inset-inline-start: -4px; }
   }
 
