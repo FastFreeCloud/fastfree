@@ -18,7 +18,9 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
 }
 
 export default async function Page({ params }: { params: Promise<{ lang: string; slug: string }> }) {
+  const { slug } = await params;
   const product = products.find((p) => p.slug === slug);
   if (!product || !product.is_active) notFound();
   return <ProductClient />;
+}
 }
