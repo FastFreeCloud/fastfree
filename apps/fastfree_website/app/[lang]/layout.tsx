@@ -18,11 +18,11 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [
-      { url: '/fastfree_logo.png', sizes: '32x32', type: 'image/png' },
-      { url: '/fastfree_logo.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
     ],
-    apple: '/fastfree_logo.png',
-    shortcut: '/fastfree_logo.png',
+    apple: '/apple-touch-icon.png',
+    shortcut: '/favicon.ico',
   },
   robots: {
     index: true,
@@ -58,11 +58,12 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://picsum.photos" />
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
-        <link rel="icon" href="/fastfree_logo.png" type="image/png" sizes="32x32" />
-        <link rel="icon" href="/fastfree_logo.png" type="image/png" sizes="16x16" />
-        <link rel="apple-touch-icon" href="/fastfree_logo.png" />
-        <link rel="shortcut icon" href="/fastfree_logo.png" />
-        <meta name="msapplication-TileImage" content="/fastfree_logo.png" />
+        <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+        <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <meta name="msapplication-TileImage" content="/icon-192x192.png" />
         <meta name="msapplication-TileColor" content="#030712" />
         <meta name="theme-color" content="#030712" />
       </head>

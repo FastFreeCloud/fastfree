@@ -7,7 +7,7 @@ import { services } from '@/src/data/services';
 
 export const SITE = 'FastFree';
 export const SITE_URL = 'https://fastfree.cloud';
-export const OG_IMAGE = '/assets/og-default.svg';
+export const OG_IMAGE = '/assets/og-image.png';
 
 export const PAGE_TITLES: Record<string, { ar: string; en: string }> = {
   home: { ar: 'الرئيسية', en: 'Home' },
