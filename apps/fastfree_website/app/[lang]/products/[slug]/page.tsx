@@ -23,4 +23,3 @@ export default async function Page({ params }: { params: Promise<{ lang: string;
   if (!product || !product.is_active) notFound();
   return <ProductClient />;
 }
-}
