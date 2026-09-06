@@ -220,7 +220,7 @@ To talk with us simply, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or
     excerpt_en: 'Automation starts small with consent, and connects to real customer data.',
     cover_image: '/assets/blog-marketing-automation-beginners.svg',
     category: 'DIGITAL_MARKETING',
-    tags: ['ERP', 'Frappe'],
+    tags: ['ERP'],
     is_published: true,
     published_at: '2026-05-30',
     views: 240,

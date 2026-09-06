@@ -62,11 +62,9 @@ export default function Home() {
     { name: 'Next.js', color: '#ffffff' },
     { name: 'React', color: '#61dafb' },
     { name: 'TypeScript', color: '#3178c6' },
-    { name: 'Drizzle', color: '#c5f74f' },
     { name: 'Node.js', color: '#68a063' },
     { name: 'Tailwind', color: '#06b6d4' },
     { name: 'Docker', color: '#2496ed' },
-    { name: 'MySQL', color: '#4479a1' },
   ];
 
   return (

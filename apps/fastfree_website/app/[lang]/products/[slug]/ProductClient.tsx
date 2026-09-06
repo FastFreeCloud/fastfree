@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Smartphone, Globe, Monitor, Github, ShoppingCart, ExternalLink, Video } from 'lucide-react';
+import { Smartphone, Globe, Monitor, ShoppingCart, ExternalLink, Video } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '@/lib/language-provider';
 import { useSEOMeta } from '@/lib/use-seo';
@@ -122,11 +122,6 @@ export default function ProductDetailPage() {
               {product.apple_store_link && (
                 <a href={product.apple_store_link} target="_blank" rel="noopener noreferrer" className="transition hover:scale-105">
                   <Image src="/assets/apple_store_button.png" alt="App Store" width={165} height={48} className="h-12 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
-                </a>
-              )}
-              {product.github_link && (
-                <a href={product.github_link} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-bold hover:bg-white/10 transition">
-                  <Github size={16} /> GitHub
                 </a>
               )}
             </div>

@@ -13,6 +13,7 @@ let
   spaServer = name: spaDir: ''
     ${name}.${domain} {
       ${tlsBlock}
+      header -Server
       root * ${spaDir}
       @api path /api/*
       handle @api {
@@ -36,6 +37,7 @@ let
   caddyfileText = ''
     ${domain} {
       ${tlsBlock}
+      header -Server
       ${if config.fastfree.apps.fastfree_website then ''
         reverse_proxy 127.0.0.1:9004
       '' else ''
@@ -45,6 +47,7 @@ let
 
     backend.${domain} {
       ${tlsBlock}
+      header -Server
       reverse_proxy 127.0.0.1:8080
     }
 
@@ -55,11 +58,13 @@ let
 
     ${sd.db}.${domain} {
       ${tlsBlock}
+      header -Server
       reverse_proxy 127.0.0.1:8082
     }
 
     ${sd.panel}.${domain} {
       ${tlsBlock}
+      header -Server
       reverse_proxy 127.0.0.1:9090
     }
   '';

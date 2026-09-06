@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 export default function Error({
   error,
@@ -17,7 +17,7 @@ export default function Error({
           حدث خطأ ما
         </h2>
         <p className="text-slate-400 text-sm mb-6">
-          {error.message || 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.'}
+          {'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.'}
         </p>
         <button
           onClick={reset}

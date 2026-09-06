@@ -312,11 +312,11 @@ Code transparency matters especially for companies that care about where and how
 We believe a small but active community is better than a large marketing noise. If you want to review the code or contribute, it is available. We prefer gradual public building over closed promises.
 
 To talk with us simply, WhatsApp: Egypt +201091999937 • Saudi +966572293845 or admin@fastfree.cloud.`,
-    excerpt_ar: 'نبني على Frappe و ERPNext مفتوحي المصدر، مع كود شفاف ونشر تسيطر عليه الشركة.',
-    excerpt_en: 'We build on open-source Frappe and ERPNext, with transparent code and company-controlled deployment.',
+    excerpt_ar: 'نبني على أدوات مفتوحة المصدر، مع كود شفاف ونشر تسيطر عليه الشركة.',
+    excerpt_en: 'We build on open-source tools, with transparent code and company-controlled deployment.',
     cover_image: '/assets/blog-open-ecosystem-community.svg',
     category: 'COMPANY_NEWS',
-    tags: ['Frappe', 'Low-Code'],
+    tags: ['Low-Code'],
     is_published: true,
     published_at: '2026-08-03',
     views: 265,

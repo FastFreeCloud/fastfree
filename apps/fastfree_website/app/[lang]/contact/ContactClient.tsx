@@ -28,7 +28,7 @@ function FadeInSection({ children, delay = 0, className = '' }: { children: Reac
 const FAQ_ITEMS = [
   { qAr: 'كم تستغرق مدة تطوير المشروع؟', qEn: 'How long does project development take?', aAr: 'تختلف المدة حسب تعقيد المشروع، لكن المشاريع المتوسطة تستغرق 4-8 أسابيع.', aEn: 'Duration varies by project complexity, but medium projects take 4-8 weeks.' },
   { qAr: 'هل تقدمون دعماً فنياً بعد التسليم؟', qEn: 'Do you provide technical support after delivery?', aAr: 'نعم، نقدم دعماً فنياً مستمراً وتحديثات دورية لضمان استمرارية عمل النظام.', aEn: 'Yes, we provide continuous technical support and periodic updates.' },
-  { qAr: 'ما هي تقنيات العمل المستخدمة؟', qEn: 'What technologies do you use?', aAr: 'نستخدم أحدث التقنيات مثل Next.js, React, Node.js وأطر العمل الحديثة لبناء مواقع وتطبيقات سريعة وموثوقة.', aEn: 'We use the latest technologies like Next.js, React, Node.js and modern frameworks to build fast, reliable websites and applications.' },
+  { qAr: 'ما هي تقنيات العمل المستخدمة؟', qEn: 'What technologies do you use?', aAr: 'نستخدم تقنيات ويب حديثة وموثوقة لبناء مواقع وتطبيقات سريعة وآمنة.', aEn: 'We use modern, reliable web technologies to build fast, secure websites and applications.' },
   { qAr: 'هل يمكنني طلب تعديلات بعد التسليم؟', qEn: 'Can I request modifications after delivery?', aAr: 'بالتأكيد، نوفر جلسات تعديل وتحسين بعد التسليم لضمان رضاك الكامل.', aEn: 'Absolutely, we offer adjustment and improvement sessions after delivery.' },
 ];
 
