@@ -51,10 +51,13 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
   const pathname = usePathname();
   const activeKey = activePage ?? pathname?.split('/').filter(Boolean)[1] ?? 'home';
 
-  // Close mobile menu on any route change (back/forward, programmatic nav, locale switch)
-  useEffect(() => {
+  // Close mobile menu on any route change (back/forward, programmatic nav, locale switch).
+  // Render-time adjustment (not an effect) so no cascading render is triggered.
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setMobileOpen(false);
-  }, [pathname]);
+  }
 
   return (
     <nav aria-label={t('NAV_MAIN', 'التنقل الرئيسي', 'Main navigation')} className={`fixed w-full z-50 transition-all duration-300 ${
