@@ -8,7 +8,7 @@ export const dynamicParams = false;
 
 export async function generateStaticParams() {
   const langs: Locale[] = ['ar', 'en'];
-  return services.flatMap((s) => langs.map((lang) => ({ lang, slug: s.id })));
+  return services.filter((s) => s.is_active).flatMap((s) => langs.map((lang) => ({ lang, slug: s.id })));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string; slug: string }> }) {
@@ -18,6 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
 
 export default async function Page({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const { slug } = await params;
-  if (!services.find((s) => String(s.id) === slug)) notFound();
+  const service = services.find((s) => String(s.id) === slug);
+  if (!service || !service.is_active) notFound();
   return <ServiceClient />;
 }

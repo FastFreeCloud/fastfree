@@ -496,3 +496,8 @@ html.light .status-lost { background: #fef2f2; color: #dc2626; }
     scroll-behavior: auto !important;
   }
 }
+
+/* Footer contact column: let flex children shrink + ellipsis instead of overflow */
+footer .footer-contact li { min-width: 0; }
+footer .footer-contact li > a, footer .footer-contact li > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+

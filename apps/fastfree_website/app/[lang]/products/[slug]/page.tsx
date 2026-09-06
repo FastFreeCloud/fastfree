@@ -8,7 +8,7 @@ export const dynamicParams = false;
 
 export async function generateStaticParams() {
   const langs: Locale[] = ['ar', 'en'];
-  return products.flatMap((p) => langs.map((lang) => ({ lang, slug: p.slug })));
+  return products.filter((p) => p.is_active).flatMap((p) => langs.map((lang) => ({ lang, slug: p.slug })));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string; slug: string }> }) {
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
 }
 
 export default async function Page({ params }: { params: Promise<{ lang: string; slug: string }> }) {
-  const { slug } = await params;
-  if (!products.find((p) => p.slug === slug)) notFound();
+  const product = products.find((p) => p.slug === slug);
+  if (!product || !product.is_active) notFound();
   return <ProductClient />;
 }

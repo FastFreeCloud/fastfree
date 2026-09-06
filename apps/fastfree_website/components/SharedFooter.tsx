@@ -170,7 +170,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
                 <Headphones size={14} className="text-[var(--ff-accent)]" />
                 {t('FOOTER_CONTACT', 'تواصل معنا', 'Contact')}
               </h4>
-              <ul className="space-y-2.5 text-xs text-slate-400">
+              <ul className="footer-contact space-y-2.5 text-xs text-slate-400">
                 {emailAddr && (
                   <li className="flex items-center gap-2">
                     <Mail size={12} className="text-[var(--ff-accent)] shrink-0" />

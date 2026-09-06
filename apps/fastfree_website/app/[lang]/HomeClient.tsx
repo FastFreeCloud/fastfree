@@ -534,23 +534,23 @@ export default function Home() {
           variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } }}
           className="grid grid-cols-1 md:grid-cols-3 gap-8"
         >
-          {posts.filter((p) => p.is_published).sort((a, b) => (b.published_at || '').localeCompare(a.published_at || '')).slice(0, 3).map((post) => (
+          {posts.filter((p) => p.is_published).sort((a, b) => (b.published_at || '').localeCompare(a.published_at || '')).slice(0, 3).map((post, i) => (
             <motion.div
               key={post.id}
               variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } } }}
-              className="rounded-3xl bg-white/5 border border-white/10 overflow-hidden hover:border-white/20 transition-all flex flex-col justify-between group"
+              className="rounded-3xl bg-white/5 border border-white/10 overflow-hidden hover:border-white/20 transition-all flex flex-col justify-between group h-full"
             >
               <div>
-                <div className="h-48 overflow-hidden">
-                  <Image src={post.cover_image || '/assets/og-default.svg'} alt={lang === 'ar' ? post.title_ar || '' : post.title_en || ''} width={600} height={400} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                <div className="h-40 sm:h-48 overflow-hidden bg-slate-900 relative">
+                  <Image src={post.cover_image || '/assets/og-default.svg'} alt={lang === 'ar' ? post.title_ar || '' : post.title_en || ''} width={600} height={400} priority={i === 0} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                 </div>
                 <div className="p-6">
-                  <span className="text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-3 py-1 rounded-full">{post.category ?? ''}</span>
-                  <h3 className="text-lg font-bold mt-3 mb-2 leading-snug group-hover:text-[var(--ff-accent)] transition-colors">{lang === 'ar' ? post.title_ar : post.title_en}</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">{lang === 'ar' ? post.excerpt_ar : post.excerpt_en}</p>
+                  <span className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15 mb-3 inline-block max-w-full truncate">{post.category ?? ''}</span>
+                  <h3 className="text-base sm:text-lg font-bold mt-3 mb-2 leading-snug line-clamp-2 break-words group-hover:text-[var(--ff-accent)] transition-colors">{lang === 'ar' ? post.title_ar : post.title_en}</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed line-clamp-3 break-words">{lang === 'ar' ? post.excerpt_ar : post.excerpt_en}</p>
                 </div>
               </div>
-              <div className="px-6 pb-6 flex items-center justify-between text-xs text-slate-400">
+              <div className="px-6 py-4 mt-auto border-t border-white/5 flex items-center justify-between flex-wrap gap-2 text-xs text-slate-400">
                  <span>{post.published_at ? new Date(post.published_at).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US') : ''}</span>
                 <Link href={`/${lang}/blog/${post.slug}`} className="font-bold text-white hover:text-[var(--ff-accent)] flex items-center gap-1">
                   {t('READ', 'اقرأ', 'Read')} <ArrowLeft size={12} className={lang === 'ar' ? '' : 'rotate-180'} />

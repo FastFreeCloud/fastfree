@@ -61,24 +61,17 @@ export default function OrganizationSchema({
 interface WebSiteSchemaProps {
   name?: string;
   url?: string;
-  searchAction?: string;
 }
 
 export function WebSiteSchema({
   name = 'FastFree',
   url = 'https://fastfree.cloud',
-  searchAction = 'https://fastfree.cloud/products?search=',
 }: WebSiteSchemaProps) {
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name,
     url,
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: searchAction,
-      'query-input': 'required name=search_term_string',
-    },
   };
 
   return (

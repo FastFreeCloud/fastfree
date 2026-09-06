@@ -57,7 +57,7 @@ export function useSEOMeta(
     const enUrl = `${SITE_URL}/en${base}`;
     const description = resolveDescription(entity_type, entity_id, lang, title);
     const ogType = entity_type === 'post' ? 'article' : 'website';
-    const ogLocale = lang === 'ar' ? 'ar_SA' : 'en_US';
+    const ogLocale = lang === 'ar' ? 'ar_EG' : 'en_US';
     const image = ogImage ?? OG_IMAGE;
 
     // Primary meta

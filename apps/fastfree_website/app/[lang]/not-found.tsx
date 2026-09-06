@@ -1,4 +1,9 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function NotFound({
   params,
@@ -22,9 +27,9 @@ export default async function NotFound({
         <div className="text-8xl font-bold text-white/10 mb-4" style={{ fontFamily: 'var(--ff-font-heading)' }}>
           404
         </div>
-        <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'var(--ff-font-heading)' }}>
+        <h1 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'var(--ff-font-heading)' }}>
           الصفحة غير موجودة / Page not found
-        </h2>
+        </h1>
         <p className="text-slate-400 text-sm mb-6">
           عذراً، الصفحة التي تبحث عنها غير موجودة أو تم نقلها. / Sorry, the page you are looking for does not exist or has been moved.
         </p>
