@@ -81,8 +81,8 @@ export default function ServicesPage() {
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
               { icon: Layers, value: '12+', label: t('SERVICES_COUNT', 'خدمة متخصصة', 'Specialized Services') },
-            { icon: Code, value: '150+', label: t('PROJECTS_COUNT', 'مشروع منجز', 'Completed Projects') },
-            { icon: Users, value: '120+', label: t('CLIENTS_COUNT', 'عميل سعيد', 'Happy Clients') },
+            { icon: Package, value: '10+', label: t('PRODUCTS_COUNT', 'منتجات', 'Products') },
+            { icon: Pencil, value: '50+', label: t('ARTICLES_COUNT', 'مقالات', 'Articles') },
             { icon: Clock, value: '24/7', label: t('SUPPORT_COUNT', 'دعم فني', 'Tech Support') },
           ].map((stat, i) => (
             <FadeIn key={i} delay={i * 0.1}>

@@ -13,7 +13,6 @@ import { testimonials } from '@/src/data/testimonials';
 import { useSEOMeta } from '@/lib/use-seo';
 import { motion } from 'framer-motion';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
-import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
 import { TextReveal } from '@/components/ui/TextReveal';
 import { useRef } from 'react';
 import OrganizationSchema, { WebSiteSchema, BreadcrumbSchema } from '@/components/SEO/StructuredData';
@@ -208,14 +207,14 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-r from-[var(--ff-primary)]/5 via-transparent to-[var(--ff-accent)]/5 pointer-events-none" />
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
-            { value: 150, suffix: '+', label: t('STATS_PROJECTS', 'مشروع ناجح', 'Successful Projects') },
-            { value: 120, suffix: '+', label: t('STATS_CLIENTS', 'عميل راضٍ', 'Happy Clients') },
-            { value: 10, suffix: '+', label: t('STATS_EXPERIENCE', 'سنوات خبرة', 'Years Experience') },
-            { value: 45, suffix: '+', label: t('STATS_ENGINEERS', 'مهندس ومصمم', 'Engineers & Designers') },
+            { display: '12+', label: t('STATS_SERVICES', 'خدمات احترافية', 'Professional Services') },
+            { display: '10+', label: t('STATS_PRODUCTS', 'منتجات رقمية', 'Digital Products') },
+            { display: '50+', label: t('STATS_ARTICLES', 'مقال تقني', 'Tech Articles') },
+            { display: '24/7', label: t('STATS_SUPPORT', 'دعم فني', 'Technical Support') },
           ].map((stat, i) => (
             <div key={i}>
               <div className="text-3xl font-extrabold text-transparent bg-clip-text" style={{ backgroundImage: 'var(--ff-gradient)' }}>
-                <AnimatedCounter value={stat.value} suffix={stat.suffix} />
+                <span>{stat.display}</span>
               </div>
               <div className="text-slate-400 text-xs mt-1">{stat.label}</div>
             </div>
@@ -399,9 +398,9 @@ export default function Home() {
           <FadeIn>
             <div className="text-center mb-12">
               <h2 className="text-2xl md:text-3xl font-bold mb-3" style={{ fontFamily: 'var(--ff-font-heading)' }}>
-                {t('TECH_TITLE', 'التقنيات المستخدمة', 'Technologies We Use')}
+                {t('TECH_TITLE', 'تقنيات هذا الموقع', "This Site's Stack")}
               </h2>
-              <p className="text-slate-400 text-sm">{t('TECH_DESC', 'نستخدم أحدث التقنيات لضمان أداء عالي وقابلية للتوسع', 'We use the latest technologies for high performance and scalability')}</p>
+              <p className="text-slate-400 text-sm">{t('TECH_DESC', 'هذا الموقع التسويقي مبني بأحدث التقنيات لضمان أداء عالٍ وقابلية للتوسع', 'This marketing website is built with the latest technologies for high performance and scalability')}</p>
             </div>
           </FadeIn>
           <div className="flex flex-wrap justify-center gap-4">
