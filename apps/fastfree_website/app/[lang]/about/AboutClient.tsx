@@ -110,11 +110,11 @@ export default function AboutPage() {
                 {aboutText}
               </p>
               <div className="flex flex-wrap gap-4 mt-8">
-                <Link href={`/${lang}/contact`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-[#030712] transition-all hover:scale-105" style={{ background: 'var(--ff-gradient)' }}>
+                <Link href={`/${lang}/contact`} className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-[#030712] transition-all hover:scale-105 w-full sm:w-auto" style={{ background: 'var(--ff-gradient)' }}>
                   {t('ABOUT_CTA', 'تواصل معنا', 'Contact Us')}
                   <ArrowLeft size={16} className={lang === 'ar' ? '' : 'rotate-180'} />
                 </Link>
-                <Link href={`/${lang}/services`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-white font-medium hover:bg-white/5 transition-all">
+                <Link href={`/${lang}/services`} className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-white font-medium hover:bg-white/5 transition-all w-full sm:w-auto">
                   {t('ABOUT_SERVICES', 'خدماتنا', 'Our Services')}
                 </Link>
               </div>
@@ -219,7 +219,7 @@ export default function AboutPage() {
       {/* CTA */}
       <section className="py-20 max-w-4xl mx-auto px-6">
         <FadeInSection>
-          <div className="text-center p-12 md:p-16 rounded-3xl bg-gradient-to-br from-slate-900/60 to-[var(--ff-primary-dark)]/30 border border-white/10 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+          <div className="text-center p-6 sm:p-12 md:p-16 rounded-3xl bg-gradient-to-br from-slate-900/60 to-[var(--ff-primary-dark)]/30 border border-white/10 backdrop-blur-xl shadow-2xl relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-[var(--ff-accent)]/5 to-[var(--ff-primary)]/5 pointer-events-none" />
             <div className="relative z-10">
               <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: 'var(--ff-font-heading)' }}>

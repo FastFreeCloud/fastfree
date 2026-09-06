@@ -76,11 +76,12 @@ export default function BlogPage() {
           <div className="max-w-md mx-auto relative">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
             <input
-              type="text"
+              type="search"
               placeholder={t('BLOG_SEARCH', 'ابحث عن مقال...', 'Search articles...')}
+              aria-label={t('BLOG_SEARCH', 'ابحث عن مقال...', 'Search articles...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-[var(--ff-accent)] focus:ring-1 focus:ring-[var(--ff-accent)] transition-all placeholder:text-slate-400"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-base focus:outline-none focus:border-[var(--ff-accent)] focus:ring-1 focus:ring-[var(--ff-accent)] transition-all placeholder:text-slate-400"
             />
           </div>
         </div>

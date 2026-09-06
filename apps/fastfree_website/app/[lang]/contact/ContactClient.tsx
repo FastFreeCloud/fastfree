@@ -163,12 +163,12 @@ export default function ContactPage() {
 
       {/* Form + Info Section */}
       <section className="max-w-7xl mx-auto px-6 pb-20 z-10 relative">
-        <div className="rounded-3xl p-8 md:p-12 bg-[#090d16]/60 border border-white/10 backdrop-blur-xl shadow-2xl relative">
+        <div className="rounded-3xl p-4 sm:p-8 md:p-12 bg-[#090d16]/60 border border-white/10 backdrop-blur-xl shadow-2xl relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
 
             {/* Form */}
             <FadeInSection>
-              <div className={`bg-slate-950/40 border border-white/10 p-8 rounded-2xl shadow-xl ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
+              <div className={`bg-slate-950/40 border border-white/10 p-4 sm:p-8 rounded-2xl shadow-xl ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
                 {submitted ? (
                   <div className="text-center py-12">
                     <motion.div
@@ -198,7 +198,9 @@ export default function ContactPage() {
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           placeholder={t('CONTACT_NAME_PH', 'أدخل اسمك الكامل', 'Enter your full name')}
-                          className="w-full bg-[#030712]/60 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-white text-sm focus:outline-none focus:border-[var(--ff-accent)] focus:ring-1 focus:ring-[var(--ff-accent)] transition-all placeholder:text-slate-400"
+                          autoComplete="name"
+                          enterKeyHint="next"
+                          className="w-full bg-[#030712]/60 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-white text-base focus:outline-none focus:border-[var(--ff-accent)] focus:ring-1 focus:ring-[var(--ff-accent)] transition-all placeholder:text-slate-400"
                         />
                       </div>
                     </div>
@@ -215,7 +217,10 @@ export default function ContactPage() {
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             placeholder={t('CONTACT_EMAIL_PH', 'example@email.com', 'example@email.com')}
-                            className="w-full bg-[#030712]/60 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-white text-sm focus:outline-none focus:border-[var(--ff-accent)] focus:ring-1 focus:ring-[var(--ff-accent)] transition-all placeholder:text-slate-400"
+                            autoComplete="email"
+                            inputMode="email"
+                            enterKeyHint="next"
+                            className="w-full bg-[#030712]/60 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-white text-base focus:outline-none focus:border-[var(--ff-accent)] focus:ring-1 focus:ring-[var(--ff-accent)] transition-all placeholder:text-slate-400"
                           />
                         </div>
                       </div>
@@ -229,7 +234,10 @@ export default function ContactPage() {
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                             placeholder={t('CONTACT_PHONE_PH', '+20 1XX XXX XXXX', '+20 1XX XXX XXXX')}
-                            className="w-full bg-[#030712]/60 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-white text-sm focus:outline-none focus:border-[var(--ff-accent)] focus:ring-1 focus:ring-[var(--ff-accent)] transition-all placeholder:text-slate-400"
+                            autoComplete="tel"
+                            inputMode="tel"
+                            enterKeyHint="next"
+                            className="w-full bg-[#030712]/60 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-white text-base focus:outline-none focus:border-[var(--ff-accent)] focus:ring-1 focus:ring-[var(--ff-accent)] transition-all placeholder:text-slate-400"
                           />
                         </div>
                       </div>
@@ -246,7 +254,8 @@ export default function ContactPage() {
                           value={formData.subject}
                           onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                           placeholder={t('CONTACT_SUBJECT_PH', 'مثال: طلب عرض سعر لتطبيق ويب', 'Example: Request a quote for a web app')}
-                          className="w-full bg-[#030712]/60 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-white text-sm focus:outline-none focus:border-[var(--ff-accent)] focus:ring-1 focus:ring-[var(--ff-accent)] transition-all placeholder:text-slate-400"
+                          enterKeyHint="next"
+                          className="w-full bg-[#030712]/60 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-white text-base focus:outline-none focus:border-[var(--ff-accent)] focus:ring-1 focus:ring-[var(--ff-accent)] transition-all placeholder:text-slate-400"
                         />
                       </div>
                     </div>
@@ -260,7 +269,7 @@ export default function ContactPage() {
                         value={formData.message}
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         placeholder={t('CONTACT_MESSAGE_PH', 'اكتب تفاصيل مشروعك هنا...', 'Write your project details here...')}
-                        className="w-full bg-[#030712]/60 border border-white/10 rounded-xl p-4 text-white text-sm focus:outline-none focus:border-[var(--ff-accent)] focus:ring-1 focus:ring-[var(--ff-accent)] transition-all resize-none placeholder:text-slate-400"
+                        className="w-full bg-[#030712]/60 border border-white/10 rounded-xl p-4 text-white text-base focus:outline-none focus:border-[var(--ff-accent)] focus:ring-1 focus:ring-[var(--ff-accent)] transition-all resize-none placeholder:text-slate-400"
                       />
                     </div>
 

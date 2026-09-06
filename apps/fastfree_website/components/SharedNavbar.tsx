@@ -24,6 +24,18 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [mobileOpen]);
+
   const links = [
     { href: `/${lang}`, key: 'home', label: t('NAV_HOME', 'الرئيسية', 'Home') },
     { href: `/${lang}/services`, key: 'services', label: t('NAV_SERVICES', 'خدماتنا', 'Services') },
@@ -128,7 +140,7 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-[#030712]/95 backdrop-blur-xl border-t border-white/5 px-6 pb-6 pt-4">
+        <div className="md:hidden bg-[#030712]/95 backdrop-blur-xl border-t border-white/5 px-6 pb-6 pt-4 max-h-[calc(100svh-5rem)] overflow-y-auto">
           <div className="flex flex-col gap-1">
             {links.map((link) => (
               <Link

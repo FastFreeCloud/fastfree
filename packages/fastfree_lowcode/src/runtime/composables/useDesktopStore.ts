@@ -320,10 +320,10 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
     ) {
       const win = windows.value[id];
       if (!win) return;
-      if (bounds.width !== undefined) win.width = bounds.width;
-      if (bounds.height !== undefined) win.height = bounds.height;
-      if (bounds.left !== undefined) win.left = bounds.left;
-      if (bounds.top !== undefined) win.top = bounds.top;
+      if (bounds.width !== undefined && Number.isFinite(bounds.width) && bounds.width > 0) win.width = bounds.width;
+      if (bounds.height !== undefined && Number.isFinite(bounds.height) && bounds.height > 0) win.height = bounds.height;
+      if (bounds.left !== undefined && Number.isFinite(bounds.left)) win.left = bounds.left;
+      if (bounds.top !== undefined && Number.isFinite(bounds.top)) win.top = bounds.top;
       lastBoundsCache.value[win.screenType] = {
         width: win.width,
         height: win.height,
@@ -335,6 +335,35 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
         saveTimer = null;
         saveSessionState();
       }, 300);
+    }
+
+    // Re-clamp all open windows to the current viewport (rotation, keyboard
+    // resize, split-screen). Without this a window opened on desktop sizes
+    // slides under the dock/notch when the viewport shrinks.
+    let viewportTimer: ReturnType<typeof setTimeout> | null = null;
+    function reconcileViewport() {
+      if (typeof window === "undefined") return;
+      const headerH = cfg.desktop.headerHeight ?? 56;
+      const dockH = cfg.desktop.dockHeight ?? 77;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight - headerH - dockH;
+      for (const id of Object.keys(windows.value)) {
+        const win = windows.value[id];
+        if (!win || win.isMaximized) continue;
+        win.width = Math.min(win.width, vw - 20);
+        win.height = Math.min(win.height, vh - 20);
+        win.left = Math.max(0, Math.min(win.left, vw - win.width));
+        win.top = Math.max(headerH, Math.min(win.top, vh - win.height));
+      }
+    }
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", () => {
+        if (viewportTimer !== null) clearTimeout(viewportTimer);
+        viewportTimer = setTimeout(() => {
+          viewportTimer = null;
+          reconcileViewport();
+        }, 250);
+      });
     }
 
     function reorderWindows(
@@ -406,6 +435,19 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
               if (w.height !== undefined) windows.value[id].height = w.height;
               if (w.left !== undefined) windows.value[id].left = w.left;
               if (w.top !== undefined) windows.value[id].top = w.top;
+              // Re-clamp restored bounds to the current viewport: a session
+              // saved on desktop would otherwise land off-screen on a phone.
+              const rHeaderH = cfg.desktop.headerHeight ?? 56;
+              const rDockH = cfg.desktop.dockHeight ?? 77;
+              const rVw = typeof window !== "undefined" ? window.innerWidth : 1024;
+              const rVh = (typeof window !== "undefined" ? window.innerHeight : 768) - rHeaderH - rDockH;
+              const rw = windows.value[id];
+              if (rw) {
+                rw.width = Math.min(rw.width, rVw - 20);
+                rw.height = Math.min(rw.height, rVh - 20);
+                rw.left = Math.max(0, Math.min(rw.left, rVw - rw.width));
+                rw.top = Math.max(rHeaderH, Math.min(rw.top, rVh - rw.height));
+              }
               if (w.width !== undefined && w.height !== undefined && w.left !== undefined && w.top !== undefined) {
                 lastBoundsCache.value[w.screenType] = {
                   width: w.width,

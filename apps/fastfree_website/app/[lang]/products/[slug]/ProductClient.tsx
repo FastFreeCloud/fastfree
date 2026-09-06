@@ -95,7 +95,7 @@ export default function ProductDetailPage() {
               <span className="text-xs text-slate-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">v{product.version}</span>
             )}
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
             <TextReveal text={lang === 'ar' ? product.name_ar : product.name_en} />
           </h1>
           <p className="text-slate-400 max-w-xl mx-auto text-lg leading-relaxed">{lang === 'ar' ? product.short_description_ar : product.short_description_en}</p>

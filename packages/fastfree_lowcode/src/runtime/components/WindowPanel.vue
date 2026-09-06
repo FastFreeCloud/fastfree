@@ -374,6 +374,13 @@ onUnmounted(() => {
   padding: 8px 12px;
   background: linear-gradient(135deg, var(--lc-primary-dark), var(--lc-primary));
   min-height: 36px;
+  touch-action: manipulation;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .window-titlebar {
+    min-height: 48px;
+  }
 }
 
 body.body--dark .window-titlebar {
@@ -406,10 +413,18 @@ body.body--dark .window-titlebar {
 .titlebar-right {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 8px;
 
   .q-btn {
     color: color-mix(in srgb, var(--lc-on-primary, #ffffff) 80%, transparent);
+    touch-action: manipulation;
+
+    // Expand the tap target on touch screens (visual size stays small).
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -12px;
+    }
 
     &:hover {
       color: var(--lc-on-primary, #ffffff);
@@ -447,13 +462,14 @@ body.body--dark .window-titlebar {
   justify-content: center;
   pointer-events: none;
   z-index: 100000;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .restore-bar-inner {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 12px;
+  padding: 10px 14px;
   background: color-mix(in srgb, var(--lc-surface) 85%, transparent);
   backdrop-filter: blur(4px);
   color: var(--lc-on-surface);
@@ -462,8 +478,18 @@ body.body--dark .window-titlebar {
   font-size: 12px;
   cursor: pointer;
   pointer-events: auto;
-  opacity: 0.4;
+  opacity: 0.85;
   transition: opacity 0.2s, background-color 0.3s ease, color 0.3s ease;
+  touch-action: manipulation;
+
+  .q-btn {
+    // Expand the tap target on touch screens (visual size stays small).
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -12px;
+    }
+  }
 }
 
 .restore-bar-inner:hover {

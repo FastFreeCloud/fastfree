@@ -90,7 +90,7 @@ export default function Home() {
           />
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-6 pt-32 pb-24 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center z-10">
+        <div className="relative max-w-7xl mx-auto px-6 pt-28 sm:pt-32 pb-24 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -101,7 +101,7 @@ export default function Home() {
               <Zap size={14} className="text-[var(--ff-accent)]" />
               {t('HERO_BADGE', 'نحوّل أفكارك إلى منتجات رقمية', 'We Transform Your Ideas Into Digital Products')}
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-white mb-6 flex flex-col gap-2" style={{ fontFamily: 'var(--ff-font-heading)' }}>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-white mb-6 flex flex-col gap-2" style={{ fontFamily: 'var(--ff-font-heading)' }}>
               <TextReveal text={t('HERO_TITLE_LINE1', 'نبني منصات ذكية', 'We Build Smart Platforms')} className="mb-1" />
               <TextReveal
                 text={t('HERO_TITLE_LINE2', 'تُسرّع نمو أعمالك', 'That Accelerate Your Business Growth')}
@@ -112,20 +112,20 @@ export default function Home() {
             <p className="text-lg text-slate-300 mb-8 max-w-xl leading-relaxed">
               {t('HERO_SUBTITLE', 'تطبيقات جوال، مواقع ويب متجاوبة، أنظمة CRM متكاملة، وحلول سحابية بأحدث التقنيات. نحن شريكك التقني للنمو والاستقرار.', 'Mobile apps, responsive websites, integrated CRM systems, and cloud solutions with the latest technologies. We are your technical partner for growth and stability.')}
             </p>
-            <div className={`flex gap-4 flex-wrap ${lang === 'ar' ? 'justify-start' : 'justify-start'}`}>
+            <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 flex-wrap ${lang === 'ar' ? 'justify-start' : 'justify-start'}`}>
               <motion.a
                 href={`/${lang}/contact`}
                 whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(6, 182, 212, 0.4)' }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                className="px-8 py-4 text-[#030712] font-bold rounded-xl shadow-lg relative overflow-hidden group"
+                className="px-8 py-4 text-[#030712] font-bold rounded-xl shadow-lg relative overflow-hidden group block w-full sm:w-auto sm:inline-block text-center"
                 style={{ background: 'var(--ff-gradient)' }}
               >
                 <span className="relative z-10">{t('HERO_CTA', 'ابدأ مشروعك الآن', 'Start Your Project')}</span>
                 <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
               </motion.a>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 15 }}>
-                <Link href={`/${lang}/services`} className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-all block text-center">
+                <Link href={`/${lang}/services`} className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-all block text-center w-full sm:w-auto justify-center">
                   {t('HERO_BROWSE', 'تصفح خدماتنا', 'Browse Our Services')}
                 </Link>
               </motion.div>
