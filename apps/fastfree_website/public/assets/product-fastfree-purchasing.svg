@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="FastFree Purchasing">
+  <defs>
+    <linearGradient id="fp-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#030712"/>
+    </linearGradient>
+    <radialGradient id="fp-glow" cx="0.5" cy="0.42" r="0.5">
+      <stop offset="0" stop-color="#fb7185" stop-opacity="0.40"/>
+      <stop offset="0.6" stop-color="#fb7185" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#fb7185" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="fp-dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="#fb7185" fill-opacity="0.12"/>
+    </pattern>
+  </defs>
+
+  <rect x="0" y="0" width="800" height="600" rx="18" fill="url(#fp-bg)"/>
+  <rect x="0" y="0" width="800" height="600" rx="18" fill="url(#fp-dots)"/>
+  <rect x="0" y="0" width="800" height="600" rx="18" fill="url(#fp-glow)"/>
+  <rect x="6" y="6" width="788" height="588" rx="14" fill="none" stroke="#fb7185" stroke-opacity="0.35" stroke-width="1.5"/>
+
+  <g stroke="#fb7185" stroke-opacity="0.16" stroke-width="1.5">
+    <line x1="60" y1="120" x2="740" y2="120"/>
+    <line x1="60" y1="330" x2="740" y2="330"/>
+    <line x1="120" y1="40" x2="120" y2="380"/>
+    <line x1="680" y1="40" x2="680" y2="380"/>
+  </g>
+
+  <g transform="translate(400 195)" fill="none" stroke="#fb7185" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M0 -75 L95 -28 L0 19 L-95 -28 Z"/>
+    <path d="M-95 -28 L0 19 L0 92 L-95 45 Z" opacity="0.8"/>
+    <path d="M95 -28 L0 19 L0 92 L95 45 Z" opacity="0.8"/>
+    <line x1="0" y1="-75" x2="0" y2="19" opacity="0.6"/>
+    <path d="M28 48 L46 64 L74 32" stroke-width="5"/>
+  </g>
+
+  <g transform="translate(400 322)">
+    <circle cx="0" cy="0" r="26" fill="#030712" stroke="#fb7185" stroke-width="3"/>
+    <text x="0" y="8" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#fb7185">PU</text>
+  </g>
+
+  <text x="400" y="425" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-size="40" font-weight="700" fill="#fb7185">FastFree Purchasing</text>
+  <text x="400" y="473" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-size="30" font-weight="600" fill="#e2e8f0">فاست فري المشتريات</text>
+</svg>

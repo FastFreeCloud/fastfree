@@ -119,9 +119,25 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Global security headers for all routes
+        // Hashed Next.js build output — safe to cache forever
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        // Global security headers + entry-document revalidation for all routes
         source: '/:path*',
-        headers: securityHeaders,
+        headers: [
+          ...securityHeaders,
+          {
+            key: 'Cache-Control',
+            value: 'no-cache',
+          },
+        ],
       },
     ];
   },

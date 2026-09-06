@@ -22,6 +22,10 @@ let
       handle @socketio {
         reverse_proxy 127.0.0.1:8080
       }
+      @entryDoc path / /*.html
+      header @entryDoc Cache-Control no-cache
+      @immutableAssets path /assets/*
+      header @immutableAssets Cache-Control "public, max-age=31536000, immutable"
       handle {
         try_files {path} /index.html
         file_server

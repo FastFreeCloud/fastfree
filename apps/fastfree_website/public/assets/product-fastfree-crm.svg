@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="FastFree CRM">
+  <defs>
+    <linearGradient id="fc-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#030712"/>
+    </linearGradient>
+    <radialGradient id="fc-glow" cx="0.5" cy="0.42" r="0.5">
+      <stop offset="0" stop-color="#2dd4bf" stop-opacity="0.40"/>
+      <stop offset="0.6" stop-color="#2dd4bf" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#2dd4bf" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="fc-dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="#2dd4bf" fill-opacity="0.12"/>
+    </pattern>
+  </defs>
+
+  <rect x="0" y="0" width="800" height="600" rx="18" fill="url(#fc-bg)"/>
+  <rect x="0" y="0" width="800" height="600" rx="18" fill="url(#fc-dots)"/>
+  <rect x="0" y="0" width="800" height="600" rx="18" fill="url(#fc-glow)"/>
+  <rect x="6" y="6" width="788" height="588" rx="14" fill="none" stroke="#2dd4bf" stroke-opacity="0.35" stroke-width="1.5"/>
+
+  <g stroke="#2dd4bf" stroke-opacity="0.16" stroke-width="1.5">
+    <line x1="60" y1="120" x2="740" y2="120"/>
+    <line x1="60" y1="330" x2="740" y2="330"/>
+    <line x1="120" y1="40" x2="120" y2="380"/>
+    <line x1="680" y1="40" x2="680" y2="380"/>
+  </g>
+
+  <g transform="translate(400 195)" fill="none" stroke="#2dd4bf" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="0" y1="0" x2="-110" y2="-45" opacity="0.6"/>
+    <line x1="0" y1="0" x2="110" y2="-45" opacity="0.6"/>
+    <line x1="0" y1="0" x2="0" y2="95" opacity="0.6"/>
+    <circle cx="0" cy="0" r="32"/>
+    <circle cx="0" cy="0" r="7" fill="#2dd4bf" stroke="none"/>
+    <circle cx="-110" cy="-45" r="17"/>
+    <circle cx="110" cy="-45" r="17"/>
+    <circle cx="0" cy="95" r="17"/>
+    <circle cx="-110" cy="-45" r="4" fill="#030712"/>
+    <circle cx="110" cy="-45" r="4" fill="#030712"/>
+    <circle cx="0" cy="95" r="4" fill="#030712"/>
+  </g>
+
+  <g transform="translate(400 322)">
+    <circle cx="0" cy="0" r="26" fill="#030712" stroke="#2dd4bf" stroke-width="3"/>
+    <text x="0" y="8" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#2dd4bf">CR</text>
+  </g>
+
+  <text x="400" y="425" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-size="40" font-weight="700" fill="#2dd4bf">FastFree CRM</text>
+  <text x="400" y="473" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-size="30" font-weight="600" fill="#e2e8f0">فاست فري إدارة العملاء</text>
+</svg>

@@ -134,6 +134,8 @@ try {
       $b = New-ResizedBitmap -Src $src -Width $size -Height $size
       try { Save-Png -Img $b -Dest (Join-Path $pub ('icons\icon-{0}x{0}.png' -f $size)) } finally { $b.Dispose() }
     }
+    $b180a = New-ResizedBitmap -Src $src -Width 180 -Height 180
+    try { Save-Png -Img $b180a -Dest (Join-Path $pub 'icons\apple-touch-icon-180x180.png') } finally { $b180a.Dispose() }
     $b32a = New-ResizedBitmap -Src $src -Width 32 -Height 32
     try {
       $h2 = $b32a.GetHicon()
