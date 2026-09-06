@@ -134,7 +134,7 @@ export default function BlogPage() {
                   </div>
                   <div className={`p-6 border-t border-white/5 flex items-center justify-between text-xs text-slate-400 ${lang === 'ar' ? '' : ''}`}>
                     <div className="flex items-center gap-4">
-                      <span>{post.published_at ? new Date(post.published_at).toLocaleDateString('ar-EG') : ''}</span>
+                      <span>{post.published_at ? new Date(post.published_at).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US') : ''}</span>
                       <span className="flex items-center gap-1"><Eye size={12} /> {post.views}</span>
                     </div>
                     <Link href={`/${lang}/blog/${post.slug}`} className="font-bold text-white hover:text-[var(--ff-accent)] flex items-center gap-1">

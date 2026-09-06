@@ -553,7 +553,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="px-6 pb-6 flex items-center justify-between text-xs text-slate-400">
-                 <span>{post.published_at ? new Date(post.published_at).toLocaleDateString('ar-EG') : ''}</span>
+                 <span>{post.published_at ? new Date(post.published_at).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US') : ''}</span>
                 <Link href={`/${lang}/blog/${post.slug}`} className="font-bold text-white hover:text-[var(--ff-accent)] flex items-center gap-1">
                   {t('READ', 'اقرأ', 'Read')} <ArrowLeft size={12} className={lang === 'ar' ? 'rotate-180' : ''} />
                 </Link>

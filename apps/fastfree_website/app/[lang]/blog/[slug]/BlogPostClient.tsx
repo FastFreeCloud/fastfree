@@ -12,6 +12,65 @@ import { blogPosts, type BlogPost } from '@/src/data/blog';
 import { ArticleSchema, BreadcrumbSchema } from '@/components/SEO/StructuredData';
 import { siteConfig } from '@/src/data/siteConfig';
 import { notFound } from 'next/navigation';
+import type { ReactNode } from 'react';
+
+const CONTACT_TOKEN_RE = /(\+?\d[\d\s-]{6,}\d|[\w.+-]+@[\w-]+\.[\w.]+)/g;
+
+function linkifyContact(text: string, keyPrefix: string): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  const re = new RegExp(CONTACT_TOKEN_RE.source, 'g');
+  let last = 0;
+  let k = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    let token = m[0];
+    let trail = '';
+    if (token.endsWith('.')) {
+      token = token.slice(0, -1);
+      trail = '.';
+    }
+    if (m.index > last) {
+      nodes.push(<span key={`${keyPrefix}-t${k++}`}>{text.slice(last, m.index)}</span>);
+    }
+    const href = token.includes('@') ? `mailto:${token}` : `tel:${token.replace(/[\s-]/g, '')}`;
+    nodes.push(
+      <a key={`${keyPrefix}-l${k++}`} href={href} dir="ltr" className="text-[var(--ff-accent)] underline underline-offset-2">
+        {token}
+      </a>,
+    );
+    if (trail) {
+      nodes.push(<span key={`${keyPrefix}-d${k++}`}>{trail}</span>);
+    }
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) {
+    nodes.push(<span key={`${keyPrefix}-t${k++}`}>{text.slice(last)}</span>);
+  }
+  return nodes;
+}
+
+function renderArticleBody(text: string): ReactNode[] {
+  return text.split(/\n\n+/).map((para, i) => {
+    const lines = para
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (lines.length > 0 && lines.every((l) => l.startsWith('- '))) {
+      return (
+        <ul key={i} dir="auto" className="mb-5 last:mb-0 space-y-2 list-disc ps-6 marker:text-[var(--ff-accent)]">
+          {lines.map((l, j) => (
+            <li key={j}>{linkifyContact(l.slice(2).trim(), `${i}-${j}`)}</li>
+          ))}
+        </ul>
+      );
+    }
+    return (
+      <p key={i} dir="auto" className="mb-5 last:mb-0">
+        {linkifyContact(para, `${i}`)}
+      </p>
+    );
+  });
+}
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -44,7 +103,7 @@ export default function BlogPostPage() {
       ]} />
 
       {/* Article Hero */}
-      <section className={`relative pt-36 pb-12 overflow-hidden ${lang === 'ar' ? 'text-right' : 'text-left'} bg-[#030712]`}>
+      <section className={`relative pt-28 md:pt-36 pb-12 overflow-hidden ${lang === 'ar' ? 'text-right' : 'text-left'} bg-[#030712]`}>
         {/* Dynamic Nebula Glowing Orbs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
           <motion.div
@@ -79,7 +138,7 @@ export default function BlogPostPage() {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-400 border-b border-white/5 pb-6">
             <span>{t('BLOG_AUTHOR', 'الكاتب:', 'Author:')} {siteConfig.siteName}</span>
             <span>•</span>
-            <span>{post.published_at ? new Date(post.published_at).toLocaleDateString('ar-EG') : ''}</span>
+            <span>{post.published_at ? new Date(post.published_at).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US') : ''}</span>
             <span>•</span>
             <span className="flex items-center gap-1">
               <Eye size={14} />
@@ -93,12 +152,12 @@ export default function BlogPostPage() {
       <section className={`max-w-4xl mx-auto px-6 py-8 ${lang === 'ar' ? 'text-right' : 'text-left'} space-y-12`}>
         {/* Cover Image */}
         <div className="rounded-3xl border border-white/10 overflow-hidden shadow-2xl bg-slate-900 aspect-[21/9] relative">
-          <Image src={post.cover_image || '/assets/og-default.svg'} alt={lang === 'ar' ? post.title_ar : post.title_en} fill className="object-cover" sizes="(max-width: 768px) 100vw, 75vw" />
+          <Image src={post.cover_image || '/assets/og-default.svg'} alt={lang === 'ar' ? post.title_ar : post.title_en} fill priority className="object-cover" sizes="(max-width: 768px) 100vw, 75vw" />
         </div>
 
         {/* Article content */}
-        <div className="p-8 md:p-12 rounded-3xl bg-white/5 border border-white/10 shadow-2xl leading-relaxed text-lg text-slate-200 whitespace-pre-line space-y-4">
-          {lang === 'ar' ? post.content_ar : post.content_en}
+        <div className="p-5 sm:p-8 md:p-12 rounded-3xl bg-white/5 border border-white/10 shadow-2xl leading-relaxed text-base md:text-lg text-slate-200 break-words [overflow-wrap:anywhere]">
+          {renderArticleBody(lang === 'ar' ? post.content_ar : post.content_en)}
         </div>
 
         {/* Back to Blog */}
@@ -117,11 +176,11 @@ export default function BlogPostPage() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {suggestedPosts.slice(0, 3).map((sp) => (
-                <Link key={sp.id} href={`/${lang}/blog/${sp.slug}`} className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all hover:scale-105 group">
+                <Link key={sp.id} href={`/${lang}/blog/${sp.slug}`} className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all md:hover:scale-105 group">
                    <div className="w-full h-32 relative overflow-hidden rounded-xl mb-4">
                       <Image src={sp.cover_image || '/assets/og-default.svg'} alt={lang === 'ar' ? sp.title_ar : sp.title_en} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, 33vw" />
                     </div>
-                  <h4 className="font-bold text-white text-sm group-hover:text-[var(--ff-accent)] transition-colors">
+                  <h4 className="font-bold text-white text-sm line-clamp-2 group-hover:text-[var(--ff-accent)] transition-colors">
                     {lang === 'ar' ? sp.title_ar : sp.title_en}
                   </h4>
                 </Link>

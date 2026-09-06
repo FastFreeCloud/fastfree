@@ -37,7 +37,7 @@ export function TextReveal({ text, className = '', style }: TextRevealProps) {
 
   return (
     <motion.span
-      className={`inline-flex flex-wrap justify-start ${className}`}
+      className={`inline-flex flex-wrap justify-center ${className}`}
       variants={containerVariants}
       initial="hidden"
       animate="visible"

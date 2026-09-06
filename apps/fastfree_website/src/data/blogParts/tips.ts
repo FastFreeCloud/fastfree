@@ -100,7 +100,7 @@ If you are planning an implementation and want practical advice without complexi
   {
     id: '4',
     title_ar: 'متى تحتاج شركتك إلى نظام ERP؟ علامات أنك تجاوزت جداول البيانات',
-    title_en: 'When Does Your Business Need an ERP System? Signs Youve Outgrown Spreadsheets',
+    title_en: 'When Does Your Business Need an ERP System?',
     slug: 'when-you-need-erp',
     content_ar: `الجداول (Excel) أداة ممتازة للبداية، لكنها تصل لحدودها. أول علامة هي أنك تجمع نفس الرقم من أكثر من مكان: مبيعات من جدول، ومخزون من آخر، ومقبوضات من ثالث. عندما يأخذ التوفيق بينها وقتاً أسبوعياً، فقد تجاوزت الجداول.
 

@@ -51,18 +51,18 @@ export default function ServiceDetailPage() {
               <IconComponent name={service.icon} className="w-10 h-10" />
             </div>
           </motion.div>
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-6 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-6 flex justify-center" style={{ fontFamily: 'var(--ff-font-heading)' }}>
             <TextReveal text={lang === 'ar' ? service.title_ar : service.title_en} />
           </h1>
           <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
             {lang === 'ar' ? service.description_ar : service.description_en}
           </p>
-          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 mt-8">
-            <Link href={`/${lang}/contact`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-[#030712] transition-all hover:scale-105" style={{ background: 'var(--ff-gradient)' }}>
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 sm:gap-4 mt-8">
+            <Link href={`/${lang}/contact`} className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-[#030712] transition-all hover:scale-105 w-full sm:w-auto" style={{ background: 'var(--ff-gradient)' }}>
               {t('REQUEST_QUOTE', 'طلب عرض سعر', 'Request Quote')}
               <ArrowLeft size={16} className={lang === 'ar' ? '' : 'rotate-180'} />
             </Link>
-            <Link href={`/${lang}/services`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-white font-medium hover:bg-white/5 transition-all">
+            <Link href={`/${lang}/services`} className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-white font-medium hover:bg-white/5 transition-all w-full sm:w-auto">
               {t('ALL_SERVICES', 'جميع الخدمات', 'All Services')}
             </Link>
           </div>
@@ -93,7 +93,7 @@ export default function ServiceDetailPage() {
                 <div className="w-10 h-10 rounded-xl bg-[var(--ff-accent)]/10 text-[var(--ff-accent)] flex items-center justify-center shrink-0 mt-0.5">
                   <Check size={20} />
                 </div>
-                <div>
+                <div className="min-w-0 break-words">
                   <span className="font-medium text-white text-sm">{feat.ar && feat.en ? (lang === 'ar' ? feat.ar : feat.en) : feat}</span>
                 </div>
               </motion.div>
@@ -153,7 +153,7 @@ export default function ServiceDetailPage() {
 
       {/* CTA */}
       <section className="py-20 max-w-4xl mx-auto px-6">
-        <div className="text-center p-12 rounded-3xl bg-gradient-to-br from-slate-900/60 to-[var(--ff-primary-dark)]/30 border border-white/10 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+        <div className="text-center p-6 sm:p-12 rounded-3xl bg-gradient-to-br from-slate-900/60 to-[var(--ff-primary-dark)]/30 border border-white/10 backdrop-blur-xl shadow-2xl relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-[var(--ff-accent)]/5 to-[var(--ff-primary)]/5 pointer-events-none" />
           <div className="relative z-10">
             <h2 className="text-3xl font-bold mb-4" style={{ fontFamily: 'var(--ff-font-heading)' }}>
