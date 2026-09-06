@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { Facebook, Twitter, Linkedin, Github, Youtube, MessageCircle, Instagram, Music, Globe, Link as LinkIcon, Code, Headphones, Mail, Phone, MapPin, ArrowUp } from 'lucide-react';
 import { siteConfig } from '@/src/data/siteConfig';
 import { useLanguage } from '@/lib/language-provider';
@@ -57,7 +58,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
   const emailAddr = siteConfig.email || '';
   const address = siteConfig.address || '';
   const socialLinks: Record<string, string> = siteConfig.socialLinks || {};
-  // Canonical contact/social — siteConfig.ts verified missing phone_eg/phone_sa/whatsapp_eg keys — using canonical literals.
+  // Canonical contact/social values (siteConfig.ts is the single source).
   const FACEBOOK_URL = 'https://www.facebook.com/share/1DHAKK2ek1/';
   const LINKEDIN_URL = 'https://www.linkedin.com/company/fastfree-cloud/';
   const PHONE_EG_DISPLAY = cfg.phone_eg || '010919999937';
@@ -68,6 +69,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
   const whatsappHref = whatsappRaw.startsWith('http')
     ? whatsappRaw
     : `https://wa.me/${whatsappRaw.replace(/[^0-9]/g, '')}`;
+  const whatsappSaHref: string = cfg.whatsapp_sa || 'https://wa.me/966572293845';
 
   return (
     <>
@@ -95,7 +97,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
 
       <footer className="bg-[#050814] border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 py-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             {/* Brand */}
             <div className="space-y-4">
               <Link href={`/${lang}`} className="flex items-center gap-2">
@@ -105,14 +107,20 @@ export default function SharedFooter(_props: SharedFooterProps) {
                 <span className="text-lg font-extrabold" style={{ fontFamily: 'var(--ff-font-heading)' }}>{siteName}</span>
               </Link>
               {aboutText && <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">{aboutText}</p>}
-              <div className="flex gap-1.5 flex-wrap">
+              <div className="flex gap-2 flex-wrap">
+                <a href={whatsappHref} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} title={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} className="w-11 h-11 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all">
+                  <MessageCircle size={18} aria-hidden="true" />
+                </a>
+                <a href={whatsappSaHref} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'} title={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'} className="w-11 h-11 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all">
+                  <MessageCircle size={18} aria-hidden="true" />
+                </a>
                 {SOCIAL_ORDER.map(key => {
                   const url = key === 'facebook' ? FACEBOOK_URL : key === 'linkedin' ? LINKEDIN_URL : socialLinks[key];
                   if (!url) return null;
                   const Icon = SOCIAL_ICONS[key] || Globe;
                   return (
-                    <a key={key} href={url} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[key] || key} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-[var(--ff-accent)] hover:border-[var(--ff-accent)]/30 hover:bg-[var(--ff-accent)]/5 transition-all" title={SOCIAL_LABELS[key] || key}>
-                      <Icon size={14} aria-hidden="true" />
+                    <a key={key} href={url} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[key] || key} className="w-11 h-11 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-[var(--ff-accent)] hover:border-[var(--ff-accent)]/30 hover:bg-[var(--ff-accent)]/5 transition-all" title={SOCIAL_LABELS[key] || key}>
+                      <Icon size={16} aria-hidden="true" />
                     </a>
                   );
                 })}
@@ -135,7 +143,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
                   { href: `/${lang}/contact`, label: t('NAV_CONTACT', 'تواصل معنا', 'Contact') },
                  ].map((link, i) => (
                   <li key={i}>
-                    <Link href={link.href} className="hover:text-white hover:pl-1 transition-all">{link.label}</Link>
+                    <Link href={link.href} className="hover:text-white hover:ps-1 transition-all">{link.label}</Link>
                   </li>
                 ))}
               </ul>
@@ -150,7 +158,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
               <ul className="space-y-2 text-xs text-slate-400">
                 {servicesData.slice(0, 5).map(s => (
                   <li key={s.id}>
-                    <Link href={`/${lang}/services/${s.id}`} className="hover:text-white hover:pl-1 transition-all">{lang === 'ar' ? s.title_ar : s.title_en}</Link>
+                    <Link href={`/${lang}/services/${s.id}`} className="hover:text-white hover:ps-1 transition-all">{lang === 'ar' ? s.title_ar : s.title_en}</Link>
                   </li>
                 ))}
               </ul>
@@ -189,17 +197,17 @@ export default function SharedFooter(_props: SharedFooterProps) {
                 )}
               </ul>
             </div>
-          </div>
+          </motion.div>
 
           {/* Bottom */}
-          <div className="border-t border-white/5 pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15 }} className="border-t border-white/5 pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
             <span>© {new Date().getFullYear()} {siteName}. {t('FOOTER_RIGHTS', 'جميع الحقوق محفوظة', 'All rights reserved')}</span>
             <div className="flex items-center gap-3">
-              <Link href={`/${lang}/about`} className="hover:text-white transition">{t('NAV_ABOUT', 'من نحن', 'About')}</Link>
-              <Link href={`/${lang}/contact`} className="hover:text-white transition">{t('NAV_CONTACT', 'تواصل', 'Contact')}</Link>
-              <Link href={`/${lang}/blog`} className="hover:text-white transition">{t('NAV_BLOG', 'المدونة', 'Blog')}</Link>
+              <Link href={`/${lang}/about`} className="hover:text-white transition py-2">{t('NAV_ABOUT', 'من نحن', 'About')}</Link>
+              <Link href={`/${lang}/contact`} className="hover:text-white transition py-2">{t('NAV_CONTACT', 'تواصل', 'Contact')}</Link>
+              <Link href={`/${lang}/blog`} className="hover:text-white transition py-2">{t('NAV_BLOG', 'المدونة', 'Blog')}</Link>
             </div>
-          </div>
+          </motion.div>
         </div>
       </footer>
     </>
