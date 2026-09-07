@@ -112,7 +112,7 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
             aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             className="group relative w-11 h-11 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 hover:shadow-lg hover:shadow-amber-400/20 active:scale-95 transition-all duration-300 cursor-pointer"
           >
-            <span className="relative block w-4 h-4" aria-hidden="true">
+            <span key={theme} className="relative block w-4 h-4 animate-fade-in" aria-hidden="true">
               {mounted ? (
                 <>
                   <Sun size={16} className={`absolute inset-0 transition-all duration-300 ${theme === 'dark' ? 'opacity-100 rotate-0 scale-100 group-hover:text-amber-400' : 'opacity-0 rotate-90 scale-50 pointer-events-none'}`} />
@@ -133,7 +133,7 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
             aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             className="group relative w-11 h-11 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 hover:shadow-lg hover:shadow-amber-400/20 active:scale-95 transition-all duration-300 cursor-pointer"
           >
-            <span className="relative block w-4 h-4" aria-hidden="true">
+            <span key={theme} className="relative block w-4 h-4 animate-fade-in" aria-hidden="true">
               {mounted ? (
                 <>
                   <Sun size={16} className={`absolute inset-0 transition-all duration-300 ${theme === 'dark' ? 'opacity-100 rotate-0 scale-100 group-hover:text-amber-400' : 'opacity-0 rotate-90 scale-50 pointer-events-none'}`} />

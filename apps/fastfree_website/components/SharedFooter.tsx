@@ -88,7 +88,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
           >
             <span aria-hidden="true" className="absolute inset-0 rounded-full bg-green-400 animate-ping [animation-duration:2.5s] opacity-25" />
             <MessageCircle size={22} className="relative" />
-            <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-[9px] font-extrabold leading-none bg-[#030712] text-white border border-white/20 rounded px-0.5 py-px">EG</span>
+            <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-base leading-none drop-shadow">🇪🇬</span>
           </motion.a>
           <motion.a
             initial={{ opacity: 0, scale: 0 }}
@@ -103,7 +103,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
           >
             <span aria-hidden="true" className="absolute inset-0 rounded-full bg-green-400 animate-ping [animation-duration:2.5s] [animation-delay:1.25s] opacity-25" />
             <MessageCircle size={22} className="relative" />
-            <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-[9px] font-extrabold leading-none bg-[#030712] text-white border border-white/20 rounded px-0.5 py-px">SA</span>
+            <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-base leading-none drop-shadow">🇸🇦</span>
           </motion.a>
         </div>
       )}
@@ -121,7 +121,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
 
       <footer className="bg-[#050814] border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 pt-10 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
-          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          <motion.div initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: 'easeOut' }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             {/* Brand */}
             <div className="space-y-4">
               <Link href={`/${lang}`} className="flex items-center gap-2">
@@ -134,11 +134,11 @@ export default function SharedFooter(_props: SharedFooterProps) {
               <div className="flex gap-2 flex-wrap">
                 <a href={whatsappHref} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} title={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} className="relative w-11 h-11 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all">
                   <MessageCircle size={18} aria-hidden="true" />
-                  <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-[9px] font-extrabold leading-none bg-[#030712] text-white border border-white/20 rounded px-0.5 py-px">EG</span>
+                  <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-base leading-none drop-shadow">🇪🇬</span>
                 </a>
                 <a href={whatsappSaHref} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'} title={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'} className="relative w-11 h-11 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all">
                   <MessageCircle size={18} aria-hidden="true" />
-                  <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-[9px] font-extrabold leading-none bg-[#030712] text-white border border-white/20 rounded px-0.5 py-px">SA</span>
+                  <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-base leading-none drop-shadow">🇸🇦</span>
                 </a>
                 {SOCIAL_ORDER.map(key => {
                   const url = key === 'facebook' ? FACEBOOK_URL : key === 'linkedin' ? LINKEDIN_URL : socialLinks[key];
@@ -201,20 +201,27 @@ export default function SharedFooter(_props: SharedFooterProps) {
               </h4>
               <ul className="footer-contact space-y-2.5 text-xs text-slate-400">
                 {emailAddr && (
-                  <li className="flex items-center gap-2 min-w-0">
-                    <Mail size={12} className="text-[var(--ff-accent)] shrink-0" />
-                    <a href={`mailto:${emailAddr}`} dir="ltr" title={emailAddr} className="truncate min-w-0 hover:text-white transition">{emailAddr}</a>
+                  <li className="flex items-center gap-2.5 min-w-0">
+                    <Mail size={14} className="text-[var(--ff-accent)] shrink-0" />
+                    <span className="min-w-0">
+                      <span className="block text-[11px] text-slate-500">{t('FOOTER_EMAIL', 'البريد الإلكتروني', 'Email')}</span>
+                      <a href={`mailto:${emailAddr}`} dir="ltr" title={emailAddr} className="block truncate hover:text-white transition text-xs">{emailAddr}</a>
+                    </span>
                   </li>
                 )}
-                <li className="flex items-center gap-2 min-w-0">
-                  <Phone size={12} className="text-[var(--ff-accent)] shrink-0" />
-                  <span dir="auto">{lang === 'ar' ? 'مصر' : 'Egypt'}</span>
-                  <a href={PHONE_EG_TEL} dir="ltr" title={PHONE_EG_DISPLAY} className="hover:text-white transition truncate min-w-0">{PHONE_EG_DISPLAY}</a>
+                <li className="flex items-center gap-2.5 min-w-0">
+                  <Phone size={14} className="text-[var(--ff-accent)] shrink-0" />
+                  <span className="min-w-0">
+                    <span className="block text-[11px] text-slate-500">{lang === 'ar' ? 'مصر 🇪🇬' : 'Egypt 🇪🇬'}</span>
+                    <a href={PHONE_EG_TEL} dir="ltr" title={PHONE_EG_DISPLAY} className="block truncate hover:text-white transition text-xs font-bold">{PHONE_EG_DISPLAY}</a>
+                  </span>
                 </li>
-                <li className="flex items-center gap-2 min-w-0">
-                  <Phone size={12} className="text-[var(--ff-accent)] shrink-0" />
-                  <span dir="auto">{lang === 'ar' ? 'السعودية' : 'Saudi'}</span>
-                  <a href={PHONE_SA_TEL} dir="ltr" title={PHONE_SA_DISPLAY} className="hover:text-white transition truncate min-w-0">{PHONE_SA_DISPLAY}</a>
+                <li className="flex items-center gap-2.5 min-w-0">
+                  <Phone size={14} className="text-[var(--ff-accent)] shrink-0" />
+                  <span className="min-w-0">
+                    <span className="block text-[11px] text-slate-500">{lang === 'ar' ? 'السعودية 🇸🇦' : 'Saudi Arabia 🇸🇦'}</span>
+                    <a href={PHONE_SA_TEL} dir="ltr" title={PHONE_SA_DISPLAY} className="block truncate hover:text-white transition text-xs font-bold">{PHONE_SA_DISPLAY}</a>
+                  </span>
                 </li>
                 {address && (
                   <li className="flex items-start gap-2 min-w-0">
