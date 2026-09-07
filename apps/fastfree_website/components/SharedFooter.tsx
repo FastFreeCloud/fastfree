@@ -4,10 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Facebook, Twitter, Linkedin, Github, Youtube, MessageCircle, Instagram, Music, Globe, Link as LinkIcon, Code, Headphones, Mail, Phone, MapPin, ArrowUp, Clock } from 'lucide-react';
+import { Facebook, Linkedin, MessageCircle, Headphones, Mail, Phone, MapPin, ArrowUp, Clock } from 'lucide-react';
 import { siteConfig } from '@/src/data/siteConfig';
 import { useLanguage } from '@/lib/language-provider';
-import { services } from '@/src/data/services';
 
 type SharedFooterProps = {
   t?: (key: string, ar: string, en: string) => string;
@@ -15,35 +14,10 @@ type SharedFooterProps = {
   services?: { id: string; title_ar: string; title_en: string }[];
 };
 
-const SOCIAL_ICONS: Record<string, any> = {
-  facebook: Facebook,
-  twitter: Twitter,
-  linkedin: Linkedin,
-  github: Github,
-  youtube: Youtube,
-  discord: MessageCircle,
-  instagram: Instagram,
-  tiktok: Music,
-};
-
-const SOCIAL_ORDER = ['facebook', 'twitter', 'linkedin', 'github', 'youtube', 'discord', 'instagram', 'tiktok'];
-
-const SOCIAL_LABELS: Record<string, string> = {
-  facebook: 'Facebook',
-  twitter: 'Twitter',
-  linkedin: 'LinkedIn',
-  github: 'GitHub',
-  youtube: 'YouTube',
-  discord: 'Discord',
-  instagram: 'Instagram',
-  tiktok: 'TikTok',
-};
-
 export default function SharedFooter(_props: SharedFooterProps) {
   const ctx = useLanguage();
   const t = _props.t ?? ctx.t;
   const lang = _props.lang ?? ctx.lang;
-  const servicesData = _props.services ?? services;
   const [showTop, setShowTop] = useState(false);
 
   useEffect(() => {
@@ -57,7 +31,6 @@ export default function SharedFooter(_props: SharedFooterProps) {
   const cfg = siteConfig as unknown as Record<string, string>;
   const emailAddr = siteConfig.email || '';
   const address = siteConfig.address || '';
-  const socialLinks: Record<string, string> = siteConfig.socialLinks || {};
   // Canonical contact/social values (siteConfig.ts is the single source).
   const FACEBOOK_URL = 'https://www.facebook.com/share/1DHAKK2ek1/';
   const LINKEDIN_URL = 'https://www.linkedin.com/company/fastfree-cloud/';
@@ -125,7 +98,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
 
       <footer className="bg-[#050814] border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 pt-10 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
-          <motion.div initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: 'easeOut' }} className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          <motion.div initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: 'easeOut' }} className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
             {/* Brand */}
             <div className="space-y-4">
               <Link href={`/${lang}`} className="flex items-center gap-2">
@@ -136,7 +109,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
               </Link>
               {aboutText && <p title={aboutText} className="text-slate-400 text-xs leading-relaxed">{aboutText}</p>}
               <div className="flex gap-2 flex-wrap">
-                <a href={whatsappHref} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} title={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} className="relative w-11 h-11 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all">
+                <a href={whatsappHref} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} title={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} className="relative w-11 h-11 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 hover:-translate-y-0.5 transition-all">
                   <MessageCircle size={18} aria-hidden="true" />
                   <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-base leading-none drop-shadow">🇪🇬</span>
                 </a>
@@ -144,57 +117,13 @@ export default function SharedFooter(_props: SharedFooterProps) {
                   <MessageCircle size={18} aria-hidden="true" />
                   <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-base leading-none drop-shadow">🇸🇦</span>
                 </a>
-                {SOCIAL_ORDER.map(key => {
-                  const url = key === 'facebook' ? FACEBOOK_URL : key === 'linkedin' ? LINKEDIN_URL : socialLinks[key];
-                  if (!url) return null;
-                  const Icon = SOCIAL_ICONS[key] || Globe;
-                  return (
-                    <a key={key} href={url} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[key] || key} className="w-11 h-11 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-[var(--ff-accent)] hover:border-[var(--ff-accent)]/30 hover:bg-[var(--ff-accent)]/5 transition-all" title={SOCIAL_LABELS[key] || key}>
-                      <Icon size={16} aria-hidden="true" />
-                    </a>
-                  );
-                })}
+                <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook" className="w-11 h-11 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-[var(--ff-accent)] hover:border-[var(--ff-accent)]/30 hover:bg-[var(--ff-accent)]/5 hover:-translate-y-0.5 transition-all">
+                  <Facebook size={16} aria-hidden="true" />
+                </a>
+                <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn" className="w-11 h-11 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-[var(--ff-accent)] hover:border-[var(--ff-accent)]/30 hover:bg-[var(--ff-accent)]/5 hover:-translate-y-0.5 transition-all">
+                  <Linkedin size={16} aria-hidden="true" />
+                </a>
               </div>
-            </div>
-
-            {/* Quick Links */}
-            <div>
-              <h4 className="text-white font-bold mb-4 text-sm flex items-center gap-2">
-                <LinkIcon size={14} className="text-[var(--ff-accent)]" />
-                {t('FOOTER_QUICK_LINKS', 'روابط سريعة', 'Quick Links')}
-              </h4>
-              <ul className="space-y-2 text-xs text-slate-400">
-                {[
-                  { href: `/${lang}`, label: t('NAV_HOME', 'الرئيسية', 'Home') },
-                  { href: `/${lang}/services`, label: t('NAV_SERVICES', 'خدماتنا', 'Services') },
-                  { href: `/${lang}/products`, label: t('NAV_PRODUCTS', 'منتجاتنا', 'Products') },
-                  { href: `/${lang}/blog`, label: t('NAV_BLOG', 'المدونة', 'Blog') },
-                  { href: `/${lang}/about`, label: t('NAV_ABOUT', 'من نحن', 'About') },
-                  { href: `/${lang}/contact`, label: t('NAV_CONTACT', 'تواصل معنا', 'Contact') },
-                  ].map((link, i) => (
-                   <li key={i}>
-                    <Link href={link.href} className="block py-2 hover:text-white hover:ps-1 transition-all">{link.label}</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Services */}
-            <div>
-              <h4 className="text-white font-bold mb-4 text-sm flex items-center gap-2">
-                <Code size={14} className="text-[var(--ff-accent)]" />
-                {t('FOOTER_SERVICES', 'الخدمات', 'Services')}
-              </h4>
-              <ul className="space-y-2 text-xs text-slate-400">
-                {servicesData.slice(0, 6).map(s => (
-                  <li key={s.id}>
-                    <Link href={`/${lang}/services/${s.id}`} className="block py-2 hover:text-white hover:ps-1 transition-all">{lang === 'ar' ? s.title_ar : s.title_en}</Link>
-                  </li>
-                ))}
-                <li>
-                  <Link href={`/${lang}/services`} className="block py-2 text-[var(--ff-accent)] font-bold hover:text-white transition-all">{t('FOOTER_ALL_SERVICES', 'عرض كل الخدمات', 'View all services')}</Link>
-                </li>
-              </ul>
             </div>
 
             {/* Contact */}
@@ -218,6 +147,14 @@ export default function SharedFooter(_props: SharedFooterProps) {
                   <span className="min-w-0">
                     <span className="block text-[11px] text-slate-500">{lang === 'ar' ? 'مصر 🇪🇬' : 'Egypt 🇪🇬'}</span>
                     <a href={PHONE_EG_TEL} dir="ltr" title={PHONE_EG_DISPLAY} className="block truncate hover:text-white transition text-xs font-bold">{PHONE_EG_DISPLAY}</a>
+                    <span className="mt-1.5 flex items-center gap-1.5">
+                      <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook" className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-[var(--ff-accent)] hover:border-[var(--ff-accent)]/30 hover:bg-[var(--ff-accent)]/5 hover:-translate-y-0.5 transition-all">
+                        <Facebook size={14} aria-hidden="true" />
+                      </a>
+                      <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn" className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-[var(--ff-accent)] hover:border-[var(--ff-accent)]/30 hover:bg-[var(--ff-accent)]/5 hover:-translate-y-0.5 transition-all">
+                        <Linkedin size={14} aria-hidden="true" />
+                      </a>
+                    </span>
                   </span>
                 </li>
                 <li className="flex items-center gap-2.5 min-w-0">
