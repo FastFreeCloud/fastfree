@@ -374,6 +374,7 @@ export default function ContactPage() {
               <div className="rounded-2xl bg-slate-900/40 border border-white/10 overflow-hidden">
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  aria-expanded={openFaq === i}
                   className={`w-full flex items-center justify-between p-5 text-sm font-medium transition-colors ${lang === 'ar' ? 'text-right' : 'text-left'} ${openFaq === i ? 'text-[var(--ff-accent)]' : 'text-white hover:text-[var(--ff-accent)]'}`}
                 >
                   <span>{lang === 'ar' ? faq.qAr : faq.qEn}</span>

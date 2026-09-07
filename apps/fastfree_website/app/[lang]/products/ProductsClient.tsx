@@ -40,7 +40,7 @@ export default function ProductsPage() {
         const tag = allTags.find((tg) => tg.id === activeTagId);
         if (!tag) return true;
         const needle = (tag.title_en || '').toLowerCase();
-        return p.tags.some((pt) => {
+        return (p.tags ?? []).some((pt) => {
           const hay = pt.toLowerCase();
           return hay.includes(needle) || needle.includes(hay);
         });
@@ -95,11 +95,11 @@ export default function ProductsPage() {
       {/* Filters */}
       <section className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex flex-wrap gap-3 justify-center mb-4">
-          <button onClick={() => { setActiveType('ALL'); setActiveTagId('ALL'); }} className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeType === 'ALL' ? 'bg-[var(--ff-accent)] text-[#030712] shadow-lg shadow-[var(--ff-accent)]/20' : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'}`}>
+          <button onClick={() => { setActiveType('ALL'); setActiveTagId('ALL'); }} aria-pressed={activeType === 'ALL'} className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeType === 'ALL' ? 'bg-[var(--ff-accent)] text-[#030712] shadow-lg shadow-[var(--ff-accent)]/20' : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'}`}>
             {t('PRODUCT_ALL', 'الكل', 'All')}
           </button>
           {Object.entries(TYPE_CONFIG).map(([key, config]) => (
-            <button key={key} onClick={() => { setActiveType(key); setActiveTagId('ALL'); }} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeType === key ? 'bg-[var(--ff-accent)] text-[#030712] shadow-lg shadow-[var(--ff-accent)]/20' : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'}`}>
+            <button key={key} onClick={() => { setActiveType(key); setActiveTagId('ALL'); }} aria-pressed={activeType === key} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeType === key ? 'bg-[var(--ff-accent)] text-[#030712] shadow-lg shadow-[var(--ff-accent)]/20' : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'}`}>
               <config.icon size={14} /> {config.label}
             </button>
           ))}
@@ -107,7 +107,7 @@ export default function ProductsPage() {
         {activeType !== 'ALL' && (
           <div className="flex flex-wrap gap-2 justify-center">
             {allTags.map((tag) => (
-              <button key={tag.id} onClick={() => { setActiveTagId(activeTagId === tag.id ? 'ALL' : tag.id); }} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${activeTagId === tag.id ? 'bg-[var(--ff-accent)]/15 border border-[var(--ff-accent)]/40 text-[var(--ff-accent)]' : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white'}`}>
+              <button key={tag.id} onClick={() => { setActiveTagId(activeTagId === tag.id ? 'ALL' : tag.id); }} aria-pressed={activeTagId === tag.id} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${activeTagId === tag.id ? 'bg-[var(--ff-accent)]/15 border border-[var(--ff-accent)]/40 text-[var(--ff-accent)]' : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white'}`}>
                 <Tags size={11} /> {lang === 'ar' ? tag.title_ar : tag.title_en}
               </button>
             ))}

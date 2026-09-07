@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
   if (apiKey) {
     try {
-      // @ts-ignore - resend is optional and not installed by default
+      // @ts-expect-error - resend is optional and not installed by default
       const { Resend } = await import('resend').catch(() => ({ Resend: null }));
       if (Resend) {
         const resend = new Resend(apiKey);

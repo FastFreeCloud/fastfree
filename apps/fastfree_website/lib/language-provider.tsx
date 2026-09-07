@@ -8,7 +8,6 @@ import {
   useEffect,
   useRef,
   Suspense,
-  forwardRef,
 } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { Locale } from './i18n';
@@ -105,7 +104,7 @@ export function LanguageProvider({
 function SearchParamsTracker({
   searchRef,
 }: {
-  searchRef: React.MutableRefObject<string>;
+  searchRef: React.RefObject<string>;
 }) {
   const searchParams = useSearchParams();
   useEffect(() => {

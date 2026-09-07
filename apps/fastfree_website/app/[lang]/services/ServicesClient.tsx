@@ -107,6 +107,7 @@ export default function ServicesPage() {
             <button
               key={cat.key}
               onClick={() => setActiveCategory(cat.key)}
+              aria-pressed={activeCategory === cat.key}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${
                 activeCategory === cat.key
                   ? 'bg-[var(--ff-accent)] text-[#030712] shadow-lg shadow-[var(--ff-accent)]/20'
@@ -217,7 +218,7 @@ export default function ServicesPage() {
                     </p>
                     {service.features && Array.isArray(service.features) && (
                       <div className={`space-y-2 mb-6 ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-                        {service.features.slice(0, 4).map((feat: any, idx: number) => (
+                        {service.features.slice(0, 4).map((feat: { ar: string; en: string }, idx: number) => (
                           <div key={idx} className="flex items-center justify-start gap-2 text-slate-400 text-xs">
                             <Check className="text-[var(--ff-accent)] w-3.5 h-3.5 flex-shrink-0" />
                             <span>{feat.ar && feat.en ? (lang === 'ar' ? feat.ar : feat.en) : feat}</span>

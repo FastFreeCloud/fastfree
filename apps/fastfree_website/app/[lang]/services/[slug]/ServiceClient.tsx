@@ -81,7 +81,7 @@ export default function ServiceDetailPage() {
             </div>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {service.features.map((feat: any, idx: number) => (
+            {service.features.map((feat: { ar: string; en: string }, idx: number) => (
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, y: 20 }}
