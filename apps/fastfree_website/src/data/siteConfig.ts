@@ -3,7 +3,7 @@ export const siteConfig = {
   siteNameAr: 'فاست فري',
   phone: '+201091999937',
   whatsapp: '+201091999937',
-  phone_eg: '010919999937',
+  phone_eg: '01091999937',
   phone_sa: '+966 57 229 3845',
   whatsapp_eg: 'https://wa.me/201091999937',
   whatsapp_sa: 'https://wa.me/966572293845',

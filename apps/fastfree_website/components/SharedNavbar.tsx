@@ -110,7 +110,7 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
           <button
             onClick={toggleTheme}
             aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="group relative w-11 h-11 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 transition-all duration-300 cursor-pointer"
+            className="group relative w-11 h-11 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 hover:shadow-lg hover:shadow-amber-400/20 active:scale-95 transition-all duration-300 cursor-pointer"
           >
             <span className="relative block w-4 h-4" aria-hidden="true">
               {mounted ? (
@@ -127,10 +127,11 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
 
         {/* Mobile Toggle */}
         <div className="flex items-center gap-2 md:hidden">
+          <LanguageSwitcher />
           <button
             onClick={toggleTheme}
             aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="group relative w-11 h-11 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 transition-all duration-300 cursor-pointer"
+            className="group relative w-11 h-11 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 hover:shadow-lg hover:shadow-amber-400/20 active:scale-95 transition-all duration-300 cursor-pointer"
           >
             <span className="relative block w-4 h-4" aria-hidden="true">
               {mounted ? (
@@ -190,9 +191,6 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
                 {link.label}
               </Link>
             ))}
-            <div className="pt-2 px-4 flex items-center gap-3">
-              <LanguageSwitcher />
-            </div>
           </div>
           </div>
         </div>

@@ -497,7 +497,12 @@ html.light .status-lost { background: #fef2f2; color: #dc2626; }
   }
 }
 
-/* Footer contact column: let flex children shrink + ellipsis instead of overflow */
+/* Footer contact column: let flex children shrink; ellipsis on email only (phones wrap, address wraps) */
 footer .footer-contact li { min-width: 0; }
-footer .footer-contact li > a, footer .footer-contact li > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+footer .footer-contact li > a[href^="mailto:"], footer .footer-contact li > span[dir="ltr"] { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+
+/* Footer light-mode accents (green WhatsApp + cyan accent text readable on light bg) */
+html.light footer .text-green-400 { color: #15803d !important; }
+html.light footer .text-\[var\(--ff-accent\)\] { color: #0891b2 !important; }
 

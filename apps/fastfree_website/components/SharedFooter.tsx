@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Facebook, Twitter, Linkedin, Github, Youtube, MessageCircle, Instagram, Music, Globe, Link as LinkIcon, Code, Headphones, Mail, Phone, MapPin, ArrowUp } from 'lucide-react';
+import { Facebook, Twitter, Linkedin, Github, Youtube, MessageCircle, Instagram, Music, Globe, Link as LinkIcon, Code, Headphones, Mail, Phone, MapPin, ArrowUp, Clock } from 'lucide-react';
 import { siteConfig } from '@/src/data/siteConfig';
 import { useLanguage } from '@/lib/language-provider';
 import { services } from '@/src/data/services';
@@ -61,7 +61,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
   // Canonical contact/social values (siteConfig.ts is the single source).
   const FACEBOOK_URL = 'https://www.facebook.com/share/1DHAKK2ek1/';
   const LINKEDIN_URL = 'https://www.linkedin.com/company/fastfree-cloud/';
-  const PHONE_EG_DISPLAY = cfg.phone_eg || '010919999937';
+  const PHONE_EG_DISPLAY = cfg.phone_eg || '01091999937';
   const PHONE_SA_DISPLAY = cfg.phone_sa || '+966 57 229 3845';
   const PHONE_EG_TEL = 'tel:+201091999937';
   const PHONE_SA_TEL = 'tel:+966572293845';
@@ -87,7 +87,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
             title={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'}
           >
             <MessageCircle size={22} />
-            <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-base leading-none">🇪🇬</span>
+            <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-[9px] font-extrabold leading-none bg-[#030712] text-white border border-white/20 rounded px-0.5 py-px">EG</span>
           </motion.a>
           <motion.a
             initial={{ opacity: 0, scale: 0 }}
@@ -101,7 +101,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
             title={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'}
           >
             <MessageCircle size={22} />
-            <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-base leading-none">🇸🇦</span>
+            <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-[9px] font-extrabold leading-none bg-[#030712] text-white border border-white/20 rounded px-0.5 py-px">SA</span>
           </motion.a>
         </div>
       )}
@@ -118,7 +118,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
       )}
 
       <footer className="bg-[#050814] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6 py-10">
+        <div className="max-w-7xl mx-auto px-6 pt-10 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             {/* Brand */}
             <div className="space-y-4">
@@ -128,7 +128,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
                 </div>
                 <span className="text-lg font-extrabold" style={{ fontFamily: 'var(--ff-font-heading)' }}>{siteName}</span>
               </Link>
-              {aboutText && <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">{aboutText}</p>}
+              {aboutText && <p title={aboutText} className="text-slate-400 text-xs leading-relaxed">{aboutText}</p>}
               <div className="flex gap-2 flex-wrap">
                 <a href={whatsappHref} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} title={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} className="w-11 h-11 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all">
                   <MessageCircle size={18} aria-hidden="true" />
@@ -163,9 +163,9 @@ export default function SharedFooter(_props: SharedFooterProps) {
                   { href: `/${lang}/blog`, label: t('NAV_BLOG', 'المدونة', 'Blog') },
                   { href: `/${lang}/about`, label: t('NAV_ABOUT', 'من نحن', 'About') },
                   { href: `/${lang}/contact`, label: t('NAV_CONTACT', 'تواصل معنا', 'Contact') },
-                 ].map((link, i) => (
-                  <li key={i}>
-                    <Link href={link.href} className="hover:text-white hover:ps-1 transition-all">{link.label}</Link>
+                  ].map((link, i) => (
+                   <li key={i}>
+                    <Link href={link.href} className="block py-2 hover:text-white hover:ps-1 transition-all">{link.label}</Link>
                   </li>
                 ))}
               </ul>
@@ -180,9 +180,12 @@ export default function SharedFooter(_props: SharedFooterProps) {
               <ul className="space-y-2 text-xs text-slate-400">
                 {servicesData.slice(0, 5).map(s => (
                   <li key={s.id}>
-                    <Link href={`/${lang}/services/${s.id}`} className="hover:text-white hover:ps-1 transition-all">{lang === 'ar' ? s.title_ar : s.title_en}</Link>
+                    <Link href={`/${lang}/services/${s.id}`} className="block py-2 hover:text-white hover:ps-1 transition-all">{lang === 'ar' ? s.title_ar : s.title_en}</Link>
                   </li>
                 ))}
+                <li>
+                  <Link href={`/${lang}/services`} className="block py-2 text-[var(--ff-accent)] font-bold hover:text-white transition-all">{t('FOOTER_ALL_SERVICES', 'عرض كل الخدمات', 'View all services')}</Link>
+                </li>
               </ul>
             </div>
 
@@ -194,39 +197,43 @@ export default function SharedFooter(_props: SharedFooterProps) {
               </h4>
               <ul className="footer-contact space-y-2.5 text-xs text-slate-400">
                 {emailAddr && (
-                  <li className="flex items-center gap-2">
+                  <li className="flex items-center gap-2 min-w-0">
                     <Mail size={12} className="text-[var(--ff-accent)] shrink-0" />
-                    <span dir="ltr" className="truncate">{emailAddr}</span>
+                    <a href={`mailto:${emailAddr}`} dir="ltr" title={emailAddr} className="truncate min-w-0 hover:text-white transition">{emailAddr}</a>
                   </li>
                 )}
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-2 min-w-0">
                   <Phone size={12} className="text-[var(--ff-accent)] shrink-0" />
-                  <a href={PHONE_EG_TEL} dir="ltr" className="hover:text-white transition">
-                    {lang === 'ar' ? `مصر ${PHONE_EG_DISPLAY}` : `Egypt ${PHONE_EG_DISPLAY}`}
-                  </a>
+                  <span dir="auto">{lang === 'ar' ? 'مصر' : 'Egypt'}</span>
+                  <a href={PHONE_EG_TEL} dir="ltr" title={PHONE_EG_DISPLAY} className="hover:text-white transition truncate min-w-0">{PHONE_EG_DISPLAY}</a>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-2 min-w-0">
                   <Phone size={12} className="text-[var(--ff-accent)] shrink-0" />
-                  <a href={PHONE_SA_TEL} dir="ltr" className="hover:text-white transition">
-                    {lang === 'ar' ? `السعودية ${PHONE_SA_DISPLAY}` : `Saudi ${PHONE_SA_DISPLAY}`}
-                  </a>
+                  <span dir="auto">{lang === 'ar' ? 'السعودية' : 'Saudi'}</span>
+                  <a href={PHONE_SA_TEL} dir="ltr" title={PHONE_SA_DISPLAY} className="hover:text-white transition truncate min-w-0">{PHONE_SA_DISPLAY}</a>
                 </li>
                 {address && (
-                  <li className="flex items-center gap-2">
-                    <MapPin size={12} className="text-[var(--ff-accent)] shrink-0" />
-                    <span className="truncate">{address}</span>
+                  <li className="flex items-start gap-2 min-w-0">
+                    <MapPin size={12} className="text-[var(--ff-accent)] shrink-0 mt-0.5" />
+                    <span title={address} className="leading-relaxed">{address}</span>
                   </li>
                 )}
+                <li className="flex items-center gap-2 min-w-0">
+                  <Clock size={12} className="text-[var(--ff-accent)] shrink-0" />
+                  <span>{t('FOOTER_HOURS', 'السبت – الخميس: 9ص – 6م', 'Sat – Thu: 9AM – 6PM')}</span>
+                </li>
               </ul>
             </div>
           </motion.div>
 
           {/* Bottom */}
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15 }} className="border-t border-white/5 pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
-            <span>© {new Date().getFullYear()} {siteName}. {t('FOOTER_RIGHTS', 'جميع الحقوق محفوظة', 'All rights reserved')}</span>
+            <span><bdi>© {new Date().getFullYear()} {siteName}. {t('FOOTER_RIGHTS', 'جميع الحقوق محفوظة', 'All rights reserved')}</bdi></span>
             <div className="flex items-center gap-3">
               <Link href={`/${lang}/about`} className="hover:text-white transition py-2">{t('NAV_ABOUT', 'من نحن', 'About')}</Link>
+              <span aria-hidden="true" className="text-slate-600">•</span>
               <Link href={`/${lang}/contact`} className="hover:text-white transition py-2">{t('NAV_CONTACT', 'تواصل', 'Contact')}</Link>
+              <span aria-hidden="true" className="text-slate-600">•</span>
               <Link href={`/${lang}/blog`} className="hover:text-white transition py-2">{t('NAV_BLOG', 'المدونة', 'Blog')}</Link>
             </div>
           </motion.div>
