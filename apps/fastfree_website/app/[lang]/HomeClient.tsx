@@ -529,16 +529,16 @@ export default function Home() {
       {/* Blog Section */}
       <section className="py-24 max-w-7xl mx-auto px-6">
         <FadeIn>
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: 'var(--ff-font-heading)' }}>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div className="max-w-md">
+              <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ fontFamily: 'var(--ff-font-heading)' }}>
                 {t('BLOG_TITLE', 'المدونة البرمجية', 'Tech Blog')}
               </h2>
-              <p className="text-slate-400 max-w-md">
+              <p className="text-slate-400 text-sm leading-relaxed">
                 {t('BLOG_DESC', 'أحدث المقالات التقنية، الشروحات، ونصائح التحول الرقمي.', 'Latest tech articles, tutorials, and digital transformation tips.')}
               </p>
             </div>
-            <Link href={`/${lang}/blog`} className="mt-6 md:mt-0 text-sm font-bold text-[var(--ff-accent)] flex items-center gap-2 hover:underline">
+            <Link href={`/${lang}/blog`} className="self-start md:self-auto shrink-0 text-sm font-bold text-[var(--ff-accent)] flex items-center gap-2 hover:underline">
               {t('MORE_ARTICLES', 'عرض كل المقالات', 'More Articles')}
               <ArrowLeft size={14} className={lang === 'ar' ? '' : 'rotate-180'} />
             </Link>
@@ -561,9 +561,9 @@ export default function Home() {
                 <div className="h-40 sm:h-48 overflow-hidden bg-slate-900 relative">
                   <Image src={post.cover_image || '/assets/og-default.svg'} alt={lang === 'ar' ? post.title_ar || '' : post.title_en || ''} width={600} height={400} priority={i === 0} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                 </div>
-                <div className="p-6">
-                  <span className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15 mb-3 inline-block max-w-full truncate">{catLabel(post.category, lang)}</span>
-                  <h3 className="text-base sm:text-lg font-bold mt-3 mb-2 leading-snug line-clamp-2 break-words group-hover:text-[var(--ff-accent)] transition-colors">{lang === 'ar' ? post.title_ar : post.title_en}</h3>
+                <div className="p-5">
+                  <span className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2.5 py-1 rounded-full border border-[var(--ff-accent)]/15 inline-block">{catLabel(post.category, lang)}</span>
+                  <h3 className="text-base font-bold mt-2.5 leading-snug line-clamp-2 break-words group-hover:text-[var(--ff-accent)] transition-colors">{lang === 'ar' ? post.title_ar : post.title_en}</h3>
                   <p className="text-slate-400 text-sm leading-relaxed line-clamp-3 break-words">{lang === 'ar' ? post.excerpt_ar : post.excerpt_en}</p>
                 </div>
               </div>

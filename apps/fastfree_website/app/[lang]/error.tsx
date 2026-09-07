@@ -20,7 +20,7 @@ export default function Error({
         </div>
         <h1 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'var(--ff-font-heading)' }}>
           حدث خطأ ما
-        </h2>
+        </h1>
         <p className="text-slate-400 text-sm mb-6">
           {'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.'}
         </p>
