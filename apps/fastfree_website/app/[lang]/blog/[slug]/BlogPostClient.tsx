@@ -166,7 +166,7 @@ export default function BlogPostPage() {
       {/* Main Content */}
       <section className={`max-w-4xl mx-auto px-6 py-8 ${lang === 'ar' ? 'text-right' : 'text-left'} space-y-12`}>
         {/* Cover Image */}
-        <div className="rounded-3xl border border-white/10 overflow-hidden shadow-2xl bg-slate-900 aspect-[21/9] relative">
+        <div className="rounded-3xl border border-white/10 overflow-hidden shadow-2xl bg-slate-900 aspect-video sm:aspect-[21/9] relative">
           <Image src={post.cover_image || '/assets/og-default.svg'} alt={lang === 'ar' ? post.title_ar : post.title_en} fill priority className="object-cover" sizes="(max-width: 768px) 100vw, 75vw" />
         </div>
 
