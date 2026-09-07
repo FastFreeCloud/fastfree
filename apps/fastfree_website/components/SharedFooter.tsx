@@ -74,26 +74,15 @@ export default function SharedFooter(_props: SharedFooterProps) {
   return (
     <>
       {whatsappRaw && (
-        <div className="fixed bottom-6 left-6 z-50 flex flex-col gap-3">
+        <motion.div
+          animate={{ y: [0, -5, 0] }}
+          transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+          className="fixed bottom-6 left-6 z-50 flex flex-col gap-3"
+        >
           <motion.a
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1, type: 'spring', stiffness: 260, damping: 20 }}
-            href={whatsappHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="wa-float relative w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 hover:scale-110 transition-all shadow-green-500/30"
-            aria-label={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'}
-            title={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'}
-          >
-            <span aria-hidden="true" className="absolute inset-0 rounded-full bg-green-400 animate-ping [animation-duration:2.5s] opacity-25" />
-            <MessageCircle size={22} className="relative" />
-            <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-base leading-none drop-shadow">🇪🇬</span>
-          </motion.a>
-          <motion.a
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1.15, type: 'spring', stiffness: 260, damping: 20 }}
             href={whatsappSaHref}
             target="_blank"
             rel="noopener noreferrer"
@@ -101,11 +90,26 @@ export default function SharedFooter(_props: SharedFooterProps) {
             aria-label={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'}
             title={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'}
           >
-            <span aria-hidden="true" className="absolute inset-0 rounded-full bg-green-400 animate-ping [animation-duration:2.5s] [animation-delay:1.25s] opacity-25" />
+            <span aria-hidden="true" className="absolute inset-0 rounded-full bg-green-400 animate-ping [animation-duration:2.5s] opacity-25" />
             <MessageCircle size={22} className="relative" />
             <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-base leading-none drop-shadow">🇸🇦</span>
           </motion.a>
-        </div>
+          <motion.a
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1.15, type: 'spring', stiffness: 260, damping: 20 }}
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="wa-float relative w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 hover:scale-110 transition-all shadow-green-500/30"
+            aria-label={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'}
+            title={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'}
+          >
+            <span aria-hidden="true" className="absolute inset-0 rounded-full bg-green-400 animate-ping [animation-duration:2.5s] [animation-delay:1.25s] opacity-25" />
+            <MessageCircle size={22} className="relative" />
+            <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-base leading-none drop-shadow">🇪🇬</span>
+          </motion.a>
+        </motion.div>
       )}
 
       {showTop && (
@@ -121,7 +125,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
 
       <footer className="bg-[#050814] border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 pt-10 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
-          <motion.div initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: 'easeOut' }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          <motion.div initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: 'easeOut' }} className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             {/* Brand */}
             <div className="space-y-4">
               <Link href={`/${lang}`} className="flex items-center gap-2">
@@ -182,7 +186,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
                 {t('FOOTER_SERVICES', 'الخدمات', 'Services')}
               </h4>
               <ul className="space-y-2 text-xs text-slate-400">
-                {servicesData.slice(0, 5).map(s => (
+                {servicesData.slice(0, 6).map(s => (
                   <li key={s.id}>
                     <Link href={`/${lang}/services/${s.id}`} className="block py-2 hover:text-white hover:ps-1 transition-all">{lang === 'ar' ? s.title_ar : s.title_en}</Link>
                   </li>
