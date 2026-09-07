@@ -120,14 +120,6 @@ export default function SharedFooter(_props: SharedFooterProps) {
                 <span className="text-lg font-extrabold" style={{ fontFamily: 'var(--ff-font-heading)' }}>{siteName}</span>
               </Link>
               {aboutText && <p title={aboutText} className="text-slate-400 text-xs leading-relaxed break-words">{aboutText}</p>}
-              <div className="flex gap-2 flex-wrap">
-                <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook" className="w-11 h-11 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-[var(--ff-accent)] hover:border-[var(--ff-accent)]/30 hover:bg-[var(--ff-accent)]/5 hover:-translate-y-0.5 transition-all">
-                  <Facebook size={16} aria-hidden="true" />
-                </a>
-                <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn" className="w-11 h-11 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-[var(--ff-accent)] hover:border-[var(--ff-accent)]/30 hover:bg-[var(--ff-accent)]/5 hover:-translate-y-0.5 transition-all">
-                  <Linkedin size={16} aria-hidden="true" />
-                </a>
-              </div>
             </div>
 
             {/* Contact */}
