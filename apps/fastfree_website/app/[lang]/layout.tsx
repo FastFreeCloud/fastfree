@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: 'FastFree',
   description: DEFAULT_DESCRIPTION.ar,
   manifest: '/manifest.webmanifest',
+  verification: {
+    google: 'qchSTYQg-lU6klH80sD0JGDOrSsrmGZbRdl1nrtnQ1M',
+  },
   icons: {
     icon: [
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
