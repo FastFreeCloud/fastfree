@@ -86,7 +86,8 @@ export default function SharedFooter(_props: SharedFooterProps) {
             aria-label={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'}
             title={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'}
           >
-            <MessageCircle size={22} />
+            <span aria-hidden="true" className="absolute inset-0 rounded-full bg-green-400 animate-ping [animation-duration:2.5s] opacity-25" />
+            <MessageCircle size={22} className="relative" />
             <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-[9px] font-extrabold leading-none bg-[#030712] text-white border border-white/20 rounded px-0.5 py-px">EG</span>
           </motion.a>
           <motion.a
@@ -100,7 +101,8 @@ export default function SharedFooter(_props: SharedFooterProps) {
             aria-label={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'}
             title={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'}
           >
-            <MessageCircle size={22} />
+            <span aria-hidden="true" className="absolute inset-0 rounded-full bg-green-400 animate-ping [animation-duration:2.5s] [animation-delay:1.25s] opacity-25" />
+            <MessageCircle size={22} className="relative" />
             <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-[9px] font-extrabold leading-none bg-[#030712] text-white border border-white/20 rounded px-0.5 py-px">SA</span>
           </motion.a>
         </div>
