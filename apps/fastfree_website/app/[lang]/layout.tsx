@@ -56,6 +56,7 @@ export default async function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: "(function(){try{if(localStorage.getItem('ff_theme')==='light'){document.documentElement.classList.add('light')}}catch(e){}})()" }} />
+        <noscript><style>{'[data-text-reveal]{opacity:1 !important;transform:none !important;}'}</style></noscript>
         <link rel="preload" href="/fonts/tajawal-400-arabic.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" href="/fonts/el-messiri-700-arabic.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />

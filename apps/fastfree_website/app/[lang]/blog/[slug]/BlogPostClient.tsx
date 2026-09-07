@@ -14,6 +14,7 @@ import { ArticleSchema, BreadcrumbSchema } from '@/components/SEO/StructuredData
 import { siteConfig } from '@/src/data/siteConfig';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { Fragment } from 'react';
 
 const CONTACT_TOKEN_RE = /(\+?\d[\d\s-]{6,}\d|[\w.+-]+@[\w-]+\.[\w.]+)/g;
 
@@ -60,24 +61,38 @@ function linkifyContact(text: string, keyPrefix: string, lang: string): ReactNod
 
 function renderArticleBody(text: string, lang: string): ReactNode[] {
   return text.split(/\n\n+/).map((para, i) => {
-    const lines = para
-      .split('\n')
-      .map((l) => l.trim())
-      .filter(Boolean);
-    if (lines.length > 0 && lines.every((l) => l.startsWith('- '))) {
+    try {
+      const lines = para
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      if (lines.length > 0 && lines.every((l) => l.startsWith('- '))) {
+        return (
+          <ul key={i} dir="auto" className="mb-5 last:mb-0 space-y-2 list-disc ps-6 marker:text-[var(--ff-accent)]">
+            {lines.map((l, j) => (
+              <li key={j}>{linkifyContact(l.slice(2).trim(), `${i}-${j}`, lang)}</li>
+            ))}
+          </ul>
+        );
+      }
+      const parts = para.split('\n');
       return (
-        <ul key={i} dir="auto" className="mb-5 last:mb-0 space-y-2 list-disc ps-6 marker:text-[var(--ff-accent)]">
-          {lines.map((l, j) => (
-            <li key={j}>{linkifyContact(l.slice(2).trim(), `${i}-${j}`, lang)}</li>
+        <p key={i} dir="auto" className="mb-5 last:mb-0">
+          {parts.map((part, j) => (
+            <Fragment key={j}>
+              {j > 0 && <br />}
+              {linkifyContact(part, `${i}-${j}`, lang)}
+            </Fragment>
           ))}
-        </ul>
+        </p>
+      );
+    } catch {
+      return (
+        <p key={i} dir="auto" className="mb-5 last:mb-0">
+          {para}
+        </p>
       );
     }
-    return (
-      <p key={i} dir="auto" className="mb-5 last:mb-0">
-        {linkifyContact(para, `${i}`, lang)}
-      </p>
-    );
   });
 }
 

@@ -11,7 +11,6 @@ import { useLanguage } from '@/lib/language-provider';
 type SharedFooterProps = {
   t?: (key: string, ar: string, en: string) => string;
   lang?: 'ar' | 'en';
-  services?: { id: string; title_ar: string; title_en: string }[];
 };
 
 export default function SharedFooter(_props: SharedFooterProps) {
@@ -61,7 +60,9 @@ export default function SharedFooter(_props: SharedFooterProps) {
         <motion.div
           animate={{ y: [0, -5, 0] }}
           transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
-          className={`fixed bottom-6 left-6 z-50 flex flex-col gap-3 transition-opacity duration-300 ${footerVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          className={`fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] left-6 z-50 flex flex-col gap-3 transition-opacity duration-300 ${footerVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          inert={footerVisible ? true : undefined}
+          aria-hidden={footerVisible ? true : undefined}
         >
           <motion.a
             initial={{ opacity: 0, scale: 0 }}
@@ -96,7 +97,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
         </motion.div>
       )}
 
-      {showTop && (
+      {showTop && !footerVisible && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-[var(--ff-accent)]/90 text-[#030712] flex items-center justify-center shadow-lg hover:bg-[var(--ff-accent)] hover:scale-110 transition-all cursor-pointer"
@@ -118,7 +119,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
                 </div>
                 <span className="text-lg font-extrabold" style={{ fontFamily: 'var(--ff-font-heading)' }}>{siteName}</span>
               </Link>
-              {aboutText && <p title={aboutText} className="text-slate-400 text-xs leading-relaxed">{aboutText}</p>}
+              {aboutText && <p title={aboutText} className="text-slate-400 text-xs leading-relaxed break-words">{aboutText}</p>}
               <div className="flex gap-2 flex-wrap">
                 <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook" className="w-11 h-11 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-[var(--ff-accent)] hover:border-[var(--ff-accent)]/30 hover:bg-[var(--ff-accent)]/5 hover:-translate-y-0.5 transition-all">
                   <Facebook size={16} aria-hidden="true" />
@@ -185,11 +186,11 @@ export default function SharedFooter(_props: SharedFooterProps) {
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15 }} className="border-t border-white/5 pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
             <span><bdi>© {new Date().getFullYear()} {siteName}. {t('FOOTER_RIGHTS', 'جميع الحقوق محفوظة', 'All rights reserved')}</bdi></span>
             <div className="flex items-center gap-3">
-              <Link href={`/${lang}/about`} className="hover:text-white transition py-2">{t('NAV_ABOUT', 'من نحن', 'About')}</Link>
+              <Link href={`/${lang}/about`} className="hover:text-white transition py-2 min-h-[44px] inline-flex items-center">{t('NAV_ABOUT', 'من نحن', 'About')}</Link>
               <span aria-hidden="true" className="text-slate-600">•</span>
-              <Link href={`/${lang}/contact`} className="hover:text-white transition py-2">{t('NAV_CONTACT', 'تواصل', 'Contact')}</Link>
+              <Link href={`/${lang}/contact`} className="hover:text-white transition py-2 min-h-[44px] inline-flex items-center">{t('NAV_CONTACT', 'تواصل', 'Contact')}</Link>
               <span aria-hidden="true" className="text-slate-600">•</span>
-              <Link href={`/${lang}/blog`} className="hover:text-white transition py-2">{t('NAV_BLOG', 'المدونة', 'Blog')}</Link>
+              <Link href={`/${lang}/blog`} className="hover:text-white transition py-2 min-h-[44px] inline-flex items-center">{t('NAV_BLOG', 'المدونة', 'Blog')}</Link>
             </div>
           </motion.div>
         </div>

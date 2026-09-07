@@ -150,7 +150,7 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
             aria-expanded={mobileOpen}
             aria-controls="mobile-menu"
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-            className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition"
+            className={`w-11 h-11 shrink-0 flex items-center justify-center rounded-xl transition-all duration-150 ${mobileOpen ? 'bg-[var(--ff-accent)]/10 text-[var(--ff-accent)] border border-[var(--ff-accent)]/30' : 'text-slate-300 hover:text-white hover:bg-white/5 active:scale-90 active:bg-black/10'}`}
           >
             <span className="relative block w-6 h-6" aria-hidden="true">
               <span className={`absolute left-0 h-0.5 w-6 rounded-full bg-current transition-all duration-300 ${mobileOpen ? 'top-[11px] rotate-45' : 'top-[7px]'}`} />
@@ -175,7 +175,7 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
         className={`md:hidden grid transition-all duration-300 ease-out ${mobileOpen ? 'grid-rows-[1fr] opacity-100 visible' : 'grid-rows-[0fr] opacity-0 invisible'}`}
       >
         <div className="overflow-hidden min-h-0">
-          <div className="bg-[#030712]/95 backdrop-blur-xl border-t border-white/5 px-6 pb-6 pt-4 max-h-[calc(100svh-5rem)] overflow-y-auto">
+          <div className="bg-[#030712]/95 backdrop-blur-xl border-t border-white/5 px-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] max-h-[calc(100svh-5rem)] overflow-y-auto overscroll-contain">
           <div className="flex flex-col gap-1">
             {links.map((link) => (
               <Link
@@ -183,7 +183,7 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
                 aria-current={activeKey === link.key ? 'page' : undefined}
-                className={`py-3 px-4 rounded-xl text-sm font-medium transition-all ${
+                className={`py-3 px-4 rounded-xl text-sm font-medium transition-all active:bg-black/5 active:scale-[0.99] ${
                   activeKey === link.key
                     ? 'bg-[var(--ff-accent)]/10 text-[var(--ff-accent)]'
                     : 'text-slate-300 hover:bg-white/5 hover:text-white'

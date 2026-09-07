@@ -497,12 +497,20 @@ html.light .status-lost { background: #fef2f2; color: #dc2626; }
   }
 }
 
-/* Footer contact column: let flex children shrink; ellipsis on email only (phones wrap, address wraps) */
+/* Footer contact column: let flex children shrink; ellipsis on email only */
 footer .footer-contact li { min-width: 0; }
-footer .footer-contact li > a[href^="mailto:"], footer .footer-contact li > span[dir="ltr"] { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+footer .footer-contact li > a[href^="mailto:"] { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 
 /* Footer light-mode accents (green WhatsApp + cyan accent text readable on light bg) */
 html.light footer .text-green-400 { color: #15803d !important; }
 html.light footer .text-\[var\(--ff-accent\)\] { color: #0891b2 !important; }
+
+
+/* Navbar amber hover readable in light + softer backdrop */
+html.light .hover\:text-amber-400:hover { color: #b45309 !important; }
+html.light .group:hover .group-hover\:text-amber-400 { color: #b45309 !important; }
+html.light .hover\:bg-amber-400\/10:hover { background: rgba(180,83,9,.1) !important; }
+html.light .hover\:border-amber-400\/30:hover { border-color: rgba(180,83,9,.35) !important; }
+html.light .bg-black\/40 { background: rgba(15,23,42,.3) !important; }
 
