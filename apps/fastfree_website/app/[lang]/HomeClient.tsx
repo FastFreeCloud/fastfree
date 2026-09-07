@@ -448,7 +448,7 @@ export default function Home() {
             >
               <div className="h-56 relative overflow-hidden bg-slate-900">
                 {product.thumbnail ? (
-                  <Image src={product.thumbnail || '/assets/og-default.svg'} alt={lang === 'ar' ? product.name_ar : product.name_en} width={500} height={300} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" priority={true} />
+                  <Image src={product.thumbnail || '/assets/og-default.svg'} alt={lang === 'ar' ? product.name_ar : product.name_en} width={500} height={300} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-400"><HelpCircle size={48} /></div>
                 )}

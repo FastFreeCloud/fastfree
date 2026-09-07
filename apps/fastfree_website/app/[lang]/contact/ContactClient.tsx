@@ -7,7 +7,7 @@ import { useSEOMeta } from '@/lib/use-seo';
 import { motion, useInView } from 'framer-motion';
 import { TextReveal } from '@/components/ui/TextReveal';
 import { siteConfig } from '@/src/data/siteConfig';
-import { BreadcrumbSchema } from '@/components/SEO/StructuredData';
+import { BreadcrumbSchema, FAQSchema } from '@/components/SEO/StructuredData';
 
 function FadeInSection({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef(null);
@@ -368,6 +368,7 @@ export default function ContactPage() {
           </div>
         </FadeInSection>
         <div className="space-y-3">
+          <FAQSchema items={FAQ_ITEMS.map((faq) => ({ question: lang === 'ar' ? faq.qAr : faq.qEn, answer: lang === 'ar' ? faq.aAr : faq.aEn }))} />
           {FAQ_ITEMS.map((faq, i) => (
             <FadeInSection key={i} delay={i * 0.1}>
               <div className="rounded-2xl bg-slate-900/40 border border-white/10 overflow-hidden">

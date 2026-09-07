@@ -44,7 +44,7 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: __dirname,
 
   // ── Transpile Packages ──────────────────────────────
-  transpilePackages: ['motion'],
+  transpilePackages: ['framer-motion'],
 
   // ── Server External Packages (kept external at runtime) ──
   serverExternalPackages: ['resend'],
@@ -55,9 +55,7 @@ const nextConfig: NextConfig = {
     // Saves ~89KB+ for lucide-react alone
     optimizePackageImports: [
       'lucide-react',
-      'react-icons',
-      '@heroicons/react',
-      'date-fns',
+      'framer-motion',
     ],
 
     // Client Router Cache — keep pages in memory longer

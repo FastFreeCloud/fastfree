@@ -56,12 +56,8 @@ export default async function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: "(function(){try{if(localStorage.getItem('ff_theme')==='light'){document.documentElement.classList.add('light')}}catch(e){}})()" }} />
-        <link rel="preconnect" href={SITE_URL} />
-        <link rel="dns-prefetch" href={SITE_URL} />
-        <link rel="preconnect" href="https://picsum.photos" />
-        <link rel="dns-prefetch" href="https://picsum.photos" />
-        <link rel="preconnect" href="https://images.unsplash.com" />
-        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <link rel="preload" href="/fonts/tajawal-400-arabic.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/el-messiri-700-arabic.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
         <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
