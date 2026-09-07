@@ -10,6 +10,7 @@ import { services } from '@/src/data/services';
 import { products } from '@/src/data/products';
 import { blogPosts as posts } from '@/src/data/blog';
 import { testimonials } from '@/src/data/testimonials';
+import { catLabel } from '@/lib/blog-ui';
 import { useSEOMeta } from '@/lib/use-seo';
 import { motion } from 'framer-motion';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
@@ -561,7 +562,7 @@ export default function Home() {
                   <Image src={post.cover_image || '/assets/og-default.svg'} alt={lang === 'ar' ? post.title_ar || '' : post.title_en || ''} width={600} height={400} priority={i === 0} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                 </div>
                 <div className="p-6">
-                  <span className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15 mb-3 inline-block max-w-full truncate">{post.category ?? ''}</span>
+                  <span className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15 mb-3 inline-block max-w-full truncate">{catLabel(post.category, lang)}</span>
                   <h3 className="text-base sm:text-lg font-bold mt-3 mb-2 leading-snug line-clamp-2 break-words group-hover:text-[var(--ff-accent)] transition-colors">{lang === 'ar' ? post.title_ar : post.title_en}</h3>
                   <p className="text-slate-400 text-sm leading-relaxed line-clamp-3 break-words">{lang === 'ar' ? post.excerpt_ar : post.excerpt_en}</p>
                 </div>

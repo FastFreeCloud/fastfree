@@ -9,6 +9,7 @@ import { useSEOMeta } from '@/lib/use-seo';
 import { motion } from 'framer-motion';
 import { TextReveal } from '@/components/ui/TextReveal';
 import { blogPosts, type BlogPost } from '@/src/data/blog';
+import { catLabel } from '@/lib/blog-ui';
 import { ArticleSchema, BreadcrumbSchema } from '@/components/SEO/StructuredData';
 import { siteConfig } from '@/src/data/siteConfig';
 import { notFound } from 'next/navigation';
@@ -194,9 +195,11 @@ export default function BlogPostPage() {
                    <div className="w-full h-32 relative overflow-hidden rounded-xl mb-4">
                       <Image src={sp.cover_image || '/assets/og-default.svg'} alt={lang === 'ar' ? sp.title_ar : sp.title_en} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, 33vw" />
                     </div>
+                  <span className="text-[11px] font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15 mb-2 inline-block max-w-full truncate">{catLabel(sp.category, lang)}</span>
                   <h4 className="font-bold text-white text-sm line-clamp-2 group-hover:text-[var(--ff-accent)] transition-colors">
                     {lang === 'ar' ? sp.title_ar : sp.title_en}
                   </h4>
+                  <div className="mt-2 text-[11px] text-slate-400 whitespace-nowrap">{sp.published_at ? new Date(sp.published_at).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US') : ''}</div>
                 </Link>
               ))}
             </div>

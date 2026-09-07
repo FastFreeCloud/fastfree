@@ -10,6 +10,7 @@ import { motion, useInView } from 'framer-motion';
 import { TextReveal } from '@/components/ui/TextReveal';
 import { BreadcrumbSchema } from '@/components/SEO/StructuredData';
 import { blogPosts, type BlogPost } from '@/src/data/blog';
+import { catLabel } from '@/lib/blog-ui';
 
 function FadeIn({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef(null);
@@ -125,7 +126,7 @@ export default function BlogPage() {
           ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredPosts.map((post, i) => (
-              <FadeIn key={post.id} delay={i * 0.08}>
+              <FadeIn key={post.id} delay={i < 6 ? i * 0.08 : 0} className="h-full">
                 <div className="rounded-3xl bg-slate-900/40 border border-white/10 overflow-hidden hover:border-white/20 transition-all flex flex-col justify-between group shadow-2xl h-full">
                   <div>
                     <div className="h-52 overflow-hidden bg-slate-900 relative">
@@ -139,7 +140,7 @@ export default function BlogPage() {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15 mb-3 inline-block">{post.category}</span>
+                        <span className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15 mb-3 inline-block">{catLabel(post.category, lang)}</span>
                       )}
                       <h3 className="text-lg font-bold mb-3 leading-snug line-clamp-2 group-hover:text-[var(--ff-accent)] transition-colors">{lang === 'ar' ? post.title_ar : post.title_en}</h3>
                       <p className="text-slate-400 text-sm leading-relaxed line-clamp-3">{lang === 'ar' ? post.excerpt_ar : post.excerpt_en}</p>
