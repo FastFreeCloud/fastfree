@@ -16,7 +16,7 @@ import type { ReactNode } from 'react';
 
 const CONTACT_TOKEN_RE = /(\+?\d[\d\s-]{6,}\d|[\w.+-]+@[\w-]+\.[\w.]+)/g;
 
-function linkifyContact(text: string, keyPrefix: string): ReactNode[] {
+function linkifyContact(text: string, keyPrefix: string, lang: string): ReactNode[] {
   const nodes: ReactNode[] = [];
   const re = new RegExp(CONTACT_TOKEN_RE.source, 'g');
   let last = 0;
@@ -33,8 +33,16 @@ function linkifyContact(text: string, keyPrefix: string): ReactNode[] {
       nodes.push(<span key={`${keyPrefix}-t${k++}`}>{text.slice(last, m.index)}</span>);
     }
     const href = token.includes('@') ? `mailto:${token}` : `tel:${token.replace(/[\s-]/g, '')}`;
+    const digits = token.replace(/[\s-]/g, '');
+    const countryLabel = token.includes('@')
+      ? null
+      : digits.startsWith('+966')
+        ? (lang === 'ar' ? 'السعودية' : 'Saudi Arabia')
+        : (digits.startsWith('+20') || digits.startsWith('01') || digits.startsWith('10'))
+          ? (lang === 'ar' ? 'مصر' : 'Egypt')
+          : null;
     nodes.push(
-      <a key={`${keyPrefix}-l${k++}`} href={href} dir="ltr" className="text-[var(--ff-accent)] underline underline-offset-2">
+      <a key={`${keyPrefix}-l${k++}`} href={href} dir="ltr" aria-label={countryLabel ? `${token} (${countryLabel})` : undefined} title={countryLabel ? `${token} (${countryLabel})` : undefined} className="text-[var(--ff-accent)] underline underline-offset-2">
         {token}
       </a>,
     );
@@ -49,7 +57,7 @@ function linkifyContact(text: string, keyPrefix: string): ReactNode[] {
   return nodes;
 }
 
-function renderArticleBody(text: string): ReactNode[] {
+function renderArticleBody(text: string, lang: string): ReactNode[] {
   return text.split(/\n\n+/).map((para, i) => {
     const lines = para
       .split('\n')
@@ -59,14 +67,14 @@ function renderArticleBody(text: string): ReactNode[] {
       return (
         <ul key={i} dir="auto" className="mb-5 last:mb-0 space-y-2 list-disc ps-6 marker:text-[var(--ff-accent)]">
           {lines.map((l, j) => (
-            <li key={j}>{linkifyContact(l.slice(2).trim(), `${i}-${j}`)}</li>
+            <li key={j}>{linkifyContact(l.slice(2).trim(), `${i}-${j}`, lang)}</li>
           ))}
         </ul>
       );
     }
     return (
       <p key={i} dir="auto" className="mb-5 last:mb-0">
-        {linkifyContact(para, `${i}`)}
+        {linkifyContact(para, `${i}`, lang)}
       </p>
     );
   });
@@ -163,7 +171,7 @@ export default function BlogPostPage() {
 
         {/* Article content */}
         <div className="p-5 sm:p-8 md:p-12 rounded-3xl bg-white/5 border border-white/10 shadow-2xl leading-relaxed text-base md:text-lg text-slate-200 break-words [overflow-wrap:anywhere]">
-          {renderArticleBody(lang === 'ar' ? post.content_ar : post.content_en)}
+          {renderArticleBody(lang === 'ar' ? post.content_ar : post.content_en, lang)}
         </div>
 
         {/* Back to Blog */}

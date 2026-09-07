@@ -132,11 +132,13 @@ export default function SharedFooter(_props: SharedFooterProps) {
               </Link>
               {aboutText && <p title={aboutText} className="text-slate-400 text-xs leading-relaxed">{aboutText}</p>}
               <div className="flex gap-2 flex-wrap">
-                <a href={whatsappHref} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} title={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} className="w-11 h-11 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all">
+                <a href={whatsappHref} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} title={lang === 'ar' ? 'واتساب مصر' : 'WhatsApp Egypt'} className="relative w-11 h-11 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all">
                   <MessageCircle size={18} aria-hidden="true" />
+                  <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-[9px] font-extrabold leading-none bg-[#030712] text-white border border-white/20 rounded px-0.5 py-px">EG</span>
                 </a>
-                <a href={whatsappSaHref} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'} title={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'} className="w-11 h-11 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all">
+                <a href={whatsappSaHref} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'} title={lang === 'ar' ? 'واتساب السعودية' : 'WhatsApp Saudi Arabia'} className="relative w-11 h-11 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all">
                   <MessageCircle size={18} aria-hidden="true" />
+                  <span aria-hidden="true" className="absolute -bottom-1 -right-1 text-[9px] font-extrabold leading-none bg-[#030712] text-white border border-white/20 rounded px-0.5 py-px">SA</span>
                 </a>
                 {SOCIAL_ORDER.map(key => {
                   const url = key === 'facebook' ? FACEBOOK_URL : key === 'linkedin' ? LINKEDIN_URL : socialLinks[key];
