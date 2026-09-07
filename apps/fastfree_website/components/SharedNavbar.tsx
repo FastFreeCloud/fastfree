@@ -191,6 +191,19 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
                 {link.label}
               </Link>
             ))}
+            <Link
+              href={`/${lang}/contact`}
+              onClick={() => setMobileOpen(false)}
+              className="mt-3 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-[#030712] text-sm transition-all hover:scale-[1.02] active:scale-[0.98] min-h-[48px]"
+              style={{ background: 'var(--ff-gradient)' }}
+            >
+              {t('NAV_QUOTE', 'اطلب عرض سعر', 'Get a Quote')}
+            </Link>
+            <div dir="ltr" className="mt-2 flex items-center justify-center gap-4 text-xs text-slate-400">
+              <a href="tel:+201091999937" className="hover:text-white transition min-h-[44px] inline-flex items-center">🇪🇬 01091999937</a>
+              <span aria-hidden="true" className="text-slate-600">•</span>
+              <a href="tel:+966572293845" className="hover:text-white transition min-h-[44px] inline-flex items-center">🇸🇦 +966 57 229 3845</a>
+            </div>
           </div>
           </div>
         </div>
