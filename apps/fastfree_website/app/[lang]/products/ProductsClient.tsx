@@ -160,39 +160,39 @@ export default function ProductsPage() {
                         {product.version && <span className="absolute top-4 left-4 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-white/10 backdrop-blur-sm text-slate-300 border border-white/10">v{product.version}</span>}
                       </div>
                       <div className={`p-6 ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-                        <h3 className="text-lg font-bold mb-2 group-hover:text-[var(--ff-accent)] transition-colors">{lang === 'ar' ? product.name_ar : product.name_en}</h3>
-                        <p className="text-slate-400 text-sm mb-4 leading-relaxed line-clamp-2">{lang === 'ar' ? (product.short_description_ar || product.description_ar) : (product.short_description_en || product.description_en)}</p>
+                        <h3 className="text-lg font-bold mb-2 group-hover:text-[var(--ff-accent)] transition-colors line-clamp-2 break-words min-w-0">{lang === 'ar' ? product.name_ar : product.name_en}</h3>
+                        <p className="text-slate-400 text-sm mb-4 leading-relaxed line-clamp-2 break-words min-w-0">{lang === 'ar' ? (product.short_description_ar || product.description_ar) : (product.short_description_en || product.description_en)}</p>
                         {product.tags && product.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1.5 mb-4">
                             {product.tags.map((pt, idx) => (
-                              <span key={idx} className="px-2 py-0.5 rounded-md text-[11px] sm:text-xs font-bold bg-white/5 border border-white/10 text-slate-400">{pt}</span>
+                              <span key={idx} className="px-2 py-0.5 rounded-md text-[11px] sm:text-xs font-bold bg-white/5 border border-white/10 text-slate-400 break-words">{pt}</span>
                             ))}
                           </div>
                         )}
                       </div>
                     </div>
                     <div className="px-6 pb-6">
-                      <div className="flex flex-wrap gap-2 mb-4">
+                      <div className="flex flex-wrap gap-2 mb-4 items-center">
                         {product.google_play_link && (
-                          <a href={product.google_play_link} target="_blank" rel="noopener noreferrer" className="transition hover:scale-105">
+                          <a href={product.google_play_link} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? `تحميل ${product.name_ar} من Google Play` : `Get ${product.name_en} on Google Play`} className="inline-flex items-center justify-center min-h-[44px] transition hover:scale-105">
                             <Image src="/assets/Google_play_button.png" alt="Google Play" width={110} height={32} className="h-8 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
                           </a>
                         )}
                         {product.apple_store_link && (
-                          <a href={product.apple_store_link} target="_blank" rel="noopener noreferrer" className="transition hover:scale-105">
+                          <a href={product.apple_store_link} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? `تحميل ${product.name_ar} من App Store` : `Get ${product.name_en} on App Store`} className="inline-flex items-center justify-center min-h-[44px] transition hover:scale-105">
                             <Image src="/assets/apple_store_button.png" alt="App Store" width={110} height={32} className="h-8 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
                           </a>
                         )}
                         {product.apk_url && (
-                          <a href={product.apk_url} download rel="noopener noreferrer" className="inline-flex items-center gap-2 h-8 px-3 rounded-lg bg-[var(--ff-accent)] text-[#030712] text-xs font-bold transition hover:scale-105">
-                            <Download size={14} />
+                          <a href={product.apk_url} download rel="noopener noreferrer" aria-label={lang === 'ar' ? `تحميل APK ${product.name_ar}` : `Download APK ${product.name_en}`} className="inline-flex items-center gap-2 min-h-[44px] py-2 px-3 rounded-lg bg-[var(--ff-accent)] text-[#030712] text-xs font-bold transition hover:scale-105">
+                            <Download size={14} aria-hidden="true" />
                             {t('PRODUCT_DOWNLOAD_APK', 'تحميل APK', 'Download APK')}
                             {product.version && <span className="opacity-70">v{product.version}</span>}
                           </a>
                         )}
                       </div>
-                      <Link href={`/${lang}/products/${product.slug}`} className="text-sm font-bold text-white flex items-center gap-2 group-hover:text-[var(--ff-accent)] transition-colors">
-                        {t('PRODUCT_DETAILS', 'تفاصيل المنتج', 'Product Details')} <ArrowLeft size={14} className={lang === 'ar' ? '' : 'rotate-180'} />
+                      <Link href={`/${lang}/products/${product.slug}`} aria-label={lang === 'ar' ? `تفاصيل ${product.name_ar}` : `Details of ${product.name_en}`} className="inline-flex items-center gap-2 text-sm font-bold text-white group-hover:text-[var(--ff-accent)] transition-colors min-h-[44px] py-2">
+                        {t('PRODUCT_DETAILS', 'تفاصيل المنتج', 'Product Details')} <ArrowLeft size={14} className={lang === 'ar' ? '' : 'rotate-180'} aria-hidden="true" />
                       </Link>
                     </div>
                   </motion.div>

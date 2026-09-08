@@ -115,19 +115,19 @@ export default function ProductDetailPage() {
 
             <div className="flex flex-col gap-3">
               {product.google_play_link && (
-                <a href={product.google_play_link} target="_blank" rel="noopener noreferrer" className="transition hover:scale-105">
+                <a href={product.google_play_link} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? `تحميل ${product.name_ar} من Google Play` : `Get ${product.name_en} on Google Play`} className="inline-flex items-center justify-center min-h-[44px] transition hover:scale-105">
                   <Image src="/assets/Google_play_button.png" alt="Google Play" width={165} height={48} className="h-12 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
                 </a>
               )}
               {product.apple_store_link && (
-                <a href={product.apple_store_link} target="_blank" rel="noopener noreferrer" className="transition hover:scale-105">
+                <a href={product.apple_store_link} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? `تحميل ${product.name_ar} من App Store` : `Get ${product.name_en} on App Store`} className="inline-flex items-center justify-center min-h-[44px] transition hover:scale-105">
                   <Image src="/assets/apple_store_button.png" alt="App Store" width={165} height={48} className="h-12 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
                 </a>
               )}
               {product.apk_url && (
                 <div className="space-y-1.5">
-                  <a href={product.apk_url} download rel="noopener noreferrer" className="w-full py-3.5 text-center flex items-center justify-center gap-2 text-[#070b19] font-bold rounded-xl shadow-lg transition-all hover:scale-[1.02]" style={{ background: 'var(--ff-gradient)' }}>
-                    <Download size={16} />
+                  <a href={product.apk_url} download rel="noopener noreferrer" aria-label={lang === 'ar' ? `تحميل APK ${product.name_ar}` : `Download APK ${product.name_en}`} className="w-full min-h-[44px] py-3.5 text-center flex items-center justify-center gap-2 text-[#070b19] font-bold rounded-xl shadow-lg transition-all hover:scale-[1.02]" style={{ background: 'var(--ff-gradient)' }}>
+                    <Download size={16} aria-hidden="true" />
                     {t('PRODUCT_DOWNLOAD_APK', 'تحميل تطبيق أندرويد (APK)', 'Download Android app (APK)')}
                     {product.version && <span className="text-xs opacity-70">v{product.version}</span>}
                   </a>
@@ -142,24 +142,24 @@ export default function ProductDetailPage() {
             <div>
               <Link
                 href={`/${lang}/contact?service=${encodeURIComponent(lang === 'ar' ? `طلب منتج ${product.name_ar}` : `Request Product: ${product.name_en}`)}`}
-                className="w-full py-3 text-center block text-white font-bold rounded-xl border border-[var(--ff-accent)] hover:bg-[var(--ff-accent)]/10 transition-all"
+                className="w-full min-h-[44px] py-3 text-center flex items-center justify-center gap-2 text-white font-bold rounded-xl border border-[var(--ff-accent)] hover:bg-[var(--ff-accent)]/10 transition-all"
               >
-                <ShoppingCart size={16} className="inline ml-2" />
+                <ShoppingCart size={16} aria-hidden="true" />
                 {t('PRODUCT_REQUEST', 'طلب المنتج', 'Request Product')}
               </Link>
             </div>
 
             {product.link && (
               <div>
-                <a href={product.link} target="_blank" rel="noopener noreferrer" className="w-full py-4 text-center block text-[#070b19] font-bold rounded-xl shadow-lg transition-all hover:scale-105" style={{ background: 'var(--ff-gradient)' }}>
-                  <ExternalLink size={16} className="inline ml-2" /> {t('PRODUCT_VISIT_SITE', 'زيارة الموقع', 'Visit Site')}
+                <a href={product.link} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? `زيارة موقع ${product.name_ar}` : `Visit ${product.name_en} site`} className="w-full min-h-[44px] py-4 text-center flex items-center justify-center gap-2 text-[#070b19] font-bold rounded-xl shadow-lg transition-all hover:scale-105">
+                  <ExternalLink size={16} aria-hidden="true" /> {t('PRODUCT_VISIT_SITE', 'زيارة الموقع', 'Visit Site')}
                 </a>
               </div>
             )}
 
             {product.demo_video_url && (
-              <a href={product.demo_video_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-bold hover:bg-red-500/20 transition">
-                <Video size={16} /> {t('PRODUCT_DEMO_VIDEO', 'فيديو توضيحي', 'Demo Video')}
+              <a href={product.demo_video_url} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? `فيديو توضيحي ${product.name_ar}` : `Demo video for ${product.name_en}`} className="flex items-center justify-center gap-2 min-h-[44px] py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-bold hover:bg-red-500/20 transition">
+                <Video size={16} aria-hidden="true" /> {t('PRODUCT_DEMO_VIDEO', 'فيديو توضيحي', 'Demo Video')}
               </a>
             )}
           </div>
@@ -191,13 +191,14 @@ export default function ProductDetailPage() {
 
           {allImages.length > 1 && (
             <div>
-              <div className="flex gap-3 overflow-x-auto pb-2" dir="ltr">
+              <div className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory scroll-smooth touch-pan-x scrollbar-thin" dir="ltr" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {allImages.map((img, idx) => (
                      <button
                     key={idx}
                     onClick={() => setSelectedImage(img)}
                     aria-label={`${lang === 'ar' ? product.name_ar : product.name_en} ${t('PRODUCT_IMAGE', 'صورة', 'image')} ${idx + 1}`}
-                    className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all relative ${displayImage === img ? 'border-[var(--ff-accent)] ring-1 ring-[var(--ff-accent)] scale-110' : 'border-white/10 opacity-70 hover:opacity-100'}`}
+                    aria-selected={displayImage === img}
+                    className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all relative snap-start min-h-[44px] min-w-[80px] ${displayImage === img ? 'border-[var(--ff-accent)] ring-1 ring-[var(--ff-accent)] scale-105' : 'border-white/10 opacity-70 hover:opacity-100'}`}
                   >
                     <Image src={img || '/assets/og-default.svg'} alt={`${lang === 'ar' ? product.name_ar : product.name_en} ${idx + 1}`} fill className="object-cover" sizes="(max-width: 768px) 100vw, 200px" />
                   </button>
@@ -227,19 +228,19 @@ export default function ProductDetailPage() {
 
           {/* Suggested Products */}
           {suggestedProducts.length > 0 && (
-            <div className="p-8 md:p-12 rounded-3xl bg-white/5 border border-white/10 shadow-2xl">
+            <div className="p-6 sm:p-8 md:p-12 rounded-3xl bg-white/5 border border-white/10 shadow-2xl">
               <h2 className="text-2xl font-bold mb-6 border-b border-white/5 pb-4">
                 {t('PRODUCT_SUGGESTED', 'منتجات مقترحة', 'Suggested Products')}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {suggestedProducts.slice(0, 3).map((sp) => (
-                  <Link key={sp.id} href={`/${lang}/products/${sp.slug}`} className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all hover:scale-105 text-center group">
+                  <Link key={sp.id} href={`/${lang}/products/${sp.slug}`} aria-label={lang === 'ar' ? `عرض ${sp.name_ar}` : `View ${sp.name_en}`} className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all hover:scale-[1.02] text-center group flex flex-col min-h-[44px]">
                     {sp.thumbnail && (
-                      <div className="w-full h-24 relative overflow-hidden rounded-xl mb-3">
+                      <div className="w-full h-24 relative overflow-hidden rounded-xl mb-3 bg-slate-900">
                         <Image src={sp.thumbnail || '/assets/og-default.svg'} alt={lang === 'ar' ? sp.name_ar : sp.name_en} fill className="object-cover" sizes="(max-width: 768px) 100vw, 200px" />
                       </div>
                     )}
-                    <h3 className="text-sm font-bold text-white group-hover:text-[var(--ff-accent)] transition-colors">
+                    <h3 className="text-sm font-bold text-white group-hover:text-[var(--ff-accent)] transition-colors line-clamp-2 break-words min-w-0">
                       {lang === 'ar' ? sp.name_ar : sp.name_en}
                     </h3>
                   </Link>

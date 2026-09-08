@@ -127,26 +127,26 @@ export default function BlogPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredPosts.map((post, i) => (
               <FadeIn key={post.id} delay={i < 6 ? i * 0.08 : 0} className="h-full">
-                <div className="rounded-3xl bg-slate-900/40 border border-white/10 overflow-hidden hover:border-white/20 transition-all flex flex-col justify-between group shadow-2xl h-full">
+                <div className="rounded-3xl bg-white/5 border border-white/10 overflow-hidden hover:border-white/20 transition-all flex flex-col justify-between group h-full">
                   <div>
-                    <div className="h-52 overflow-hidden bg-slate-900 relative">
+                    <div className="h-40 sm:h-48 overflow-hidden bg-slate-900 relative">
                       <Image src={post.cover_image || '/assets/og-default.svg'} alt={lang === 'ar' ? post.title_ar : post.title_en} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                     </div>
                     <div className={`p-6 ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
                       {post.tags && post.tags.length > 0 ? (
                         <div className="flex flex-wrap gap-1.5 mb-3">
                           {post.tags.map((tag, idx) => (
-                            <span key={idx} className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15">{tag}</span>
+                            <span key={idx} className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15 max-w-full truncate">{tag}</span>
                           ))}
                         </div>
                       ) : (
-                        <span className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15 mb-3 inline-block">{catLabel(post.category, lang)}</span>
+                        <span className="text-[11px] sm:text-xs font-bold text-[var(--ff-accent)] bg-[var(--ff-accent)]/10 px-2 py-0.5 rounded-full border border-[var(--ff-accent)]/15 mb-3 inline-block max-w-full truncate">{catLabel(post.category, lang)}</span>
                       )}
-                      <h3 className="text-lg font-bold mb-3 leading-snug line-clamp-2 group-hover:text-[var(--ff-accent)] transition-colors">{lang === 'ar' ? post.title_ar : post.title_en}</h3>
-                      <p className="text-slate-400 text-sm leading-relaxed line-clamp-3">{lang === 'ar' ? post.excerpt_ar : post.excerpt_en}</p>
+                      <h3 className="text-lg font-bold mb-3 leading-snug line-clamp-2 break-words group-hover:text-[var(--ff-accent)] transition-colors">{lang === 'ar' ? post.title_ar : post.title_en}</h3>
+                      <p className="text-slate-400 text-sm leading-relaxed line-clamp-3 break-words">{lang === 'ar' ? post.excerpt_ar : post.excerpt_en}</p>
                     </div>
                   </div>
-                  <div className="p-6 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+                  <div className="px-6 py-4 mt-auto border-t border-white/5 flex items-center justify-between flex-wrap gap-2 text-xs text-slate-400">
                     <div className="flex items-center gap-4">
                       <span>{post.published_at ? new Date(post.published_at).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US') : ''}</span>
                       <span className="flex items-center gap-1"><Eye size={12} /> {post.views}</span>

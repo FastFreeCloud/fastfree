@@ -136,8 +136,8 @@ export default function ContactPage() {
                   <method.icon size={22} />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-xs text-slate-400 block">{lang === 'ar' ? method.labelAr : method.labelEn}{method.flag ? (<span className="ms-1.5 text-[10px] font-extrabold px-1 rounded bg-white/10 text-slate-300 align-middle">{method.flag}</span>) : null}</span>
-                  <span className="font-bold text-sm truncate block">{method.value}</span>
+                  <span className="text-xs text-slate-400 block">{lang === 'ar' ? method.labelAr : method.labelEn}{method.flag ? (<span className="ms-1.5 text-base leading-none drop-shadow align-middle" aria-hidden="true">{method.flag === 'EG' ? '🇪🇬' : method.flag === 'SA' ? '🇸🇦' : method.flag}</span>) : null}</span>
+                  <span dir={method.href && /^(tel:|mailto:)/.test(method.href) ? 'ltr' : undefined} className="font-bold text-sm truncate block">{method.value}</span>
                 </div>
               </>
             );

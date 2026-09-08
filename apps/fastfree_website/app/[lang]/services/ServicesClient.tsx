@@ -212,16 +212,16 @@ export default function ServicesPage() {
                         </span>
                       )}
                     </div>
-                    <h2 className="text-xl font-bold mb-3">{lang === 'ar' ? service.title_ar : service.title_en}</h2>
-                    <p className="text-slate-300 leading-relaxed text-sm mb-5">
+                    <h2 className="text-xl font-bold mb-3 line-clamp-2 break-words min-w-0">{lang === 'ar' ? service.title_ar : service.title_en}</h2>
+                    <p className="text-slate-300 leading-relaxed text-sm mb-5 line-clamp-3 break-words min-w-0">
                       {lang === 'ar' ? service.description_ar : service.description_en}
                     </p>
                     {service.features && Array.isArray(service.features) && (
                       <div className={`space-y-2 mb-6 ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
                         {service.features.slice(0, 4).map((feat: { ar: string; en: string }, idx: number) => (
-                          <div key={idx} className="flex items-center justify-start gap-2 text-slate-400 text-xs">
-                            <Check className="text-[var(--ff-accent)] w-3.5 h-3.5 flex-shrink-0" />
-                            <span>{(feat as unknown as { ar: string; en: string })?.ar && (feat as unknown as { ar: string; en: string })?.en ? (lang === 'ar' ? (feat as unknown as { ar: string; en: string }).ar : (feat as unknown as { ar: string; en: string }).en) : String(feat as unknown)}</span>
+                          <div key={idx} className="flex items-center gap-2 text-slate-400 text-xs min-w-0">
+                            <Check size={14} className="text-[var(--ff-accent)] w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+                            <span className="min-w-0 flex-1 truncate text-xs leading-relaxed">{(feat as unknown as { ar: string; en: string })?.ar && (feat as unknown as { ar: string; en: string })?.en ? (lang === 'ar' ? (feat as unknown as { ar: string; en: string }).ar : (feat as unknown as { ar: string; en: string }).en) : String(feat as unknown)}</span>
                           </div>
                         ))}
                         {service.features.length > 4 && (
@@ -232,10 +232,13 @@ export default function ServicesPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                    <Link href={`/${lang}/contact?service=${encodeURIComponent(lang === 'ar' ? service.title_ar : service.title_en)}`} className="text-sm font-semibold text-[var(--ff-accent)] flex items-center gap-2 hover:underline">
+                  <div className="flex items-center justify-between gap-3 pt-4 border-t border-white/5">
+                    <Link href={`/${lang}/services/${service.id}`} aria-label={lang === 'ar' ? `عرض تفاصيل ${service.title_ar}` : `View details of ${service.title_en}`} className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--ff-accent)] hover:underline min-h-[44px] py-2">
+                      {t('VIEW_DETAILS', 'عرض التفاصيل', 'View Details')}
+                      <ArrowLeft size={14} className={lang === 'ar' ? '' : 'rotate-180'} aria-hidden="true" />
+                    </Link>
+                    <Link href={`/${lang}/contact?service=${encodeURIComponent(lang === 'ar' ? service.title_ar : service.title_en)}`} className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-[var(--ff-accent)] transition-colors min-h-[44px] py-2 px-2 rounded-lg hover:bg-white/5">
                       {t('REQUEST_QUOTE', 'طلب عرض سعر', 'Request Quote')}
-                      <ArrowLeft size={14} className={lang === 'ar' ? 'rotate-180' : ''} />
                     </Link>
                   </div>
                 </SpotlightCard>

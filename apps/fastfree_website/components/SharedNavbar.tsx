@@ -116,8 +116,8 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
             <span className="relative block w-4 h-4" aria-hidden="true">
               {mounted ? (
                 <>
-                  <Sun size={16} className={`absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${theme === 'dark' ? 'opacity-100 rotate-0 scale-100 group-hover:text-amber-400 group-hover:rotate-12 group-active:rotate-90' : 'opacity-0 rotate-90 scale-50 pointer-events-none'}`} />
-                  <Moon size={16} className={`absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${theme === 'dark' ? 'opacity-0 -rotate-90 scale-50 pointer-events-none' : 'opacity-100 rotate-0 scale-100 group-hover:text-[var(--ff-primary)] group-hover:-rotate-12 group-active:-rotate-90'}`} />
+                  <Sun size={16} className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${theme === 'dark' ? 'opacity-100 rotate-0 scale-100 group-hover:text-amber-400 group-hover:rotate-12 group-active:rotate-90' : 'opacity-0 rotate-90 scale-50 pointer-events-none'}`} />
+                  <Moon size={16} className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${theme === 'dark' ? 'opacity-0 -rotate-90 scale-50 pointer-events-none' : 'opacity-100 rotate-0 scale-100 group-hover:text-[var(--ff-primary)] group-hover:-rotate-12 group-active:-rotate-90'}`} />
                 </>
               ) : (
                 <Moon size={16} className="absolute inset-0" />
@@ -137,8 +137,8 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
             <span className="relative block w-4 h-4" aria-hidden="true">
               {mounted ? (
                 <>
-                  <Sun size={16} className={`absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${theme === 'dark' ? 'opacity-100 rotate-0 scale-100 group-hover:text-amber-400 group-hover:rotate-12 group-active:rotate-90' : 'opacity-0 rotate-90 scale-50 pointer-events-none'}`} />
-                  <Moon size={16} className={`absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${theme === 'dark' ? 'opacity-0 -rotate-90 scale-50 pointer-events-none' : 'opacity-100 rotate-0 scale-100 group-hover:text-[var(--ff-primary)] group-hover:-rotate-12 group-active:-rotate-90'}`} />
+                  <Sun size={16} className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${theme === 'dark' ? 'opacity-100 rotate-0 scale-100 group-hover:text-amber-400 group-hover:rotate-12 group-active:rotate-90' : 'opacity-0 rotate-90 scale-50 pointer-events-none'}`} />
+                  <Moon size={16} className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${theme === 'dark' ? 'opacity-0 -rotate-90 scale-50 pointer-events-none' : 'opacity-100 rotate-0 scale-100 group-hover:text-[var(--ff-primary)] group-hover:-rotate-12 group-active:-rotate-90'}`} />
                 </>
               ) : (
                 <Moon size={16} className="absolute inset-0" />

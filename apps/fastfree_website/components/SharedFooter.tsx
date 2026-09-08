@@ -163,7 +163,7 @@ export default function SharedFooter(_props: SharedFooterProps) {
                 {address && (
                   <li className="flex items-start gap-2 min-w-0">
                     <MapPin size={12} className="text-[var(--ff-accent)] shrink-0 mt-0.5" />
-                    <span title={address} className="leading-relaxed">{address}</span>
+                    <span title={address} className="leading-relaxed break-words">{address}</span>
                   </li>
                 )}
                 <li className="flex items-center gap-2 min-w-0">
