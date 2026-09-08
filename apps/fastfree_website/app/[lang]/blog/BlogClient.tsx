@@ -51,6 +51,8 @@ export default function BlogPage() {
         p.title_en.toLowerCase().includes(query) ||
         (p.excerpt_ar || '').toLowerCase().includes(query) ||
         (p.excerpt_en || '').toLowerCase().includes(query) ||
+        (p.content_ar || '').toLowerCase().includes(query) ||
+        (p.content_en || '').toLowerCase().includes(query) ||
         (p.tags || []).some((tag) => tag.toLowerCase().includes(query)) ||
         (p.category || '').toLowerCase().includes(query));
     return categoryOk && searchOk;

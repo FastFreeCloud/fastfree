@@ -51,7 +51,7 @@ export default function ServicesPage() {
 
   return (
     <div className="min-h-screen bg-[#030712] bg-grid-pattern text-white selection:bg-[var(--ff-primary-light)] selection:text-[#030712] relative overflow-hidden" style={{ fontFamily: "var(--ff-font-body)" }}>
-      <BreadcrumbSchema items={[{ name: lang === 'ar' ? 'الرئيسية' : 'Home', url: 'https://fastfree.cloud/' }, { name: lang === 'ar' ? 'خدماتنا' : 'Services', url: 'https://fastfree.cloud/services' }]} />
+      <BreadcrumbSchema items={[{ name: lang === 'ar' ? 'الرئيسية' : 'Home', url: `https://fastfree.cloud/${lang}` }, { name: lang === 'ar' ? 'خدماتنا' : 'Services', url: `https://fastfree.cloud/${lang}/services` }]} />
 
       {/* Hero */}
       <section className="relative pt-36 pb-20 overflow-hidden text-center bg-[#030712]">
@@ -103,21 +103,27 @@ export default function ServicesPage() {
       {/* Category Filter */}
       <section className="py-8 max-w-7xl mx-auto px-6">
         <div className="flex flex-wrap justify-center gap-3">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.key}
-              onClick={() => setActiveCategory(cat.key)}
-              aria-pressed={activeCategory === cat.key}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${
-                activeCategory === cat.key
-                  ? 'bg-[var(--ff-accent)] text-[#030712] shadow-lg shadow-[var(--ff-accent)]/20'
-                  : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <cat.icon size={16} />
-              {lang === 'ar' ? cat.labelAr : cat.labelEn}
-            </button>
-          ))}
+          {CATEGORIES.map((cat) => {
+            const count = cat.key === 'all' ? allServices.filter((s) => s.is_active).length : allServices.filter((s) => s.is_active && (CATEGORY_MAP[cat.key] ?? []).includes(s.icon)).length;
+            const label = lang === 'ar' ? cat.labelAr : cat.labelEn;
+            return (
+              <button
+                key={cat.key}
+                onClick={() => setActiveCategory(cat.key)}
+                aria-pressed={activeCategory === cat.key}
+                aria-label={`${label} (${count})`}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer min-h-[44px] ${
+                  activeCategory === cat.key
+                    ? 'bg-[var(--ff-accent)] text-[#030712] shadow-lg shadow-[var(--ff-accent)]/20'
+                    : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <cat.icon size={16} aria-hidden="true" />
+                {label}
+                <span aria-hidden="true" className={`ml-1 px-1.5 py-0.5 rounded-md text-xs font-bold leading-none ${activeCategory === cat.key ? 'bg-[#030712]/10 text-[#030712]' : 'bg-white/10 text-slate-400'}`}>{count}</span>
+              </button>
+            );
+          })}
         </div>
       </section>
 

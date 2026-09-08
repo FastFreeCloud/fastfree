@@ -59,13 +59,13 @@ export default function ProductDetailPage() {
         name={lang === 'ar' ? product.name_ar : product.name_en}
         description={lang === 'ar' ? (product.short_description_ar || product.description_ar || '') : (product.short_description_en || product.description_en || '')}
         image={displayImage || undefined}
-        url={`https://fastfree.cloud/products/${product.slug}`}
+        url={`https://fastfree.cloud/${lang}/products/${product.slug}`}
         brand="FastFree"
       />
       <BreadcrumbSchema items={[
-        { name: lang === 'ar' ? 'الرئيسية' : 'Home', url: 'https://fastfree.cloud/' },
-        { name: lang === 'ar' ? 'منتجاتنا' : 'Products', url: 'https://fastfree.cloud/products' },
-        { name: lang === 'ar' ? product.name_ar : product.name_en, url: `https://fastfree.cloud/products/${product.slug}` },
+        { name: lang === 'ar' ? 'الرئيسية' : 'Home', url: `https://fastfree.cloud/${lang}` },
+        { name: lang === 'ar' ? 'منتجاتنا' : 'Products', url: `https://fastfree.cloud/${lang}/products` },
+        { name: lang === 'ar' ? product.name_ar : product.name_en, url: `https://fastfree.cloud/${lang}/products/${product.slug}` },
       ]} />
 
       <section className="relative pt-36 pb-20 overflow-hidden text-center bg-[#030712]">
@@ -116,12 +116,12 @@ export default function ProductDetailPage() {
             <div className="flex flex-col gap-3">
               {product.google_play_link && (
                 <a href={product.google_play_link} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? `تحميل ${product.name_ar} من Google Play` : `Get ${product.name_en} on Google Play`} className="inline-flex items-center justify-center min-h-[44px] transition hover:scale-105">
-                  <Image src="/assets/Google_play_button.png" alt="Google Play" width={165} height={48} className="h-12 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
+                  <Image src="/assets/Google_play_button.png" alt={lang === 'ar' ? `تحميل ${product.name_ar} من Google Play` : `Get ${product.name_en} on Google Play`} width={165} height={48} className="h-12 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
                 </a>
               )}
               {product.apple_store_link && (
                 <a href={product.apple_store_link} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? `تحميل ${product.name_ar} من App Store` : `Get ${product.name_en} on App Store`} className="inline-flex items-center justify-center min-h-[44px] transition hover:scale-105">
-                  <Image src="/assets/apple_store_button.png" alt="App Store" width={165} height={48} className="h-12 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
+                  <Image src="/assets/apple_store_button.png" alt={lang === 'ar' ? `تحميل ${product.name_ar} من App Store` : `Get ${product.name_en} on App Store`} width={165} height={48} className="h-12 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
                 </a>
               )}
               {product.apk_url && (
@@ -166,7 +166,7 @@ export default function ProductDetailPage() {
         </div>
 
         <div className="lg:col-span-2 space-y-8">
-          {displayImage && (
+          {displayImage ? (
             <div className={`${product.type === 'APP' ? 'flex justify-center' : ''}`}>
               {product.type === 'APP' ? (
                 <div className="relative w-full max-w-[300px] sm:w-[300px]">
@@ -176,16 +176,20 @@ export default function ProductDetailPage() {
                       <div className="w-12 h-1.5 rounded-full bg-slate-600" />
                     </div>
                     <div className="rounded-[2.3rem] overflow-hidden bg-black aspect-[9/19] relative">
-                      <Image src={displayImage || '/assets/og-default.svg'} alt={lang === 'ar' ? product.name_ar : product.name_en} fill className="object-cover" sizes="100vw" />
+                      <Image src={displayImage} alt={lang === 'ar' ? product.name_ar : product.name_en} fill className="object-cover" sizes="100vw" />
                     </div>
                     <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full bg-slate-600" />
                   </div>
                 </div>
               ) : (
                 <div className="rounded-3xl border border-white/10 overflow-hidden bg-slate-900 shadow-2xl relative aspect-video w-full max-h-[500px]">
-                  <Image src={displayImage || '/assets/og-default.svg'} alt={lang === 'ar' ? product.name_ar : product.name_en} fill className="object-cover" sizes="100vw" />
+                  <Image src={displayImage} alt={lang === 'ar' ? product.name_ar : product.name_en} fill className="object-cover" sizes="100vw" />
                 </div>
               )}
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-white/10 bg-slate-900 shadow-2xl aspect-video w-full max-h-[500px] flex items-center justify-center text-slate-500" role="img" aria-label={lang === 'ar' ? product.name_ar : product.name_en}>
+              <TypeIcon size={48} aria-hidden="true" />
             </div>
           )}
 
@@ -200,7 +204,7 @@ export default function ProductDetailPage() {
                     aria-selected={displayImage === img}
                     className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all relative snap-start min-h-[44px] min-w-[80px] ${displayImage === img ? 'border-[var(--ff-accent)] ring-1 ring-[var(--ff-accent)] scale-105' : 'border-white/10 opacity-70 hover:opacity-100'}`}
                   >
-                    <Image src={img || '/assets/og-default.svg'} alt={`${lang === 'ar' ? product.name_ar : product.name_en} ${idx + 1}`} fill className="object-cover" sizes="(max-width: 768px) 100vw, 200px" />
+                    <Image src={img} alt={`${lang === 'ar' ? product.name_ar : product.name_en} ${idx + 1}`} fill className="object-cover" sizes="(max-width: 768px) 100vw, 200px" />
                   </button>
                 ))}
               </div>
@@ -209,7 +213,7 @@ export default function ProductDetailPage() {
 
           {product.gif_image && (
             <div className="rounded-3xl border border-white/10 overflow-hidden shadow-2xl relative aspect-video w-full">
-              <Image src={product.gif_image || '/assets/og-default.svg'} alt={`${lang === 'ar' ? product.name_ar : product.name_en} demo`} fill className="object-cover" sizes="100vw" />
+              <Image src={product.gif_image} alt={`${lang === 'ar' ? product.name_ar : product.name_en} demo`} fill className="object-cover" sizes="100vw" />
             </div>
           )}
 
@@ -235,9 +239,13 @@ export default function ProductDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {suggestedProducts.slice(0, 3).map((sp) => (
                   <Link key={sp.id} href={`/${lang}/products/${sp.slug}`} aria-label={lang === 'ar' ? `عرض ${sp.name_ar}` : `View ${sp.name_en}`} className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all hover:scale-[1.02] text-center group flex flex-col min-h-[44px]">
-                    {sp.thumbnail && (
+                    {sp.thumbnail ? (
                       <div className="w-full h-24 relative overflow-hidden rounded-xl mb-3 bg-slate-900">
-                        <Image src={sp.thumbnail || '/assets/og-default.svg'} alt={lang === 'ar' ? sp.name_ar : sp.name_en} fill className="object-cover" sizes="(max-width: 768px) 100vw, 200px" />
+                        <Image src={sp.thumbnail} alt={lang === 'ar' ? sp.name_ar : sp.name_en} fill className="object-cover" sizes="(max-width: 768px) 100vw, 200px" />
+                      </div>
+                    ) : (
+                      <div className="w-full h-24 rounded-xl mb-3 bg-slate-900 flex items-center justify-center text-slate-500" role="img" aria-label={lang === 'ar' ? sp.name_ar : sp.name_en}>
+                        <TypeIcon size={24} aria-hidden="true" />
                       </div>
                     )}
                     <h3 className="text-sm font-bold text-white group-hover:text-[var(--ff-accent)] transition-colors line-clamp-2 break-words min-w-0">

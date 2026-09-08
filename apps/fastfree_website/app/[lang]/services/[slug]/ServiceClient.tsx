@@ -34,7 +34,7 @@ export default function ServiceDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#030712] bg-grid-pattern text-white selection:bg-[var(--ff-primary-light)] selection:text-[#030712] relative overflow-hidden" style={{ fontFamily: "var(--ff-font-body)" }}>
-      <BreadcrumbSchema items={[{ name: lang === 'ar' ? 'الرئيسية' : 'Home', url: 'https://fastfree.cloud/' }, { name: lang === 'ar' ? 'خدماتنا' : 'Services', url: 'https://fastfree.cloud/services' }, { name: lang === 'ar' ? service.title_ar : service.title_en, url: `https://fastfree.cloud/services/${service.id}` }]} />
+      <BreadcrumbSchema items={[{ name: lang === 'ar' ? 'الرئيسية' : 'Home', url: `https://fastfree.cloud/${lang}` }, { name: lang === 'ar' ? 'خدماتنا' : 'Services', url: `https://fastfree.cloud/${lang}/services` }, { name: lang === 'ar' ? service.title_ar : service.title_en, url: `https://fastfree.cloud/${lang}/services/${service.id}` }]} />
 
       {/* Hero */}
       <section className="relative pt-36 pb-20 overflow-hidden text-center bg-[#030712]">

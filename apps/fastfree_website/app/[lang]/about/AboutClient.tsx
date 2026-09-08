@@ -133,26 +133,26 @@ export default function AboutPage() {
                   <div className="w-3 h-3 rounded-full bg-green-400" />
                   <span className="text-[11px] sm:text-xs text-slate-400 ml-2 font-mono">FastFree Projects</span>
                 </div>
-                <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
                   {[
                     { icon: Globe, label: 'CRM', color: 'from-blue-500/20 to-blue-600/10', text: 'text-blue-400' },
                     { icon: Smartphone, label: 'ERP', color: 'from-emerald-500/20 to-emerald-600/10', text: 'text-emerald-400' },
                     { icon: Code, label: 'Web', color: 'from-purple-500/20 to-purple-600/10', text: 'text-purple-400' },
                   ].map((item, j) => (
-                    <motion.div key={j} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + j * 0.2 }} className={`h-20 rounded-xl bg-gradient-to-br ${item.color} border border-white/5 flex flex-col items-center justify-center gap-2 group-hover:scale-105 transition-transform`}>
+                    <motion.div key={j} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + j * 0.2 }} className={`h-16 sm:h-20 rounded-xl bg-gradient-to-br ${item.color} border border-white/5 flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-2 group-hover:scale-105 transition-transform`}>
                       <item.icon size={20} className={item.text} />
-                      <span className="text-[11px] sm:text-xs font-bold text-slate-300">{item.label}</span>
+                      <span className="text-[10px] sm:text-xs font-bold text-slate-300">{item.label}</span>
                     </motion.div>
                   ))}
                 </div>
                 <div className="space-y-2">
                   {[
-                    { w: 'w-[85%]', color: 'from-[var(--ff-accent)] to-[var(--ff-primary)]' },
-                    { w: 'w-[65%]', color: 'from-emerald-400 to-emerald-600' },
-                    { w: 'w-[90%]', color: 'from-purple-400 to-purple-600' },
+                    { w: '85%', color: 'from-[var(--ff-accent)] to-[var(--ff-primary)]' },
+                    { w: '65%', color: 'from-emerald-400 to-emerald-600' },
+                    { w: '90%', color: 'from-purple-400 to-purple-600' },
                   ].map((bar, j) => (
                     <div key={j} className="h-2 rounded-full bg-white/5 overflow-hidden">
-                      <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ delay: 1 + j * 0.3, duration: 1.5, ease: 'easeOut' }} className={`h-full rounded-full bg-gradient-to-r ${bar.color} ${bar.w}`} />
+                      <motion.div initial={{ width: 0 }} animate={{ width: bar.w }} transition={{ delay: 1 + j * 0.3, duration: 1.5, ease: 'easeOut' }} className={`h-full rounded-full bg-gradient-to-r ${bar.color}`} />
                     </div>
                   ))}
                 </div>

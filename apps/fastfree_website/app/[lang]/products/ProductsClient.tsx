@@ -50,7 +50,7 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-[#030712] bg-grid-pattern text-white selection:bg-[var(--ff-primary-light)] selection:text-[#030712] relative overflow-hidden" style={{ fontFamily: "var(--ff-font-body)" }}>
-      <BreadcrumbSchema items={[{ name: lang === 'ar' ? 'الرئيسية' : 'Home', url: 'https://fastfree.cloud/' }, { name: lang === 'ar' ? 'منتجاتنا' : 'Products', url: 'https://fastfree.cloud/products' }]} />
+      <BreadcrumbSchema items={[{ name: lang === 'ar' ? 'الرئيسية' : 'Home', url: `https://fastfree.cloud/${lang}` }, { name: lang === 'ar' ? 'منتجاتنا' : 'Products', url: `https://fastfree.cloud/${lang}/products` }]} />
 
       {/* Hero */}
       <section className="relative pt-36 pb-16 overflow-hidden text-center bg-[#030712]">
@@ -95,22 +95,38 @@ export default function ProductsPage() {
       {/* Filters */}
       <section className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex flex-wrap gap-3 justify-center mb-4">
-          <button onClick={() => { setActiveType('ALL'); setActiveTagId('ALL'); }} aria-pressed={activeType === 'ALL'} className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeType === 'ALL' ? 'bg-[var(--ff-accent)] text-[#030712] shadow-lg shadow-[var(--ff-accent)]/20' : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'}`}>
-            {t('PRODUCT_ALL', 'الكل', 'All')}
+          <button onClick={() => { setActiveType('ALL'); setActiveTagId('ALL'); }} aria-pressed={activeType === 'ALL'} aria-label={`${t('PRODUCT_ALL', 'الكل', 'All')} (${totalProducts})`} className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer min-h-[44px] ${activeType === 'ALL' ? 'bg-[var(--ff-accent)] text-[#030712] shadow-lg shadow-[var(--ff-accent)]/20' : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'}`}>
+            {t('PRODUCT_ALL', 'الكل', 'All')} <span aria-hidden="true" className={`ml-1 px-1.5 py-0.5 rounded-md text-xs font-bold leading-none ${activeType === 'ALL' ? 'bg-[#030712]/10 text-[#030712]' : 'bg-white/10 text-slate-400'}`}>{totalProducts}</span>
           </button>
-          {Object.entries(TYPE_CONFIG).map(([key, config]) => (
-            <button key={key} onClick={() => { setActiveType(key); setActiveTagId('ALL'); }} aria-pressed={activeType === key} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeType === key ? 'bg-[var(--ff-accent)] text-[#030712] shadow-lg shadow-[var(--ff-accent)]/20' : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'}`}>
-              <config.icon size={14} /> {config.label}
-            </button>
-          ))}
+          {Object.entries(TYPE_CONFIG).map(([key, config]) => {
+            const typeCount = key === 'APP' ? appCount : key === 'WEBSITE' ? websiteCount : programCount;
+            return (
+              <button key={key} onClick={() => { setActiveType(key); setActiveTagId('ALL'); }} aria-pressed={activeType === key} aria-label={`${config.label} (${typeCount})`} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer min-h-[44px] ${activeType === key ? 'bg-[var(--ff-accent)] text-[#030712] shadow-lg shadow-[var(--ff-accent)]/20' : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'}`}>
+                <config.icon size={14} aria-hidden="true" /> {config.label} <span aria-hidden="true" className={`ml-1 px-1.5 py-0.5 rounded-md text-xs font-bold leading-none ${activeType === key ? 'bg-[#030712]/10 text-[#030712]' : 'bg-white/10 text-slate-400'}`}>{typeCount}</span>
+              </button>
+            );
+          })}
         </div>
         {activeType !== 'ALL' && (
           <div className="flex flex-wrap gap-2 justify-center">
-            {allTags.map((tag) => (
-              <button key={tag.id} onClick={() => { setActiveTagId(activeTagId === tag.id ? 'ALL' : tag.id); }} aria-pressed={activeTagId === tag.id} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${activeTagId === tag.id ? 'bg-[var(--ff-accent)]/15 border border-[var(--ff-accent)]/40 text-[var(--ff-accent)]' : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white'}`}>
-                <Tags size={11} /> {lang === 'ar' ? tag.title_ar : tag.title_en}
-              </button>
-            ))}
+            {allTags.map((tag) => {
+              const needle = (tag.title_en || '').toLowerCase();
+              const tagCount = allProducts.filter((p) => {
+                if (!p.is_active) return false;
+                if (activeType !== 'ALL' && p.type !== activeType) return false;
+                return (p.tags ?? []).some((pt) => {
+                  const hay = pt.toLowerCase();
+                  return hay.includes(needle) || needle.includes(hay);
+                });
+              }).length;
+              const tagLabel = lang === 'ar' ? tag.title_ar : tag.title_en;
+              const isZero = tagCount === 0;
+              return (
+                <button key={tag.id} onClick={() => { setActiveTagId(activeTagId === tag.id ? 'ALL' : tag.id); }} aria-pressed={activeTagId === tag.id} aria-label={`${tagLabel} (${tagCount})`} title={isZero ? t('PRODUCTS_EMPTY', 'لا توجد منتجات في هذا التصنيف حالياً.', 'No products in this category currently.') : undefined} className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer min-h-[44px] ${isZero ? 'opacity-60' : ''} ${activeTagId === tag.id ? 'bg-[var(--ff-accent)]/15 border border-[var(--ff-accent)]/40 text-[var(--ff-accent)]' : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white'}`}>
+                  <Tags size={11} aria-hidden="true" /> {tagLabel} <span aria-hidden="true" className={`px-1.5 py-0.5 rounded-md text-[11px] font-bold leading-none ${activeTagId === tag.id ? 'bg-[var(--ff-accent)]/20 text-[var(--ff-accent)]' : 'bg-white/10 text-slate-400'}`}>{tagCount}</span>
+                </button>
+              );
+            })}
           </div>
         )}
       </section>
@@ -136,7 +152,7 @@ export default function ProductsPage() {
                                 <div className="rounded-[1.5rem] border-[2px] border-slate-600 bg-slate-800 p-1 shadow-lg">
                                   <div className="absolute -top-0 left-1/2 -translate-x-1/2 w-12 h-2.5 bg-slate-800 rounded-b-lg z-10" />
                                   <div className="rounded-[1.3rem] overflow-hidden bg-black aspect-[9/19] relative">
-                                    <Image src={product.thumbnail || '/assets/og-default.svg'} alt={lang === 'ar' ? product.name_ar : product.name_en} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                                    <Image src={product.thumbnail} alt={lang === 'ar' ? product.name_ar : product.name_en} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                                   </div>
                                   <div className="absolute -bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 rounded-full bg-slate-600" />
                                 </div>
@@ -144,15 +160,15 @@ export default function ProductsPage() {
                             </div>
                           ) : product.type === 'WEBSITE' ? (
                             <div className="w-full h-full overflow-hidden relative">
-                              <Image src={product.thumbnail || '/assets/og-default.svg'} alt={lang === 'ar' ? product.name_ar : product.name_en} width={400} height={800} className="w-full object-cover transition-transform duration-[4000ms] group-hover:-translate-y-[55%]" style={{ height: '200%' }} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                              <Image src={product.thumbnail} alt={lang === 'ar' ? product.name_ar : product.name_en} width={400} height={800} className="w-full object-cover transition-transform duration-[4000ms] group-hover:-translate-y-[55%]" style={{ height: '200%' }} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                             </div>
                           ) : (
                             <div className="w-full h-full relative">
-                              <Image src={product.thumbnail || '/assets/og-default.svg'} alt={lang === 'ar' ? product.name_ar : product.name_en} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                              <Image src={product.thumbnail} alt={lang === 'ar' ? product.name_ar : product.name_en} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                             </div>
                           )
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-400"><TypeIcon size={48} /></div>
+                          <div className="w-full h-full flex items-center justify-center text-slate-400" role="img" aria-label={lang === 'ar' ? product.name_ar : product.name_en}><TypeIcon size={48} aria-hidden="true" /></div>
                         )}
                         <div className="absolute top-4 right-4 bg-[#030712]/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[var(--ff-accent)] border border-white/10 flex items-center gap-1.5">
                           <TypeIcon size={12} /> {config.label}
@@ -175,12 +191,12 @@ export default function ProductsPage() {
                       <div className="flex flex-wrap gap-2 mb-4 items-center">
                         {product.google_play_link && (
                           <a href={product.google_play_link} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? `تحميل ${product.name_ar} من Google Play` : `Get ${product.name_en} on Google Play`} className="inline-flex items-center justify-center min-h-[44px] transition hover:scale-105">
-                            <Image src="/assets/Google_play_button.png" alt="Google Play" width={110} height={32} className="h-8 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
+                            <Image src="/assets/Google_play_button.png" alt={lang === 'ar' ? `تحميل ${product.name_ar} من Google Play` : `Get ${product.name_en} on Google Play`} width={110} height={32} className="h-8 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
                           </a>
                         )}
                         {product.apple_store_link && (
                           <a href={product.apple_store_link} target="_blank" rel="noopener noreferrer" aria-label={lang === 'ar' ? `تحميل ${product.name_ar} من App Store` : `Get ${product.name_en} on App Store`} className="inline-flex items-center justify-center min-h-[44px] transition hover:scale-105">
-                            <Image src="/assets/apple_store_button.png" alt="App Store" width={110} height={32} className="h-8 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
+                            <Image src="/assets/apple_store_button.png" alt={lang === 'ar' ? `تحميل ${product.name_ar} من App Store` : `Get ${product.name_en} on App Store`} width={110} height={32} className="h-8 w-auto" sizes="(max-width: 768px) 100vw, 200px" />
                           </a>
                         )}
                         {product.apk_url && (
