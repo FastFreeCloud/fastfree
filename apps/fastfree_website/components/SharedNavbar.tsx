@@ -111,13 +111,13 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
           <button
             onClick={toggleTheme}
             aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="group relative w-11 h-11 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 hover:shadow-lg hover:shadow-amber-400/20 active:scale-95 transition-all duration-300 cursor-pointer"
+            className="group relative w-11 h-11 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 hover:shadow-lg hover:shadow-amber-400/20 hover:-translate-y-0.5 active:scale-90 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer"
           >
             <span className="relative block w-4 h-4" aria-hidden="true">
               {mounted ? (
                 <>
-                  <Sun size={16} className={`absolute inset-0 transition-all duration-300 ${theme === 'dark' ? 'opacity-100 rotate-0 scale-100 group-hover:text-amber-400' : 'opacity-0 rotate-90 scale-50 pointer-events-none'}`} />
-                  <Moon size={16} className={`absolute inset-0 transition-all duration-300 ${theme === 'dark' ? 'opacity-0 -rotate-90 scale-50 pointer-events-none' : 'opacity-100 rotate-0 scale-100 group-hover:text-[var(--ff-primary)]'}`} />
+                  <Sun size={16} className={`absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${theme === 'dark' ? 'opacity-100 rotate-0 scale-100 group-hover:text-amber-400 group-hover:rotate-12 group-active:rotate-90' : 'opacity-0 rotate-90 scale-50 pointer-events-none'}`} />
+                  <Moon size={16} className={`absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${theme === 'dark' ? 'opacity-0 -rotate-90 scale-50 pointer-events-none' : 'opacity-100 rotate-0 scale-100 group-hover:text-[var(--ff-primary)] group-hover:-rotate-12 group-active:-rotate-90'}`} />
                 </>
               ) : (
                 <Moon size={16} className="absolute inset-0" />
@@ -132,13 +132,13 @@ export default function SharedNavbar({ activePage }: SharedNavbarProps) {
           <button
             onClick={toggleTheme}
             aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="group relative w-11 h-11 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 hover:shadow-lg hover:shadow-amber-400/20 active:scale-95 transition-all duration-300 cursor-pointer"
+            className="group relative w-11 h-11 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-400/30 hover:bg-amber-400/10 hover:shadow-lg hover:shadow-amber-400/20 hover:-translate-y-0.5 active:scale-90 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer"
           >
             <span className="relative block w-4 h-4" aria-hidden="true">
               {mounted ? (
                 <>
-                  <Sun size={16} className={`absolute inset-0 transition-all duration-300 ${theme === 'dark' ? 'opacity-100 rotate-0 scale-100 group-hover:text-amber-400' : 'opacity-0 rotate-90 scale-50 pointer-events-none'}`} />
-                  <Moon size={16} className={`absolute inset-0 transition-all duration-300 ${theme === 'dark' ? 'opacity-0 -rotate-90 scale-50 pointer-events-none' : 'opacity-100 rotate-0 scale-100 group-hover:text-[var(--ff-primary)]'}`} />
+                  <Sun size={16} className={`absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${theme === 'dark' ? 'opacity-100 rotate-0 scale-100 group-hover:text-amber-400 group-hover:rotate-12 group-active:rotate-90' : 'opacity-0 rotate-90 scale-50 pointer-events-none'}`} />
+                  <Moon size={16} className={`absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${theme === 'dark' ? 'opacity-0 -rotate-90 scale-50 pointer-events-none' : 'opacity-100 rotate-0 scale-100 group-hover:text-[var(--ff-primary)] group-hover:-rotate-12 group-active:-rotate-90'}`} />
                 </>
               ) : (
                 <Moon size={16} className="absolute inset-0" />
