@@ -221,7 +221,7 @@ export default function ServicesPage() {
                         {service.features.slice(0, 4).map((feat: { ar: string; en: string }, idx: number) => (
                           <div key={idx} className="flex items-center justify-start gap-2 text-slate-400 text-xs">
                             <Check className="text-[var(--ff-accent)] w-3.5 h-3.5 flex-shrink-0" />
-                            <span>{feat.ar && feat.en ? (lang === 'ar' ? feat.ar : feat.en) : feat}</span>
+                            <span>{(feat as unknown as { ar: string; en: string })?.ar && (feat as unknown as { ar: string; en: string })?.en ? (lang === 'ar' ? (feat as unknown as { ar: string; en: string }).ar : (feat as unknown as { ar: string; en: string }).en) : String(feat as unknown)}</span>
                           </div>
                         ))}
                         {service.features.length > 4 && (

@@ -94,7 +94,7 @@ export default function ServiceDetailPage() {
                   <Check size={20} />
                 </div>
                 <div className="min-w-0 break-words">
-                  <span className="font-medium text-white text-sm">{feat.ar && feat.en ? (lang === 'ar' ? feat.ar : feat.en) : feat}</span>
+                  <span className="font-medium text-white text-sm">{(feat as unknown as { ar: string; en: string })?.ar && (feat as unknown as { ar: string; en: string })?.en ? (lang === 'ar' ? (feat as unknown as { ar: string; en: string }).ar : (feat as unknown as { ar: string; en: string }).en) : String(feat as unknown)}</span>
                 </div>
               </motion.div>
             ))}
