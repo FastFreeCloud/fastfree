@@ -201,7 +201,7 @@ export default function ProductDetailPage() {
                     key={idx}
                     onClick={() => setSelectedImage(img)}
                     aria-label={`${lang === 'ar' ? product.name_ar : product.name_en} ${t('PRODUCT_IMAGE', 'صورة', 'image')} ${idx + 1}`}
-                    aria-selected={displayImage === img}
+                    aria-pressed={displayImage === img}
                     className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all relative snap-start min-h-[44px] min-w-[80px] ${displayImage === img ? 'border-[var(--ff-accent)] ring-1 ring-[var(--ff-accent)] scale-105' : 'border-white/10 opacity-70 hover:opacity-100'}`}
                   >
                     <Image src={img} alt={`${lang === 'ar' ? product.name_ar : product.name_en} ${idx + 1}`} fill className="object-cover" sizes="(max-width: 768px) 100vw, 200px" />
