@@ -33,7 +33,7 @@ const nextConfig: NextConfig = {
     ],
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
-    unoptimized: true,
+    unoptimized: false,
   },
 
   // ── Standalone Output (Node server, served by the Nix-built image) ──

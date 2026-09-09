@@ -14,3 +14,7 @@ export type BlogPost = {
   published_at: string | null;
   views: number;
 };
+
+export type BlogMeta = Omit<BlogPost, 'content_ar' | 'content_en'>;
+
+export type BlogBodies = Record<string, Pick<BlogPost, 'content_ar' | 'content_en'>>;

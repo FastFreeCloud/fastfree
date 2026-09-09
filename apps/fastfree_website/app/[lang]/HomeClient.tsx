@@ -8,7 +8,7 @@ import { serviceIconMap } from '@/lib/service-icons';
 import { useLanguage } from '@/lib/language-provider';
 import { services } from '@/src/data/services';
 import { products } from '@/src/data/products';
-import { blogPosts as posts } from '@/src/data/blog';
+import { blogMeta as posts } from '@/src/data/blog-meta';
 import { testimonials } from '@/src/data/testimonials';
 import { catLabel } from '@/lib/blog-ui';
 import { useSEOMeta } from '@/lib/use-seo';

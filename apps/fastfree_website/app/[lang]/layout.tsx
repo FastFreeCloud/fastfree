@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/lib/theme-provider';
 import SharedNavbar from '@/components/SharedNavbar';
 import SharedFooter from '@/components/SharedFooter';
 import { getLocaleStaticParams, localeDirection, type Locale } from '@/lib/i18n';
-import { SITE, SITE_URL, DEFAULT_DESCRIPTION } from '@/lib/seo-data';
+import { OG_IMAGE, SITE, SITE_URL, DEFAULT_DESCRIPTION } from '@/lib/seo-data';
 
 export function generateStaticParams() {
   return getLocaleStaticParams();
@@ -13,7 +13,10 @@ export function generateStaticParams() {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'FastFree',
+  title: {
+    default: 'FastFree — حلول برمجية للشركات',
+    template: '%s | FastFree',
+  },
   description: DEFAULT_DESCRIPTION.ar,
   manifest: '/manifest.webmanifest',
   verification: {
@@ -26,6 +29,21 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-touch-icon.png',
     shortcut: '/favicon.ico',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ar_EG',
+    url: SITE_URL,
+    siteName: SITE,
+    title: 'FastFree — حلول برمجية للشركات',
+    description: DEFAULT_DESCRIPTION.ar,
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: 'FastFree — حلول برمجية للشركات', type: 'image/png' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'FastFree — حلول برمجية للشركات',
+    description: DEFAULT_DESCRIPTION.ar,
+    images: [OG_IMAGE],
   },
   robots: {
     index: true,

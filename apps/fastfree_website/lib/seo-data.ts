@@ -1,13 +1,20 @@
 // Server-safe SEO data and resolvers (NO 'use client' directive).
 // Imported by both the server metadata helper (lib/seo.ts) and the
 // client hook (lib/use-seo.ts) to avoid duplicating factual copy.
-import { blogPosts } from '@/src/data/blog';
+// NOTE: blogMeta is the client-safe slice (no content_ar/content_en).
+// Server routes that need bodies should import from '@/src/data/blog'.
+import { blogMeta } from '@/src/data/blog-meta';
 import { products } from '@/src/data/products';
 import { services } from '@/src/data/services';
 
 export const SITE = 'FastFree';
 export const SITE_URL = 'https://fastfree.cloud';
 export const OG_IMAGE = '/assets/og-image.png';
+
+// OG images must be raster (PNG/JPG/WebP) for Facebook/X; SVG is rejected.
+export function isValidOgImage(url: string): boolean {
+  return /\.(png|jpe?g|webp)(\?.*)?$/i.test(url);
+}
 
 export const PAGE_TITLES: Record<string, { ar: string; en: string }> = {
   home: { ar: 'الرئيسية', en: 'Home' },
@@ -30,53 +37,54 @@ export const PAGE_PATHS: Record<string, string> = {
 export type SeoEntry = { title: string; description: string };
 
 // Concise, factual SEO copy keyed by page key (no hype, no fake stats).
+// Descriptions are 140-160 chars for optimal meta display; factual, no fluff.
 export const SEO_MAP: Record<string, { ar: SeoEntry; en: SeoEntry }> = {
   home: {
     ar: {
       title: 'FastFree — حلول برمجية للشركات',
       description:
-        'FastFree تبني أنظمة CRM وERP ولوحات تحكم وتطبيقات ويب ثنائية اللغة العربية والإنجليزية بأحدث التقنيات.',
+        'FastFree تبني أنظمة CRM وERP ولوحات تحكم وتطبيقات ويب ثنائية اللغة (العربية والإنجليزية) بمنصة Low-Code ووحدات المحاسبة والمخزون والمبيعات مع دعم RTL.',
     },
     en: {
       title: 'FastFree — Business Software Solutions',
       description:
-        'FastFree builds CRM, ERP, dashboards, and bilingual web applications using modern technologies.',
+        'FastFree builds CRM, ERP, dashboards and bilingual web apps with Low-Code, covering accounting, inventory, sales and HR modules with RTL and dark mode support.',
     },
   },
   about: {
     ar: {
       title: 'من نحن — FastFree',
       description:
-        'تعرف على FastFree وفريقها وما تبنيه من حلول برمجية للشركات والمؤسسات.',
+        'تعرف على FastFree وفريقها ونهجها في بناء حلول برمجية للشركات: منصة Low-Code وERP معياري يضم المحاسبة والمخزون والمبيعات والموارد البشرية وCRM بدعم RTL.',
     },
     en: {
       title: 'About Us — FastFree',
       description:
-        'Learn about FastFree, our team, and the business software we build for companies and organizations.',
+        'Learn about FastFree and our team: a Low-Code platform and modular ERP with accounting, inventory, sales, HR and CRM, bilingual Arabic RTL and 60 screens.',
     },
   },
   services: {
     ar: {
       title: 'خدماتنا — FastFree',
       description:
-        'منصّة منخفضة الكود، وأنظمة ERP معيارية، وتطوير تطبيقات ويب ثنائية اللغة من FastFree.',
+        'خدمات FastFree: منصة منخفضة الكود لبناء التطبيقات بسرعة، وأنظمة ERP معيارية تضم المحاسبة والمخزون والمبيعات، وتطوير مواقع وتطبيقات ويب ثنائية اللغة مع RTL.',
     },
     en: {
       title: 'Our Services — FastFree',
       description:
-        'Low-code platform, modular ERP suites, and bilingual web application development by FastFree.',
+        'FastFree services: Low-Code platform for rapid apps, modular ERP with accounting, inventory, sales and HR, and bilingual web development with RTL support.',
     },
   },
   products: {
     ar: {
       title: 'منتجاتنا — FastFree',
       description:
-        'استكشف منتجات FastFree: أنظمة محاسبة ولوحات تحكم وتطبيقات أعمال جاهزة وقابلة للتخصيص.',
+        'استكشف منتجات FastFree: نظام محاسبة ودفتر أستاذ، ووحدات المبيعات والمشتريات والمخزون والموارد البشرية وCRM ونقطة بيع مع لوحات وتطبيقات أندرويد قابلة للتخصيص.',
     },
     en: {
       title: 'Our Products — FastFree',
       description:
-        'Explore FastFree products: accounting systems, dashboards, and ready-to-customize business applications.',
+        'Explore FastFree products: accounting, sales, purchasing, inventory, HR, CRM and POS with dashboards and Android apps — customizable for SMEs in Egypt.',
     },
   },
   blog: {
@@ -94,19 +102,20 @@ export const SEO_MAP: Record<string, { ar: SeoEntry; en: SeoEntry }> = {
   contact: {
     ar: {
       title: 'تواصل معنا — FastFree',
-      description: 'تواصل مع فريق FastFree لمناقشة مشروعك البرمجي أو لطلب عرض أسعار.',
+      description:
+        'تواصل مع فريق FastFree لمناقشة مشروعك البرمجي أو طلب عرض أسعار: نوضح الوحدات المناسبة من ERP أو Low-Code ونجيب خلال يوم عمل بلغتك المفضلة عربية أو إنجليزية.',
     },
     en: {
       title: 'Contact Us — FastFree',
       description:
-        'Get in touch with the FastFree team to discuss your software project or request a quote.',
+        'Contact FastFree to discuss your project or request a quote: we pinpoint the right ERP or Low-Code modules and reply within a business day in Arabic or English.',
     },
   },
 };
 
 export const DEFAULT_DESCRIPTION: Record<'ar' | 'en', string> = {
-  ar: 'FastFree تبني حلولاً برمجية للشركات: CRM وERP ولوحات تحكم وتطبيقات ويب ثنائية اللغة.',
-  en: 'FastFree builds business software: CRM, ERP, dashboards, and bilingual web apps.',
+  ar: 'FastFree تبني حلولاً برمجية للشركات: منصة Low-Code وأنظمة CRM وERP تضم المحاسبة والمخزون والمبيعات والموارد البشرية وCRM وتطبيقات ويب ثنائية اللغة بدعم RTL.',
+  en: 'FastFree builds business software: Low-Code platform with CRM, ERP, accounting, inventory, sales, HR and bilingual web apps with RTL and dark-mode support.',
 };
 
 export type ResolvedSeo = {
@@ -146,7 +155,7 @@ export function resolveDescription(
     return DEFAULT_DESCRIPTION[lang];
   }
   if (type === 'post') {
-    const post = blogPosts.find((b) => b.slug === id);
+    const post = blogMeta.find((b) => b.slug === id);
     if (post) {
       const ex = lang === 'ar' ? post.excerpt_ar : post.excerpt_en;
       if (ex) return ex;
@@ -177,7 +186,7 @@ export function resolveTitle(
     return lang === 'ar' ? PAGE_TITLES[id].ar : PAGE_TITLES[id].en;
   }
   if (type === 'post') {
-    const post = blogPosts.find((b) => b.slug === id);
+    const post = blogMeta.find((b) => b.slug === id);
     if (post) return lang === 'ar' ? post.title_ar : post.title_en;
   }
   if (type === 'product') {
@@ -203,6 +212,6 @@ export function resolveSeo(opts: {
   const description = resolveDescription(opts.type, opts.id, opts.lang, opts.title);
   const title = resolveTitle(opts.type, opts.id, opts.lang, opts.title);
   const ogType = opts.type === 'post' ? 'article' : 'website';
-  const ogImage = opts.ogImage ?? OG_IMAGE;
+  const ogImage = opts.ogImage && isValidOgImage(opts.ogImage) ? opts.ogImage : OG_IMAGE;
   return { title, description, path, ogType, ogImage };
 }

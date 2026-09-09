@@ -9,7 +9,8 @@ import { useSEOMeta } from '@/lib/use-seo';
 import { motion, useInView } from 'framer-motion';
 import { TextReveal } from '@/components/ui/TextReveal';
 import { BreadcrumbSchema } from '@/components/SEO/StructuredData';
-import { blogPosts, type BlogPost } from '@/src/data/blog';
+import { blogMeta as blogPosts } from '@/src/data/blog-meta';
+import type { BlogMeta as BlogPost } from '@/src/data/blogTypes';
 import { catLabel } from '@/lib/blog-ui';
 
 function FadeIn({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -51,8 +52,6 @@ export default function BlogPage() {
         p.title_en.toLowerCase().includes(query) ||
         (p.excerpt_ar || '').toLowerCase().includes(query) ||
         (p.excerpt_en || '').toLowerCase().includes(query) ||
-        (p.content_ar || '').toLowerCase().includes(query) ||
-        (p.content_en || '').toLowerCase().includes(query) ||
         (p.tags || []).some((tag) => tag.toLowerCase().includes(query)) ||
         (p.category || '').toLowerCase().includes(query));
     return categoryOk && searchOk;

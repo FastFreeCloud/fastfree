@@ -14,7 +14,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const { lang, slug } = await params;
   const post = blogPosts.find((p) => p.slug === slug);
-  return buildMetadata({ lang: lang as Locale, type: 'post', id: slug, ogImage: post?.cover_image ?? undefined });
+  const cover = post?.cover_image;
+  const validOg = cover && /\.(png|jpe?g|webp)(\?.*)?$/i.test(cover) ? cover : undefined;
+  return buildMetadata({ lang: lang as Locale, type: 'post', id: slug, ogImage: validOg });
 }
 
 export default async function Page({ params }: { params: Promise<{ lang: string; slug: string }> }) {
