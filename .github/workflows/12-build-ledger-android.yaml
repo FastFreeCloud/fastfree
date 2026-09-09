@@ -206,11 +206,13 @@ jobs:
           if-no-files-found: error
 
       - name: Publish to Play Store (Listing + AAB)
-        if: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          VERSION_CODE: ${{ env.VERSION_CODE }}
         run: |
+          if [ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "No Play service account configured - skipping Play upload"
+            exit 0
+          fi
           echo "Installing googleapis..."
           npm install --prefix scripts googleapis --no-audit --no-fund --silent 2>/dev/null || true
 
@@ -226,7 +228,7 @@ jobs:
 
           AAB_PATH=$(find apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/bundle/release -name "*.aab" | head -1)
           if [ -z "$AAB_PATH" ]; then
-            echo "No AAB found â€” skipping Play upload"
+            echo "No AAB found - skipping Play upload"
             exit 0
           fi
 
@@ -278,6 +280,7 @@ jobs:
           name: "FastFree Ledger v${{ steps.version.outputs.version }}"
           files: release/fastfree-ledger.apk
           generate_release_notes: true
+
 
 
 
