@@ -1,7 +1,7 @@
 [project]
 name = "fastfree_backend"
 authors = [
-    { name = "FastFree Cloud", email = "admin@fastfree.cloud"}
+    { name = "FastFree Cloud", email = "sales@fastfree.cloud"}
 ]
 description = "A custom Frappe application for FastFree Cloud"
 requires-python = ">=3.10"

@@ -2,7 +2,7 @@ app_name = "fastfree_backend"
 app_title = "FastFree Backend"
 app_publisher = "FastFree Cloud"
 app_description = "A custom Frappe application for FastFree Cloud"
-app_email = "admin@fastfree.cloud"
+app_email = "sales@fastfree.cloud"
 app_license = "mit"
 
 # Apps

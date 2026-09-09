@@ -95,8 +95,8 @@ export default async function PrivacyPage({ params }: { params: Promise<{ lang: 
           <div className="pt-6 border-t border-white/10">
             <p className="text-slate-400 text-xs">
               {isAr
-                ? 'لأي استفسارات حول هذه السياسة، يرجى التواصل معنا على admin@fastfree.cloud'
-                : 'For any questions about this policy, please contact us at admin@fastfree.cloud'}
+                ? 'لأي استفسارات حول هذه السياسة، يرجى التواصل معنا على sales@fastfree.cloud'
+                : 'For any questions about this policy, please contact us at sales@fastfree.cloud'}
             </p>
           </div>
         </div>
@@ -182,7 +182,7 @@ const sectionsAr: { title: string; paragraphs: string[]; list?: string[] }[] = [
       'نقل بياناتك إلى مزود خدمة آخر بتنسيق منظم وشائع.',
       'سحب الموافقة على معالجة بياناتك في أي وقت.',
       'تقديم شكوى لدى سلطة حماية البيانات المختصة.',
-      'لممارسة أي من هذه الحقوق، يرجى التواصل معنا على admin@fastfree.cloud. سنستجيب لطلباتك خلال 30 يوماً.',
+      'لممارسة أي من هذه الحقوق، يرجى التواصل معنا على sales@fastfree.cloud. سنستجيب لطلباتك خلال 30 يوماً.',
     ],
   },
   {
@@ -221,7 +221,7 @@ const sectionsAr: { title: string; paragraphs: string[]; list?: string[] }[] = [
     title: '12. التواصل معنا',
     paragraphs: [
       'FastFree Cloud — مصر والمملكة العربية السعودية',
-      'البريد الإلكتروني: admin@fastfree.cloud',
+      'البريد الإلكتروني: sales@fastfree.cloud',
       'الموقع الإلكتروني: https://fastfree.cloud',
     ],
   },
@@ -304,7 +304,7 @@ const sectionsEn: { title: string; paragraphs: string[]; list?: string[] }[] = [
       'Transfer your data to another provider in a structured, commonly used format.',
       'Withdraw your consent to data processing at any time.',
       'File a complaint with the competent data protection authority.',
-      'To exercise any of these rights, please contact us at admin@fastfree.cloud. We will respond to your requests within 30 days.',
+      'To exercise any of these rights, please contact us at sales@fastfree.cloud. We will respond to your requests within 30 days.',
     ],
   },
   {
@@ -343,7 +343,7 @@ const sectionsEn: { title: string; paragraphs: string[]; list?: string[] }[] = [
     title: '12. Contact Us',
     paragraphs: [
       'FastFree Cloud — Egypt & Saudi Arabia',
-      'Email: admin@fastfree.cloud',
+      'Email: sales@fastfree.cloud',
       'Website: https://fastfree.cloud',
     ],
   },

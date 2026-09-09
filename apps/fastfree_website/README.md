@@ -164,7 +164,7 @@ images: { formats: ['image/avif', 'image/webp'], minimumCacheTTL: 2592000 },
 
 | الحساب | البريد الإلكتروني | كلمة المرور |
 |--------|------------------|-------------|
-| **Admin** | `admin@fastfree.cloud` | `FastFree@Admin2026!` |
+| **Admin** | `sales@fastfree.cloud` | `FastFree@Admin2026!` |
 | **phpMyAdmin** | `root` | `FastFree@Secure2026!` |
 
 ### اختصار مخفي للدخول

@@ -14,7 +14,7 @@ export const blogTips: BlogPost[] = [
 
 عند المقارنة، جرّب النظام على بيانات حقيقية بسيطة: سجلّ قيداً، أصدر فاتورة، واستخرج تقرير موازنة تجريبية. إن تمّت هذه الخطوات بسلاسة، فالنظام مناسب غالباً. لا تركّز فقط على السعر، بل على الوقت الذي سيوفّره لفريقك شهرياً.
 
-إذا أردت مناقشة متطلبات محاسبتك ببساطة ودون التزام، يسعدنا الحديث على واتساب: مصر +201091999937 • السعودية +966572293845 أو عبر البريد admin@fastfree.cloud.`,
+إذا أردت مناقشة متطلبات محاسبتك ببساطة ودون التزام، يسعدنا الحديث على واتساب: مصر +201091999937 • السعودية +966572293845 أو عبر البريد sales@fastfree.cloud.`,
     content_en: `Choosing accounting software is an operational decision, not just a tool purchase. Before looking at screens and prices, it helps to define what your company actually needs: do you only issue invoices, or do you need a full ledger, taxes, and monthly reports? The clearer the requirements, the fewer surprises later.
 
 In Egypt, tax support deserves special attention. A system that calculates VAT (14%) and withholding tax automatically saves time and reduces manual tallying errors. It is also useful if the system supports fiscal years and cost centers, because that makes it easier to track profitability by department or branch.
@@ -23,7 +23,7 @@ Language and direction should not be overlooked. Many companies work with Arabic
 
 When comparing options, try the system with simple real data: post a journal entry, issue an invoice, and pull a Trial Balance report. If these steps flow smoothly, the system is likely a fit. Do not focus only on price; consider the time it will save your team each month.
 
-If you would like to discuss your accounting needs simply and without obligation, we are happy to talk on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or by email at admin@fastfree.cloud.`,
+If you would like to discuss your accounting needs simply and without obligation, we are happy to talk on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or by email at sales@fastfree.cloud.`,
     excerpt_ar: 'دليل عملي لاختيار برنامج محاسبة في مصر مع مراعاة ضريبة القيمة المضافة والعربية وRTL.',
     excerpt_en: 'A practical guide to choosing accounting software in Egypt, considering VAT, Arabic, and RTL.',
     cover_image: '/assets/blog-how-to-choose-accounting-software-egypt.svg',
@@ -46,7 +46,7 @@ If you would like to discuss your accounting needs simply and without obligation
 
 إدارة أكثر من مستودع من مكان واحد تمنع تكرار الشراء وتوضّح أين البضاعة فعلاً. وربط المخزون بالموردين يجعل طلب الإعادة أسرع. هذه المزايا لا تتطلب فريقاً تقنياً كبيراً، بل نظاماً يُهيّأ ببساطة على بياناتك.
 
-نتحدث باستمرار مع شركات مصرية عن أوضاع مخزونها؛ إن أردت رأياً بسيطاً يناسب حجمك، راسلنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
+نتحدث باستمرار مع شركات مصرية عن أوضاع مخزونها؛ إن أردت رأياً بسيطاً يناسب حجمك، راسلنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو sales@fastfree.cloud.`,
     content_en: `Many small businesses manage inventory on paper or manual spreadsheets, which works at first. But as sales grow, errors multiply: an item runs out unnoticed, or the balance does not match reality at month end. Automation here means every movement updates the balance immediately instead of manual counting.
 
 A direct benefit is the low-stock alert. Rather than discovering a shortage after a customer orders, the system warns you when a level is reached, helping you reorder in time. This reduces lost sales without the need to overstock.
@@ -55,7 +55,7 @@ Serial or batch tracking is useful for items with expiry or warranty. When an is
 
 Managing more than one warehouse from one place prevents duplicate purchasing and clarifies where goods actually are. Linking inventory to suppliers makes reordering faster. These benefits do not require a large technical team, only a system configured simply on your data.
 
-We regularly talk with Egyptian businesses about their inventory situation; if you would like a simple opinion suited to your size, contact us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at admin@fastfree.cloud.`,
+We regularly talk with Egyptian businesses about their inventory situation; if you would like a simple opinion suited to your size, contact us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at sales@fastfree.cloud.`,
     excerpt_ar: 'الأتمتة تحوّل المخزون من عدّ يدوي إلى تتبّع فوري مع تنبيهات نقص وتقييم لحظي.',
     excerpt_en: 'Automation turns inventory from manual counting into instant tracking with low-stock alerts and real-time valuation.',
     cover_image: '/assets/blog-inventory-automation-benefits-sme.svg',
@@ -78,7 +78,7 @@ We regularly talk with Egyptian businesses about their inventory situation; if y
 
 أخيراً، غياب متابعة بعد التشغيل يترك مشاكل صغيرة تكبر. تخصيص شخص داخلي لمتابعة الاستخدام وحلّ الأسئلة يبقي النظام حياً ومفيداً. التحوّل الرقمي سير لا خطوة واحدة.
 
-إن كنت تخطط لتطبيق نظام وترغب في مشورة عملية بلا تعقيد، نحن هنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
+إن كنت تخطط لتطبيق نظام وترغب في مشورة عملية بلا تعقيد، نحن هنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو sales@fastfree.cloud.`,
     content_en: `A common mistake is loading every module at once. This overwhelms the team and delays the benefit. It is better to start with one or two modules — such as accounting or inventory — then expand gradually as the need actually arises.
 
 Another error is migrating unclean data. Entering duplicate or incomplete customers or items creates confusion that later shows up in reports. Before starting, cleaning current data is worth the time; the result is a system you can rely on from day one.
@@ -87,7 +87,7 @@ Ignoring training greatly reduces the return. A good system helps little if the 
 
 Finally, lack of follow-up after go-live lets small issues grow. Assigning an internal person to track usage and answer questions keeps the system alive and useful. Digital change is a journey, not a single step.
 
-If you are planning an implementation and want practical advice without complexity, we are on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at admin@fastfree.cloud.`,
+If you are planning an implementation and want practical advice without complexity, we are on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at sales@fastfree.cloud.`,
     excerpt_ar: 'أخطاء متكررة عند تطبيق ERP وكيف تتجنبها بالبدء البسيط وتنظيف البيانات والتدريب.',
     excerpt_en: 'Recurring ERP implementation mistakes and how to avoid them with simple starts, clean data, and training.',
     cover_image: '/assets/blog-common-erp-mistakes.svg',
@@ -110,7 +110,7 @@ If you are planning an implementation and want practical advice without complexi
 
 لا يعني ذلك أن كل شركة تحتاج ERP فوراً. لكن إن تكرّرت هذه العلامات وبدأت تؤثر على القرار، فالانتقال المبكر أرخص من الانتظار حتى تتعقّد الأمور. البداية بوحدة محاسبة أو مخزون كافية غالباً.
 
-للحديث عن وضع شركتك وتحديد إن كان الوقت مناسباً، تواصل معنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
+للحديث عن وضع شركتك وتحديد إن كان الوقت مناسباً، تواصل معنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو sales@fastfree.cloud.`,
     content_en: `Spreadsheets are excellent for starting out, but they reach their limits. The first sign is gathering the same number from multiple places: sales from one sheet, inventory from another, receivables from a third. When reconciling them takes hours weekly, you may have outgrown spreadsheets.
 
 A second sign is several people editing the same file, causing conflicts or stale copies. A unified system gives each user permission over what concerns them and records who changed what and when, raising reliability.
@@ -119,7 +119,7 @@ Delayed reports are another sign. If issuing a Profit & Loss or checking a custo
 
 This does not mean every company needs an ERP immediately. But if these signs repeat and start affecting decisions, an earlier move is cheaper than waiting until things tangle. Starting with an accounting or inventory module is usually enough.
 
-To discuss your company's situation and whether the timing is right, reach us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at admin@fastfree.cloud.`,
+To discuss your company's situation and whether the timing is right, reach us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at sales@fastfree.cloud.`,
     excerpt_ar: 'علامات عملية تدل أن شركتك تجاوزت الجداول وتحتاج نظاماً موحّداً.',
     excerpt_en: 'Practical signs that your company has outgrown spreadsheets and needs a unified system.',
     cover_image: '/assets/blog-when-you-need-erp.svg',
@@ -142,7 +142,7 @@ To discuss your company's situation and whether the timing is right, reach us on
 
 التحقق من الحقول قبل التحميل يوفّر وقتاً طويلاً. تأكد أن أرقام الهاتف والبريد والعناوين مكتملة، وأن كل صنف له وحدة قياس وضريبة صحيحة. نظام مثل FastFree يوفّر 60 شاشة و43 خدمة، لكن جودة ما تراه تعتمد على نظافة ما أدخلته.
 
-رتّب البيانات على دفعات واختبرها قبل التشغيل الكامل. إن بدأت نظيفاً، فريقك سيثق بالنظام من اليوم الأول. للحديث عن خطة نقل بيانات بسيطة تناسبك، راسلنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
+رتّب البيانات على دفعات واختبرها قبل التشغيل الكامل. إن بدأت نظيفاً، فريقك سيثق بالنظام من اليوم الأول. للحديث عن خطة نقل بيانات بسيطة تناسبك، راسلنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو sales@fastfree.cloud.`,
     content_en: `Before moving your data into any unified system, cleaning deserves as much time as the setup itself. In small companies data usually lives in several places: separate sheets, paper, and messages. Moving it as-is carries the errors along, and they surface later in reports and invoices.
 
 Start by removing duplicates. Customers or suppliers entered more than once with slight name differences cause double entries and make follow-up hard. Give each item a clear, stable identifier, because inconsistent naming makes inventory unreliable.
@@ -151,7 +151,7 @@ Do not move everything. Supplier records you stopped dealing with years ago, or 
 
 Validating fields before loading saves long hours later. Make sure phones, emails, and addresses are complete, and that every item has a correct unit of measure and tax setting. A system like FastFree offers 60 screens and 43 services, but what you see depends on the cleanliness of what you entered.
 
-Stage the data in batches and test it before full go-live. If you start clean, your team will trust the system from day one. To talk about a simple migration plan that suits you, contact us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at admin@fastfree.cloud.`,
+Stage the data in batches and test it before full go-live. If you start clean, your team will trust the system from day one. To talk about a simple migration plan that suits you, contact us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at sales@fastfree.cloud.`,
     excerpt_ar: 'قبل أي انتقال: أزل التكرار، لا تُقل كل شيء، وتحقق من الحقول لتثق بالتقارير من اليوم الأول.',
     excerpt_en: 'Before any move: dedupe, do not migrate everything, and validate fields so reports are trusted from day one.',
     cover_image: '/assets/blog-clean-data-before-erp.svg',
@@ -174,7 +174,7 @@ Stage the data in batches and test it before full go-live. If you start clean, y
 
 خصّص شخصاً داخلياً يجيب على الأسئلة بعد التشغيل. الدعم المستمر في الأسابيع الأولى يمنع العودة للأوراق والجداول القديمة. نظام FastFree مبني بواجهة عربية RTL وخط Cairo ما يجعل الانتقال أسهل لمستخدم غير تقني.
 
-التدريب سير لا حدث واحد. راجع مع الفريق بعد شهر واسمع الصعوبات، وصحّح المسار مبكراً. للحديث عن خطة تدريب عملية لفريقك، تواصل معنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
+التدريب سير لا حدث واحد. راجع مع الفريق بعد شهر واسمع الصعوبات، وصحّح المسار مبكراً. للحديث عن خطة تدريب عملية لفريقك، تواصل معنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو sales@fastfree.cloud.`,
     content_en: `A leading cause of system struggle is weak training, not weak software. A non-technical employee does not need to understand how the system was built, only how to complete their daily task in it. Training tied to their actual work beats a general walkthrough of menus.
 
 Make training role-based. A warehouse keeper needs a simple receive-and-issue screen, while an accountant needs posting and month closing. A short session on their real data proves the value faster than a long workshop.
@@ -183,7 +183,7 @@ Involve users early. When an employee helps shape how their work flows inside th
 
 Assign an internal person to answer questions after go-live. Continuous support in the first weeks prevents a slide back to paper and old spreadsheets. A system like FastFree is built with an Arabic RTL interface and Cairo font, which eases the transition for a non-technical user.
 
-Training is a journey, not a single event. Review with the team after a month, listen to the difficulties, and correct course early. To discuss a practical training plan for your team, reach us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at admin@fastfree.cloud.`,
+Training is a journey, not a single event. Review with the team after a month, listen to the difficulties, and correct course early. To discuss a practical training plan for your team, reach us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at sales@fastfree.cloud.`,
     excerpt_ar: 'تدريب حسب الدور على بيانات حقيقية مع دعم مستمر يرفع الثقة أكثر من شرح عام.',
     excerpt_en: 'Role-based training on real data with ongoing support builds confidence better than a generic overview.',
     cover_image: '/assets/blog-training-non-technical-staff.svg',
@@ -206,7 +206,7 @@ Training is a journey, not a single event. Review with the team after a month, l
 
 الموارد البشرية والرواتب وإدارة العملاء (CRM) توضع لاحقاً حسب الحاجة. نظام FastFree معياري: وحدات المحاسبة والمخزون والمبيعات والمشتريات والموارد البشرية وإدارة العملاء تُركّب حسب الحاجة، فتبدأ صغيراً وتوسّع بهدوء.
 
-ابدأ بما يوفّر وقتاً هذا الشهر، لا بما يبدو مكتملاً. للحديث عن الترتيب المناسب لحجم شركتك، راسلنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
+ابدأ بما يوفّر وقتاً هذا الشهر، لا بما يبدو مكتملاً. للحديث عن الترتيب المناسب لحجم شركتك، راسلنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو sales@fastfree.cloud.`,
     content_en: `Wanting to switch on everything at once is understandable, but it overwhelms the team. It is better to start with the module that solves the biggest daily pain. For most small Egyptian businesses, accounting comes first because invoices and entries are the backbone of any later report.
 
 After accounting, inventory follows if you buy or sell items. Linking inventory to accounting makes stock valuation appear automatically in your books and reduces month-end differences. This pair (accounting plus inventory) is enough for many companies for a long while.
@@ -215,7 +215,7 @@ Sales and purchasing are added once the routine is stable. Sales and purchase or
 
 HR, payroll, and CRM come later as needed. FastFree is modular: accounting, inventory, sales, purchase, HR, and CRM plug in on demand, so you start small and expand calmly.
 
-Start with what saves time this month, not with what looks complete. To discuss the right ordering for your company size, contact us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at admin@fastfree.cloud.`,
+Start with what saves time this month, not with what looks complete. To discuss the right ordering for your company size, contact us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at sales@fastfree.cloud.`,
     excerpt_ar: 'ابدأ بمحاسبة ثم مخزون، ثم مبيعات ومشتريات، واترك الموارد البشرية وCRM للمراحل التالية.',
     excerpt_en: 'Start with accounting then inventory, then sales and purchasing; leave HR and CRM for later phases.',
     cover_image: '/assets/blog-which-erp-modules-first.svg',
@@ -238,7 +238,7 @@ Start with what saves time this month, not with what looks complete. To discuss 
 
 قلة الصلاحية مبدأ مفيد: كل مستخدم يملك أقل ما يحتاجه لعمله فقط. نشر FastFree عبر NixOS وDocker يوفّر بيئة موصوفة كملف واحد قابل لإعادة الإنتاج، ما يجعل الإعداد الآمن متسقاً لا عشوائياً.
 
-ابدأ بصلاحيات واضحة ونسخ احتياطي، ثم طوّر تدريجياً. للحديث عن إعداد آمن يناسب شركتك، تواصل معنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
+ابدأ بصلاحيات واضحة ونسخ احتياطي، ثم طوّر تدريجياً. للحديث عن إعداد آمن يناسب شركتك، تواصل معنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو sales@fastfree.cloud.`,
     content_en: `Data security is not reserved for large companies. The first simple step is role-based permissions: not every employee sees everything. A warehouse keeper manages item movements only, an accountant sees what concerns them. Recording who changed what and when raises reliability and eases tracing when a mistake happens.
 
 Regular backups are essential. Systems running in isolated containers behind a reverse proxy with periodic copies protect against data loss from failure or human error. Ask your provider where copies are stored and how they are restored.
@@ -247,7 +247,7 @@ Secure remote access reduces risk. Running branches behind a virtual private net
 
 Least privilege is a useful principle: each user gets only what they need for their job. Deploying FastFree via NixOS and Docker gives an environment described as a single reproducible file, making secure setup consistent rather than ad hoc.
 
-Start with clear permissions and backups, then improve gradually. To discuss a secure setup that suits your company, reach us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at admin@fastfree.cloud.`,
+Start with clear permissions and backups, then improve gradually. To discuss a secure setup that suits your company, reach us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at sales@fastfree.cloud.`,
     excerpt_ar: 'صلاحيات حسب الدور ونسخ احتياطي ووصول آمن عبر VPN أساسيات لا تحتاج فريقاً كبيراً.',
     excerpt_en: 'Role-based permissions, backups, and secure VPN access are basics that need no large team.',
     cover_image: '/assets/blog-sme-data-security-basics.svg',
@@ -270,7 +270,7 @@ Start with clear permissions and backups, then improve gradually. To discuss a s
 
 تقرير التدفق النقدي البسيط — دخول مقابل خروج — أهم من الأرباح المحاسبية أحياناً، لأن الشركة قد تكون رابحة على الورق وتعجز عن الدفع. نظام FastFree يولّد هذه التقارير لحظياً من نفس البيانات.
 
-اختر ثلاثة تقارير تقرأها أسبوعياً والتزم بها. للحديث عن إعداد تقارير تناسب قراراتك، راسلنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
+اختر ثلاثة تقارير تقرأها أسبوعياً والتزم بها. للحديث عن إعداد تقارير تناسب قراراتك، راسلنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو sales@fastfree.cloud.`,
     content_en: `Many screens do not mean much usefulness. The most important report for an owner is the Trial Balance and the Profit & Loss, because they show profit and loss quickly without manual tallying. A system that calculates VAT (14%) automatically makes the tax report less exhausting.
 
 An accounts-receivable aging report matters for cash flow. Knowing who owes what and for how long lets you collect before things slip. The same idea applies to payable aging, to plan payments to suppliers.
@@ -279,7 +279,7 @@ A stock valuation and aging report shows working capital stuck in slow-moving go
 
 A simple cash-flow report — inflows versus outflows — is sometimes more important than accounting profit, because a company can look profitable on paper yet struggle to pay. FastFree generates these reports instantly from the same data.
 
-Pick three reports you read weekly and stick to them. To discuss setting up reports that fit your decisions, contact us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at admin@fastfree.cloud.`,
+Pick three reports you read weekly and stick to them. To discuss setting up reports that fit your decisions, contact us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at sales@fastfree.cloud.`,
     excerpt_ar: 'ميزان المراجعة وأعمار الذمم وتقييم المخزون والتدفق النقدي هي التقارير التي تقرأ أسبوعياً.',
     excerpt_en: 'Trial Balance, receivables aging, stock valuation, and cash flow are the reports worth reading weekly.',
     cover_image: '/assets/blog-reports-that-matter-sme.svg',
@@ -302,7 +302,7 @@ Pick three reports you read weekly and stick to them. To discuss setting up repo
 
 الجداول لا تفرض صلاحيات، فكل من يفتح الملف يرى كل شيء، ما يرفع مخاطر الخطأ أو الكشف غير المقصود. نظام موحّد يضبط الصلاحيات ويسجّل التغييرات ويفرز الأرقام لحظياً.
 
-الانتقال لا يعني التخلّي فجأة. ابدأ بأكثر مهمة تكراراً وحوّلها للنظام تدريجياً. للحديث عن خطة انتقال هادئة من الجداول، تواصل معنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو admin@fastfree.cloud.`,
+الانتقال لا يعني التخلّي فجأة. ابدأ بأكثر مهمة تكراراً وحوّلها للنظام تدريجياً. للحديث عن خطة انتقال هادئة من الجداول، تواصل معنا على واتساب: مصر +201091999937 • السعودية +966572293845 أو sales@fastfree.cloud.`,
     content_en: `Spreadsheets look free, but their hidden cost appears over time. First is human error: a wrong cell or a miscopied formula can change an important number unnoticed. The larger the file, the higher the error chance and the longer the review time.
 
 Version conflict is a daily problem. When several people edit the same file, stale or contradictory copies appear, with no trace of who changed what. The absence of a change log makes tracing hard when a mistake occurs.
@@ -311,7 +311,7 @@ Lack of automation means monthly hours spent summing and reconciling instead of 
 
 Spreadsheets enforce no permissions, so whoever opens the file sees everything, raising the risk of error or unintended exposure. A unified system sets permissions, logs changes, and sorts numbers instantly.
 
-The move does not mean abrupt abandonment. Start with the most repeated task and shift it to the system gradually. To discuss a calm transition plan from spreadsheets, reach us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at admin@fastfree.cloud.`,
+The move does not mean abrupt abandonment. Start with the most repeated task and shift it to the system gradually. To discuss a calm transition plan from spreadsheets, reach us on WhatsApp: Egypt +201091999937 • Saudi +966572293845 or at sales@fastfree.cloud.`,
     excerpt_ar: 'الأخطاء وتضارب النسخ وغياب الصلاحيات وأتمتة الوقت هي التكلفة الخفية للجداول.',
     excerpt_en: 'Errors, version conflicts, no permissions, and lost time are the hidden cost of spreadsheets.',
     cover_image: '/assets/blog-hidden-cost-of-spreadsheets.svg',

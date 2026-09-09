@@ -7,7 +7,7 @@ export const siteConfig = {
   phone_sa: '+966 57 229 3845',
   whatsapp_eg: 'https://wa.me/201091999937',
   whatsapp_sa: 'https://wa.me/966572293845',
-  email: 'admin@fastfree.cloud',
+  email: 'sales@fastfree.cloud',
   address: 'مصر',
   socialLinks: {
     facebook: 'https://www.facebook.com/share/1DHAKK2ek1/',

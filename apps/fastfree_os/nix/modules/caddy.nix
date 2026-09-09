@@ -5,7 +5,7 @@ let
   domain = config.fastfree.identity.domain;
   isLocal = lib.hasSuffix ".local" domain;
   tlsBlock = if isLocal then "tls internal" else ''
-    tls admin@fastfree.cloud {
+    tls sales@fastfree.cloud {
       ca https://acme.zerossl.com/v2/DV90
     }
   '';

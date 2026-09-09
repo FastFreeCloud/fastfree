@@ -16,7 +16,7 @@ export default function OrganizationSchema({
   logo = 'https://fastfree.cloud/fastfree_logo.png',
   description = 'FastFree تقدم حلولاً برمجية متكاملة: أنظمة CRM، تطبيقات ويب، لوحات تحكم، وأنظمة إدارة محتوى بأحدث التقنيات.',
   phone = '+201091999937',
-  email = 'admin@fastfree.cloud',
+  email = 'sales@fastfree.cloud',
   address = 'القاهرة، جمهورية مصر العربية',
 }: OrganizationSchemaProps) {
   // Canonical social URLs — using canonical literals, keeping GitHub from config.

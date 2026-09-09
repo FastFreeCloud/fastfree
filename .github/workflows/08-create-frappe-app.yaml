@@ -36,7 +36,7 @@ on:
         description: "البريد الإلكتروني"
         required: true
         type: string
-        default: "admin@fastfree.cloud"
+        default: "sales@fastfree.cloud"
       app_license:
         description: "الرخصة"
         required: false
@@ -136,7 +136,7 @@ jobs:
               echo "APP_TITLE=$REPO_APP_TITLE"
               echo "APP_DESCRIPTION=A custom Frappe application for $REPO_APP_TITLE"
               echo "APP_PUBLISHER=FastFree Cloud"
-              echo "APP_EMAIL=admin@fastfree.cloud"
+              echo "APP_EMAIL=sales@fastfree.cloud"
               echo "APP_LICENSE=MIT"
               echo "FRAPPE_BRANCH=version-15"
               echo "CREATE_RELEASE=true"

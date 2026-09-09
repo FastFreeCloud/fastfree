@@ -101,7 +101,7 @@ on:
       app_title: [string]      # العنوان {optional, default = formatted repo name}
       app_description: [string]
       app_publisher: [string] # نفذ -> FastFree Cloud
-      app_email: [string]      # نفذ -> admin@fastfree.cloud
+      app_email: [string]      # نفذ -> sales@fastfree.cloud
       frappe_branch: [string]  # نفذ -> version-15
       create_release: [boolean] # الإنشا التلقائي لـ Tag + Release
 ```
