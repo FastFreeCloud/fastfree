@@ -37,8 +37,8 @@ packages/fastfree_purchase/
     ├── index.ts                          # Entry point — barrel export
     ├── init.ts                           # Boot function — register messages + screens
     ├── locales/
-    │   ├── en.ts                         # English translations (115 keys)
-    │   └── ar.ts                         # Arabic translations (115 keys)
+│   ├── en.ts                         # English translations (104 keys)
+        │   └── ar.ts                         # Arabic translations (104 keys)
     ├── screens/
     │   ├── index.ts                      # Screen barrel export
     │   ├── register.ts                   # Screen registration with lowcode
@@ -229,23 +229,23 @@ packages/fastfree_purchase/
 
 ## الترجمات
 
-### `src/locales/en.ts` — 115 مفتاح إنجليزي
+### `src/locales/en.ts` — 104 مفتاح إنجليزي
 
 | المجموعة | العدد | الأمثلة |
 |----------|-------|---------|
-| `groups.*` | 1 | `groups.purchase` |
-| `screens.*` | 6 | `screens.purchase-suppliers`, `screens.purchase-orders`, `screens.purchase-receipts`, `screens.purchase-invoices`, `screens.purchase-reports`, `screens.purchase-dashboard` |
-| `purchase.*` | 50 | `purchase.supplier`, `purchase.suppliers`, `purchase.supplierName`, `purchase.supplierType`, `purchase.mobileNo`, `purchase.email`, `purchase.address`, `purchase.addSupplier`, `purchase.editSupplier`, `purchase.purchaseOrder`, `purchase.purchaseOrders`, `purchase.addPurchaseOrder`, `purchase.transactionDate`, `purchase.total`, `purchase.receivedQty`, `purchase.purchaseReceipt`, `purchase.purchaseReceipts`, `purchase.addPurchaseReceipt`, `purchase.postingDate`, `purchase.purchaseInvoice`, `purchase.purchaseInvoices`, `purchase.addPurchaseInvoice`, `purchase.dueDate`, `purchase.outstandingAmount`, `purchase.totalPurchases`, `purchase.totalInvoices`, `purchase.totalSuppliers`, `purchase.items`, `purchase.itemCode`, `purchase.itemName`, `purchase.quantity`, `purchase.rate`, `purchase.amount`, `purchase.addItem`, `purchase.company`, `purchase.purchaseReports`, `purchase.reportType`, `purchase.submitOrderConfirm`, `purchase.cancelOrderConfirm`, `purchase.orderSubmitted`, `purchase.orderCancelled`, `purchase.submitReceiptConfirm`, `purchase.cancelReceiptConfirm`, `purchase.receiptSubmitted`, `purchase.receiptCancelled`, `purchase.submitInvoiceConfirm`, `purchase.cancelInvoiceConfirm`, `purchase.invoiceSubmitted`, `purchase.invoiceCancelled`, `purchase.overdueAmount`, `purchase.summaryByStatus`, `purchase.count` |
-| `purchase.draft/submitted/...` | 8 | `purchase.draft`, `purchase.submitted`, `purchase.cancelled`, `purchase.received`, `purchase.paid`, `purchase.pending`, `purchase.completed`, `purchase.overdue` |
-| `purchase.status.*` | 8 | `purchase.status.draft`, `purchase.status.submitted`, `purchase.status.cancelled`, `purchase.status.received`, `purchase.status.paid`, `purchase.status.pending`, `purchase.status.completed`, `purchase.status.overdue` |
+| مفتاح المجموعة | 1 | `purchase` (يُسجّل كـ `purchase.purchase`) |
+| أسماء الشاشات | 6 | `dashboard`, `suppliers`, `orders`, `receipts`, `invoices`, `reports` |
+| مفاتيح الشراء (bare) | 39 | `supplier`, `suppliers`, `supplierName`, `supplierType`, `mobileNo`, `email`, `address`, `addSupplier`, `editSupplier`, `purchaseOrder`, `purchaseOrders`, `addPurchaseOrder`, `transactionDate`, `total`, `receivedQty`, `purchaseReceipt`, `purchaseReceipts`, `addPurchaseReceipt`, `postingDate`, `purchaseInvoice`, `purchaseInvoices`, `addPurchaseInvoice`, `dueDate`, `outstandingAmount`, `totalPurchases`, `totalInvoices`, `totalSuppliers`, `items`, `itemCode`, `itemName`, `quantity`, `rate`, `amount`, `addItem`, `company`, `purchaseReports`, `reportType`, `overdueAmount`, `summaryByStatus`, `count` |
+| الحالات (bare) | 8 | `draft`, `submitted`, `cancelled`, `received`, `paid`, `pending`, `completed`, `overdue` |
+| `status.*` | 8 | `status.draft`, `status.submitted`, `status.cancelled`, `status.received`, `status.paid`, `status.pending`, `status.completed`, `status.overdue` |
 | `common.*` | 28 | `common.add`, `common.edit`, `common.delete`, `common.save`, `common.cancel`, `common.submit`, `common.search`, `common.name`, `common.status`, `common.date`, `common.actions`, `common.noData`, `common.confirmDelete`, `common.confirm`, `common.refresh`, `common.error`, `common.draft`, `common.submitted`, `common.cancelled`, `common.paid`, `common.received`, `common.company`, `common.individual`, `common.print`, `common.export`, `common.filter`, `common.dateFrom`, `common.dateTo` |
 | `validation.*` | 1 | `validation.fieldRequired` |
 
-### `src/locales/ar.ts` — 115 مفتاح عربي
+### `src/locales/ar.ts` — 104 مفتاح عربي
 
 نفس المفاتيح بالضبط مع الترجمات العربية (المشتريات، الموردون، أوامر الشراء، سندات الاستلام، فواتير الشراء، التقارير).
 
-**المجموع:** 230 مفتاح ترجمة (115 EN + 115 AR)
+**المجموع:** 208 مفتاح ترجمة (104 EN + 104 AR)
 
 ---
 
@@ -281,7 +281,7 @@ packages/fastfree_purchase/
 - **27 دالة** خدمة
 - **7 شاشات** Vue
 - **13 نوع** TypeScript
-- **115 مفتاح** ترجمة (EN + AR)
+- **104 مفتاح** ترجمة (EN + AR)
 - **0 أخطاء** vue-tsc
 - **0 violations** lint
 - **Boot:** `initFastFreePurchase()` — تسجيل الترجمات + الشاشات مع lowcode

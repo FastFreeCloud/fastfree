@@ -24,11 +24,11 @@ export function registerAuthScreens(
   registerGroup(AUTH_GROUP_NAME, 'mdi-shield-lock')
 
   const screens = [
-    { type: 'auth-login', loader: () => import('./screens/AuthLogin.vue'), label: 'login', icon: 'mdi-login' },
-    { type: 'auth-users', loader: () => import('./screens/UsersManager.vue'), label: 'users', icon: 'mdi-account-group' },
-    { type: 'auth-roles', loader: () => import('./screens/RolesManager.vue'), label: 'roles', icon: 'mdi-shield-account' },
-    { type: 'auth-license', loader: () => import('./screens/LicenseInfo.vue'), label: 'license', icon: 'mdi-license' },
-    { type: 'auth-profile', loader: () => import('./screens/UserProfile.vue'), label: 'profile', icon: 'mdi-account-circle' },
+    { type: 'auth-login', loader: () => import('./screens/AuthLogin.vue'), label: 'screens.login', icon: 'mdi-login' },
+    { type: 'auth-users', loader: () => import('./screens/UsersManager.vue'), label: 'screens.users', icon: 'mdi-account-group' },
+    { type: 'auth-roles', loader: () => import('./screens/RolesManager.vue'), label: 'screens.roles', icon: 'mdi-shield-account' },
+    { type: 'auth-license', loader: () => import('./screens/LicenseInfo.vue'), label: 'screens.license', icon: 'mdi-license' },
+    { type: 'auth-profile', loader: () => import('./screens/UserProfile.vue'), label: 'screens.profile', icon: 'mdi-account-circle' },
   ]
 
   for (const screen of screens) {

@@ -30,7 +30,7 @@
 - **Purchase Receipts** — Track received goods against purchase orders
 - **Purchase Invoices** — Invoice management with outstanding amount tracking
 - **Reports & Analytics** — Summary dashboard with CSV export and print support
-- **Bilingual** — English + Arabic (115 translation keys each)
+- **Bilingual** — English + Arabic (104 translation keys each)
 - **Lazy Loaded** — All screens use `defineAsyncComponent` for optimal bundle splitting
 - **Zero Errors** — 0 TypeScript errors, 0 lint violations
 
@@ -129,8 +129,8 @@ packages/fastfree_purchase/
     ├── index.ts                          # Barrel export — all public APIs
     ├── init.ts                           # Boot function — registers messages + screens
     ├── locales/
-    │   ├── en.ts                         # English translations (115 keys)
-    │   └── ar.ts                         # Arabic translations (115 keys)
+    │   ├── en.ts                         # English translations (104 keys)
+    │   └── ar.ts                         # Arabic translations (104 keys)
     ├── screens/
     │   ├── index.ts                      # Screen barrel export
     │   ├── register.ts                   # Screen registration with lowcode
@@ -457,10 +457,11 @@ fastfree-purchase-init   → Purchase groups + screens registered
 
 | Namespace | Keys | Example |
 |-----------|------|---------|
-| `groups.*` | 1 | `groups.purchase` |
-| `screens.*` | 6 | `screens.purchase-suppliers`, `screens.purchase-orders` |
-| `purchase.*` | 50 | `purchase.supplierName`, `purchase.total`, `purchase.addPurchaseOrder` |
-| `purchase.status.*` | 8 | `purchase.status.draft`, `purchase.status.submitted` |
+| Group key | 1 | `purchase` (registered as `purchase.purchase`) |
+| Screen labels | 6 | `dashboard`, `suppliers`, `orders`, `receipts`, `invoices`, `reports` |
+| Purchase (bare) | 39 | `supplierName`, `total`, `addPurchaseOrder` |
+| Status | 8 | `draft`, `submitted`, `cancelled`, `received`, `paid`, `pending`, `completed`, `overdue` |
+| `status.*` | 8 | `status.draft`, `status.submitted` |
 | `common.*` | 28 | `common.add`, `common.delete`, `common.save` |
 | `validation.*` | 1 | `validation.fieldRequired` |
 

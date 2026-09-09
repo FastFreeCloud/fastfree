@@ -27,12 +27,12 @@ export function registerPurchaseScreens(
   registerGroup(PURCHASE_GROUP, 'mdi-cart')
 
   const screens = [
-    { type: 'purchase-dashboard', loader: () => import('./PurchaseDashboard.vue'), label: 'screens.purchase-dashboard', icon: 'mdi-view-dashboard' },
-    { type: 'purchase-suppliers', loader: () => import('./SupplierList.vue'), label: 'screens.purchase-suppliers', icon: 'mdi-truck' },
-    { type: 'purchase-orders', loader: () => import('./PurchaseOrderList.vue'), label: 'screens.purchase-orders', icon: 'mdi-cart-check' },
-    { type: 'purchase-receipts', loader: () => import('./PurchaseReceiptList.vue'), label: 'screens.purchase-receipts', icon: 'mdi-package-down' },
-    { type: 'purchase-invoices', loader: () => import('./PurchaseInvoiceList.vue'), label: 'screens.purchase-invoices', icon: 'mdi-receipt' },
-    { type: 'purchase-reports', loader: () => import('./PurchaseReportScreen.vue'), label: 'screens.purchase-reports', icon: 'mdi-chart-bar' },
+    { type: 'purchase-dashboard', loader: () => import('./PurchaseDashboard.vue'), label: 'purchase.dashboard', icon: 'mdi-view-dashboard' },
+    { type: 'purchase-suppliers', loader: () => import('./SupplierList.vue'), label: 'purchase.suppliers', icon: 'mdi-truck' },
+    { type: 'purchase-orders', loader: () => import('./PurchaseOrderList.vue'), label: 'purchase.orders', icon: 'mdi-cart-check' },
+    { type: 'purchase-receipts', loader: () => import('./PurchaseReceiptList.vue'), label: 'purchase.receipts', icon: 'mdi-package-down' },
+    { type: 'purchase-invoices', loader: () => import('./PurchaseInvoiceList.vue'), label: 'purchase.invoices', icon: 'mdi-receipt' },
+    { type: 'purchase-reports', loader: () => import('./PurchaseReportScreen.vue'), label: 'purchase.reports', icon: 'mdi-chart-bar' },
   ]
 
   for (const s of screens) {
