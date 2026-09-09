@@ -1,6 +1,9 @@
 name: 09-build-pos-android
 
 on:
+  push:
+    tags:
+      - 'pos-v*'
   workflow_dispatch:
 
 concurrency:
@@ -83,8 +86,10 @@ jobs:
           KEYSTORE_DIR="apps/${{ env.APP_DIR }}/signing"
           KEYSTORE="$KEYSTORE_DIR/release.jks"
           mkdir -p "$KEYSTORE_DIR"
-          
-          if [ -f "$KEYSTORE" ]; then
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > "$KEYSTORE"
+            echo "Keystore decoded from secret at $KEYSTORE"
+          elif [ -f "$KEYSTORE" ]; then
             echo "Keystore exists"
           else
             keytool -genkeypair \
@@ -96,8 +101,22 @@ jobs:
               -storepass FastFree@2026 \
               -keypass FastFree@2026 \
               -dname "CN=FastFree, OU=IT, O=FastFree, L=Riyadh, ST=Riyadh, C=SA"
-            echo "Keystore created"
+            echo "Keystore created (ephemeral fallback)"
           fi
+          mkdir -p "apps/${{ env.APP_DIR }}/src-capacitor/android"
+          cat > "$KEYSTORE_DIR/keystore.properties" <<'PROPS_EOF'
+          storeFile=release.jks
+          storePassword=FastFree@2026
+          keyAlias=fastfree
+          keyPassword=FastFree@2026
+          PROPS_EOF
+          cat > "apps/${{ env.APP_DIR }}/src-capacitor/android/keystore.properties" <<'PROPS_EOF'
+          storeFile=../../signing/release.jks
+          storePassword=FastFree@2026
+          keyAlias=fastfree
+          keyPassword=FastFree@2026
+          PROPS_EOF
+          echo "keystore.properties created"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -140,6 +159,25 @@ jobs:
             exit 1
           fi
 
+      - name: Bump versionCode and versionName
+        run: |
+          BUILD_GRADLE="apps/${{ env.APP_DIR }}/src-capacitor/android/app/build.gradle"
+          DATE_CODE=$(date +%Y%m%d)
+          DATE_NAME=$(date +%Y.%m.%d)
+          RUN_NUM=${{ github.run_number }}
+          VERSION_CODE=$((DATE_CODE * 100 + RUN_NUM))
+          VERSION_NAME="$DATE_NAME"
+          echo "Bumping to versionCode=$VERSION_CODE versionName=$VERSION_NAME"
+          if [ -f "$BUILD_GRADLE" ]; then
+            sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/" "$BUILD_GRADLE"
+            sed -i "s/versionName \".*\"/versionName \"$VERSION_NAME\"/" "$BUILD_GRADLE"
+            sed -i "s/versionName '.*'/versionName \"$VERSION_NAME\"/" "$BUILD_GRADLE"
+            echo "Patched $BUILD_GRADLE"
+            grep -E "versionCode|versionName" "$BUILD_GRADLE" || true
+          else
+            echo "build.gradle not found at $BUILD_GRADLE (skipping patch, will be created by cap add)"
+          fi
+
       - name: Build AAB for Google Play
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
         run: gradle bundleRelease
@@ -167,23 +205,16 @@ jobs:
           path: apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
 
-      - name: Upload Keystore as TXT
-        run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" > keystore_base64.txt
-          echo "fastfree" > keystore_alias.txt
-          echo "FastFree@2026" > keystore_password.txt
-          echo "FastFree@2026" > keystore_store_password.txt
-
-      - name: Upload Keystore TXT Files
-        uses: actions/upload-artifact@v7
+      - name: Upload to Play Internal
+        if: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
+        uses: r0adkll/upload-google-play@v1
         with:
-          name: ${{ env.APP_ID }}-keystore-txt
-          path: |
-            keystore_base64.txt
-            keystore_alias.txt
-            keystore_password.txt
-            keystore_store_password.txt
-          if-no-files-found: error
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: ${{ env.APP_ID }}
+          releaseFiles: apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/bundle/release/*.aab
+          track: internal
+          status: draft
+          inAppUpdatePriority: 3
 
   release:
     needs: build

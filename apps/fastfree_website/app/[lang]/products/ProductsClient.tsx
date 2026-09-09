@@ -25,7 +25,7 @@ export default function ProductsPage() {
   const websiteCount = allProducts.filter((p) => p.type === 'WEBSITE').length;
   const programCount = allProducts.filter((p) => p.type === 'PROGRAM').length;
 
-  const TYPE_CONFIG: Record<string, { label: string; icon: any }> = {
+  const TYPE_CONFIG: Record<string, { label: string; icon: typeof Smartphone }> = {
     APP: { label: t('PRODUCT_TYPE_APP', 'تطبيق هاتف', 'Mobile App'), icon: Smartphone },
     WEBSITE: { label: t('PRODUCT_TYPE_WEBSITE', 'موقع ويب', 'Website'), icon: Globe },
     PROGRAM: { label: t('PRODUCT_TYPE_PROGRAM', 'برنامج سطح مكتب', 'Desktop Program'), icon: Monitor },

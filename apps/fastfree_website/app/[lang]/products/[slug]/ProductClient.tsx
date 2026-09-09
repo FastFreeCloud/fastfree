@@ -33,7 +33,7 @@ export default function ProductDetailPage() {
     notFound();
   }
 
-  const TYPE_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
+  const TYPE_CONFIG: Record<string, { label: string; icon: typeof Smartphone; color: string }> = {
     APP: { label: t('PRODUCT_TYPE_APP', 'تطبيق هاتف', 'Mobile App'), icon: Smartphone, color: '#10b981' },
     WEBSITE: { label: t('PRODUCT_TYPE_WEBSITE', 'موقع ويب', 'Website'), icon: Globe, color: '#3b82f6' },
     PROGRAM: { label: t('PRODUCT_TYPE_PROGRAM', 'برنامج سطح مكتب', 'Desktop Program'), icon: Monitor, color: '#8b5cf6' },

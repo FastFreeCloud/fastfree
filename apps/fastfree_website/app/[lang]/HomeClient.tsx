@@ -337,10 +337,10 @@ export default function Home() {
                     </p>
                     {service.features && Array.isArray(service.features) && (
                       <div className="space-y-1.5 mb-4">
-                        {service.features.slice(0, 3).map((feat: any, idx: number) => (
+                        {service.features.slice(0, 3).map((feat: { ar: string; en: string } | string, idx: number) => (
                           <div key={idx} className="flex items-center gap-2 text-slate-400 text-xs">
                             <Check className="text-[var(--ff-accent)] w-3 h-3 flex-shrink-0" />
-                            <span>{feat.ar && feat.en ? (lang === 'ar' ? feat.ar : feat.en) : feat}</span>
+                            <span>{typeof feat === 'string' ? feat : lang === 'ar' ? feat.ar : feat.en}</span>
                           </div>
                         ))}
                       </div>
