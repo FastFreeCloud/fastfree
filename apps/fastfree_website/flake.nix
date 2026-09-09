@@ -27,7 +27,7 @@
 
         src = lib.cleanSource ./.;
 
-        npmDepsHash = "sha256-kWPH+aTNNIHqdl0zd/FmkKxSS3W4vSFNDyTjV+2Dgd4=";
+        npmDepsHash = "sha256-v5TF1clxYrpbJEQwOsgYrGjG8T4nwv843rNZXlik4ao=";
 
         npmInstallFlags = [ "--legacy-peer-deps" "--no-audit" "--no-fund" ];
         npmBuildScript = "build";
