@@ -1,4 +1,4 @@
-name: 11-build-hr-android
+﻿name: 11-build-hr-android
 
 on:
   push:
@@ -121,6 +121,25 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Bump versionCode and versionName
+        run: |
+          BUILD_GRADLE="apps/${{ env.APP_DIR }}/src-capacitor/android/app/build.gradle"
+          DATE_CODE=$(date +%Y%m%d)
+          DATE_NAME=$(date +%Y.%m.%d)
+          RUN_NUM=${{ github.run_number }}
+          VERSION_CODE=$((DATE_CODE * 100 + RUN_NUM))
+          VERSION_NAME="$DATE_NAME"
+          echo "Bumping to versionCode=$VERSION_CODE versionName=$VERSION_NAME"
+          if [ -f "$BUILD_GRADLE" ]; then
+            sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/" "$BUILD_GRADLE"
+            sed -i "s/versionName \".*\"/versionName \"$VERSION_NAME\"/" "$BUILD_GRADLE"
+            sed -i "s/versionName '.*'/versionName \"$VERSION_NAME\"/" "$BUILD_GRADLE"
+            echo "Patched $BUILD_GRADLE"
+            grep -E "versionCode|versionName" "$BUILD_GRADLE" || true
+          else
+            echo "build.gradle not found at $BUILD_GRADLE (skipping patch, will be created by cap add)"
+          fi
+
       - name: Build unsigned release APK
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
         run: gradle assembleRelease
@@ -159,25 +178,6 @@ jobs:
             exit 1
           fi
 
-      - name: Bump versionCode and versionName
-        run: |
-          BUILD_GRADLE="apps/${{ env.APP_DIR }}/src-capacitor/android/app/build.gradle"
-          DATE_CODE=$(date +%Y%m%d)
-          DATE_NAME=$(date +%Y.%m.%d)
-          RUN_NUM=${{ github.run_number }}
-          VERSION_CODE=$((DATE_CODE * 100 + RUN_NUM))
-          VERSION_NAME="$DATE_NAME"
-          echo "Bumping to versionCode=$VERSION_CODE versionName=$VERSION_NAME"
-          if [ -f "$BUILD_GRADLE" ]; then
-            sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/" "$BUILD_GRADLE"
-            sed -i "s/versionName \".*\"/versionName \"$VERSION_NAME\"/" "$BUILD_GRADLE"
-            sed -i "s/versionName '.*'/versionName \"$VERSION_NAME\"/" "$BUILD_GRADLE"
-            echo "Patched $BUILD_GRADLE"
-            grep -E "versionCode|versionName" "$BUILD_GRADLE" || true
-          else
-            echo "build.gradle not found at $BUILD_GRADLE (skipping patch, will be created by cap add)"
-          fi
-
       - name: Build AAB for Google Play
         working-directory: apps/${{ env.APP_DIR }}/src-capacitor/android
         run: gradle bundleRelease
@@ -205,16 +205,42 @@ jobs:
           path: apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
 
-      - name: Upload to Play Internal
+      - name: Publish to Play Store (Listing + AAB)
         if: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: ${{ env.APP_ID }}
-          releaseFiles: apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/bundle/release/*.aab
-          track: internal
-          status: draft
-          inAppUpdatePriority: 3
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          VERSION_CODE: ${{ env.VERSION_CODE }}
+        run: |
+          echo "Installing googleapis..."
+          npm install --prefix scripts googleapis --no-audit --no-fund --silent 2>/dev/null || true
+
+          VERSION_CODE=$(($(date +%Y%m%d) * 100 + ${{ github.run_number }}))
+          export VERSION_CODE
+          echo "Using versionCode=$VERSION_CODE"
+
+          echo "Generating metadata from products.ts..."
+          node scripts/generate-metadata.mjs
+
+          echo "Generating feature graphics..."
+          node scripts/generate-feature-graphics.mjs
+
+          AAB_PATH=$(find apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/bundle/release -name "*.aab" | head -1)
+          if [ -z "$AAB_PATH" ]; then
+            echo "No AAB found â€” skipping Play upload"
+            exit 0
+          fi
+
+          META_DIR="apps/${{ env.APP_DIR }}/fastlane/metadata/android"
+          echo "=== Publishing to Play (ar, en-US) ==="
+          node scripts/play-publisher.mjs \
+            --package "${{ env.APP_ID }}" \
+            --locales ar,en-US \
+            --metadata-dir "$META_DIR" \
+            --track internal \
+            --aab "$AAB_PATH" \
+            --status draft \
+            --version-code "$VERSION_CODE"
+          echo "=== Play Store publish complete ==="
 
   release:
     needs: build
@@ -252,6 +278,7 @@ jobs:
           name: "FastFree HR v${{ steps.version.outputs.version }}"
           files: release/fastfree-hr.apk
           generate_release_notes: true
+
 
 
 

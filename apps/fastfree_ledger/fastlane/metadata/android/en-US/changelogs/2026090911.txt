@@ -1,0 +1,8 @@
+6e9cea2 fix: update npmDepsHash for sharp
+2b42476 ci: make skopeo install resilient to chrome repo hash mismatch
+c066083 perf+seo: blog split, image optimization, OG guards, metadata template, product duplicates
+1b06492 fix: ensure zero warnings — typed any, enforce eslint, Play automation ready
+183f5c9 fix: aria-pressed instead of aria-selected on button (lint warning)
+fcb9945 polish: all pages — breadcrumbs, blog badges, a11y, contact/footer tweaks
+5eaf7f5 chore: restore transpilation to known-good (motion) and keep build green
+753e5e3 feat: theme icon hover/active micro-motion

@@ -1,0 +1,1 @@
+A FastFree Point-of-Sale module for retail, integrated with Inventory and Ledger. It issues simplified tax invoices under Egyptian VAT, supports touch devices and quick-key layouts, and updates stock balances in real time on sale.

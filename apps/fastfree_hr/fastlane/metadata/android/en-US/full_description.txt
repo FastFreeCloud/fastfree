@@ -1,0 +1,1 @@
+A FastFree HR and payroll module managing employee records, leave, attendance, and computing salaries, deductions, and income tax per Egyptian regulations. It integrates with Ledger to post payroll and liability entries and can link to Sales for commission calculations.
