@@ -1,4 +1,4 @@
-name: 05-build-ledger
+﻿name: 05-build-ledger
 
 on:
   workflow_dispatch:
@@ -63,7 +63,10 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install skopeo
-        run: sudo apt-get update && sudo apt-get install -y skopeo
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list || true
+          sudo apt-get update || true
+          sudo apt-get install -y skopeo
 
       - name: Build frontend image
         working-directory: apps/fastfree_ledger
@@ -85,12 +88,12 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/users/${{ github.repository_owner }}/packages/container/${PKG}")
           if [ "$HTTP_CODE" = "404" ]; then
-            echo "Package not found — creating as public..."
+            echo "Package not found â€” creating as public..."
             curl -s -X POST \
               -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               -H "Accept: application/vnd.github+json" \
               "https://api.github.com/user/packages/container/${PKG}" \
-              -d '{"visibility": "public"}' || echo "create failed — may already exist"
+              -d '{"visibility": "public"}' || echo "create failed â€” may already exist"
           elif [ "$HTTP_CODE" = "200" ]; then
             echo "Package exists"
           else
@@ -167,5 +170,6 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }}
           generate_release_notes: true
+
 
 

@@ -47,7 +47,10 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install skopeo
-        run: sudo apt-get update && sudo apt-get install -y skopeo
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list || true
+          sudo apt-get update || true
+          sudo apt-get install -y skopeo
 
       - name: Build frontend image
         working-directory: apps/fastfree_website
