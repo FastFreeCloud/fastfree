@@ -268,7 +268,7 @@ CLIENT_MAX_BODY_SIZE=50m
 - 🛠️ **البدء:** `pre-commit` (يساعد التنظيم)، `ruff check .` (فحص الأخطاء)
 - 🐧 **النشر:** `docker compose down -v` → الحذف الكامل
 - ⚡️ **سجل التجربة:** `docker compose logs -f create-site` ("site created" + بيانات التسجيل)
-- 📧 **البريد:** `errorreports@fastfree.cloud` (مستحود لـ Frappe)
+- 📧 **البريد:** `sales@fastfree.cloud` (مستحود لـ Frappe)
 
 ---
 

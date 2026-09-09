@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "description": "Accounting module for FastFree platform — Chart of Accounts, Journal Entries, Payments, Ledger, Cost Centers, Fiscal Years, Financial Reports",
-  "author": "Mohamed <mohamed.fastfree@gmail.com>",
+  "author": "FastFree <sales@fastfree.cloud>",
   "type": "module",
   "main": "src/index.ts",
   "exports": {

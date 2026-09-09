@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "description": "A Quasar App Extension Playground",
-  "author": "FastFree <mohamed.fastfree@gmail.com>",
+  "author": "FastFree <sales@fastfree.cloud>",
   "type": "module",
   "scripts": {
     "dev": "quasar dev",

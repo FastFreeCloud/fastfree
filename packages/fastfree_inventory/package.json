@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "description": "Inventory management module for FastFree platform — Products, Categories, Warehouses, Stock Entries, Suppliers",
-  "author": "Mohamed <mohamed.fastfree@gmail.com>",
+  "author": "FastFree <sales@fastfree.cloud>",
   "type": "module",
   "main": "src/index.ts",
   "exports": {

@@ -15,7 +15,7 @@
     "capacitor"
   ],
   "license": "MIT",
-  "author": "FastFree <mohamed.fastfree@gmail.com>",
+  "author": "FastFree <sales@fastfree.cloud>",
   "main": "dist/index.js",
   "imports": {
     "#q-app": "@quasar/app-vite"

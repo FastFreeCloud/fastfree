@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "FastFree ERP — Full Enterprise Resource Planning",
   "productName": "FastFree ERP",
-  "author": "FastFree <mohamed.fastfree@gmail.com>",
+  "author": "FastFree <sales@fastfree.cloud>",
   "type": "module",
   "private": true,
   "scripts": {

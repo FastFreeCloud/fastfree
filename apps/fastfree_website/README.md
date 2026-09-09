@@ -415,7 +415,7 @@ docker compose up -d
 ## البريد الإلكتروني
 
 - **الموقع**: [fastfree.cloud](https://fastfree.cloud)
-- **البريد**: [contact@fastfree.cloud](mailto:contact@fastfree.cloud)
+- **البريد**: [sales@fastfree.cloud](mailto:sales@fastfree.cloud)
 - **الهاتف**: [+201091999937](https://wa.me/201091999937)
 
 ---

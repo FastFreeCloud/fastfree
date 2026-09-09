@@ -11,7 +11,7 @@
     "vuejs"
   ],
   "license": "MIT",
-  "author": "Mohamed <mohamed.fastfree@gmail.com>",
+  "author": "FastFree <sales@fastfree.cloud>",
   "type": "module",
   "main": "src/index.ts",
   "imports": {

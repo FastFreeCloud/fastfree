@@ -11,7 +11,7 @@
     "fastfree"
   ],
   "license": "MIT",
-  "author": "FastFree <mohamed.fastfree@gmail.com>",
+  "author": "FastFree <sales@fastfree.cloud>",
   "main": "ae/dist/index.js",
   "scripts": {
     "lint": "oxfmt && oxlint --fix",
