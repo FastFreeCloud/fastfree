@@ -1,0 +1,150 @@
+appId: com.fastfree.erp
+env:
+  ADMIN_USER: ${FF_ADMIN_USR}
+  ADMIN_PASS: ${FF_ADMIN_PWD}
+config:
+  androidWebViewHierarchy: devtools
+
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible: 'أدخل عنوان الخادم\.\.\.'
+    timeout: 10000
+
+- runFlow:
+    when:
+      visible: 'أدخل عنوان الخادم\.\.\.'
+    commands:
+      - tapOn: 'أدخل عنوان الخادم\.\.\.'
+      - eraseText: 1
+      - inputText: "https://backend.fastfree.cloud"
+      - tapOn: "اتصال"
+
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- extendedWaitUntil:
+    visible: "المصادقة"
+    timeout: 20000
+
+- tapOn: "المصادقة"
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    text: "تسجيل الدخول"
+    index: 0
+
+- extendedWaitUntil:
+    visible: "البريد الإلكتروني"
+    timeout: 10000
+
+- tapOn: "البريد الإلكتروني"
+- eraseText: 1
+- inputText: "${ADMIN_USER}"
+
+- tapOn: "كلمة المرور"
+- eraseText: 1
+- inputText: "${ADMIN_PASS}"
+
+- tapOn:
+    text: "دخول"
+    index: 1
+
+- extendedWaitUntil:
+    visible: "المصادقة"
+    timeout: 30000
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 01 – لوحة معلومات المحاسبة
+- tapOn: "المحاسبة"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "لوحة معلومات المحاسبة"
+- extendedWaitUntil:
+    visible: "إجمالي الحسابات"
+    timeout: 15000
+- takeScreenshot:
+    path: 01-dashboard
+
+# 02 – القيود اليومية
+- tapOn: "المحاسبة"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "القيود اليومية"
+- extendedWaitUntil:
+    visible: "تاريخ الترحيل"
+    timeout: 15000
+- takeScreenshot:
+    path: 02-journal
+
+# 03 – العملاء
+- tapOn: "المبيعات"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "العملاء"
+- extendedWaitUntil:
+    visible: "اسم العميل"
+    timeout: 15000
+- takeScreenshot:
+    path: 03-customers
+
+# 04 – فواتير المبيعات
+- tapOn: "المبيعات"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "فواتير المبيعات"
+- extendedWaitUntil:
+    visible: "تاريخ الاستحقاق"
+    timeout: 15000
+- takeScreenshot:
+    path: 04-sales-invoices
+
+# 05 – أوامر الشراء
+- tapOn: "المشتريات"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "أوامر الشراء"
+- extendedWaitUntil:
+    visible: "المورد"
+    timeout: 15000
+- takeScreenshot:
+    path: 05-purchase-orders
+
+# 06 – الموظفون
+- tapOn: "الموارد البشرية"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "الموظفون"
+- extendedWaitUntil:
+    visible: "اسم الموظف"
+    timeout: 15000
+- takeScreenshot:
+    path: 06-employees
+
+# 07 – العملاء المحتميون
+- tapOn: "العلاقات العملاء"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "العملاء المحتميون"
+- extendedWaitUntil:
+    visible: "اسم العميل المحتمي"
+    timeout: 15000
+- takeScreenshot:
+    path: 07-leads
+
+# 08 – جهات الاتصال
+- tapOn: "العلاقات العملاء"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "جهات الاتصال"
+- extendedWaitUntil:
+    visible: "الاسم الأول"
+    timeout: 15000
+- takeScreenshot:
+    path: 08-contacts

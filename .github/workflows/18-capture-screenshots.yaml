@@ -1,0 +1,221 @@
+name: 18-capture-screenshots
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: capture-screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_OPTIONS: "--no-deprecation"
+  JAVA_VERSION: "21"
+  NODE_VERSION: "22"
+  PNPM_VERSION: "11.11.0"
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [pos, erp, hr, ledger]
+        include:
+          - app: pos
+            app_dir: fastfree_pos
+            app_id: com.fastfree.pos
+          - app: erp
+            app_dir: fastfree_erp
+            app_id: com.fastfree.erp
+          - app: hr
+            app_dir: fastfree_hr
+            app_id: com.fastfree.hr
+          - app: ledger
+            app_dir: fastfree_ledger
+            app_id: com.fastfree.ledger
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Safe directory
+        run: git config --global safe.directory '*'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile --ignore-scripts
+
+      - name: Install Capacitor dependencies
+        working-directory: apps/${{ matrix.app_dir }}/src-capacitor
+        run: npm install
+
+      - name: Prepare Quasar
+        working-directory: apps/${{ matrix.app_dir }}
+        run: |
+          mkdir -p .quasar
+          echo '{"compilerOptions":{}}' > .quasar/tsconfig.json
+          pnpm exec quasar prepare --silent
+
+      - name: Build web assets
+        working-directory: apps/${{ matrix.app_dir }}
+        env:
+          VITE_API_BASE_URL: https://backend.fastfree.cloud
+        run: pnpm exec quasar build
+
+      - name: Add Android Platform
+        working-directory: apps/${{ matrix.app_dir }}/src-capacitor
+        run: npx cap add android
+
+      - name: Sync Capacitor
+        working-directory: apps/${{ matrix.app_dir }}/src-capacitor
+        run: npx cap sync android
+
+      - name: Build debug APK for emulator
+        working-directory: apps/${{ matrix.app_dir }}/src-capacitor/android
+        run: ./gradlew assembleDebug
+
+      - name: Enable KVM for emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run Maestro on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_8
+          avd-name: fastfree-${{ matrix.app }}
+          force-avd-creation: true
+          emulator-options: '-no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -camera-front none'
+          cores: 2
+          ram-size: 4096M
+          emulator-boot-timeout: 600
+          disable-animations: true
+          script: |
+            set -euxo pipefail
+
+            # Find and install the APK
+            APK=$(find apps/${{ matrix.app_dir }}/src-capacitor/android/app/build/outputs/apk/debug -name "*.apk" | head -1)
+            adb install -r "$APK"
+            echo "Installed APK: $APK"
+
+            # Install Maestro CLI
+            curl -fsSL https://get.maestro.mobile.dev | bash
+            export PATH="$HOME/.maestro/bin:$PATH"
+            maestro --version
+
+            # Credentials from repository secrets (never hardcoded)
+            export FF_ADMIN_USR="${{ secrets.FF_ADMIN_USR }}"
+            export FF_ADMIN_PWD="${{ secrets.FF_ADMIN_PWD }}"
+
+            # ─── Arabic capture ───
+            echo "=== Setting locale to Arabic ==="
+            adb shell settings put system system_locales ar-EG
+            adb shell setprop persist.sys.locale ar-EG
+            adb shell am force-stop ${{ matrix.app_id }}
+            sleep 3
+
+            touch /tmp/.ar_start
+            echo "=== Running Maestro: Arabic ==="
+            maestro test \
+              --format junit \
+              --output ar-report.xml \
+              .maestro/${{ matrix.app }}/ar.yaml || true
+
+            # Collect AR screenshots (files created after /tmp/.ar_start)
+            AR_DIR="apps/${{ matrix.app_dir }}/fastlane/metadata/android/ar/images/phone-screenshots"
+            mkdir -p "$AR_DIR"
+            find "$HOME/.maestro" -name "0*.png" -newer /tmp/.ar_start 2>/dev/null | sort | while read -r f; do
+              cp "$f" "$AR_DIR/$(basename "$f")"
+              echo "AR: $(basename "$f")"
+            done || true
+
+            # ─── English capture ───
+            echo "=== Setting locale to English ==="
+            adb shell settings put system system_locales en-US
+            adb shell setprop persist.sys.locale en-US
+            adb shell am force-stop ${{ matrix.app_id }}
+            sleep 3
+
+            touch /tmp/.en_start
+            echo "=== Running Maestro: English ==="
+            maestro test \
+              --format junit \
+              --output en-report.xml \
+              .maestro/${{ matrix.app }}/en.yaml || true
+
+            # Collect EN screenshots (files created after /tmp/.en_start)
+            EN_DIR="apps/${{ matrix.app_dir }}/fastlane/metadata/android/en-US/images/phone-screenshots"
+            mkdir -p "$EN_DIR"
+            find "$HOME/.maestro" -name "0*.png" -newer /tmp/.en_start 2>/dev/null | sort | while read -r f; do
+              cp "$f" "$EN_DIR/$(basename "$f")"
+              echo "EN: $(basename "$f")"
+            done || true
+
+            echo "=== Screenshot collection complete ==="
+            ls -la "$AR_DIR" || true
+            ls -la "$EN_DIR" || true
+
+            # Move reports to workspace root
+            cp ar-report.xml en-report.xml . 2>/dev/null || true
+
+      - name: Install sharp for cropping
+        run: npm install --prefix scripts sharp --no-audit --no-fund
+
+      - name: Crop screenshots to Play Store spec
+        run: |
+          if [ -d "apps/${{ matrix.app_dir }}/fastlane/metadata/android/ar/images/phone-screenshots" ]; then
+            node scripts/crop-screenshots.mjs ${{ matrix.app }} ar || true
+          fi
+          if [ -d "apps/${{ matrix.app_dir }}/fastlane/metadata/android/en-US/images/phone-screenshots" ]; then
+            node scripts/crop-screenshots.mjs ${{ matrix.app }} en-US || true
+          fi
+
+      - name: Commit screenshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "apps/${{ matrix.app_dir }}/fastlane/metadata/android/*/images/phone-screenshots/*.png"
+          if git diff --cached --quiet; then
+            echo "No screenshot changes to commit"
+          else
+            git commit -m "screenshots(${{ matrix.app }}): refresh Play store captures"
+            git push HEAD:master
+          fi
+
+      - name: Upload Maestro artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestro-${{ matrix.app }}
+          path: |
+            ar-report.xml
+            en-report.xml
+            apps/${{ matrix.app_dir }}/fastlane/metadata/android/ar/images/phone-screenshots/
+            apps/${{ matrix.app_dir }}/fastlane/metadata/android/en-US/images/phone-screenshots/
+          retention-days: 30

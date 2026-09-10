@@ -1,0 +1,128 @@
+appId: com.fastfree.hr
+env:
+  ADMIN_USER: ${FF_ADMIN_USR}
+  ADMIN_PASS: ${FF_ADMIN_PWD}
+config:
+  androidWebViewHierarchy: devtools
+
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible: 'أدخل عنوان الخادم\.\.\.'
+    timeout: 10000
+
+- runFlow:
+    when:
+      visible: 'أدخل عنوان الخادم\.\.\.'
+    commands:
+      - tapOn: 'أدخل عنوان الخادم\.\.\.'
+      - eraseText: 1
+      - inputText: "https://backend.fastfree.cloud"
+      - tapOn: "اتصال"
+
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- extendedWaitUntil:
+    visible: "المصادقة"
+    timeout: 20000
+
+- tapOn: "المصادقة"
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    text: "تسجيل الدخول"
+    index: 0
+
+- extendedWaitUntil:
+    visible: "البريد الإلكتروني"
+    timeout: 10000
+
+- tapOn: "البريد الإلكتروني"
+- eraseText: 1
+- inputText: "${ADMIN_USER}"
+
+- tapOn: "كلمة المرور"
+- eraseText: 1
+- inputText: "${ADMIN_PASS}"
+
+- tapOn:
+    text: "دخول"
+    index: 1
+
+- extendedWaitUntil:
+    visible: "المصادقة"
+    timeout: 30000
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 01 – لوحة معلومات المحاسبة
+- tapOn: "المحاسبة"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "لوحة معلومات المحاسبة"
+- extendedWaitUntil:
+    visible: "إجمالي الحسابات"
+    timeout: 15000
+- takeScreenshot:
+    path: 01-dashboard
+
+# 02 – الموظفون
+- tapOn: "الموارد البشرية"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "الموظفون"
+- extendedWaitUntil:
+    visible: "اسم الموظف"
+    timeout: 15000
+- takeScreenshot:
+    path: 02-employees
+
+# 03 – الحضور
+- tapOn: "الموارد البشرية"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "الحضور"
+- extendedWaitUntil:
+    visible: "تاريخ الحضور"
+    timeout: 15000
+- takeScreenshot:
+    path: 03-attendance
+
+# 04 – الرواتب
+- tapOn: "الموارد البشرية"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "الرواتب"
+- extendedWaitUntil:
+    visible: "إجمالي الموظفين"
+    timeout: 15000
+- takeScreenshot:
+    path: 04-payroll
+
+# 05 – العملاء المحتميون
+- tapOn: "العلاقات العملاء"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "العملاء المحتميون"
+- extendedWaitUntil:
+    visible: "اسم العميل المحتمي"
+    timeout: 15000
+- takeScreenshot:
+    path: 05-leads
+
+# 06 – جهات الاتصال
+- tapOn: "العلاقات العملاء"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "جهات الاتصال"
+- extendedWaitUntil:
+    visible: "الاسم الأول"
+    timeout: 15000
+- takeScreenshot:
+    path: 06-contacts

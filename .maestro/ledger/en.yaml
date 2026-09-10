@@ -1,0 +1,128 @@
+appId: com.fastfree.ledger
+env:
+  ADMIN_USER: ${FF_ADMIN_USR}
+  ADMIN_PASS: ${FF_ADMIN_PWD}
+config:
+  androidWebViewHierarchy: devtools
+
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible: 'Enter server URL\.\.\.'
+    timeout: 10000
+
+- runFlow:
+    when:
+      visible: 'Enter server URL\.\.\.'
+    commands:
+      - tapOn: 'Enter server URL\.\.\.'
+      - eraseText: 1
+      - inputText: "https://backend.fastfree.cloud"
+      - tapOn: "Connect"
+
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- extendedWaitUntil:
+    visible: "Authentication"
+    timeout: 20000
+
+- tapOn: "Authentication"
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    text: "Login"
+    index: 0
+
+- extendedWaitUntil:
+    visible: "Email"
+    timeout: 10000
+
+- tapOn: "Email"
+- eraseText: 1
+- inputText: "${ADMIN_USER}"
+
+- tapOn: "Password"
+- eraseText: 1
+- inputText: "${ADMIN_PASS}"
+
+- tapOn:
+    text: "Login"
+    index: 1
+
+- extendedWaitUntil:
+    visible: "Authentication"
+    timeout: 30000
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 01 – Accounting Dashboard
+- tapOn: "Accounting"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Accounting Dashboard"
+- extendedWaitUntil:
+    visible: "Total Accounts"
+    timeout: 15000
+- takeScreenshot:
+    path: 01-dashboard
+
+# 02 – Chart of Accounts
+- tapOn: "Accounting"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Chart of Accounts"
+- extendedWaitUntil:
+    visible: "Account Name"
+    timeout: 15000
+- takeScreenshot:
+    path: 02-chart-of-accounts
+
+# 03 – Journal Entries
+- tapOn: "Accounting"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Journal Entries"
+- extendedWaitUntil:
+    visible: "Posting Date"
+    timeout: 15000
+- takeScreenshot:
+    path: 03-journal
+
+# 04 – Payment Entries
+- tapOn: "Accounting"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Payment Entries"
+- extendedWaitUntil:
+    visible: "Party"
+    timeout: 15000
+- takeScreenshot:
+    path: 04-payment
+
+# 05 – General Ledger
+- tapOn: "Accounting"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "General Ledger"
+- extendedWaitUntil:
+    visible: "Account"
+    timeout: 15000
+- takeScreenshot:
+    path: 05-ledger
+
+# 06 – Financial Reports
+- tapOn: "Accounting"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Financial Reports"
+- extendedWaitUntil:
+    visible: "Report Type"
+    timeout: 15000
+- takeScreenshot:
+    path: 06-reports

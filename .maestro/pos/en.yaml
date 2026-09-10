@@ -1,0 +1,128 @@
+appId: com.fastfree.pos
+env:
+  ADMIN_USER: ${FF_ADMIN_USR}
+  ADMIN_PASS: ${FF_ADMIN_PWD}
+config:
+  androidWebViewHierarchy: devtools
+
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible: 'Enter server URL\.\.\.'
+    timeout: 10000
+
+- runFlow:
+    when:
+      visible: 'Enter server URL\.\.\.'
+    commands:
+      - tapOn: 'Enter server URL\.\.\.'
+      - eraseText: 1
+      - inputText: "https://backend.fastfree.cloud"
+      - tapOn: "Connect"
+
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- extendedWaitUntil:
+    visible: "Authentication"
+    timeout: 20000
+
+- tapOn: "Authentication"
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    text: "Login"
+    index: 0
+
+- extendedWaitUntil:
+    visible: "Email"
+    timeout: 10000
+
+- tapOn: "Email"
+- eraseText: 1
+- inputText: "${ADMIN_USER}"
+
+- tapOn: "Password"
+- eraseText: 1
+- inputText: "${ADMIN_PASS}"
+
+- tapOn:
+    text: "Login"
+    index: 1
+
+- extendedWaitUntil:
+    visible: "Authentication"
+    timeout: 30000
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 01 – Accounting Dashboard
+- tapOn: "Accounting"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Accounting Dashboard"
+- extendedWaitUntil:
+    visible: "Total Accounts"
+    timeout: 15000
+- takeScreenshot:
+    path: 01-dashboard
+
+# 02 – Journal Entries
+- tapOn: "Accounting"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Journal Entries"
+- extendedWaitUntil:
+    visible: "Posting Date"
+    timeout: 15000
+- takeScreenshot:
+    path: 02-journal
+
+# 03 – Payment Entries
+- tapOn: "Accounting"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Payment Entries"
+- extendedWaitUntil:
+    visible: "Party"
+    timeout: 15000
+- takeScreenshot:
+    path: 03-payment
+
+# 04 – Customers
+- tapOn: "Sales"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Customers"
+- extendedWaitUntil:
+    visible: "Customer Name"
+    timeout: 15000
+- takeScreenshot:
+    path: 04-customers
+
+# 05 – Sales Invoices
+- tapOn: "Sales"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Sales Invoices"
+- extendedWaitUntil:
+    visible: "Due Date"
+    timeout: 15000
+- takeScreenshot:
+    path: 05-sales-invoices
+
+# 06 – Sales Reports
+- tapOn: "Sales"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Sales Reports"
+- extendedWaitUntil:
+    visible: "Total Sales"
+    timeout: 15000
+- takeScreenshot:
+    path: 06-sales-reports

@@ -1,0 +1,128 @@
+appId: com.fastfree.hr
+env:
+  ADMIN_USER: ${FF_ADMIN_USR}
+  ADMIN_PASS: ${FF_ADMIN_PWD}
+config:
+  androidWebViewHierarchy: devtools
+
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible: 'Enter server URL\.\.\.'
+    timeout: 10000
+
+- runFlow:
+    when:
+      visible: 'Enter server URL\.\.\.'
+    commands:
+      - tapOn: 'Enter server URL\.\.\.'
+      - eraseText: 1
+      - inputText: "https://backend.fastfree.cloud"
+      - tapOn: "Connect"
+
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- extendedWaitUntil:
+    visible: "Authentication"
+    timeout: 20000
+
+- tapOn: "Authentication"
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    text: "Login"
+    index: 0
+
+- extendedWaitUntil:
+    visible: "Email"
+    timeout: 10000
+
+- tapOn: "Email"
+- eraseText: 1
+- inputText: "${ADMIN_USER}"
+
+- tapOn: "Password"
+- eraseText: 1
+- inputText: "${ADMIN_PASS}"
+
+- tapOn:
+    text: "Login"
+    index: 1
+
+- extendedWaitUntil:
+    visible: "Authentication"
+    timeout: 30000
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 01 – Accounting Dashboard
+- tapOn: "Accounting"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Accounting Dashboard"
+- extendedWaitUntil:
+    visible: "Total Accounts"
+    timeout: 15000
+- takeScreenshot:
+    path: 01-dashboard
+
+# 02 – Employees
+- tapOn: "HR"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Employees"
+- extendedWaitUntil:
+    visible: "Employee Name"
+    timeout: 15000
+- takeScreenshot:
+    path: 02-employees
+
+# 03 – Attendance
+- tapOn: "HR"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Attendance"
+- extendedWaitUntil:
+    visible: "Attendance Date"
+    timeout: 15000
+- takeScreenshot:
+    path: 03-attendance
+
+# 04 – Payroll
+- tapOn: "HR"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Payroll"
+- extendedWaitUntil:
+    visible: "Total Employees"
+    timeout: 15000
+- takeScreenshot:
+    path: 04-payroll
+
+# 05 – Leads
+- tapOn: "CRM"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Leads"
+- extendedWaitUntil:
+    visible: "Lead Name"
+    timeout: 15000
+- takeScreenshot:
+    path: 05-leads
+
+# 06 – Contacts
+- tapOn: "CRM"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Contacts"
+- extendedWaitUntil:
+    visible: "First Name"
+    timeout: 15000
+- takeScreenshot:
+    path: 06-contacts
