@@ -417,6 +417,8 @@ docker compose up -d
 - **الموقع**: [fastfree.cloud](https://fastfree.cloud)
 - **البريد**: [sales@fastfree.cloud](mailto:sales@fastfree.cloud)
 - **الهاتف**: [+201091999937](https://wa.me/201091999937)
+- **سياسة الخصوصية (Google Play)**: [privacy-policy.html](https://fastfree.cloud/privacy-policy.html)
+- **سياسة الخصوصية (الموقع)**: [العربية](https://fastfree.cloud/ar/privacy) · [English](https://fastfree.cloud/en/privacy)
 
 ---
 

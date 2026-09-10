@@ -43,6 +43,7 @@ const AUTH_MESSAGES_EN: Record<string, string> = {
   'login.serverUrl': 'Server URL',
   'login.serverUrlPlaceholder': 'https://your-server.com',
   'login.error': 'Login error',
+  'login.privacyPolicy': 'Privacy Policy',
 
   // Users Manager
   'users.title': 'User Management',

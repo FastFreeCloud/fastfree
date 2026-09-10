@@ -43,6 +43,7 @@ const AUTH_MESSAGES_AR: Record<string, string> = {
   'login.serverUrl': 'رابط الخادم',
   'login.serverUrlPlaceholder': 'https://your-server.com',
   'login.error': 'خطأ في تسجيل الدخول',
+  'login.privacyPolicy': 'سياسة الخصوصية',
 
   // Users Manager
   'users.title': 'إدارة المستخدمين',

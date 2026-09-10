@@ -1,9 +1,10 @@
 {
   "name": "fastfree_ledger",
   "version": "0.0.1",
-  "description": "A Quasar Project",
-  "productName": " fastfree_ledger",
+  "description": "FastFree Ledger — Accounting + Sales + Inventory",
+  "productName": "FastFree Ledger",
   "author": "FastFree <sales@fastfree.cloud>",
+  "homepage": "https://fastfree.cloud",
   "type": "module",
   "private": true,
   "scripts": {

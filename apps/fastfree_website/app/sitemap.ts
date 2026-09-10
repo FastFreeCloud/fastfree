@@ -26,6 +26,7 @@ const STATIC_LASTMOD: Record<string, string> = {
   '/products': '2026-09-06',
   '/blog': '2026-09-06',
   '/contact': '2026-09-06',
+  '/privacy': '2026-09-10',
 };
 
 // Shared lastmod for service detail pages until per-service `updated_at`
@@ -98,6 +99,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/products', priority: 0.9, changeFrequency: 'weekly', lastModified: toSafeDate(STATIC_LASTMOD['/products']) },
     { path: '/blog', priority: 0.9, changeFrequency: 'weekly', lastModified: toSafeDate(STATIC_LASTMOD['/blog']) },
     { path: '/contact', priority: 0.5, changeFrequency: 'yearly', lastModified: toSafeDate(STATIC_LASTMOD['/contact']) },
+    { path: '/privacy', priority: 0.5, changeFrequency: 'yearly', lastModified: toSafeDate(STATIC_LASTMOD['/privacy']) },
   ];
 
   const productRoutes: Route[] = products

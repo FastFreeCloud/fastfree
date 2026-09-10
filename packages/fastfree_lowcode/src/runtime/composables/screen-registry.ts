@@ -104,6 +104,7 @@ export function registerBuiltinScreens(): void {
   const LcThemeScreen = defineAsyncComponent(() => import('../components/LcThemeScreen.vue'))
   const LcPwaUpdateScreen = defineAsyncComponent(() => import('../components/LcPwaUpdateScreen.vue'))
   const LcShortcutsScreen = defineAsyncComponent(() => import('../components/LcShortcutsScreen.vue'))
+  const LcPrivacyScreen = defineAsyncComponent(() => import('../components/LcPrivacyScreen.vue'))
   const LcStructureInspector = defineAsyncComponent(() => import('../components/LcStructureInspector.vue'))
   const PiniaStateDebugger = defineAsyncComponent(() => import('../components/PiniaStateDebugger.vue'))
 
@@ -117,6 +118,7 @@ export function registerBuiltinScreens(): void {
     'theme': { component: LcThemeScreen, icon: 'mdi-palette-outline', groupId: 'system' },
     'pwa-update': { component: LcPwaUpdateScreen, icon: 'mdi-cellphone-arrow-down', groupId: 'system' },
     'shortcuts': { component: LcShortcutsScreen, icon: 'mdi-keyboard-outline', groupId: 'system' },
+    'privacy': { component: LcPrivacyScreen, icon: 'mdi-shield-lock-outline', groupId: 'system' },
     'structure-inspector': { component: LcStructureInspector, icon: 'mdi-file-tree-outline', groupId: 'system' },
     'pinia-debugger': { component: PiniaStateDebugger, icon: 'mdi-database-outline', groupId: 'system' },
   })

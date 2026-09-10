@@ -183,6 +183,8 @@ export default function SharedFooter(_props: SharedFooterProps) {
               <Link href={`/${lang}/contact`} className="hover:text-white transition py-2 min-h-[44px] inline-flex items-center">{t('NAV_CONTACT', 'تواصل', 'Contact')}</Link>
               <span aria-hidden="true" className="text-slate-600">•</span>
               <Link href={`/${lang}/blog`} className="hover:text-white transition py-2 min-h-[44px] inline-flex items-center">{t('NAV_BLOG', 'المدونة', 'Blog')}</Link>
+              <span aria-hidden="true" className="text-slate-600">•</span>
+              <Link href={`/${lang}/privacy`} className="hover:text-white transition py-2 min-h-[44px] inline-flex items-center">{t('NAV_PRIVACY', 'سياسة الخصوصية', 'Privacy')}</Link>
             </div>
           </motion.div>
         </div>

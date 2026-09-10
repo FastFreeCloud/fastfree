@@ -129,6 +129,13 @@ export interface LcMessages {
   "about.screen": string;
   "about.titleDefault": string;
   "about.badgeProd": string;
+  "about.privacyPolicy": string;
+
+  "privacy.title": string;
+  "privacy.loading": string;
+  "privacy.offline": string;
+  "privacy.openInBrowser": string;
+  "privacy.retry": string;
 
   "settings.title": string;
   "settings.language": string;

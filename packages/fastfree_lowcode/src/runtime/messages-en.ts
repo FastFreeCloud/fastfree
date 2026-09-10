@@ -229,6 +229,13 @@ const LC_DEFAULT_MESSAGES: LcMessages = {
   "about.screen": "Screen",
   "about.titleDefault": "FastFree Lowcode",
   "about.badgeProd": "PROD",
+  "about.privacyPolicy": "Privacy Policy",
+
+  "privacy.title": "Privacy Policy",
+  "privacy.loading": "Loading privacy policy…",
+  "privacy.offline": "You appear to be offline. Connect to the internet to view the privacy policy.",
+  "privacy.openInBrowser": "Open in browser",
+  "privacy.retry": "Retry",
 
   "settings.title": "Settings",
   "settings.language": "Language",

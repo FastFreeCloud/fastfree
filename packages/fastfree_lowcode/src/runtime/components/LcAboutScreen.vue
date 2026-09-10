@@ -40,6 +40,17 @@
           <span class="info-value">{{ systemInfo.date }}</span>
         </div>
       </div>
+
+      <q-btn
+        flat
+        dense
+        color="primary"
+        icon="mdi-shield-lock-outline"
+        :label="t('about.privacyPolicy')"
+        :aria-label="t('about.privacyPolicy')"
+        class="q-mt-md"
+        @click="openPrivacy"
+      />
     </div>
   </div>
 </template>
@@ -47,6 +58,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useLcI18n } from '../i18n'
+import { useDesktopStore } from '../composables/useDesktopStore'
 
 interface Props {
   title?: string
@@ -63,6 +75,7 @@ withDefaults(defineProps<Props>(), {
 })
 
 const { t } = useLcI18n()
+const desktopStore = useDesktopStore()
 const devMode = import.meta.env.DEV
 const isOnline = ref(typeof navigator !== 'undefined' ? navigator.onLine : true)
 
@@ -107,6 +120,10 @@ function parseOS(ua: string): string {
 }
 
 function updateOnline() { isOnline.value = navigator.onLine }
+
+function openPrivacy() {
+  desktopStore.openWindow('privacy', t('privacy.title'), 'mdi-shield-lock-outline', false, true, 'system')
+}
 
 onMounted(() => {
   window.addEventListener('online', updateOnline)

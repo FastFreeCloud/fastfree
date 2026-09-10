@@ -60,6 +60,20 @@
           />
         </q-form>
       </q-card-section>
+
+      <q-separator />
+      <q-card-actions align="center">
+        <q-btn
+          flat
+          dense
+          no-caps
+          color="grey-7"
+          icon="mdi-shield-lock-outline"
+          :label="t('auth.login.privacyPolicy')"
+          :aria-label="t('auth.login.privacyPolicy')"
+          @click="openPrivacy"
+        />
+      </q-card-actions>
     </q-card>
 
     <!-- Connection Settings Dialog -->
@@ -90,7 +104,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { useLcI18n } from 'quasar-app-extension-fastfree-lowcode/runtime'
+import { useLcI18n, getLcI18nStore, getPrivacyPolicyUrl, openExternalUrl } from 'quasar-app-extension-fastfree-lowcode/runtime'
 import { useAuthStore } from '../stores/useAuthStore'
 
 const { t } = useLcI18n()
@@ -130,6 +144,16 @@ async function handleLogin() {
 function saveConnection() {
   localStorage.setItem('fastfree_base_url', connectionUrl.value)
   window.location.reload()
+}
+
+function openPrivacy() {
+  let lang = ''
+  try {
+    lang = getLcI18nStore().locale.value || ''
+  } catch {
+    lang = ''
+  }
+  void openExternalUrl(getPrivacyPolicyUrl(lang || undefined))
 }
 </script>
 

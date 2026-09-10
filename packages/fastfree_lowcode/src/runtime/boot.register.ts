@@ -15,6 +15,7 @@ import LcPwaUpdateScreen from './components/LcPwaUpdateScreen.vue'
 import LcThemeScreen from './components/LcThemeScreen.vue'
 import LcSplashScreen from './components/LcSplashScreen.vue'
 import LcShortcutsScreen from './components/LcShortcutsScreen.vue'
+import LcPrivacyScreen from './components/LcPrivacyScreen.vue'
 import LcErrorBoundary from './components/LcErrorBoundary.vue'
 
 import { createDesktopStore } from './composables/useDesktopStore'
@@ -85,6 +86,7 @@ export default function ({ app }: { app: { provide: (key: string | symbol, value
   app.component('LcThemeScreen', LcThemeScreen)
   app.component('LcSplashScreen', LcSplashScreen)
   app.component('LcShortcutsScreen', LcShortcutsScreen)
+  app.component('LcPrivacyScreen', LcPrivacyScreen)
   app.component('LcErrorBoundary', LcErrorBoundary)
 
   app.provide('createDesktopStore', createDesktopStore)

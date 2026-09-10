@@ -81,9 +81,18 @@ for (const app of APPS) {
       const shortDesc = isArabic ? product.short_description_ar : product.short_description_en;
       const fullDesc = isArabic ? product.description_ar : product.description_en;
 
+      // Play Store requires a reachable privacy-policy URL — keep it at the
+      // end of the listing and reserve space so truncation never cuts it.
+      const privacyLine = isArabic
+        ? '\n\nسياسة الخصوصية: https://fastfree.cloud/privacy-policy.html'
+        : '\n\nPrivacy Policy: https://fastfree.cloud/privacy-policy.html';
+
       writeFileEnsured(join(outDir, 'title.txt'), truncate(title, 30));
       writeFileEnsured(join(outDir, 'short_description.txt'), truncate(shortDesc, 80));
-      writeFileEnsured(join(outDir, 'full_description.txt'), truncate(fullDesc, 4000));
+      writeFileEnsured(
+        join(outDir, 'full_description.txt'),
+        truncate(fullDesc, 4000 - privacyLine.length) + privacyLine,
+      );
 
       console.log(`[${app.name}/${locale}] title: ${truncate(title, 30)}`);
       console.log(`[${app.name}/${locale}] short: ${truncate(shortDesc, 80)}`);

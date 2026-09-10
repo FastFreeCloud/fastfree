@@ -94,9 +94,11 @@ export default async function PrivacyPage({ params }: { params: Promise<{ lang: 
 
           <div className="pt-6 border-t border-white/10">
             <p className="text-slate-400 text-xs">
-              {isAr
-                ? 'لأي استفسارات حول هذه السياسة، يرجى التواصل معنا على sales@fastfree.cloud'
-                : 'For any questions about this policy, please contact us at sales@fastfree.cloud'}
+              {isAr ? (
+                <>لأي استفسارات حول هذه السياسة، يرجى التواصل معنا على <a href="mailto:sales@fastfree.cloud" className="underline hover:text-white">sales@fastfree.cloud</a></>
+              ) : (
+                <>For any questions about this policy, please contact us at <a href="mailto:sales@fastfree.cloud" className="underline hover:text-white">sales@fastfree.cloud</a></>
+              )}
             </p>
           </div>
         </div>

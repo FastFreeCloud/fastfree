@@ -293,6 +293,14 @@ export default function ContactPage() {
                         )}
                       </button>
                     </motion.div>
+
+                    <p className="text-slate-500 text-xs text-center leading-relaxed">
+                      {lang === 'ar' ? (
+                        <>بإرسالك هذه الرسالة أنت توافق على <a href={`/${lang}/privacy`} className="underline hover:text-slate-300">سياسة الخصوصية</a> الخاصة بنا</>
+                      ) : (
+                        <>By sending this message you agree to our <a href={`/${lang}/privacy`} className="underline hover:text-slate-300">Privacy Policy</a></>
+                      )}
+                    </p>
                   </form>
                 )}
               </div>

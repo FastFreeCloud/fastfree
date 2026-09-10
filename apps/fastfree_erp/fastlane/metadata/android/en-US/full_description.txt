@@ -1,1 +1,3 @@
 A production-ready accounting application, integrated with the FastFree LowCode extension that provides a desktop-style shell (Header + Dock + Windows + Tables + Forms). Features dynamic CRUD tables with search/sort/export, dynamic forms, night theme with RTL + Dark Mode, and global error handling.
+
+Privacy Policy: https://fastfree.cloud/privacy-policy.html

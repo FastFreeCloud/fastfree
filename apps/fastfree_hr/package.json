@@ -4,6 +4,7 @@
   "description": "FastFree HR — Human Resources + CRM",
   "productName": "FastFree HR",
   "author": "FastFree <sales@fastfree.cloud>",
+  "homepage": "https://fastfree.cloud",
   "type": "module",
   "private": true,
   "scripts": {

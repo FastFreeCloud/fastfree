@@ -231,6 +231,7 @@ EOF
     '';
     users.motd = ''
       FastFree Cloud — fastfree.cloud
+      Privacy: https://fastfree.cloud/privacy-policy.html
     '';
   };
 }

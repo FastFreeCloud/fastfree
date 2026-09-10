@@ -43,3 +43,4 @@ export type { SplashCoordinator } from './useSplashCoordinator'
 // Shared Helpers
 export { useFormatNumber } from './useFormatNumber'
 export { useStatusHelpers } from './useStatusHelpers'
+export { FASTFREE_SITE_URL, FASTFREE_PRIVACY_URL, getPrivacyPolicyUrl, openExternalUrl } from './useExternalUrl'

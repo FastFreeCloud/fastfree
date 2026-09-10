@@ -229,6 +229,13 @@ const LC_DEFAULT_MESSAGES_AR: LcMessages = {
   "about.screen": "الشاشة",
   "about.titleDefault": "FastFree Lowcode",
   "about.badgeProd": "إنتاج",
+  "about.privacyPolicy": "سياسة الخصوصية",
+
+  "privacy.title": "سياسة الخصوصية",
+  "privacy.loading": "جاري تحميل سياسة الخصوصية…",
+  "privacy.offline": "يبدو أنك غير متصل بالإنترنت. اتصل بالإنترنت لعرض سياسة الخصوصية.",
+  "privacy.openInBrowser": "فتح في المتصفح",
+  "privacy.retry": "إعادة المحاولة",
 
   "settings.title": "الإعدادات",
   "settings.language": "اللغة",

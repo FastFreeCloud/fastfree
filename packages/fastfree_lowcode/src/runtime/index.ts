@@ -6,7 +6,7 @@ export {
   LcSmartPagination, LcSmartFilter, LcPageHeader, LcSplashScreen,
   LcHeaderActions, LcConnectionScreen, LcErrorLogScreen, LcAboutScreen,
   LcSettingsScreen, LcThemeScreen, LcTranslationEditorScreen, LcPwaUpdateScreen,
-  LcShortcutsScreen, LcErrorBoundary,
+  LcShortcutsScreen, LcPrivacyScreen, LcErrorBoundary,
   DynamicTable, DynamicForm, FilterToolbar, PaginationBar,
   EmptyState, AddRowButton,
 } from './components'
@@ -31,6 +31,7 @@ export {
   useSplashCoordinator, getSplashCoordinator,
   // Shared Helpers
   useFormatNumber, useStatusHelpers,
+  FASTFREE_SITE_URL, FASTFREE_PRIVACY_URL, getPrivacyPolicyUrl, openExternalUrl,
 } from './composables'
 
 // ============================================================

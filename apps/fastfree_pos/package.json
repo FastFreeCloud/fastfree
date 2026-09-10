@@ -4,6 +4,7 @@
   "description": "FastFree POS — Point of Sale",
   "productName": "FastFree POS",
   "author": "FastFree <sales@fastfree.cloud>",
+  "homepage": "https://fastfree.cloud",
   "type": "module",
   "private": true,
   "scripts": {
