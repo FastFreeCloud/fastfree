@@ -2,6 +2,9 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.fastfree.ledger',
+  android: {
+    webContentsDebuggingEnabled: true
+  },
   appName: 'FastFree Ledger',
   webDir: '../dist/spa',
   server: {

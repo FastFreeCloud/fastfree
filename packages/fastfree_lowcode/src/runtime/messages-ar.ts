@@ -12,6 +12,8 @@ const LC_DEFAULT_MESSAGES_AR: LcMessages = {
   "common.clearFilters": "مسح الفلاتر",
   "common.sort": "ترتيب",
   "common.cancel": "إلغاء",
+  "common.connect": "اتصال",
+  "common.required": "هذا الحقل مطلوب",
   "common.delete": "حذف",
   "common.print": "طباعة",
   "common.export": "تصدير",
@@ -145,6 +147,16 @@ const LC_DEFAULT_MESSAGES_AR: LcMessages = {
   "common.submit": "إرسال",
   "common.info": "معلومات",
   "common.details": "التفاصيل",
+
+  // App (Server URL screen)
+  "app.serverUrl": "عنوان الخادم",
+  "app.enterServerUrl": "أدخل عنوان الخادم...",
+  "app.serverUrlHint":
+    "أدخل عنوان خادم FastFree الخاص بك (مثال: https://backend.fastfree.cloud)",
+  "app.invalidUrl": "رابط غير صالح",
+
+  // Splash
+  "splash.loading": "جارٍ التحميل...",
 
   "validation.required": "هذا الحقل مطلوب",
   "validation.invalidPhone": "رقم هاتف غير صحيح",

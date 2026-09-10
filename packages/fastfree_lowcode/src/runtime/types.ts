@@ -10,6 +10,8 @@ export interface LcMessages {
   "common.clearFilters": string;
   "common.sort": string;
   "common.cancel": string;
+  "common.connect": string;
+  "common.required": string;
   "common.delete": string;
   "common.print": string;
   "common.export": string;
@@ -39,6 +41,11 @@ export interface LcMessages {
   "common.lightMode": string;
   "common.pin": string;
   "common.view": string;
+  "app.serverUrl": string;
+  "app.enterServerUrl": string;
+  "app.serverUrlHint": string;
+  "app.invalidUrl": string;
+  "splash.loading": string;
   "common.preview": string;
   "common.add": string;
   "common.system": string;

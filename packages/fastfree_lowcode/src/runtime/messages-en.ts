@@ -12,6 +12,8 @@ const LC_DEFAULT_MESSAGES: LcMessages = {
   "common.clearFilters": "Clear filters",
   "common.sort": "Sort",
   "common.cancel": "Cancel",
+  "common.connect": "Connect",
+  "common.required": "This field is required",
   "common.delete": "Delete",
   "common.print": "Print",
   "common.export": "Export",
@@ -146,6 +148,16 @@ const LC_DEFAULT_MESSAGES: LcMessages = {
   "common.submit": "Submit",
   "common.info": "Info",
   "common.details": "Details",
+
+  // App (Server URL screen)
+  "app.serverUrl": "Server URL",
+  "app.enterServerUrl": "Enter server URL...",
+  "app.serverUrlHint":
+    "Enter the address of your FastFree server (e.g. https://backend.fastfree.cloud)",
+  "app.invalidUrl": "Invalid URL",
+
+  // Splash
+  "splash.loading": "Loading...",
   "validation.required": "This field is required",
   "validation.invalidPhone": "Invalid phone number",
   "validation.invalidNationalId": "Invalid national ID",

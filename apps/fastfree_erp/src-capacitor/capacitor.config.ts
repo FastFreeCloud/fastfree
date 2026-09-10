@@ -2,6 +2,9 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.fastfree.erp',
+  android: {
+    webContentsDebuggingEnabled: true
+  },
   appName: 'FastFree ERP',
   webDir: '../dist/spa',
   server: {
