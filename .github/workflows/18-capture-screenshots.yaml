@@ -2,6 +2,16 @@ name: 18-capture-screenshots
 
 on:
   workflow_dispatch:
+    inputs:
+      admin_user:
+        description: "Backend admin username (ephemeral, never stored)"
+        required: false
+        type: string
+        default: "Administrator"
+      admin_pass:
+        description: "Backend admin password (ephemeral, never stored)"
+        required: true
+        type: string
 
 concurrency:
   group: capture-screenshots-${{ github.ref }}
@@ -102,6 +112,9 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      - name: Mask password input
+        run: echo "::add-mask::${{ inputs.admin_pass }}"
+
       - name: Run Maestro on emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -129,9 +142,13 @@ jobs:
             export PATH="$HOME/.maestro/bin:$PATH"
             maestro --version
 
-            # Credentials from repository secrets (never hardcoded)
-            export FF_ADMIN_USR="${{ secrets.FF_ADMIN_USR }}"
-            export FF_ADMIN_PWD="${{ secrets.FF_ADMIN_PWD }}"
+            # Credentials passed directly as workflow inputs (ephemeral, never stored)
+            if [ -z "${{ inputs.admin_pass }}" ]; then
+              echo "ERROR: admin_pass input is empty. Re-run with -f admin_pass=..."
+              exit 1
+            fi
+            export FF_ADMIN_USR="${{ inputs.admin_user }}"
+            export FF_ADMIN_PWD="${{ inputs.admin_pass }}"
 
             # ─── Arabic capture ───
             echo "=== Setting locale to Arabic ==="
