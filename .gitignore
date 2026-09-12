@@ -25,6 +25,11 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 
+# Google service account keys (NEVER commit — live credentials)
+fastfree-508417-8f88d017a77c.json
+*-service-account*.json
+*-key.json
+
 # OS files
 .DS_Store
 Thumbs.db
