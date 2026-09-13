@@ -610,13 +610,20 @@ def stage2_create(page) -> None:
     page.wait_for_url(re.compile(r"play\.google\.com/console"), timeout=60000)
     page.wait_for_timeout(4000)
     check_blockers(page, "create")
-    try:
-        from playwright.sync_api import expect
+    # Success = EITHER the app row in a list OR the new app's dashboard
+    # (Google lands on ?app=<numeric-id> after creating — no NAME row there).
+    created_id: str | None = None
+    found = re.search(r"[?&]app=(\d+)", page.url)
+    if found:
+        created_id = found.group(1)
+    else:
+        try:
+            from playwright.sync_api import expect
 
-        expect(page.get_by_text(NAME, exact=True)).to_be_visible(timeout=30000)
-    except Exception as exc:
-        failshot(page, "create-verify", RuntimeError(f"app row not visible after submit: {exc}"))
-    step(f"created: {NAME}")
+            expect(page.get_by_text(NAME, exact=True)).to_be_visible(timeout=30000)
+        except Exception as exc:
+            failshot(page, "create-verify", RuntimeError(f"app row not visible after submit: {exc}"))
+    step(f"created: {NAME}" + (f" (app id {created_id})" if created_id else ""))
 
 
 def stage3_invite(page) -> None:
