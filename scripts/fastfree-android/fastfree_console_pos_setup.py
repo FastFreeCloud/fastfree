@@ -58,6 +58,7 @@ LOG = get_logger()
 NETLOG: list = []
 AUTH_COOKIES = {"SID", "HSID", "SSID", "APISID", "SAPISID"}
 DEV_URL = "https://play.google.com/console/u/0/developers/7269125617638997236/app-list"
+APP_CREATE_URL = "https://play.google.com/console/u/0/developers/7269125617638997236/create-new-app"
 GOOGLE_OWNER = "mohamed.fastfree@gmail.com"
 
 
@@ -452,6 +453,10 @@ BLOCKERS = [
         "(Google 2026 requirement). Register it in Play Console, then re-run.",
     ),
     (
+        re.compile(r"already in use|مستخدم بالفعل|taken|duplicate", re.I),
+        "Package name already in use — this package belongs to another app.",
+    ),
+    (
         re.compile(r"testing requirements|متطلبات الاختبار", re.I),
         "Account testing requirements block this step (closed testing for new "
         "personal accounts). Complete them in the Console, then re-run.",
@@ -596,57 +601,50 @@ def stage2_create(page) -> None:
         pass
     enter_console(page, "console-load")
     try:
-        page.get_by_role("button", name=re.compile(r"create app|إنشاء التطبيق", re.I)).first.wait_for(
-            state="visible", timeout=90000
-        )
-    except Exception as exc:
-        failshot(page, "console-load", RuntimeError(f"console did not load in 90s: {exc}"))
-    try_click(page, [re.compile(r"accept|agree|موافق|قبول", re.I)], "cookie banner")
-    try:
         if page.get_by_text(NAME, exact=True).count() > 0:
             step(f'"{NAME}" already listed — skipping creation')
             return
     except Exception:
         pass
 
-    click_any(page, [re.compile(r"create app|إنشاء التطبيق", re.I)], "open Create app")
-    page.wait_for_timeout(2000)
-    dialog = page.get_by_role("dialog")
+    # Deep link straight to the create form (no dashboard clicking).
+    page.goto(APP_CREATE_URL, wait_until="domcontentloaded", timeout=60000)
+    try:
+        page.wait_for_load_state("networkidle", timeout=45000)
+    except Exception:
+        pass
+    try:
+        page.get_by_text(re.compile(r"app name|اسم التطبيق", re.I)).first.wait_for(
+            state="visible", timeout=60000
+        )
+    except Exception as exc:
+        failshot(page, "create-form", RuntimeError(f"create form did not load: {exc}"))
+    try_click(page, [re.compile(r"accept|agree|موافق|قبول", re.I)], "cookie banner")
 
     fill_any(page, [re.compile(r"app name|اسم التطبيق", re.I)], NAME, "app name")
-    try:
-        lang = page.get_by_label(re.compile(r"default language|اللغة الافتراضية", re.I))
-        lang.first.wait_for(state="visible", timeout=6000)
-        options = lang.first.locator("option").all_text_contents()
-        arabic = next((o for o in options if re.search(r"arabic|العربية", o, re.I)), None)
-        if arabic:
-            lang.first.select_option(label=arabic)
-            step(f"language -> {arabic}")
-        else:
-            step("language: leaving default")
-    except Exception:
-        step("language: leaving default")
+    # Default language: leave the en-US default (Material dropdown, fragile to
+    # automate). Arabic + English listings ship later via the Play API.
+    step("default language: leaving en-US default")
 
     pick_one(page, "radio", [re.compile(r"^app$", re.I), re.compile(r"^تطبيق$", re.I)], "type = App")
     pick_one(page, "radio", [re.compile(r"^free$", re.I), re.compile(r"^مجاني$", re.I)], "free")
-    fill_any(
-        page, [re.compile(r"email|بريد إلكتروني|البريد الإلكتروني", re.I)], CONTACT_EMAIL, "contact email"
-    )
+
+    # Package name (required on the current form) + availability check.
+    fill_any(page, [re.compile(r"package name|اسم الحزمة", re.I)], PACKAGE, "package name")
+    click_any(page, [re.compile(r"check availability|التحقق", re.I)], "Check availability")
+    page.wait_for_timeout(5000)
+    check_blockers(page, "package-check")
+
+    # Declarations: explicit allow-list (never blind-check page checkboxes).
+    for pattern, desc in [
+        (re.compile(r"developer.?program.?polic", re.I), "Developer Program Policies"),
+        (re.compile(r"us export|u\.s\. export|قوانين التصدير", re.I), "US export laws"),
+        (re.compile(r"play app signing|توقيع التطبيق", re.I), "Play App Signing ToS"),
+    ]:
+        pick_one(page, "checkbox", [pattern], desc)
 
     try:
-        boxes = dialog.get_by_role("checkbox")
-        count = boxes.count()
-        for i in range(count):
-            try:
-                boxes.nth(i).check()
-            except Exception:
-                pass
-        step(f"checked {count} declaration(s)")
-    except Exception as exc:
-        failshot(page, "declarations", RuntimeError(f"declaration checkboxes not found: {exc}"))
-
-    try:
-        submit = dialog.get_by_role("button", name=re.compile(r"create app|إنشاء التطبيق", re.I))
+        submit = page.get_by_role("button", name=re.compile(r"^create app$|^إنشاء التطبيق$", re.I))
         submit.first.wait_for(state="visible", timeout=10000)
         submit.first.click()
         step("submitted Create app")
