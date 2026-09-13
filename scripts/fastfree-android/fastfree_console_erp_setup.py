@@ -472,6 +472,14 @@ def activate(page) -> None:
     except Exception:
         pass
     page.wait_for_timeout(1500)
+    # Developer chooser (URL has no numeric ID)? Pick ours right away.
+    try:
+        if re.search(r"/console/developers/?(?:\?.*)?$", page.url or ""):
+            step("developer chooser — selecting account")
+            click_any(page, [re.compile(r"fastfree\.cloud", re.I)], "select developer account")
+            page.wait_for_timeout(5000)
+    except Exception:
+        pass
 
 
 def stage1_attached():
