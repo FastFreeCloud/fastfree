@@ -592,10 +592,11 @@ def stage2_create(page) -> None:
     check_blockers(page, "package-check")
 
     # Declarations: explicit allow-list (never blind-check page checkboxes).
+    # NOTE: the current form has only TWO declarations. Play App Signing is
+    # automatic now ("You'll get automatic protection" notice, no checkbox).
     for pattern, desc in [
         (re.compile(r"developer.?program.?polic", re.I), "Developer Program Policies"),
         (re.compile(r"us export|u\.s\. export|قوانين التصدير", re.I), "US export laws"),
-        (re.compile(r"play app signing|توقيع التطبيق", re.I), "Play App Signing ToS"),
     ]:
         pick_one(page, "checkbox", [pattern], desc)
 
