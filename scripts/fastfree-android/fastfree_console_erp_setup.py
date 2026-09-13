@@ -699,8 +699,15 @@ def stage3_invite(page) -> None:
         SERVICE_ACCOUNT,
         "SA email",
     )
-    click_any(page, [re.compile(r"app permissions|أذونات التطبيق", re.I)], "App permissions tab")
-    page.wait_for_timeout(1000)
+    # The tab is often pre-selected — only click when its content is absent.
+    try:
+        page.get_by_text(re.compile(r"grant permissions for 1 or more apps", re.I)).first.wait_for(
+            state="visible", timeout=5000
+        )
+        step("already on App permissions tab — skipping tab click")
+    except Exception:
+        click_any(page, [re.compile(r"app permissions|أذونات التطبيق", re.I)], "App permissions tab")
+        page.wait_for_timeout(1000)
     click_any(page, [re.compile(r"add app|إضافة تطبيق", re.I)], "Add app")
     page.wait_for_timeout(2000)
     pick_one(page, "checkbox", [re.compile(re.escape(NAME), re.I)], f"select {NAME}")
