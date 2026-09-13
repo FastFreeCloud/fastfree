@@ -288,6 +288,45 @@ def _port_open() -> bool:
         return False
 
 
+_ATTACHED = False
+_OWN_PAGES: list = []
+
+
+def _open_attached():
+    """Attach to the user's RUNNING CentBrowser (already logged in).
+
+    Requires that browser instance started with --remote-debugging-port=9222.
+    Uses its live default context: no new window, no new profile.
+    """
+    import os
+    import time
+
+    from playwright.sync_api import sync_playwright
+
+    global _ATTACHED
+    endpoint = os.environ.get("CENTBROWSER_CDP", f"http://127.0.0.1:{CDP_PORT}")
+    playwright = sync_playwright().start()
+    browser = None
+    for _ in range(5):
+        try:
+            browser = playwright.chromium.connect_over_cdp(endpoint)
+            break
+        except Exception:
+            time.sleep(3)
+    if browser is None or not browser.contexts:
+        raise RuntimeError(
+            "Could not attach to your open CentBrowser. Close it fully, relaunch with "
+            '"--remote-debugging-port=9222", then re-run with CENTBROWSER_ATTACH=1.'
+        )
+    context = browser.contexts[0]
+    page = context.new_page()
+    _OWN_PAGES.append(page)
+    _watch_page(page)
+    _ATTACHED = True
+    step("attached to your open CentBrowser (live session, no new window)")
+    return playwright, context, page
+
+
 def open_session(headed: bool):
     """Launch CentBrowser as a normal process, drive it over CDP.
 
@@ -300,7 +339,11 @@ def open_session(headed: bool):
 
     from playwright.sync_api import sync_playwright
 
-    global _BROWSER_PROC
+    global _BROWSER_PROC, _ATTACHED
+    import os
+
+    if os.environ.get("CENTBROWSER_ATTACH") == "1":
+        return _open_attached()
     _ = headed  # manual launch is always headed
     exe = resolve_browser_exe()
     # NOTE: CentBrowser gets its OWN fresh profile. The old profile dir was
@@ -471,8 +514,41 @@ def enter_console(page, where: str) -> None:
     failshot(page, where, RuntimeError(f"could not enter Play Console. {page_snapshot(page)}"))
 
 
+def stage1_attached():
+    """Use the already-open CentBrowser: verify, or wait for human login in it."""
+    playwright, context, page = open_session(headed=True)
+    for minute in range(1, 31):
+        page.goto(CONSOLE, wait_until="domcontentloaded", timeout=60000)
+        page.wait_for_timeout(4000)
+        if "/console" not in page.url:
+            try_click(page, [re.compile(r"go to play console", re.I)], "Go to Play Console")
+            page.wait_for_timeout(5000)
+        if "/console" in page.url and not session_expired(page) and real_login_cookies(context):
+            try:
+                assert_developer_access(page)
+            except RuntimeError as exc:
+                if "cannot open Play developer" in str(exc):
+                    raise
+                step(f"transient error, retrying… ({exc})")
+                page.wait_for_timeout(10000)
+                continue
+            step("auth OK — attached session verified (auth cookies + developer access)")
+            return playwright, context, page
+        step(f"not logged in yet (try {minute}/30) — log in to Google in your OPEN CentBrowser window…")
+        page.wait_for_timeout(15000)
+    failshot(
+        page,
+        "attach-login-timeout",
+        RuntimeError("Google login not completed in ~10 min in the open browser window"),
+    )
+
+
 def stage1_session():
     """Stage 1: reuse saved session; else headed human login (once)."""
+    import os
+
+    if os.environ.get("CENTBROWSER_ATTACH") == "1":
+        return stage1_attached()
     playwright, context, page = open_session(headed=False)
     page.goto(CONSOLE, wait_until="domcontentloaded", timeout=60000)
     page.wait_for_timeout(4000)
@@ -775,21 +851,34 @@ def main() -> int:
                 stage6_report()
             mark_done(progress, number)
     finally:
-        try:
-            if context is not None:
-                try:
-                    context.tracing.stop()
-                except Exception:
-                    pass
-                context.close()
-        except Exception:
-            pass
-        try:
-            if playwright is not None:
-                playwright.stop()
-        except Exception:
-            pass
-        _kill_browser()
+        for owned in list(_OWN_PAGES):
+            try:
+                owned.close()
+            except Exception:
+                pass
+        if _ATTACHED:
+            # Shared user browser: only disconnect, never close or kill it.
+            try:
+                if playwright is not None:
+                    playwright.stop()
+            except Exception:
+                pass
+        else:
+            try:
+                if context is not None:
+                    try:
+                        context.tracing.stop()
+                    except Exception:
+                        pass
+                    context.close()
+            except Exception:
+                pass
+            try:
+                if playwright is not None:
+                    playwright.stop()
+            except Exception:
+                pass
+            _kill_browser()
     step("ALL STAGES DONE")
     return 0
 
