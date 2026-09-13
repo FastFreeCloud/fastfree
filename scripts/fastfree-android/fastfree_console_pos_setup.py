@@ -193,35 +193,76 @@ def open_session(headed: bool):
     return playwright, context, page
 
 
+def console_marker(page) -> bool:
+    """True only when a REAL console screen is showing (not homepage/login)."""
+    try:
+        if page.get_by_role("button", name=re.compile(r"create app|إنشاء التطبيق", re.I)).count() > 0:
+            return True
+    except Exception:
+        pass
+    try:
+        if page.get_by_text(re.compile(r"all apps|كل التطبيقات|app dashboard|لوحة", re.I)).count() > 0:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def page_snapshot(page) -> str:
+    """Short text dump for remote diagnosis (URL + visible headings)."""
+    try:
+        body = (page.inner_text("body") or "").strip().replace("\n", " ")
+        return f"url={page.url} text={body[:500]!r}"
+    except Exception as exc:
+        return f"url=<unreadable> ({exc})"
+
+
 def enter_console(page, where: str) -> None:
     """Guarantee we are INSIDE play.google.com/console (not the marketing homepage).
 
     The console URL sometimes lands on the public Play homepage first.
-    Click through explicitly, and fail loudly if the Google account has
-    no developer registration at all.
+    Click through explicitly, retry with diagnostics, and fail loudly with
+    the real page state if the account has no developer access at all.
     """
-    for _ in range(3):
-        page.wait_for_timeout(3000)
+    for attempt in range(1, 8):
+        page.wait_for_timeout(4000)
         url = page.url
-        if "/console" in url and "accounts.google.com" not in url:
-            if "console/signup" in url:
+        step(f"enter_console attempt {attempt}: {url[:120]}")
+        if "console/signup" in url:
+            failshot(
+                page,
+                "no-developer-account",
+                RuntimeError(
+                    "Google account has NO Play Console developer registration "
+                    "($25 one-time). Complete signup first: "
+                    "https://play.google.com/console/signup"
+                ),
+            )
+        if "/console" in url and "accounts.google.com" not in url and console_marker(page):
+            step("inside Play Console confirmed")
+            return
+        # Account chooser showing? Surface it instead of clicking blindly.
+        try:
+            if page.get_by_text(re.compile(r"choose an account|اختر حسابا", re.I)).count() > 0:
                 failshot(
                     page,
-                    "no-developer-account",
+                    "account-chooser",
                     RuntimeError(
-                        "Google account has NO Play Console developer registration "
-                        "($25 one-time). Complete signup first: "
-                        "https://play.google.com/console/signup"
+                        "Google shows an account chooser: HUMAN must pick the account "
+                        "owning Play developer ID 7269125617638997236 in the open "
+                        "browser window, then re-run. " + page_snapshot(page)
                     ),
                 )
-            return
-        if not try_click(
+        except RuntimeError:
+            raise
+        except Exception:
+            pass
+        try_click(
             page,
             [re.compile(r"go to play console|وحدة تحكم Google Play|كونسول", re.I)],
             "Go to Play Console",
-        ):
-            break
-    failshot(page, where, RuntimeError(f"could not enter Play Console from {page.url}"))
+        )
+    failshot(page, where, RuntimeError(f"could not enter Play Console. {page_snapshot(page)}"))
 
 
 def stage1_session():
