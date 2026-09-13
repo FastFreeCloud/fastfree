@@ -589,7 +589,17 @@ def stage2_create(page) -> None:
     fill_any(page, [re.compile(r"package name|اسم الحزمة", re.I)], PACKAGE, "package name")
     click_any(page, [re.compile(r"check availability|التحقق", re.I)], "Check availability")
     page.wait_for_timeout(5000)
-    check_blockers(page, "package-check")
+    try:
+        availability_body = page.inner_text("body") or ""
+    except Exception:
+        availability_body = ""
+    if re.search(r"already in use|مستخدم بالفعل|taken|duplicate", availability_body, re.I):
+        # 'taken' after OUR OWN previous submit almost always means a sibling
+        # run already created this app minutes ago (the list SPA stalls, so the
+        # skip-check misses it). Continue: the submit below validates for real.
+        step("package taken — likely our own previous run; continuing, submit will validate")
+    else:
+        check_blockers(page, "package-check")
 
     # Declarations: explicit allow-list (never blind-check page checkboxes).
     # NOTE: the current form has only TWO declarations. Play App Signing is
@@ -607,7 +617,16 @@ def stage2_create(page) -> None:
         step("submitted Create app")
     except Exception as exc:
         failshot(page, "submit", RuntimeError(f"submit button not found: {exc}"))
-    page.wait_for_url(re.compile(r"play\.google\.com/console"), timeout=60000)
+    page.wait_for_timeout(6000)
+    if "create-new-app" in page.url:
+        # Still on the form: the click did nothing (e.g. disabled over an
+        # inline error). Diagnose instead of waiting blindly.
+        check_blockers(page, "create")
+        failshot(
+            page,
+            "submit-stuck",
+            RuntimeError("still on create form after submit — see snapshot for the inline error"),
+        )
     page.wait_for_timeout(4000)
     check_blockers(page, "create")
     # Success = EITHER the app row in a list OR the new app's dashboard
@@ -620,7 +639,13 @@ def stage2_create(page) -> None:
         try:
             from playwright.sync_api import expect
 
-            expect(page.get_by_text(NAME, exact=True)).to_be_visible(timeout=30000)
+            try:
+                expect(page.get_by_text(NAME, exact=True)).to_be_visible(timeout=30000)
+            except Exception:
+                step("NAME row not visible — reloading list once to confirm…")
+                page.reload(wait_until="domcontentloaded", timeout=60000)
+                page.wait_for_timeout(8000)
+                expect(page.get_by_text(NAME, exact=True)).to_be_visible(timeout=30000)
         except Exception as exc:
             failshot(page, "create-verify", RuntimeError(f"app row not visible after submit: {exc}"))
     step(f"created: {NAME}" + (f" (app id {created_id})" if created_id else ""))
