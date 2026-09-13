@@ -4,6 +4,16 @@ scripts/*.log
 # Dependencies
 node_modules/
 .pnpm-store/
+.venv/
+__pycache__/
+*.pyc
+.ruff_cache/
+
+# Android signing (NEVER commit private keys)
+*.jks
+signing/
+keystore.properties
+*.aab
 
 # Build outputs
 dist/

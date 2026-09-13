@@ -55,6 +55,9 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
 
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile --ignore-scripts
 
@@ -98,7 +101,7 @@ jobs:
               -alias fastfree \
               -keyalg RSA \
               -keysize 2048 \
-              -validity 10000 \
+              -validity 20000 \
               -keystore "$KEYSTORE" \
               -storepass FastFree@2026 \
               -keypass FastFree@2026 \
@@ -119,6 +122,11 @@ jobs:
           keyPassword=FastFree@2026
           PROPS_EOF
           echo "keystore.properties created"
+
+      - name: Wire release signing into Gradle
+        run: |
+          uv sync --locked --project scripts/fastfree-android
+          uv run --project scripts/fastfree-android scripts/fastfree-android/fastfree_android_keystore.py --wire --app-dir "${{ env.APP_DIR }}"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -213,29 +221,22 @@ jobs:
         with:
           workload_identity_provider: projects/639480735306/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider
           service_account: fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.com
-          token_format: access_token
-          audience: https://www.googleapis.com/auth/androidpublisher
 
       - name: Publish to Play Store (Listing + AAB)
-        env:
-          PLAY_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
         run: |
-          if [ -z "$PLAY_ACCESS_TOKEN" ]; then
+          if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
             echo "WIF authentication failed - skipping Play upload"
             exit 0
           fi
-          echo "Installing googleapis..."
-          npm install --prefix scripts googleapis --no-audit --no-fund --silent 2>/dev/null || true
-
           VERSION_CODE=$(($(date +%Y%m%d) * 100 + ${{ github.run_number }}))
           export VERSION_CODE
           echo "Using versionCode=$VERSION_CODE"
 
           echo "Generating metadata from products.ts..."
-          node scripts/generate-metadata.mjs --app fastfree_pos
+          uv run --project scripts/fastfree-android scripts/fastfree-android/fastfree_store_metadata.py --app fastfree_pos
 
           echo "Generating feature graphics..."
-          node scripts/generate-feature-graphics.mjs --app pos
+          uv run --project scripts/fastfree-android scripts/fastfree-android/fastfree_store_graphics.py --app pos
 
           AAB_PATH=$(find apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/bundle/release -name "*.aab" | head -1)
           if [ -z "$AAB_PATH" ]; then
@@ -245,7 +246,7 @@ jobs:
 
           META_DIR="apps/${{ env.APP_DIR }}/fastlane/metadata/android"
           echo "=== Publishing to Play (ar, en-US) ==="
-          node scripts/play-publisher.mjs \
+          uv run --project scripts/fastfree-android scripts/fastfree-android/fastfree_store_publish.py \
             --package "${{ env.APP_ID }}" \
             --locales ar,en-US \
             --metadata-dir "$META_DIR" \
@@ -254,70 +255,6 @@ jobs:
             --status draft \
             --version-code "$VERSION_CODE"
           echo "=== Play Store publish complete ==="
-
-      - name: Capture screenshots with Maestro
-        if: env.PLAY_ACCESS_TOKEN != ''
-        env:
-          PLAY_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
-          FF_ADMIN_USR: Administrator
-          FF_ADMIN_PWD: ${{ secrets.FASTFREE_ADMIN_PASSWORD }}
-        run: |
-          APK=$(find apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/apk/debug -name "*.apk" | head -1)
-          if [ -z "$APK" ]; then
-            echo "No debug APK found - skipping screenshots"
-            exit 0
-          fi
-          
-          echo "Installing Maestro..."
-          curl -fsSL https://get.maestro.mobile.dev | bash
-          export PATH="$HOME/.maestro/bin:$PATH"
-          
-          # Install debug APK on emulator (if available)
-          if adb devices | grep -q emulator; then
-            adb install -r "$APK"
-            
-            # Arabic screenshots
-            adb shell settings put system system_locales ar-EG
-            adb shell am force-stop ${{ env.APP_ID }}
-            sleep 2
-            maestro test .maestro/${{ env.APP_KEY }}/ar.yaml || true
-            
-            # English screenshots
-            adb shell settings put system system_locales en-US
-            adb shell am force-stop ${{ env.APP_ID }}
-            sleep 2
-            maestro test .maestro/${{ env.APP_KEY }}/en.yaml || true
-            
-            echo "Screenshots captured"
-          else
-            echo "No emulator available - skipping screenshots"
-          fi
-
-      - name: Crop screenshots
-        if: env.PLAY_ACCESS_TOKEN != ''
-        env:
-          PLAY_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
-        run: |
-          npm install --prefix scripts sharp --no-audit --no-fund 2>/dev/null || true
-          if [ -d ".maestro/${{ env.APP_KEY }}" ]; then
-            find .maestro/${{ env.APP_KEY }} -name "*.png" -exec mv {} apps/${{ env.APP_DIR }}/fastlane/metadata/android/en-US/images/phone-screenshots/ \; 2>/dev/null || true
-            node scripts/crop-screenshots.mjs ${{ env.APP_KEY }} en-US || true
-          fi
-
-      - name: Commit screenshots
-        if: env.PLAY_ACCESS_TOKEN != ''
-        env:
-          PLAY_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "apps/${{ env.APP_DIR }}/fastlane/metadata/android/*/images/phone-screenshots/*.png"
-          if git diff --cached --quiet; then
-            echo "No screenshot changes to commit"
-          else
-            git commit -m "screenshots(${{ env.APP_KEY }}): refresh Play store captures"
-            git push HEAD:master
-          fi
 
   release:
     needs: build

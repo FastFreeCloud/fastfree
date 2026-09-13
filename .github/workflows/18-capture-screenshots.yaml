@@ -201,16 +201,17 @@ jobs:
             # Move reports to workspace root
             cp ar-report.xml en-report.xml . 2>/dev/null || true
 
-      - name: Install sharp for cropping
-        run: npm install --prefix scripts sharp --no-audit --no-fund
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Crop screenshots to Play Store spec
         run: |
+          uv sync --locked --project scripts/fastfree-android
           if [ -d "apps/${{ matrix.app_dir }}/fastlane/metadata/android/ar/images/phone-screenshots" ]; then
-            node scripts/crop-screenshots.mjs ${{ matrix.app }} ar || true
+            uv run --project scripts/fastfree-android scripts/fastfree-android/fastfree_store_screenshots.py ${{ matrix.app }} ar || true
           fi
           if [ -d "apps/${{ matrix.app_dir }}/fastlane/metadata/android/en-US/images/phone-screenshots" ]; then
-            node scripts/crop-screenshots.mjs ${{ matrix.app }} en-US || true
+            uv run --project scripts/fastfree-android scripts/fastfree-android/fastfree_store_screenshots.py ${{ matrix.app }} en-US || true
           fi
 
       - name: Commit screenshots

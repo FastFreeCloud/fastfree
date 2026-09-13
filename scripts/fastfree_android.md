@@ -32,8 +32,14 @@ FastFree Monorepo
 │   ├── fastfree_hr/         ← HR (الموارد البشرية)
 │   └── fastfree_ledger/     ← Ledger (الدفتر)
 ├── scripts/
-│   ├── play-publisher.mjs   ← نشر على Play Store
-│   └── generate-metadata.mjs
+│   ├── fastfree-android/        ← مشروع Python (uv): النشر والأتمتة
+│   │   ├── fastfree_store_metadata.py   ← نصوص المتجر
+│   │   ├── fastfree_store_graphics.py   ← البنرات
+│   │   ├── fastfree_store_publish.py    ← الرفع على Play (API)
+│   │   ├── fastfree_store_screenshots.py← قص الصور
+│   │   ├── fastfree_console_pos/erp/hr/ledger_setup.py ← تمهيد الكونسول
+│   │   └── fastfree_android_keystore.py ← المفتاح الثابت + ربط Gradle
+│   └── fastfree_android.md      ← هذا الدليل
 └── .github/workflows/
     ├── 09-build-pos-android.yaml
     ├── 10-build-erp-android.yaml
@@ -53,6 +59,8 @@ FastFree Monorepo
 | pnpm | 11.11.0 |
 | Gradle | عبر `gradle/actions/setup-gradle@v6` |
 | Google Auth | `google-github-actions/auth@v3` (WIF) |
+| Python | 3.11 عبر `uv` (يثبت نفسه بنفسه) |
+| Play libs | `playwright`, `pillow`, `google-api-python-client` (في `uv.lock`) |
 
 ### معلومات المشروع
 
@@ -102,7 +110,9 @@ FastFree Monorepo
 | Algorithm | RSA 2048-bit |
 | DN | `CN=FastFree, OU=IT, O=FastFree, L=Riyadh, ST=Riyadh, C=SA` |
 
-> **ملاحظة:** Keystore لا يُرفع على Git. يُنشأ تلقائياً في CI.
+> **ملاحظة:** Keystore واحد ثابت لا يُرفع على Git. يُولَّد مرة واحدة بـ
+> `fastfree_android_keystore.py --gen` (يُحفظ في `.auth/signing/` المتجاهَل)،
+> وخطوة `--wire` تربطه بـ Gradle حتى يوقَّع الـ AAB بنفس مفتاح الـ APK.
 
 ---
 
@@ -143,7 +153,7 @@ gcloud config list
 
 | الأداة | الغرض | التثبيت |
 |--------|-------|---------|
-| Java 21 | Gradle builds | `winget install Eclipse.Temurin.21.JDK` |
+| Java 21 | Gradle builds + keytool | `winget install EclipseAdoptium.Temurin.21.JDK` |
 | Android SDK | build + sign | يتطلب Android Studio |
 
 ---
@@ -212,9 +222,9 @@ Workload Identity Federation (WIF) يسمح لـ GitHub Actions
 | 1. فعّل 4 APIs | ✅ تم |
 | 2. أنشئ Service Account | ✅ `fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.com` |
 | 3. أنشئ WIF Pool | ✅ `github-actions-pool` |
-| 4. أنشئ OIDC Provider | ⏳ (أكمل من Google Cloud Console) |
-| 5. IAM Binding | ⏳ |
-| 6. GitHub Secrets | ⏳ |
+| 4. أنشئ OIDC Provider | ✅ تم (`github-provider`) |
+| 5. IAM Binding | ✅ تم |
+| 6. GitHub Secrets | ✅ لا حاجة (القيم hardcoded — معلومات عامة) |
 
 ---
 
@@ -342,14 +352,32 @@ echo fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.com
 https://fastfree.cloud/privacy-policy.html
 ```
 
-### الخطوة 4: رفع أول AAB يدوياً
+### الخطوة 4: رفع أول AAB
 
 ```
-في كل تطبيق: Production → Create new release
-→ ارفع ملف AAB من البناء المحلي
-→ احفظ كـ Draft
+في كل تطبيق: Test and release → Testing → Internal testing
+→ Create new release → ارفع ملف AAB → Start rollout to Internal
 
-⚠️ أول رفع يتطلب يدوية. بعدها كل شيء تلقائي.
+⚠️ أول تطبيق + أول رفع يدوياً (أو بسكربتات التمهيد أدناه).
+بعدها كل شيء تلقائي عبر API.
+```
+
+### الخطوة 5: التمهيد الآلي (بديل اليدوي)
+
+```
+# مرة واحدة: ثبّت الاعتماديات (uv يثبت بايثون بنفسه)
+cd scripts/fastfree-android
+uv sync --locked
+
+# ولّد مفتاح التوقيع الثابت (يثبت JDK تلقائياً إن غاب)
+uv run fastfree_android_keystore.py --gen
+
+# سجّل الدخول بيدك مرة واحدة ثم تُنشأ التطبيقات الأربعة تلقائياً
+uv run fastfree_console_pos_setup.py
+uv run fastfree_console_erp_setup.py
+uv run fastfree_console_hr_setup.py
+uv run fastfree_console_ledger_setup.py
+# كل ملف: إنشاء التطبيق → دعوة SA → رفع أول AAB → تقرير
 ```
 
 ### الصيغ المقبولة على Play Store
@@ -402,7 +430,7 @@ GOOGLE_SERVICE_ACCOUNT_EMAIL = fastfree-play-publisher@fastfree-508417.iam.gserv
 │  GitHub Actions (ubuntu-latest)                          │
 │  ─────────────────────────────────────────────────────── │
 │                                                          │
-│  1. Checkout + Setup (Node, Java, Android SDK, pnpm)     │
+│  1. Checkout + Setup (Node, Java, Android SDK, pnpm, uv)  │
 │                    ↓                                      │
 │  2. pnpm install + npm install (Capacitor)               │
 │                    ↓                                      │
@@ -410,19 +438,20 @@ GOOGLE_SERVICE_ACCOUNT_EMAIL = fastfree-play-publisher@fastfree-508417.iam.gserv
 │                    ↓                                      │
 │  4. cap add android + cap sync android                   │
 │                    ↓                                      │
-│  5. Generate Keystore (secret → fallback → ephemeral)    │
+│  5. Generate Keystore (secret → ملف → مؤقت) + ربطه بـ Gradle (wire) │
 │                    ↓                                      │
 │  6. gradle assembleRelease → unsigned APK                │
 │                    ↓                                      │
 │  7. apksigner → signed APK                               │
 │                    ↓                                      │
-│  8. gradle bundleRelease → AAB                           │
+│  8. gradle bundleRelease → AAB (موقَّع بنفس المفتاح)      │
 │                    ↓                                      │
 │  9. Upload APK + AAB as artifacts                        │
 │                    ↓                                      │
-│  10. Authenticate (WIF → access_token)                   │
+│  10. Authenticate (WIF → GoogleAuth/adc)                 │
 │                    ↓                                      │
-│  11. play-publisher.mjs → Play Store (internal track)    │
+│  11. fastfree_store_publish.py → Play Store (internal)   │
+│      (قبله: metadata + graphics بنفس المشروع)            │
 │                    ↓                                      │
 │  12. Create GitHub Release (APK)                         │
 │                                                          │
@@ -508,7 +537,7 @@ gh workflow run 12-build-ledger-android.yaml --repo FastFreeCloud/fastfree
 | `403 Permission denied` | SA غير مدعو في Play Console | ادعوة من Users and Access |
 | `Unable to acquire impersonated credentials` | IAM Binding خاطئ | تحقق من PROJECT_NUMBER |
 | `No AAB found` | البناء فشل قبل النشر | تحقق من logs البناء |
-| `PLAY_ACCESS_TOKEN or PLAY_SERVICE_ACCOUNT_JSON is required` | لا يوجد أي مفتاح | أضف WIF secrets |
+| `Could not load default credentials / GOOGLE_APPLICATION_CREDENTIALS not set` | خطوة WIF لم تنجح قبل النشر | تحقق من `Authenticate to Google Cloud (WIF)` — لا secrets مطلوبة |
 | `gcloud: command not found` | gcloud مش في الـ PATH | أعد فتح PowerShell بعد التثبيت |
 | `Workload Identity Pool not found` | Pool غير موجود | تحقق من اسم الـ pool |
 | `Token expired` | Access token منتهي الصلاحية | WIF يُنشئ token جديد تلقائياً |
@@ -588,8 +617,8 @@ gh run list --repo FastFreeCloud/fastfree --limit 10
 
 - `FastFree@2026` موجود في `nix/clients/*.nix` (يجب تدويره)
 - WIF لا يحتاج أي ملفات مفاتيح
-- Keystore يُنشأ تلقائياً في CI (مؤقت)
-- `ANDROID_KEYSTORE_BASE64` = base64-encoded keystore (اختياري)
+- Keystore ثابت واحد في `.auth/signing/` (متجاهَل من Git) — يُولَّد بـ `fastfree_android_keystore.py --gen`
+- `ANDROID_KEYSTORE_BASE64` = base64-encoded keystore (اختياري، لتثبيت المفتاح في CI)
 
 ---
 

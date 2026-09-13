@@ -1,0 +1,25 @@
+[project]
+name = "fastfree-android"
+version = "0.1.0"
+description = "FastFree Android automation: Play Store metadata, graphics, publishing, screenshots, Play Console bootstrap"
+authors = [
+    { name = "FastFree", email = "sales@fastfree.cloud" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "google-api-python-client>=2.200.0",
+    "google-auth>=2.58.0",
+    "google-auth-httplib2>=0.4.2",
+    "pillow>=12.3.0",
+    "playwright>=1.62.0",
+]
+
+[dependency-groups]
+dev = ["ruff>=0.8.0"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "I", "UP", "B", "RUF"]
