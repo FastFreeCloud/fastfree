@@ -28,6 +28,7 @@ SERVICE_ACCOUNT = "fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.c
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 AUTH_DIR = REPO_ROOT / ".auth" / "play-console"
 PROFILE_DIR = AUTH_DIR / "profile"
+CENT_PROFILE = AUTH_DIR / "profile-cent"
 PROGRESS_FILE = AUTH_DIR / f"{KEY}.progress.json"
 AAB_PATH = REPO_ROOT / ".auth" / "aabs" / KEY / "app-release.aab"
 CONSOLE = "https://play.google.com/console"
@@ -306,7 +307,9 @@ def open_session(headed: bool):
     global _BROWSER_PROC
     _ = headed  # manual launch is always headed
     exe = resolve_browser_exe()
-    PROFILE_DIR.mkdir(parents=True, exist_ok=True)
+    # NOTE: CentBrowser gets its OWN fresh profile. The old profile dir was
+    # created by newer bundled Chromium (v151) and crashes this old fork.
+    CENT_PROFILE.mkdir(parents=True, exist_ok=True)
     if _port_open():
         step("WARNING: port 9222 already in use — a stale browser may hold it")
     launched = False
@@ -316,7 +319,7 @@ def open_session(headed: bool):
             [
                 exe,
                 f"--remote-debugging-port={CDP_PORT}",
-                f"--user-data-dir={PROFILE_DIR}",
+                f"--user-data-dir={CENT_PROFILE}",
                 "--no-first-run",
                 "--no-default-browser-check",
             ]
