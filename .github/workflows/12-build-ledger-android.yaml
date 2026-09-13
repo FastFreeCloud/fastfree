@@ -214,6 +214,7 @@ jobs:
           workload_identity_provider: projects/639480735306/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider
           service_account: fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.com
           token_format: access_token
+          audience: https://www.googleapis.com/auth/androidpublisher
 
       - name: Publish to Play Store (Listing + AAB)
         env:
