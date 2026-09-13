@@ -30,21 +30,12 @@ const changesNotSentForReview = args['changes-not-sent-for-review'] !== 'false';
 const aabPath = args.aab ? resolve(args.aab) : null;
 const versionCodeArg = args['version-code'] || null;
 
-const b64Json = process.env.PLAY_SERVICE_ACCOUNT_JSON;
-if (!b64Json) fail('PLAY_SERVICE_ACCOUNT_JSON env var (base64-encoded service account JSON) is required');
+const accessToken = process.env.PLAY_ACCESS_TOKEN;
+if (!accessToken) fail('PLAY_ACCESS_TOKEN env var is required (from WIF auth step)');
 
-let credentials;
-try {
-  credentials = JSON.parse(Buffer.from(b64Json, 'base64').toString('utf-8'));
-} catch {
-  fail('Failed to decode/parse PLAY_SERVICE_ACCOUNT_JSON');
-}
-
-const auth = new google.auth.JWT({
-  email: credentials.client_email,
-  key: credentials.private_key,
-  scopes: ['https://www.googleapis.com/auth/androidpublisher'],
-});
+const auth = new google.auth.OAuth2();
+auth.setCredentials({ access_token: accessToken });
+console.log('Auth: PLAY_ACCESS_TOKEN (WIF / OAuth2)');
 
 const androidpublisher = google.androidpublisher({ version: 'v3', auth });
 
