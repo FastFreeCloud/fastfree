@@ -259,6 +259,21 @@ def stage0_env() -> None:
     step("gh CLI OK")
 
 
+def resolve_browser_exe() -> str | None:
+    """Cent Browser first (user choice), else Playwright's bundled Chromium."""
+    import os
+
+    override = os.environ.get("CENTBROWSER_EXE")
+    candidates = [Path(override)] if override else []
+    candidates.append(Path.home() / "AppData" / "Local" / "CentBrowser" / "Application" / "chrome.exe")
+    for candidate in candidates:
+        if candidate.exists():
+            step(f"browser: CentBrowser ({candidate})")
+            return str(candidate)
+    step("browser: bundled Chromium (CentBrowser not found)")
+    return None
+
+
 def open_session(headed: bool):
     """Open persistent-profile browser on the console."""
     import os
@@ -277,6 +292,7 @@ def open_session(headed: bool):
         viewport=None,
         locale="en-US",
         slow_mo=slow_mo or None,
+        executable_path=resolve_browser_exe(),
     )
     try:
         context.tracing.start(screenshots=True, snapshots=True)
