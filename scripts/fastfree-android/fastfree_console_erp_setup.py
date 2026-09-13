@@ -484,6 +484,16 @@ def check_blockers(page, where: str) -> None:
             failshot(page, where, RuntimeError(message + " " + page_snapshot(page)))
 
 
+def activate(page) -> None:
+    """Bring our tab forward: background tabs get throttled and the Console
+    SPA stalls on 'Loading...' forever. Called after every navigation."""
+    try:
+        page.bring_to_front()
+    except Exception:
+        pass
+    page.wait_for_timeout(1500)
+
+
 def enter_console(page, where: str) -> None:
     """Guarantee we are INSIDE play.google.com/console (not the marketing homepage).
 
@@ -495,6 +505,14 @@ def enter_console(page, where: str) -> None:
     # content). Poll generously: up to ~4 minutes before giving up.
     for attempt in range(1, 21):
         page.wait_for_timeout(8000)
+        activate(page)
+        if attempt in (7, 14):
+            step(f"still loading — reloading (attempt {attempt})")
+            try:
+                page.reload(wait_until="domcontentloaded", timeout=60000)
+            except Exception:
+                pass
+            page.wait_for_timeout(5000)
         url = page.url
         step(f"enter_console attempt {attempt}: {url[:120]}")
         if "console/signup" in url:
@@ -690,6 +708,7 @@ def stage3_invite(page) -> None:
     step(f"invite SA on {NAME}")
     page.goto(f"{CONSOLE}/users-and-permissions", wait_until="domcontentloaded", timeout=60000)
     page.wait_for_timeout(3000)
+    activate(page)
     try_click(page, [re.compile(r"accept|agree|موافق|قبول", re.I)], "cookie banner")
     click_any(page, [re.compile(r"invite new users?|دعوة مستخدمين", re.I)], "Invite new users")
     page.wait_for_timeout(2000)
@@ -771,6 +790,7 @@ def stage5_upload(page, aab: Path | None) -> None:
     step(f"first AAB: {PACKAGE}")
     page.goto(CONSOLE, wait_until="domcontentloaded", timeout=60000)
     page.wait_for_timeout(3000)
+    activate(page)
     try_click(page, [re.compile(r"accept|agree|موافق|قبول", re.I)], "cookie banner")
     click_any(page, [re.compile(f"^{re.escape(NAME)}$")], f"open {NAME}")
     page.wait_for_timeout(3000)
