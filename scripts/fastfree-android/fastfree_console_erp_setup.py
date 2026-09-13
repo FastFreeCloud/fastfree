@@ -193,12 +193,47 @@ def open_session(headed: bool):
     return playwright, context, page
 
 
+def enter_console(page, where: str) -> None:
+    """Guarantee we are INSIDE play.google.com/console (not the marketing homepage).
+
+    The console URL sometimes lands on the public Play homepage first.
+    Click through explicitly, and fail loudly if the Google account has
+    no developer registration at all.
+    """
+    for _ in range(3):
+        page.wait_for_timeout(3000)
+        url = page.url
+        if "/console" in url and "accounts.google.com" not in url:
+            if "console/signup" in url:
+                failshot(
+                    page,
+                    "no-developer-account",
+                    RuntimeError(
+                        "Google account has NO Play Console developer registration "
+                        "($25 one-time). Complete signup first: "
+                        "https://play.google.com/console/signup"
+                    ),
+                )
+            return
+        if not try_click(
+            page,
+            [re.compile(r"go to play console|وحدة تحكم Google Play|كونسول", re.I)],
+            "Go to Play Console",
+        ):
+            break
+    failshot(page, where, RuntimeError(f"could not enter Play Console from {page.url}"))
+
+
 def stage1_session():
     """Stage 1: reuse saved session; else headed human login (once)."""
     playwright, context, page = open_session(headed=False)
     page.goto(CONSOLE, wait_until="domcontentloaded", timeout=60000)
     page.wait_for_timeout(4000)
-    if not session_expired(page):
+    if "/console" not in page.url:
+        # Possibly the marketing homepage — try entering before judging session.
+        try_click(page, [re.compile(r"go to play console", re.I)], "Go to Play Console")
+        page.wait_for_timeout(5000)
+    if "/console" in page.url and not session_expired(page):
         step("auth OK — saved session is valid")
         return playwright, context, page
     playwright.stop()
@@ -221,6 +256,7 @@ def stage2_create(page) -> None:
         page.wait_for_load_state("networkidle", timeout=45000)
     except Exception:
         pass
+    enter_console(page, "console-load")
     try:
         page.get_by_role("button", name=re.compile(r"create app|إنشاء التطبيق", re.I)).first.wait_for(
             state="visible", timeout=90000
@@ -426,9 +462,17 @@ def main() -> int:
                 continue
             if args.only_stage is not None and number != args.only_stage:
                 continue
-            if str(number) in done and args.only_stage is None:
+            if str(number) in done and args.only_stage is None and number != 1:
+                # Stage 1 ALWAYS re-runs: it builds the LIVE browser session
+                # (page/context) that stages 2/3/5 need. Skipping it on resume
+                # leaves page=None and crashes stage 2.
                 step(f"stage {number} already done — skipping")
                 continue
+            if number in (2, 3, 5) and page is None:
+                raise RuntimeError(
+                    f"stage {number} needs a live browser session but stage 1 did not run. "
+                    "Re-run without --from/--only so stage 1 opens the session."
+                )
             if number == 0:
                 stage0_env()
             elif number == 1:
