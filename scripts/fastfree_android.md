@@ -582,13 +582,13 @@ gradle assembleRelease
 ### رفع على GitHub
 
 ```powershell
-.\scripts\fastfree_push.ps1 -Force
+git add -A; git commit -m "msg"; git push origin master
 ```
 
 ### رفع + نشر
 
 ```powershell
-.\scripts\fastfree_deploy.ps1
+gh workflow run 16-deploy-client3.yaml --ref master
 ```
 
 ### عرض حالة الـ workflows
@@ -600,13 +600,19 @@ gh run list --repo FastFreeCloud/fastfree --limit 10
 ### تنظيف Runs الفاشلة
 
 ```powershell
-.\scripts\fastfree_cleanup.ps1 -All
+gh run list --status failure --limit 100 --json databaseId
+gh run list --status failure --limit 100 --json databaseId --jq '.[].databaseId' | ForEach-Object { gh run delete $_ }
 ```
 
 ### إعادة بناء الصور
 
 ```powershell
-.\scripts\fastfree_rebuild.ps1
+# لكل تطبيق: بناء nix ثم رفع skopeo (مثال POS)
+Push-Location apps/fastfree_pos
+nix build .#frontendImage -o frontend-image --print-build-logs
+./frontend-image > frontend-image.tar
+skopeo copy docker-archive:frontend-image.tar docker://ghcr.io/fastfreecloud/fastfree_pos:latest
+Pop-Location
 ```
 
 ---
