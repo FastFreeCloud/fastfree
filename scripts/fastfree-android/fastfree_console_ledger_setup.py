@@ -276,6 +276,17 @@ def _kill_browser() -> None:
         pass
 
 
+def _port_open() -> bool:
+    import socket
+
+    try:
+        sock = socket.create_connection(("127.0.0.1", CDP_PORT), timeout=2)
+        sock.close()
+        return True
+    except OSError:
+        return False
+
+
 def open_session(headed: bool):
     """Launch CentBrowser as a normal process, drive it over CDP.
 
@@ -292,33 +303,55 @@ def open_session(headed: bool):
     _ = headed  # manual launch is always headed
     exe = resolve_browser_exe()
     PROFILE_DIR.mkdir(parents=True, exist_ok=True)
-    _BROWSER_PROC = subprocess.Popen(
-        [
-            exe,
-            f"--remote-debugging-port={CDP_PORT}",
-            f"--user-data-dir={PROFILE_DIR}",
-            "--no-first-run",
-            "--no-default-browser-check",
-        ]
-    )
-    step(f"CentBrowser starting (pid={_BROWSER_PROC.pid}) — normal window, log in by hand")
-    deadline = time.time() + 90
-    while time.time() < deadline:
+    if _port_open():
+        step("WARNING: port 9222 already in use — a stale browser may hold it")
+    launched = False
+    last_err: Exception | None = None
+    for launch_try in range(1, 4):
+        _BROWSER_PROC = subprocess.Popen(
+            [
+                exe,
+                f"--remote-debugging-port={CDP_PORT}",
+                f"--user-data-dir={PROFILE_DIR}",
+                "--no-first-run",
+                "--no-default-browser-check",
+            ]
+        )
+        step(f"CentBrowser starting (pid={_BROWSER_PROC.pid}, try {launch_try}/3) — log in by hand")
         try:
-            sock = socket.create_connection(("127.0.0.1", CDP_PORT), timeout=2)
-            sock.close()
+            deadline = time.time() + 60
+            while time.time() < deadline:
+                try:
+                    sock = socket.create_connection(("127.0.0.1", CDP_PORT), timeout=2)
+                    sock.close()
+                    break
+                except OSError:
+                    if _BROWSER_PROC.poll() is not None:
+                        raise RuntimeError(
+                            f"CentBrowser exited immediately (code={_BROWSER_PROC.returncode})"
+                        ) from None
+                    time.sleep(1)
+            else:
+                raise RuntimeError("CentBrowser did not open its debugging port in 60s")
+            launched = True
             break
-        except OSError:
-            if _BROWSER_PROC.poll() is not None:
-                raise RuntimeError(
-                    f"CentBrowser exited immediately (code={_BROWSER_PROC.returncode})"
-                ) from None
-            time.sleep(1)
-    else:
-        _kill_browser()
-        raise RuntimeError("CentBrowser did not open its debugging port in 90s")
+        except RuntimeError as exc:
+            last_err = exc
+            _kill_browser()
+            step(f"launch try {launch_try}/3 failed ({exc}); retrying in 5s…")
+            time.sleep(5)
+    if not launched:
+        raise RuntimeError(f"CentBrowser would not stay up after 3 tries: {last_err}")
     playwright = sync_playwright().start()
-    browser = playwright.chromium.connect_over_cdp(f"http://127.0.0.1:{CDP_PORT}")
+    browser = None
+    for _ in range(3):
+        try:
+            browser = playwright.chromium.connect_over_cdp(f"http://127.0.0.1:{CDP_PORT}")
+            break
+        except Exception:
+            time.sleep(3)
+    if browser is None:
+        raise RuntimeError("CDP connect refused after port opened — browser died in between")
     context = browser.contexts[0] if browser.contexts else browser.new_context(locale="en-US")
     try:
         context.tracing.start(screenshots=True, snapshots=True)
