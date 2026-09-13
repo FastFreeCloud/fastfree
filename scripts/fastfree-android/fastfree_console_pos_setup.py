@@ -60,6 +60,7 @@ AUTH_COOKIES = {"SID", "HSID", "SSID", "APISID", "SAPISID"}
 EXPECTED_DEV_ID = "7269125617638997236"
 DEV_URL = f"https://play.google.com/console/u/0/developers/{EXPECTED_DEV_ID}/app-list"
 APP_CREATE_URL = f"https://play.google.com/console/u/0/developers/{EXPECTED_DEV_ID}/create-new-app"
+USERS_URL = f"https://play.google.com/console/u/0/developers/{EXPECTED_DEV_ID}/users-and-permissions"
 GOOGLE_OWNER = "mohamed.fastfree@gmail.com"
 DEV_ACCOUNT_NAME = "fastfree.cloud"
 
@@ -686,7 +687,8 @@ def stage2_create(page) -> None:
 def stage3_invite(page) -> None:
     """Stage 3: invite publisher service account (per-app, least privilege)."""
     step(f"invite SA on {NAME}")
-    page.goto(f"{CONSOLE}/users-and-permissions", wait_until="domcontentloaded", timeout=60000)
+    # Deep link with the developer ID: skips the account chooser entirely.
+    page.goto(USERS_URL, wait_until="domcontentloaded", timeout=60000)
     page.wait_for_timeout(3000)
     activate(page)
     try_click(page, [re.compile(r"accept|agree|موافق|قبول", re.I)], "cookie banner")
