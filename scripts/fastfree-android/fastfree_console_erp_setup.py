@@ -286,14 +286,28 @@ def open_session(headed: bool):
     except ValueError:
         slow_mo = 0
     playwright = sync_playwright().start()
-    context = playwright.chromium.launch_persistent_context(
-        str(PROFILE_DIR),
-        headless=not headed,
-        viewport=None,
-        locale="en-US",
-        slow_mo=slow_mo or None,
-        executable_path=resolve_browser_exe(),
-    )
+    exe = resolve_browser_exe()
+    try:
+        context = playwright.chromium.launch_persistent_context(
+            str(PROFILE_DIR),
+            headless=not headed,
+            viewport=None,
+            locale="en-US",
+            slow_mo=slow_mo or None,
+            executable_path=exe,
+        )
+    except Exception as exc:
+        if exe is None:
+            raise
+        step("CentBrowser launch failed — falling back to bundled Chromium")
+        LOG.warning("CentBrowser failed, using bundled Chromium: %r", exc)
+        context = playwright.chromium.launch_persistent_context(
+            str(PROFILE_DIR),
+            headless=not headed,
+            viewport=None,
+            locale="en-US",
+            slow_mo=slow_mo or None,
+        )
     try:
         context.tracing.start(screenshots=True, snapshots=True)
     except Exception as exc:
