@@ -28,8 +28,8 @@ to production** (closed test 12 testers × 14 days + human application required)
 - Local: `gcloud auth login` + `gcloud config set project fastfree-508417`.
 - WIF identifiers (public values, also hardcoded in `09-12` workflows — read them there,
   don't copy them here): provider, service account, project number.
-- Service account needs **Release manager** on each app (granted once via Console —
-  see skill `play-console-setup`).
+- Service account needs these **two granular permissions** on each app (least privilege —
+  never the broad Release-manager role; see skill `play-console-setup` §4):
 
 ## First-aid failures
 

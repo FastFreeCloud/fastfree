@@ -41,6 +41,7 @@
       "command": [
         "node",
         "C:\\Users\\fastfree\\AppData\\Roaming\\npm\\node_modules\\@playwright\\mcp\\cli.js",
+        "--caps=devtools",
         "--executable-path=C:\\Users\\fastfree\\AppData\\Local\\CentBrowser\\Application\\chrome.exe",
         "--user-data-dir=C:\\Users\\fastfree\\Desktop\\fastfree-lowcode-roadmap\\fastfree\\.auth\\mcp-profile"
       ]
