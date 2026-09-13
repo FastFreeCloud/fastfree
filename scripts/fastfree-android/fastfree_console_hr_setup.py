@@ -426,26 +426,6 @@ def open_session(headed: bool):
     return playwright, context, page
 
 
-def console_marker(page) -> bool:
-    """True only when a REAL console screen is showing (not homepage/login).
-
-    Strict by design: the Create-app button, or an exact "All apps" text.
-    Bare words (لوحة, تطبيق, كونسول) are banned — they false-positive.
-    """
-    try:
-        btn = page.get_by_role("button", name=re.compile(r"create app|إنشاء التطبيق", re.I))
-        btn.first.wait_for(state="visible", timeout=5000)
-        return True
-    except Exception:
-        pass
-    try:
-        txt = page.get_by_text(re.compile(r"all apps|كل التطبيقات", re.I))
-        txt.first.wait_for(state="visible", timeout=5000)
-        return True
-    except Exception:
-        return False
-
-
 def page_snapshot(page) -> str:
     """Short text dump for remote diagnosis (URL + visible headings)."""
     try:
@@ -492,76 +472,6 @@ def activate(page) -> None:
     except Exception:
         pass
     page.wait_for_timeout(1500)
-
-
-def enter_console(page, where: str) -> None:
-    """Guarantee we are INSIDE play.google.com/console (not the marketing homepage).
-
-    The console URL sometimes lands on the public Play homepage first.
-    Click through explicitly, retry with diagnostics, and fail loudly with
-    the real page state if the account has no developer access at all.
-    """
-    # The Console SPA can hydrate slowly (account menu renders before app
-    # content). Poll generously: up to ~4 minutes before giving up.
-    for attempt in range(1, 21):
-        page.wait_for_timeout(8000)
-        activate(page)
-        if attempt in (7, 14):
-            step(f"still loading — reloading (attempt {attempt})")
-            try:
-                page.reload(wait_until="domcontentloaded", timeout=60000)
-            except Exception:
-                pass
-            page.wait_for_timeout(5000)
-        url = page.url
-        step(f"enter_console attempt {attempt}: {url[:120]}")
-        if "console/signup" in url:
-            failshot(
-                page,
-                "no-developer-account",
-                RuntimeError(
-                    "Google account has NO Play Console developer registration "
-                    "($25 one-time). Complete signup first: "
-                    "https://play.google.com/console/signup"
-                ),
-            )
-        if "/console" in url and "accounts.google.com" not in url and console_marker(page):
-            step("inside Play Console confirmed")
-            return
-        # Developer-account chooser page? Its URL is exactly .../console/developers
-        # (no numeric ID). Pick ours, then verify its ID below. Text matching
-        # is banned here: the account menu contains the same words everywhere.
-        if re.search(r"/console/developers/?(?:\?.*)?$", url):
-            step("developer chooser page detected — selecting account")
-            click_any(
-                page,
-                [re.compile(r"fastfree\.cloud", re.I)],
-                "select developer account",
-            )
-            page.wait_for_timeout(5000)
-            continue
-        # Account chooser showing? Surface it instead of clicking blindly.
-        try:
-            if page.get_by_text(re.compile(r"choose an account|اختر حسابا", re.I)).count() > 0:
-                failshot(
-                    page,
-                    "account-chooser",
-                    RuntimeError(
-                        "Google shows an account chooser: HUMAN must pick the account "
-                        "owning Play developer ID 7269125617638997236 in the open "
-                        "browser window, then re-run. " + page_snapshot(page)
-                    ),
-                )
-        except RuntimeError:
-            raise
-        except Exception:
-            pass
-        try_click(
-            page,
-            [re.compile(r"go to play console|وحدة تحكم Google Play", re.I)],
-            "Go to Play Console",
-        )
-    failshot(page, where, RuntimeError(f"could not enter Play Console. {page_snapshot(page)}"))
 
 
 def stage1_attached():
@@ -633,15 +543,17 @@ def stage1_session():
 
 
 def stage2_create(page) -> None:
-    """Stage 2: Create app record (skip when already listed)."""
+    """Stage 2: Create app record (skip when already listed).
+
+    No entry loop: we go straight to the create-form deep link. The app-list
+    SPA often stalls on 'Loading...' (background throttling) while the form
+    page loads fine, so waiting on the list was pure waste.
+    """
     step(f"create: {NAME}")
-    page.goto(CONSOLE, wait_until="domcontentloaded", timeout=60000)
+    # Best-effort duplicate check (short budget — the list SPA often stalls).
     try:
-        page.wait_for_load_state("networkidle", timeout=45000)
-    except Exception:
-        pass
-    enter_console(page, "console-load")
-    try:
+        page.goto(CONSOLE, wait_until="domcontentloaded", timeout=30000)
+        activate(page)
         if page.get_by_text(NAME, exact=True).count() > 0:
             step(f'"{NAME}" already listed — skipping creation')
             return
@@ -650,6 +562,9 @@ def stage2_create(page) -> None:
 
     # Deep link straight to the create form (no dashboard clicking).
     page.goto(APP_CREATE_URL, wait_until="domcontentloaded", timeout=60000)
+    activate(page)
+    if "accounts.google.com" in page.url:
+        failshot(page, "session-lost", RuntimeError("session expired mid-run — re-run to log in again"))
     try:
         page.wait_for_load_state("networkidle", timeout=45000)
     except Exception:
