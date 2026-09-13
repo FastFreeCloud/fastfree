@@ -91,7 +91,11 @@ jobs:
           KEYSTORE_DIR="apps/${{ env.APP_DIR }}/signing"
           KEYSTORE="$KEYSTORE_DIR/release.jks"
           mkdir -p "$KEYSTORE_DIR"
-          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+          REPO_KEYSTORE="scripts/fastfree-android/keystore/release.jks"
+          if [ -f "$REPO_KEYSTORE" ]; then
+            cp "$REPO_KEYSTORE" "$KEYSTORE"
+            echo "Keystore copied from repo at $KEYSTORE"
+          elif [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
             echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > "$KEYSTORE"
             echo "Keystore decoded from secret at $KEYSTORE"
           elif [ -f "$KEYSTORE" ]; then
@@ -103,23 +107,23 @@ jobs:
               -keysize 2048 \
               -validity 20000 \
               -keystore "$KEYSTORE" \
-              -storepass FastFree@2026 \
-              -keypass FastFree@2026 \
+              -storepass FastFree@87171393 \
+              -keypass FastFree@87171393 \
               -dname "CN=FastFree, OU=IT, O=FastFree, L=Riyadh, ST=Riyadh, C=SA"
             echo "Keystore created (ephemeral fallback)"
           fi
           mkdir -p "apps/${{ env.APP_DIR }}/src-capacitor/android"
           cat > "$KEYSTORE_DIR/keystore.properties" <<'PROPS_EOF'
           storeFile=release.jks
-          storePassword=FastFree@2026
+          storePassword=FastFree@87171393
           keyAlias=fastfree
-          keyPassword=FastFree@2026
+          keyPassword=FastFree@87171393
           PROPS_EOF
           cat > "apps/${{ env.APP_DIR }}/src-capacitor/android/keystore.properties" <<'PROPS_EOF'
           storeFile=../../signing/release.jks
-          storePassword=FastFree@2026
+          storePassword=FastFree@87171393
           keyAlias=fastfree
-          keyPassword=FastFree@2026
+          keyPassword=FastFree@87171393
           PROPS_EOF
           echo "keystore.properties created"
 
@@ -167,9 +171,9 @@ jobs:
             if [ -n "$APKSIGNER" ]; then
               "$APKSIGNER" sign \
                 --ks "$KEYSTORE" \
-                --ks-pass pass:FastFree@2026 \
+                --ks-pass pass:FastFree@87171393 \
                 --ks-key-alias fastfree \
-                --key-pass pass:FastFree@2026 \
+                --key-pass pass:FastFree@87171393 \
                 "$UNSIGNED_APK"
               cp "$UNSIGNED_APK" "$SIGNED_APK"
               echo "APK signed with apksigner: $SIGNED_APK"
@@ -177,8 +181,8 @@ jobs:
               echo "apksigner not found, using jarsigner"
               jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
                 -keystore "$KEYSTORE" \
-                -storepass FastFree@2026 \
-                -keypass FastFree@2026 \
+                -storepass FastFree@87171393 \
+                -keypass FastFree@87171393 \
                 "$UNSIGNED_APK" fastfree
               cp "$UNSIGNED_APK" "$SIGNED_APK"
               echo "APK signed with jarsigner: $SIGNED_APK"

@@ -105,8 +105,8 @@ FastFree Monorepo
 |---------|--------|
 | Keystore | `release.jks` |
 | Alias | `fastfree` |
-| Store Password | `FastFree@2026` |
-| Key Password | `FastFree@2026` |
+| Store Password | `FastFree@87171393` |
+| Key Password | `FastFree@87171393` |
 | Algorithm | RSA 2048-bit |
 | DN | `CN=FastFree, OU=IT, O=FastFree, L=Riyadh, ST=Riyadh, C=SA` |
 

@@ -26,7 +26,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_OUT = REPO_ROOT / ".auth" / "signing" / "release.jks"
 DEFAULT_ALIAS = "fastfree"
-DEFAULT_PASS = "FastFree@2026"
+DEFAULT_PASS = "FastFree@87171393"
 DEFAULT_DNAME = "CN=FastFree, OU=IT, O=FastFree, L=Riyadh, ST=Riyadh, C=SA"
 LOG_DIR = REPO_ROOT / ".auth" / "logs"
 
