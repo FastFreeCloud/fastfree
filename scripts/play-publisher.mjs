@@ -9,6 +9,9 @@ function parseArgs(argv) {
       const key = argv[i].slice(2);
       const val = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : 'true';
       args[key] = val;
+      if (key.includes('-')) {
+        args[key.replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = val;
+      }
     }
   }
   return args;
