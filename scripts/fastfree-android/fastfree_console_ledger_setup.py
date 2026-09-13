@@ -508,21 +508,18 @@ def enter_console(page, where: str) -> None:
         if "/console" in url and "accounts.google.com" not in url and console_marker(page):
             step("inside Play Console confirmed")
             return
-        # Developer-account chooser? Pick ours, then verify its ID below.
-        try:
-            if page.get_by_text(re.compile(r"choose developer account|اختر.*مطور", re.I)).count() > 0:
-                step("developer chooser detected — selecting account")
-                click_any(
-                    page,
-                    [re.compile(r"^fastfree\.cloud$", re.I)],
-                    "select developer account",
-                )
-                page.wait_for_timeout(5000)
-                continue
-        except RuntimeError:
-            raise
-        except Exception:
-            pass
+        # Developer-account chooser page? Its URL is exactly .../console/developers
+        # (no numeric ID). Pick ours, then verify its ID below. Text matching
+        # is banned here: the account menu contains the same words everywhere.
+        if re.search(r"/console/developers/?(?:\?.*)?$", url):
+            step("developer chooser page detected — selecting account")
+            click_any(
+                page,
+                [re.compile(r"fastfree\.cloud", re.I)],
+                "select developer account",
+            )
+            page.wait_for_timeout(5000)
+            continue
         # Account chooser showing? Surface it instead of clicking blindly.
         try:
             if page.get_by_text(re.compile(r"choose an account|اختر حسابا", re.I)).count() > 0:
