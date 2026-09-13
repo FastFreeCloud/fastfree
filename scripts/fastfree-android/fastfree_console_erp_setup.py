@@ -1,8 +1,8 @@
 """Play Console bootstrap for FastFree ERP — self-contained stage runner.
 
 Stages 0-6: env -> session -> create -> invite SA -> AAB -> first upload -> report.
-Usage: uv run fastfree_console_pos_setup.py [--from N] [--only N]
-Progress persists in .auth/play-console/pos.progress.json (resume-safe).
+Usage: uv run fastfree_console_erp_setup.py [--from N] [--only N]
+Progress persists in .auth/play-console/erp.progress.json (resume-safe).
 Fully independent: shares nothing with the other app files.
 """
 
@@ -28,7 +28,6 @@ SERVICE_ACCOUNT = "fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.c
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 AUTH_DIR = REPO_ROOT / ".auth" / "play-console"
 PROFILE_DIR = AUTH_DIR / "profile"
-STATE_FILE = AUTH_DIR / "state.json"
 PROGRESS_FILE = AUTH_DIR / f"{KEY}.progress.json"
 AAB_PATH = REPO_ROOT / ".auth" / "aabs" / KEY / "app-release.aab"
 CONSOLE = "https://play.google.com/console"
@@ -55,6 +54,76 @@ def get_logger() -> logging.Logger:
 
 LOG = get_logger()
 
+NETLOG: list = []
+AUTH_COOKIES = {"SID", "HSID", "SSID", "APISID", "SAPISID"}
+DEV_URL = "https://play.google.com/console/u/0/developers/7269125617638997236/app-list"
+GOOGLE_OWNER = "mohamed.fastfree@gmail.com"
+
+
+def _trim_netlog() -> None:
+    del NETLOG[:-50]
+
+
+def _on_dialog(dialog) -> None:
+    LOG.warning("JS dialog (%s): %s — auto-accepting", dialog.type, (dialog.message or "")[:300])
+    try:
+        dialog.accept()
+    except Exception as exc:
+        LOG.warning("dialog accept failed: %s", exc)
+
+
+def _watch_page(page) -> None:
+    """Attach console/pageerror listeners + dialog policy to a page."""
+    try:
+        page.on(
+            "console",
+            lambda msg: (NETLOG.append(f"console.{msg.type}: {msg.text[:300]}"), _trim_netlog()),
+        )
+    except Exception:
+        pass
+    try:
+        page.on(
+            "pageerror",
+            lambda err: (NETLOG.append(f"pageerror: {str(err)[:300]}"), _trim_netlog()),
+        )
+    except Exception:
+        pass
+    try:
+        page.on("dialog", _on_dialog)
+    except Exception:
+        pass
+
+
+def real_login_cookies(context) -> bool:
+    """True only with real Google auth cookies (tracking cookies don't count)."""
+    try:
+        names = {c.get("name", "") for c in context.cookies()}
+    except Exception:
+        return False
+    return bool(AUTH_COOKIES & names)
+
+
+def assert_developer_access(page) -> None:
+    """The logged-in account must open OUR developer app-list."""
+    page.goto(DEV_URL, wait_until="domcontentloaded", timeout=60000)
+    page.wait_for_timeout(4000)
+    try:
+        body = page.inner_text("body") or ""
+    except Exception:
+        body = ""
+    if re.search(r"couldn.?t|no access|error|ليس لديك|غير مصرح|404", body, re.I) or (
+        "/console" not in page.url
+    ):
+        failshot(
+            page,
+            "wrong-account",
+            RuntimeError(
+                "This Google account cannot open Play developer 7269125617638997236. "
+                f"Log in with {GOOGLE_OWNER} (the owner), then re-run. " + page_snapshot(page)
+            ),
+        )
+    step("developer access confirmed: 7269125617638997236")
+
 
 def step(msg: str) -> None:
     print(f"[{datetime.now(UTC).strftime('%H:%M:%S')}] [{KEY}] {msg}", flush=True)
@@ -77,9 +146,18 @@ def mark_done(progress: dict, stage: int) -> None:
 def failshot(page, name: str, err: Exception) -> None:
     try:
         AUTH_DIR.mkdir(parents=True, exist_ok=True)
-        shot = AUTH_DIR / f"fail-{KEY}-{name}-{int(time.time() * 1000)}.png"
+        stamp = int(time.time() * 1000)
+        shot = AUTH_DIR / f"fail-{KEY}-{name}-{stamp}.png"
         page.screenshot(path=str(shot))
         LOG.error("FAIL[%s]: %s\n  url=%s\n  shot=%s", name, err, page.url, shot)
+        if NETLOG:
+            LOG.error("browser log tail:\n  %s", "\n  ".join(NETLOG[-15:]))
+        try:
+            trace = AUTH_DIR / f"trace-{KEY}-{name}-{stamp}.zip"
+            page.context.tracing.stop_chunk(path=str(trace))
+            LOG.error("trace saved: %s", trace)
+        except Exception as trace_exc:
+            LOG.warning("tracing stop failed: %s", trace_exc)
     except Exception:
         LOG.error("FAIL[%s]: %s", name, err)
     raise err if isinstance(err, Exception) else RuntimeError(str(err))
@@ -183,29 +261,54 @@ def stage0_env() -> None:
 
 def open_session(headed: bool):
     """Open persistent-profile browser on the console."""
+    import os
+
     from playwright.sync_api import sync_playwright
 
+    headed = headed or os.environ.get("FF_HEADED") == "1"
+    try:
+        slow_mo = int(os.environ.get("FF_SLOWMO_MS", "0") or 0)
+    except ValueError:
+        slow_mo = 0
     playwright = sync_playwright().start()
     context = playwright.chromium.launch_persistent_context(
-        str(PROFILE_DIR), headless=not headed, viewport=None, locale="en-US"
+        str(PROFILE_DIR),
+        headless=not headed,
+        viewport=None,
+        locale="en-US",
+        slow_mo=slow_mo or None,
     )
+    try:
+        context.tracing.start(screenshots=True, snapshots=True)
+    except Exception as exc:
+        LOG.warning("tracing start failed: %s", exc)
     page = context.pages[0] if context.pages else context.new_page()
+    _watch_page(page)
+    try:
+        context.on("page", _watch_page)
+    except Exception:
+        pass
     return playwright, context, page
 
 
 def console_marker(page) -> bool:
-    """True only when a REAL console screen is showing (not homepage/login)."""
+    """True only when a REAL console screen is showing (not homepage/login).
+
+    Strict by design: the Create-app button, or an exact "All apps" text.
+    Bare words (لوحة, تطبيق, كونسول) are banned — they false-positive.
+    """
     try:
-        if page.get_by_role("button", name=re.compile(r"create app|إنشاء التطبيق", re.I)).count() > 0:
-            return True
+        btn = page.get_by_role("button", name=re.compile(r"create app|إنشاء التطبيق", re.I))
+        btn.first.wait_for(state="visible", timeout=5000)
+        return True
     except Exception:
         pass
     try:
-        if page.get_by_text(re.compile(r"all apps|كل التطبيقات|app dashboard|لوحة", re.I)).count() > 0:
-            return True
+        txt = page.get_by_text(re.compile(r"all apps|كل التطبيقات", re.I))
+        txt.first.wait_for(state="visible", timeout=5000)
+        return True
     except Exception:
-        pass
-    return False
+        return False
 
 
 def page_snapshot(page) -> str:
@@ -215,6 +318,31 @@ def page_snapshot(page) -> str:
         return f"url={page.url} text={body[:500]!r}"
     except Exception as exc:
         return f"url=<unreadable> ({exc})"
+
+
+BLOCKERS = [
+    (
+        re.compile(r"hasn.?t been registered|غير مسجل|not registered", re.I),
+        "Package name is not registered to this developer account "
+        "(Google 2026 requirement). Register it in Play Console, then re-run.",
+    ),
+    (
+        re.compile(r"testing requirements|متطلبات الاختبار", re.I),
+        "Account testing requirements block this step (closed testing for new "
+        "personal accounts). Complete them in the Console, then re-run.",
+    ),
+]
+
+
+def check_blockers(page, where: str) -> None:
+    """Fail loudly on known Google-side blockers instead of hanging."""
+    try:
+        body = page.inner_text("body") or ""
+    except Exception:
+        return
+    for pattern, message in BLOCKERS:
+        if pattern.search(body):
+            failshot(page, where, RuntimeError(message + " " + page_snapshot(page)))
 
 
 def enter_console(page, where: str) -> None:
@@ -259,7 +387,7 @@ def enter_console(page, where: str) -> None:
             pass
         try_click(
             page,
-            [re.compile(r"go to play console|وحدة تحكم Google Play|كونسول", re.I)],
+            [re.compile(r"go to play console|وحدة تحكم Google Play", re.I)],
             "Go to Play Console",
         )
     failshot(page, where, RuntimeError(f"could not enter Play Console. {page_snapshot(page)}"))
@@ -274,8 +402,9 @@ def stage1_session():
         # Possibly the marketing homepage — try entering before judging session.
         try_click(page, [re.compile(r"go to play console", re.I)], "Go to Play Console")
         page.wait_for_timeout(5000)
-    if "/console" in page.url and not session_expired(page):
-        step("auth OK — saved session is valid")
+    if "/console" in page.url and not session_expired(page) and real_login_cookies(context):
+        assert_developer_access(page)
+        step("auth OK — saved session is valid (auth cookies + developer access)")
         return playwright, context, page
     playwright.stop()
     step("NO valid session — opening headed browser, LOG IN by hand (owner + 2FA)…")
@@ -284,8 +413,18 @@ def stage1_session():
     step("waiting for YOU to reach the console (no timeout)…")
     page.wait_for_url(re.compile(r"play\.google\.com/console"), timeout=0)
     page.wait_for_timeout(3000)
-    context.storage_state(path=str(STATE_FILE), indexed_db=True)
-    step(f"session saved -> {STATE_FILE}")
+    if not real_login_cookies(context):
+        failshot(
+            page,
+            "login-incomplete",
+            RuntimeError(
+                "Login did not persist: no SID/HSID auth cookies found. "
+                "Complete the Google login fully in the open window (including 2FA), "
+                "then re-run. " + page_snapshot(page)
+            ),
+        )
+    assert_developer_access(page)
+    step("login verified (auth cookies + developer access)")
     return playwright, context, page
 
 
@@ -330,8 +469,8 @@ def stage2_create(page) -> None:
     except Exception:
         step("language: leaving default")
 
-    pick_one(page, "radio", [re.compile(r"^app$", re.I), re.compile("تطبيق")], "type = App")
-    pick_one(page, "radio", [re.compile(r"^free$", re.I), re.compile("مجاني")], "free")
+    pick_one(page, "radio", [re.compile(r"^app$", re.I), re.compile(r"^تطبيق$", re.I)], "type = App")
+    pick_one(page, "radio", [re.compile(r"^free$", re.I), re.compile(r"^مجاني$", re.I)], "free")
     fill_any(
         page, [re.compile(r"email|بريد إلكتروني|البريد الإلكتروني", re.I)], CONTACT_EMAIL, "contact email"
     )
@@ -357,6 +496,13 @@ def stage2_create(page) -> None:
         failshot(page, "submit", RuntimeError(f"submit button not found: {exc}"))
     page.wait_for_url(re.compile(r"play\.google\.com/console"), timeout=60000)
     page.wait_for_timeout(4000)
+    check_blockers(page, "create")
+    try:
+        from playwright.sync_api import expect
+
+        expect(page.get_by_text(NAME, exact=True)).to_be_visible(timeout=30000)
+    except Exception as exc:
+        failshot(page, "create-verify", RuntimeError(f"app row not visible after submit: {exc}"))
     step(f"created: {NAME}")
 
 
@@ -374,7 +520,7 @@ def stage3_invite(page) -> None:
     click_any(page, [re.compile(r"add app|إضافة تطبيق", re.I)], "Add app")
     page.wait_for_timeout(2000)
     pick_one(page, "checkbox", [re.compile(re.escape(NAME), re.I)], f"select {NAME}")
-    click_any(page, [re.compile(r"^apply$|تطبيق", re.I)], "Apply app selection")
+    click_any(page, [re.compile(r"^apply$|^تطبيق$", re.I)], "Apply app selection")
     page.wait_for_timeout(1500)
     pick_one(
         page, "checkbox", [re.compile(r"release apps to testing tracks", re.I)], "testing-tracks permission"
@@ -385,9 +531,15 @@ def stage3_invite(page) -> None:
         [re.compile(r"release to production, exclude devices", re.I)],
         "production permission",
     )
-    click_any(page, [re.compile(r"invite users?|دعوة|إرسال الدعوة", re.I)], "Invite user")
+    click_any(page, [re.compile(r"^invite users?$|^دعوة المستخدم$|إرسال الدعوة", re.I)], "Invite user")
     page.wait_for_timeout(4000)
-    step(f"invited {SERVICE_ACCOUNT} on {NAME} (expect Active)")
+    try:
+        from playwright.sync_api import expect
+
+        expect(page.get_by_text(re.compile(r"\bactive\b|نشط", re.I)).first).to_be_visible(timeout=30000)
+    except Exception as exc:
+        failshot(page, "invite-verify", RuntimeError(f"Active status not visible: {exc}"))
+    step(f"invited {SERVICE_ACCOUNT} on {NAME} (Active confirmed)")
 
 
 def stage4_aab() -> Path | None:
@@ -455,6 +607,10 @@ def stage5_upload(page, aab: Path | None) -> None:
         page.wait_for_timeout(2000)
         try_click(page, [re.compile(r"continue|متابعة|accept|قبول|save|حفظ", re.I)], "signing confirm")
         page.wait_for_timeout(2000)
+    try:
+        page.locator('input[type="file"]').first.wait_for(state="attached", timeout=30000)
+    except Exception as exc:
+        failshot(page, "upload", RuntimeError(f"file input never attached: {exc}"))
     inputs = page.locator('input[type="file"]')
     if inputs.count() == 0:
         failshot(page, "upload", RuntimeError("no file input on release page"))
@@ -468,9 +624,18 @@ def stage5_upload(page, aab: Path | None) -> None:
     page.wait_for_timeout(2000)
     review.first.click()
     step("review opened")
+    check_blockers(page, "upload")
     page.wait_for_timeout(2500)
     click_any(page, [re.compile(r"start rollout to internal|بدء الطرح", re.I)], "Start rollout to Internal")
     page.wait_for_timeout(4000)
+    try:
+        from playwright.sync_api import expect
+
+        expect(page.get_by_text(re.compile(r"rollout|release|طرح|إصدار", re.I)).first).to_be_visible(
+            timeout=60000
+        )
+    except Exception as exc:
+        failshot(page, "rollout-verify", RuntimeError(f"rollout confirmation not visible: {exc}"))
     step(f"rolling out to Internal: {NAME}")
 
 
@@ -534,6 +699,10 @@ def main() -> int:
     finally:
         try:
             if context is not None:
+                try:
+                    context.tracing.stop()
+                except Exception:
+                    pass
                 context.close()
         except Exception:
             pass
