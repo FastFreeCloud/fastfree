@@ -73,7 +73,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   } else if (key) {
     await inviteSA(key);
   } else {
-    console.error('usage: node scripts/play-console/invite-sa.mjs --app <key> | --all');
+    console.error('usage: node scripts/play-console/06-invite-sa.mjs --app <key> | --all');
     process.exit(1);
   }
   step('DONE');

@@ -11,7 +11,7 @@ export async function ensureAuth() {
     throw new Error(
       `SESSION_MISSING: no saved session at ${STATE_FILE}\n` +
         'Run once (a headed browser opens — YOU log in with the Play Console owner account):\n' +
-        '  node scripts/play-console/auth-login.mjs',
+        '  node scripts/play-console/01-auth-login.mjs',
     );
   }
   const browser = await chromium.launch(launchOpts());
@@ -31,7 +31,7 @@ export async function ensureAuth() {
     throw new Error(
       'SESSION_EXPIRED: Google session is no longer valid.\n' +
         'Re-login (headed, you complete login + 2FA in the window):\n' +
-        '  node scripts/play-console/auth-login.mjs',
+        '  node scripts/play-console/01-auth-login.mjs',
     );
   }
   step('auth OK — Play Console session is valid');

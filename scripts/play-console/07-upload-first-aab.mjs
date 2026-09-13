@@ -80,7 +80,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const key = process.argv.find((a, i) => process.argv[i - 1] === '--app') ?? null;
   const aab = process.argv.find((a, i) => process.argv[i - 1] === '--aab') ?? null;
   if (!key || !aab) {
-    console.error('usage: node scripts/play-console/upload-first-aab.mjs --app <key> --aab <path-to.aab>');
+    console.error('usage: node scripts/play-console/07-upload-first-aab.mjs --app <key> --aab <path-to.aab>');
     process.exit(1);
   }
   await uploadFirstAab(key, aab);
