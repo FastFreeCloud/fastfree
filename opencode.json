@@ -42,8 +42,8 @@
         "npx",
         "-y",
         "@playwright/mcp@latest",
-        "--executable-path=C:\\Users\\FastFree\\AppData\\Local\\CentBrowser\\Application\\chrome.exe",
-        "--user-data-dir=C:\\Users\\FastFree\\AppData\\Local\\CentBrowser\\User Data"
+        "--executable-path=C:\\Users\\fastfree\\AppData\\Local\\CentBrowser\\Application\\chrome.exe",
+        "--user-data-dir=C:\\Users\\fastfree\\Desktop\\fastfree-lowcode-roadmap\\fastfree\\.auth\\mcp-profile"
       ]
     },
     "firecrawl-mcp": {
