@@ -1,0 +1,13 @@
+{
+  "name": "play-console-automation",
+  "private": true,
+  "type": "module",
+  "description": "Playwright automation for Google Play Console bootstrap (create apps, invite SA, first AAB). Human logs in once; scripts reuse the session.",
+  "scripts": {
+    "auth": "node auth-login.mjs",
+    "create": "node create-app.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.63.0"
+  }
+}

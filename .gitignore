@@ -30,6 +30,10 @@ fastfree-508417-8f88d017a77c.json
 *-service-account*.json
 *-key.json
 
+# Play Console automation session (NEVER commit — live Google cookies/profile)
+.auth/
+*.auth.json
+
 # OS files
 .DS_Store
 Thumbs.db
