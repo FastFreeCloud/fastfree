@@ -859,6 +859,25 @@ def main() -> int:
     done = set(progress.get("stages", {}))
     step(f"start ({NAME}) from={args.from_stage} only={args.only_stage}")
 
+    import os
+
+    # Single-driver guard: two processes driving one browser tab corrupt
+    # every click. Second instance refuses to start.
+    lock_file = AUTH_DIR / f"{KEY}.run.lock"
+    try:
+        other_pid = int(lock_file.read_text(encoding="utf-8").strip())
+    except (OSError, ValueError):
+        other_pid = None
+    if other_pid is not None:
+        try:
+            os.kill(other_pid, 0)
+        except OSError:
+            other_pid = None  # stale lock
+        else:
+            step(f"another run is active (pid={other_pid}) — refusing a second driver")
+            return 2
+    lock_file.write_text(str(os.getpid()), encoding="utf-8")
+
     playwright = context = page = None
     aab: Path | None = None
     try:
@@ -924,6 +943,11 @@ def main() -> int:
             except Exception:
                 pass
             _kill_browser()
+        try:
+            if lock_file.read_text(encoding="utf-8").strip() == str(os.getpid()):
+                lock_file.unlink()
+        except OSError:
+            pass
     step("ALL STAGES DONE")
     return 0
 
