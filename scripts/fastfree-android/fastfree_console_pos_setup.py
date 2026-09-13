@@ -57,9 +57,11 @@ LOG = get_logger()
 
 NETLOG: list = []
 AUTH_COOKIES = {"SID", "HSID", "SSID", "APISID", "SAPISID"}
-DEV_URL = "https://play.google.com/console/u/0/developers/7269125617638997236/app-list"
-APP_CREATE_URL = "https://play.google.com/console/u/0/developers/7269125617638997236/create-new-app"
+EXPECTED_DEV_ID = "7269125617638997236"
+DEV_URL = f"https://play.google.com/console/u/0/developers/{EXPECTED_DEV_ID}/app-list"
+APP_CREATE_URL = f"https://play.google.com/console/u/0/developers/{EXPECTED_DEV_ID}/create-new-app"
 GOOGLE_OWNER = "mohamed.fastfree@gmail.com"
+DEV_ACCOUNT_NAME = "fastfree.cloud"
 
 
 def _trim_netlog() -> None:
@@ -106,25 +108,36 @@ def real_login_cookies(context) -> bool:
 
 
 def assert_developer_access(page) -> None:
-    """The logged-in account must open OUR developer app-list."""
+    """The logged-in account must open OUR developer app-list (ID-verified)."""
     page.goto(DEV_URL, wait_until="domcontentloaded", timeout=60000)
     page.wait_for_timeout(4000)
-    try:
-        body = page.inner_text("body") or ""
-    except Exception:
-        body = ""
-    if re.search(r"couldn.?t|no access|error|ليس لديك|غير مصرح|404", body, re.I) or (
-        "/console" not in page.url
-    ):
+    found = re.search(r"/developers/(\d+)", page.url)
+    actual_id = found.group(1) if found else None
+    if actual_id != EXPECTED_DEV_ID:
+        try:
+            body = page.inner_text("body") or ""
+        except Exception:
+            body = ""
+        if re.search(r"couldn.?t|no access|error|ليس لديك|غير مصرح|404", body, re.I):
+            failshot(
+                page,
+                "wrong-account",
+                RuntimeError(
+                    "This Google account cannot open Play developer "
+                    f"{EXPECTED_DEV_ID} (landed on {actual_id}). "
+                    f"Log in with {GOOGLE_OWNER} (the owner), then re-run. " + page_snapshot(page)
+                ),
+            )
         failshot(
             page,
-            "wrong-account",
+            "wrong-developer-id",
             RuntimeError(
-                "This Google account cannot open Play developer 7269125617638997236. "
-                f"Log in with {GOOGLE_OWNER} (the owner), then re-run. " + page_snapshot(page)
+                f"Developer account is {actual_id}, expected {EXPECTED_DEV_ID}. "
+                "Confirm which developer ID owns your apps, update EXPECTED_DEV_ID, re-run. "
+                + page_snapshot(page)
             ),
         )
-    step("developer access confirmed: 7269125617638997236")
+    step(f"developer access confirmed: {EXPECTED_DEV_ID}")
 
 
 def step(msg: str) -> None:
@@ -499,6 +512,21 @@ def enter_console(page, where: str) -> None:
         if "/console" in url and "accounts.google.com" not in url and console_marker(page):
             step("inside Play Console confirmed")
             return
+        # Developer-account chooser? Pick ours, then verify its ID below.
+        try:
+            if page.get_by_text(re.compile(r"choose developer account|اختر.*مطور", re.I)).count() > 0:
+                step("developer chooser detected — selecting account")
+                click_any(
+                    page,
+                    [re.compile(r"^fastfree\.cloud$", re.I)],
+                    "select developer account",
+                )
+                page.wait_for_timeout(5000)
+                continue
+        except RuntimeError:
+            raise
+        except Exception:
+            pass
         # Account chooser showing? Surface it instead of clicking blindly.
         try:
             if page.get_by_text(re.compile(r"choose an account|اختر حسابا", re.I)).count() > 0:
