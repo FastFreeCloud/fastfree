@@ -18,6 +18,7 @@ env:
   JAVA_VERSION: "21"
   NODE_VERSION: "22"
   PNPM_VERSION: "11.11.0"
+  APP_KEY: erp
 
 jobs:
   build:
@@ -230,10 +231,10 @@ jobs:
           echo "Using versionCode=$VERSION_CODE"
 
           echo "Generating metadata from products.ts..."
-          node scripts/generate-metadata.mjs
+          node scripts/generate-metadata.mjs --app fastfree_erp
 
           echo "Generating feature graphics..."
-          node scripts/generate-feature-graphics.mjs
+          node scripts/generate-feature-graphics.mjs --app erp
 
           AAB_PATH=$(find apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/bundle/release -name "*.aab" | head -1)
           if [ -z "$AAB_PATH" ]; then
@@ -252,6 +253,70 @@ jobs:
             --status draft \
             --version-code "$VERSION_CODE"
           echo "=== Play Store publish complete ==="
+
+      - name: Capture screenshots with Maestro
+        if: env.PLAY_ACCESS_TOKEN != ''
+        env:
+          PLAY_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          FF_ADMIN_USR: Administrator
+          FF_ADMIN_PWD: ${{ secrets.FASTFREE_ADMIN_PASSWORD }}
+        run: |
+          APK=$(find apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/apk/debug -name "*.apk" | head -1)
+          if [ -z "$APK" ]; then
+            echo "No debug APK found - skipping screenshots"
+            exit 0
+          fi
+          
+          echo "Installing Maestro..."
+          curl -fsSL https://get.maestro.mobile.dev | bash
+          export PATH="$HOME/.maestro/bin:$PATH"
+          
+          # Install debug APK on emulator (if available)
+          if adb devices | grep -q emulator; then
+            adb install -r "$APK"
+            
+            # Arabic screenshots
+            adb shell settings put system system_locales ar-EG
+            adb shell am force-stop ${{ env.APP_ID }}
+            sleep 2
+            maestro test .maestro/${{ env.APP_KEY }}/ar.yaml || true
+            
+            # English screenshots
+            adb shell settings put system system_locales en-US
+            adb shell am force-stop ${{ env.APP_ID }}
+            sleep 2
+            maestro test .maestro/${{ env.APP_KEY }}/en.yaml || true
+            
+            echo "Screenshots captured"
+          else
+            echo "No emulator available - skipping screenshots"
+          fi
+
+      - name: Crop screenshots
+        if: env.PLAY_ACCESS_TOKEN != ''
+        env:
+          PLAY_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+        run: |
+          npm install --prefix scripts sharp --no-audit --no-fund 2>/dev/null || true
+          if [ -d ".maestro/${{ env.APP_KEY }}" ]; then
+            find .maestro/${{ env.APP_KEY }} -name "*.png" -exec mv {} apps/${{ env.APP_DIR }}/fastlane/metadata/android/en-US/images/phone-screenshots/ \; 2>/dev/null || true
+            node scripts/crop-screenshots.mjs ${{ env.APP_KEY }} en-US || true
+          fi
+
+      - name: Commit screenshots
+        if: env.PLAY_ACCESS_TOKEN != ''
+        env:
+          PLAY_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "apps/${{ env.APP_DIR }}/fastlane/metadata/android/*/images/phone-screenshots/*.png"
+          if git diff --cached --quiet; then
+            echo "No screenshot changes to commit"
+          else
+            git commit -m "screenshots(${{ env.APP_KEY }}): refresh Play store captures"
+            git push HEAD:master
+          fi
 
   release:
     needs: build

@@ -61,18 +61,7 @@ config:
 - waitForAnimationToEnd:
     timeout: 5000
 
-# 01 – لوحة معلومات المحاسبة
-- tapOn: "المحاسبة"
-- waitForAnimationToEnd:
-    timeout: 3000
-- tapOn: "لوحة معلومات المحاسبة"
-- extendedWaitUntil:
-    visible: "إجمالي الحسابات"
-    timeout: 15000
-- takeScreenshot:
-    path: 01-dashboard
-
-# 02 – الموظفون
+# 01 – الموظفون
 - tapOn: "الموارد البشرية"
 - waitForAnimationToEnd:
     timeout: 3000
@@ -81,48 +70,59 @@ config:
     visible: "اسم الموظف"
     timeout: 15000
 - takeScreenshot:
-    path: 02-employees
+    path: 01-employees
 
-# 03 – الحضور
+# 02 – الأقسام
 - tapOn: "الموارد البشرية"
 - waitForAnimationToEnd:
     timeout: 3000
-- tapOn: "الحضور"
+- tapOn: "الأقسام"
+- extendedWaitUntil:
+    visible: "اسم القسم"
+    timeout: 15000
+- takeScreenshot:
+    path: 02-departments
+
+# 03 – المسميات الوظيفية
+- tapOn: "الموارد البشرية"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "المسميات الوظيفية"
+- extendedWaitUntil:
+    visible: "اسم المسمى"
+    timeout: 15000
+- takeScreenshot:
+    path: 03-designations
+
+# 04 – الحضور والانصراف
+- tapOn: "الموارد البشرية"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "الحضور والانصراف"
 - extendedWaitUntil:
     visible: "تاريخ الحضور"
     timeout: 15000
 - takeScreenshot:
-    path: 03-attendance
+    path: 04-attendance
 
-# 04 – الرواتب
+# 05 – طلبات الإجازة
 - tapOn: "الموارد البشرية"
 - waitForAnimationToEnd:
     timeout: 3000
-- tapOn: "الرواتب"
+- tapOn: "طلبات الإجازة"
 - extendedWaitUntil:
-    visible: "إجمالي الموظفين"
+    visible: "نوع الإجازة"
     timeout: 15000
 - takeScreenshot:
-    path: 04-payroll
+    path: 05-leave-applications
 
-# 05 – العملاء المحتميون
-- tapOn: "العلاقات العملاء"
+# 06 – كشوف الرواتب
+- tapOn: "الموارد البشرية"
 - waitForAnimationToEnd:
     timeout: 3000
-- tapOn: "العملاء المحتميون"
+- tapOn: "كشوف الرواتب"
 - extendedWaitUntil:
-    visible: "اسم العميل المحتمي"
+    visible: "الراتب الأساسي"
     timeout: 15000
 - takeScreenshot:
-    path: 05-leads
-
-# 06 – جهات الاتصال
-- tapOn: "العلاقات العملاء"
-- waitForAnimationToEnd:
-    timeout: 3000
-- tapOn: "جهات الاتصال"
-- extendedWaitUntil:
-    visible: "الاسم الأول"
-    timeout: 15000
-- takeScreenshot:
-    path: 06-contacts
+    path: 06-salary-slips

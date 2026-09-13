@@ -111,7 +111,7 @@ config:
     timeout: 3000
 - tapOn: "أوامر الشراء"
 - extendedWaitUntil:
-    visible: "المورد"
+    visible: "تاريخ الطلب"
     timeout: 15000
 - takeScreenshot:
     path: 05-purchase-orders
@@ -126,25 +126,3 @@ config:
     timeout: 15000
 - takeScreenshot:
     path: 06-employees
-
-# 07 – العملاء المحتميون
-- tapOn: "العلاقات العملاء"
-- waitForAnimationToEnd:
-    timeout: 3000
-- tapOn: "العملاء المحتميون"
-- extendedWaitUntil:
-    visible: "اسم العميل المحتمي"
-    timeout: 15000
-- takeScreenshot:
-    path: 07-leads
-
-# 08 – جهات الاتصال
-- tapOn: "العلاقات العملاء"
-- waitForAnimationToEnd:
-    timeout: 3000
-- tapOn: "جهات الاتصال"
-- extendedWaitUntil:
-    visible: "الاسم الأول"
-    timeout: 15000
-- takeScreenshot:
-    path: 08-contacts

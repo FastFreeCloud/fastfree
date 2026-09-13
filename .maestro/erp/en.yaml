@@ -106,18 +106,18 @@ config:
     path: 04-sales-invoices
 
 # 05 – Purchase Orders
-- tapOn: "Purchase"
+- tapOn: "Purchases"
 - waitForAnimationToEnd:
     timeout: 3000
 - tapOn: "Purchase Orders"
 - extendedWaitUntil:
-    visible: "Supplier"
+    visible: "Order Date"
     timeout: 15000
 - takeScreenshot:
     path: 05-purchase-orders
 
 # 06 – Employees
-- tapOn: "HR"
+- tapOn: "Human Resources"
 - waitForAnimationToEnd:
     timeout: 3000
 - tapOn: "Employees"
@@ -126,25 +126,3 @@ config:
     timeout: 15000
 - takeScreenshot:
     path: 06-employees
-
-# 07 – Leads
-- tapOn: "CRM"
-- waitForAnimationToEnd:
-    timeout: 3000
-- tapOn: "Leads"
-- extendedWaitUntil:
-    visible: "Lead Name"
-    timeout: 15000
-- takeScreenshot:
-    path: 07-leads
-
-# 08 – Contacts
-- tapOn: "CRM"
-- waitForAnimationToEnd:
-    timeout: 3000
-- tapOn: "Contacts"
-- extendedWaitUntil:
-    visible: "First Name"
-    timeout: 15000
-- takeScreenshot:
-    path: 08-contacts

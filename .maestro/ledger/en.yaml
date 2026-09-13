@@ -72,18 +72,7 @@ config:
 - takeScreenshot:
     path: 01-dashboard
 
-# 02 – Chart of Accounts
-- tapOn: "Accounting"
-- waitForAnimationToEnd:
-    timeout: 3000
-- tapOn: "Chart of Accounts"
-- extendedWaitUntil:
-    visible: "Account Name"
-    timeout: 15000
-- takeScreenshot:
-    path: 02-chart-of-accounts
-
-# 03 – Journal Entries
+# 02 – Journal Entries
 - tapOn: "Accounting"
 - waitForAnimationToEnd:
     timeout: 3000
@@ -92,9 +81,9 @@ config:
     visible: "Posting Date"
     timeout: 15000
 - takeScreenshot:
-    path: 03-journal
+    path: 02-journal
 
-# 04 – Payment Entries
+# 03 – Payment Entries
 - tapOn: "Accounting"
 - waitForAnimationToEnd:
     timeout: 3000
@@ -103,18 +92,29 @@ config:
     visible: "Party"
     timeout: 15000
 - takeScreenshot:
-    path: 04-payment
+    path: 03-payment
 
-# 05 – General Ledger
+# 04 – Chart of Accounts
 - tapOn: "Accounting"
 - waitForAnimationToEnd:
     timeout: 3000
-- tapOn: "General Ledger"
+- tapOn: "Chart of Accounts"
 - extendedWaitUntil:
-    visible: "Account"
+    visible: "Account Number"
     timeout: 15000
 - takeScreenshot:
-    path: 05-ledger
+    path: 04-chart-of-accounts
+
+# 05 – Customers
+- tapOn: "Sales"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Customers"
+- extendedWaitUntil:
+    visible: "Customer Name"
+    timeout: 15000
+- takeScreenshot:
+    path: 05-customers
 
 # 06 – Financial Reports
 - tapOn: "Accounting"
@@ -122,7 +122,7 @@ config:
     timeout: 3000
 - tapOn: "Financial Reports"
 - extendedWaitUntil:
-    visible: "Report Type"
+    visible: "Total Revenue"
     timeout: 15000
 - takeScreenshot:
-    path: 06-reports
+    path: 06-financial-reports

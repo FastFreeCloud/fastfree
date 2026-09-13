@@ -15,6 +15,17 @@ const APPS = [
 
 const LOCALES = ['ar', 'en-US'];
 
+const appFilter = process.argv.find((arg, i) => process.argv[i - 1] === '--app') || null;
+const appsToProcess = appFilter
+  ? APPS.filter(a => a.name === appFilter || a.slug.startsWith(appFilter))
+  : APPS;
+
+if (appsToProcess.length === 0) {
+  console.error(`No app matched filter "${appFilter}". Available: ${APPS.map(a => a.name).join(', ')}`);
+  process.exit(1);
+}
+console.log(`Processing ${appsToProcess.length} app(s): ${appsToProcess.map(a => a.name).join(', ')}`);
+
 function parseProducts(tsSource) {
   const body = tsSource
     .replace(/export\s+type\s+Product\s*=\s*\{[\s\S]*?\};\s*/m, '')
@@ -67,7 +78,7 @@ const products = parseProducts(productsSource);
 const gitChangelog = getGitLog();
 const versionCode = process.env.VERSION_CODE || '1';
 
-for (const app of APPS) {
+for (const app of appsToProcess) {
   const product = getProductForApp(products, app.slug);
   const appDir = join(APPS_DIR, app.name);
   const outRoot = join(appDir, 'fastlane', 'metadata', 'android');

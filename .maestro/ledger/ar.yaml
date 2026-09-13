@@ -72,18 +72,7 @@ config:
 - takeScreenshot:
     path: 01-dashboard
 
-# 02 – شجرة الحسابات
-- tapOn: "المحاسبة"
-- waitForAnimationToEnd:
-    timeout: 3000
-- tapOn: "شجرة الحسابات"
-- extendedWaitUntil:
-    visible: "اسم الحساب"
-    timeout: 15000
-- takeScreenshot:
-    path: 02-chart-of-accounts
-
-# 03 – القيود اليومية
+# 02 – القيود اليومية
 - tapOn: "المحاسبة"
 - waitForAnimationToEnd:
     timeout: 3000
@@ -92,9 +81,9 @@ config:
     visible: "تاريخ الترحيل"
     timeout: 15000
 - takeScreenshot:
-    path: 03-journal
+    path: 02-journal
 
-# 04 – قيود الدفع
+# 03 – قيود الدفع
 - tapOn: "المحاسبة"
 - waitForAnimationToEnd:
     timeout: 3000
@@ -103,26 +92,37 @@ config:
     visible: "الطرف"
     timeout: 15000
 - takeScreenshot:
-    path: 04-payment
+    path: 03-payment
 
-# 05 – دفتر الأستاذ العام
+# 04 – دليل الحسابات
 - tapOn: "المحاسبة"
 - waitForAnimationToEnd:
     timeout: 3000
-- tapOn: "دفتر الأستاذ العام"
+- tapOn: "دليل الحسابات"
 - extendedWaitUntil:
-    visible: "الحساب"
+    visible: "رقم الحساب"
     timeout: 15000
 - takeScreenshot:
-    path: 05-ledger
+    path: 04-chart-of-accounts
 
-# 06 – التقارير المالية
+# 05 – العملاء
+- tapOn: "المبيعات"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "العملاء"
+- extendedWaitUntil:
+    visible: "اسم العميل"
+    timeout: 15000
+- takeScreenshot:
+    path: 05-customers
+
+# 06 – تقارير مالية
 - tapOn: "المحاسبة"
 - waitForAnimationToEnd:
     timeout: 3000
-- tapOn: "التقارير المالية"
+- tapOn: "تقارير مالية"
 - extendedWaitUntil:
-    visible: "نوع التقرير"
+    visible: "إجمالي الإيرادات"
     timeout: 15000
 - takeScreenshot:
-    path: 06-reports
+    path: 06-financial-reports

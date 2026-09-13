@@ -61,19 +61,8 @@ config:
 - waitForAnimationToEnd:
     timeout: 5000
 
-# 01 – Accounting Dashboard
-- tapOn: "Accounting"
-- waitForAnimationToEnd:
-    timeout: 3000
-- tapOn: "Accounting Dashboard"
-- extendedWaitUntil:
-    visible: "Total Accounts"
-    timeout: 15000
-- takeScreenshot:
-    path: 01-dashboard
-
-# 02 – Employees
-- tapOn: "HR"
+# 01 – Employees
+- tapOn: "Human Resources"
 - waitForAnimationToEnd:
     timeout: 3000
 - tapOn: "Employees"
@@ -81,10 +70,32 @@ config:
     visible: "Employee Name"
     timeout: 15000
 - takeScreenshot:
-    path: 02-employees
+    path: 01-employees
 
-# 03 – Attendance
-- tapOn: "HR"
+# 02 – Departments
+- tapOn: "Human Resources"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Departments"
+- extendedWaitUntil:
+    visible: "Department Name"
+    timeout: 15000
+- takeScreenshot:
+    path: 02-departments
+
+# 03 – Designations
+- tapOn: "Human Resources"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Designations"
+- extendedWaitUntil:
+    visible: "Designation Name"
+    timeout: 15000
+- takeScreenshot:
+    path: 03-designations
+
+# 04 – Attendance
+- tapOn: "Human Resources"
 - waitForAnimationToEnd:
     timeout: 3000
 - tapOn: "Attendance"
@@ -92,37 +103,26 @@ config:
     visible: "Attendance Date"
     timeout: 15000
 - takeScreenshot:
-    path: 03-attendance
+    path: 04-attendance
 
-# 04 – Payroll
-- tapOn: "HR"
+# 05 – Leave Applications
+- tapOn: "Human Resources"
 - waitForAnimationToEnd:
     timeout: 3000
-- tapOn: "Payroll"
+- tapOn: "Leave Applications"
 - extendedWaitUntil:
-    visible: "Total Employees"
+    visible: "Leave Type"
     timeout: 15000
 - takeScreenshot:
-    path: 04-payroll
+    path: 05-leave-applications
 
-# 05 – Leads
-- tapOn: "CRM"
+# 06 – Salary Slips
+- tapOn: "Human Resources"
 - waitForAnimationToEnd:
     timeout: 3000
-- tapOn: "Leads"
+- tapOn: "Salary Slips"
 - extendedWaitUntil:
-    visible: "Lead Name"
+    visible: "Basic Salary"
     timeout: 15000
 - takeScreenshot:
-    path: 05-leads
-
-# 06 – Contacts
-- tapOn: "CRM"
-- waitForAnimationToEnd:
-    timeout: 3000
-- tapOn: "Contacts"
-- extendedWaitUntil:
-    visible: "First Name"
-    timeout: 15000
-- takeScreenshot:
-    path: 06-contacts
+    path: 06-salary-slips
