@@ -598,10 +598,30 @@ def stage2_create(page) -> None:
     except Exception:
         availability_body = ""
     if re.search(r"already in use|مستخدم بالفعل|taken|duplicate", availability_body, re.I):
-        # 'taken' after OUR OWN previous submit almost always means a sibling
-        # run already created this app minutes ago (the list SPA stalls, so the
-        # skip-check misses it). Continue: the submit below validates for real.
-        step("package taken — likely our own previous run; continuing, submit will validate")
+        # 'taken' usually means OUR previous submit already created this app
+        # (the list SPA stalls, so the skip-check misses it). Confirm on the
+        # app-list deep link: found => stage complete, skip to invite.
+        step("package taken — confirming on the app list whether it is ours…")
+        try:
+            from playwright.sync_api import expect
+
+            page.goto(DEV_URL, wait_until="domcontentloaded", timeout=60000)
+            activate(page)
+            try:
+                expect(page.get_by_text(NAME, exact=True)).to_be_visible(timeout=45000)
+            except Exception:
+                page.reload(wait_until="domcontentloaded", timeout=60000)
+                page.wait_for_timeout(8000)
+                activate(page)
+                expect(page.get_by_text(NAME, exact=True)).to_be_visible(timeout=45000)
+            step(f'"{NAME}" confirmed in app list — already created, continuing to next stage')
+            return
+        except Exception as exc:
+            failshot(
+                page,
+                "package-taken",
+                RuntimeError(f"Package {PACKAGE} taken AND {NAME} not in our list: {exc}"),
+            )
     else:
         check_blockers(page, "package-check")
 
