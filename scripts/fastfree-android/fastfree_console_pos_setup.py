@@ -495,8 +495,10 @@ def enter_console(page, where: str) -> None:
     Click through explicitly, retry with diagnostics, and fail loudly with
     the real page state if the account has no developer access at all.
     """
-    for attempt in range(1, 8):
-        page.wait_for_timeout(4000)
+    # The Console SPA can hydrate slowly (account menu renders before app
+    # content). Poll generously: up to ~4 minutes before giving up.
+    for attempt in range(1, 21):
+        page.wait_for_timeout(8000)
         url = page.url
         step(f"enter_console attempt {attempt}: {url[:120]}")
         if "console/signup" in url:
