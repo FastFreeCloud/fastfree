@@ -4,14 +4,8 @@
   "type": "module",
   "description": "Playwright automation for Google Play Console bootstrap (create apps, invite SA, first AAB). Human logs in once; scripts reuse the session.",
   "scripts": {
-    "auth": "node 01-auth-login.mjs",
-    "create": "node create-app.mjs",
-    "create:pos": "node 02-create-pos.mjs",
-    "create:erp": "node 03-create-erp.mjs",
-    "create:hr": "node 04-create-hr.mjs",
-    "create:ledger": "node 05-create-ledger.mjs",
-    "invite": "node 06-invite-sa.mjs",
-    "upload": "node 07-upload-first-aab.mjs"
+    "setup": "node setup.mjs",
+    "setup:app": "node setup.mjs --app"
   },
   "dependencies": {
     "playwright-core": "1.63.0"
