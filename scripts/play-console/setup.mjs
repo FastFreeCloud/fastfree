@@ -119,7 +119,16 @@ async function loginPhase() {
 async function createApp(page, app) {
   step(`--- [${app.key}] create: ${app.name} ---`);
   await page.goto('https://play.google.com/console', { waitUntil: 'domcontentloaded' });
-  await sleep(3000);
+  await page.waitForLoadState('networkidle', { timeout: 45000 }).catch(() => {});
+  // The console boots with a loading illustration — wait for real chrome.
+  try {
+    await page
+      .getByRole('button', { name: /create app|إنشاء التطبيق/i })
+      .first()
+      .waitFor({ state: 'visible', timeout: 90000 });
+  } catch {
+    await failshot(page, 'console-load', new Error('console did not finish loading in 90s'));
+  }
   await tryClick(page, [/accept|agree|موافق|قبول/i], 'cookie banner');
 
   try {
