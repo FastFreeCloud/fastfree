@@ -235,79 +235,95 @@ def session_expired(page) -> bool:
 
 
 def stage0_env() -> None:
-    """Stage 0: verify/install browser deps (playwright chromium + gh CLI)."""
-    from playwright.sync_api import sync_playwright
-
-    with sync_playwright() as playwright:
-        exe = playwright.chromium.executable_path
-    if not Path(exe).exists():
-        step("chromium missing — installing (one time, ~170MB)…")
-        proc = subprocess.run(
-            [sys.executable, "-m", "playwright", "install", "chromium"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if proc.returncode != 0:
-            print(proc.stdout[-2000:] + proc.stderr[-2000:], file=sys.stderr)
-            raise RuntimeError("playwright chromium install failed")
-    else:
-        step(f"browser OK: {exe}")
+    """Stage 0: verify CentBrowser + gh CLI (nothing to download)."""
+    exe = resolve_browser_exe()
+    step(f"browser OK: {exe}")
     proc = subprocess.run(["gh", "--version"], capture_output=True, text=True, check=False)
     if proc.returncode != 0:
         raise RuntimeError("gh CLI not found (needed for AAB download)")
     step("gh CLI OK")
 
 
-def resolve_browser_exe() -> str | None:
-    """Cent Browser first (user choice), else Playwright's bundled Chromium."""
+CDP_PORT = 9222
+_BROWSER_PROC = None
+
+
+CDP_PORT = 9222
+_BROWSER_PROC = None
+
+
+def _kill_browser() -> None:
+    global _BROWSER_PROC
+    proc, _BROWSER_PROC = _BROWSER_PROC, None
+    if proc is None:
+        return
+    try:
+        proc.terminate()
+    except Exception:
+        pass
+
+
+def resolve_browser_exe() -> str:
+    """Cent Browser only (user choice) — no Chromium fallback."""
     import os
 
     override = os.environ.get("CENTBROWSER_EXE")
     candidates = [Path(override)] if override else []
-    candidates.append(Path.home() / "AppData" / "Local" / "CentBrowser" / "Application" / "chrome.exe")
+    candidates.append(Path(r"C:\Users\fastfree\AppData\Local\CentBrowser\Application") / "chrome.exe")
     for candidate in candidates:
         if candidate.exists():
             step(f"browser: CentBrowser ({candidate})")
             return str(candidate)
-    step("browser: bundled Chromium (CentBrowser not found)")
-    return None
+    raise RuntimeError(
+        "CentBrowser not found. Install it or set CENTBROWSER_EXE to chrome.exe. "
+        "Chromium fallback is disabled by user choice."
+    )
 
 
 def open_session(headed: bool):
-    """Open persistent-profile browser on the console."""
-    import os
+    """Launch CentBrowser as a normal process, drive it over CDP.
+
+    Old Chromium forks crash on Playwright's injected launch flags, so the
+    browser starts clean (no automation flags) and Playwright attaches via
+    Chrome DevTools Protocol. Always headed: one-time bootstrap on your PC.
+    """
+    import socket
+    import time
 
     from playwright.sync_api import sync_playwright
 
-    headed = headed or os.environ.get("FF_HEADED") == "1"
-    try:
-        slow_mo = int(os.environ.get("FF_SLOWMO_MS", "0") or 0)
-    except ValueError:
-        slow_mo = 0
-    playwright = sync_playwright().start()
+    global _BROWSER_PROC
+    _ = headed  # manual launch is always headed
     exe = resolve_browser_exe()
-    try:
-        context = playwright.chromium.launch_persistent_context(
-            str(PROFILE_DIR),
-            headless=not headed,
-            viewport=None,
-            locale="en-US",
-            slow_mo=slow_mo or None,
-            executable_path=exe,
-        )
-    except Exception as exc:
-        if exe is None:
-            raise
-        step("CentBrowser launch failed — falling back to bundled Chromium")
-        LOG.warning("CentBrowser failed, using bundled Chromium: %r", exc)
-        context = playwright.chromium.launch_persistent_context(
-            str(PROFILE_DIR),
-            headless=not headed,
-            viewport=None,
-            locale="en-US",
-            slow_mo=slow_mo or None,
-        )
+    PROFILE_DIR.mkdir(parents=True, exist_ok=True)
+    _BROWSER_PROC = subprocess.Popen(
+        [
+            exe,
+            f"--remote-debugging-port={CDP_PORT}",
+            f"--user-data-dir={PROFILE_DIR}",
+            "--no-first-run",
+            "--no-default-browser-check",
+        ]
+    )
+    step(f"CentBrowser starting (pid={_BROWSER_PROC.pid}) — normal window, log in by hand")
+    deadline = time.time() + 90
+    while time.time() < deadline:
+        try:
+            sock = socket.create_connection(("127.0.0.1", CDP_PORT), timeout=2)
+            sock.close()
+            break
+        except OSError:
+            if _BROWSER_PROC.poll() is not None:
+                raise RuntimeError(
+                    f"CentBrowser exited immediately (code={_BROWSER_PROC.returncode})"
+                ) from None
+            time.sleep(1)
+    else:
+        _kill_browser()
+        raise RuntimeError("CentBrowser did not open its debugging port in 90s")
+    playwright = sync_playwright().start()
+    browser = playwright.chromium.connect_over_cdp(f"http://127.0.0.1:{CDP_PORT}")
+    context = browser.contexts[0] if browser.contexts else browser.new_context(locale="en-US")
     try:
         context.tracing.start(screenshots=True, snapshots=True)
     except Exception as exc:
@@ -741,6 +757,7 @@ def main() -> int:
                 playwright.stop()
         except Exception:
             pass
+        _kill_browser()
     step("ALL STAGES DONE")
     return 0
 
