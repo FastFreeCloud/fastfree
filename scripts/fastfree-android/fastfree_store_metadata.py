@@ -1,7 +1,7 @@
 """Build Play listings from website products.ts + git log + icons.
 
 Usage: uv run fastfree_store_metadata.py [--app <name|slug-prefix>]
-Mirrors scripts/generate-metadata.mjs: title<=30, short<=80,
+Port of the retired Node generator: title<=30, short<=80,
 full<=4000 (privacy line reserved), changelogs/<VERSION_CODE>.txt,
 icon copy, feature-graphic reuse when present.
 """

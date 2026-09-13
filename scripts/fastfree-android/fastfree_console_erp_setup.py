@@ -690,7 +690,15 @@ def stage3_invite(page) -> None:
     try_click(page, [re.compile(r"accept|agree|موافق|قبول", re.I)], "cookie banner")
     click_any(page, [re.compile(r"invite new users?|دعوة مستخدمين", re.I)], "Invite new users")
     page.wait_for_timeout(2000)
-    fill_any(page, [re.compile(r"email|بريد إلكتروني|البريد الإلكتروني", re.I)], SERVICE_ACCOUNT, "SA email")
+    fill_any(
+        page,
+        [
+            re.compile(r"email|بريد إلكتروني|البريد الإلكتروني", re.I),
+            re.compile(r"user@example", re.I),
+        ],
+        SERVICE_ACCOUNT,
+        "SA email",
+    )
     click_any(page, [re.compile(r"app permissions|أذونات التطبيق", re.I)], "App permissions tab")
     page.wait_for_timeout(1000)
     click_any(page, [re.compile(r"add app|إضافة تطبيق", re.I)], "Add app")

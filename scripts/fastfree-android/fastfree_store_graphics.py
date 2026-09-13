@@ -1,7 +1,7 @@
 """Render Play feature graphics + screenshot placeholders (Pillow).
 
 Usage: uv run fastfree_store_graphics.py [--app <key|name-prefix>]
-Mirrors scripts/generate-feature-graphics.mjs: 1024x500 gradient banner
+Port of the retired Node generator: 1024x500 gradient banner
 with logo + app name, and 2 black 1080x1920 placeholder screenshots
 per app per locale.
 """

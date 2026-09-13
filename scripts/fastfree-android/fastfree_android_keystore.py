@@ -8,7 +8,7 @@ Usage:
   uv run fastfree_android_keystore.py --info [--in PATH]
 
 Default output (git-ignored): .auth/signing/release.jks
-Alias/key passwords default to FastFree@2026 to match CI wiring
+Alias/key passwords default to FastFree@87171393 to match CI wiring
 (override with --storepass/--keypass/--alias).
 On Windows without a JDK, Temurin 21 is auto-installed via winget
 (disable with --no-auto-jdk).

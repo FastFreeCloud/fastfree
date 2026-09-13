@@ -3,7 +3,7 @@
 Usage: uv run fastfree_store_screenshots.py <app> <localeDir>
   app:        pos | erp | hr | ledger
   localeDir:  ar | en-US
-Mirrors scripts/crop-screenshots.mjs: max 1080x1920, max 2:1 aspect,
+Port of the retired Node cropper: max 1080x1920, max 2:1 aspect,
 24-bit PNG, no alpha, no upscaling, center crop.
 """
 

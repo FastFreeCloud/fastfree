@@ -251,7 +251,7 @@ Workload Identity Federation (WIF) يسمح لـ GitHub Actions
 Pool ID: github-actions-pool
 ```
 
-### الخطوة 4: OIDC Provider — أكمل من المتصفح
+### الخطوة 4: OIDC Provider ✅ تم (الخطوات أدناه للمرجع فقط)
 
 ```
 1. افتح: https://console.cloud.google.com/iam-admin/workload-identity-pools?project=fastfree-508417
@@ -325,12 +325,12 @@ echo fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.com
 2. Create new app × 4:
 
    ┌──────────────────────────────────────────────────────────┐
-   │ التطبيق      │ Package Name       │ اللغة │ السعر      │
-   │──────────────│────────────────────│───────│───────────│
-   │ FastFree POS │ com.fastfree.pos   │ AR    │ مجاني     │
-   │ FastFree ERP │ com.fastfree.erp   │ AR    │ مجاني     │
-   │ FastFree HR  │ com.fastfree.hr    │ AR    │ مجاني     │
-   │ FastFree Led │ com.fastfree.ledger│ AR    │ مجاني     │
+   │ التطبيق      │ Package Name       │ اللغة الافتراضية │ السعر      │
+   │──────────────│────────────────────│───────────────────│───────────│
+   │ FastFree POS │ com.fastfree.pos   │ en-US (والترجمات ar/en-US عبر API) │ مجاني     │
+   │ FastFree ERP │ com.fastfree.erp   │ en-US (والترجمات ar/en-US عبر API) │ مجاني     │
+   │ FastFree HR  │ com.fastfree.hr    │ en-US (والترجمات ar/en-US عبر API) │ مجاني     │
+   │ FastFree Led │ com.fastfree.ledger│ en-US (والترجمات ar/en-US عبر API) │ مجاني     │
    └──────────────────────────────────────────────────────────┘
 ```
 
@@ -341,7 +341,9 @@ echo fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.com
 1. Users and Access → Permissions
 2. Invite new user
 3. البريد: fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.com
-4. الصلاحية: Release manager
+4. الصلاحيات (حدد الاثنين، لا دور Release manager العام):
+   - Release apps to testing tracks
+   - Release to production, exclude devices, and use Play App Signing
 5. كرر لكل التطبيقات الأربعة
 ```
 

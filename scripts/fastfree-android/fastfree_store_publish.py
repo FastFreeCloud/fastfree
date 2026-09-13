@@ -3,7 +3,7 @@
 Usage: uv run fastfree_store_publish.py --package PKG --metadata-dir DIR
   [--locales ar,en-US] [--track internal] [--status draft] [--aab FILE]
   [--version-code N] [--changes-not-sent-for-review true]
-Mirrors scripts/play-publisher.mjs. Auth: Application Default Credentials
+Port of the retired Node publisher. Auth: Application Default Credentials
 (WIF GOOGLE_APPLICATION_CREDENTIALS) with the androidpublisher scope.
 """
 

@@ -255,8 +255,6 @@ gh run list --limit 10
 
 ## Log Files
 
-- `TYPECHECK_LOG.md` — سجل TypeCheck
-- `LINT_LOG.md` — سجل Lint
 - `packages/fastfree_lowcode/AGENTS.md` — تفاصيل lowcode
 - `packages/fastfree_auth/AGENTS.md` — تفاصيل auth
 - `packages/fastfree_accounting/AGENTS.md` — تفاصيل accounting
