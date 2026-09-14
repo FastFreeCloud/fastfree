@@ -112,17 +112,25 @@ Service account: `fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.co
 1. Read the Dashboard state FIRST: `Draft/Unpublished, never rolled out` → proceed.
    `In review` → STOP (screenshot + report, never stack a second release). `Internal
    live` → milestone already met, record `?app=<id>`, move on.
-2. Open the app → **Test and release** → **Testing** → **Internal testing** →
-   **Create new release**. Assert the `Internal testing` header.
+2. Open the app → hamburger ☰ → **Test and release** → **Testing** (expand the
+   subgroup — "Internal testing" nests inside it) → **Internal testing** →
+   **Create new release** (tracks URL is `.../app/<id>/tracks/internal-testing`).
+   If Create is disabled a draft exists → **Edit release** instead.
 3. If a Play App Signing prompt appears: accept defaults TWICE — **Continue / Let Google
    manage**, then **Continue / Accept / Save** — screenshot the ToS page first. If it
    shows a checkbox instead of Continue: STOP, screenshot, report (shape changed).
-4. Upload via file input (NEVER click an OS picker): `browser_file_upload` with the
-   ABSOLUTE AAB path → expect `Processing` → wait for **Review release** (up to 2 min,
-   AAB processing is slow) → assert versionCode and no `Errors` banner (check
-   `browser_console_messages` too).
-5. **Review release** → **Start rollout to Internal** (accept the confirm dialog only
-   after snapshotting it) → wait for Rollout/Released confirmation → screenshot proof.
+4. Upload via file input (NEVER click an OS picker): attach the ABSOLUTE AAB path →
+   wait for the version row (processing is slow) → fill Release name if empty →
+   **Next** (waits for server-side processing; if it never enables, screenshot the
+   bundle row — a red row means a rejected bundle, see rule 6).
+5. Step 2 **Preview and confirm**: expand **Show more** FIRST (bypass links hide
+   collapsed) → click **Proceed anyway** under the version-code warning if present →
+   **Save and publish** → wait for Rollout/Released confirmation → screenshot proof.
+6. VERSION-CODE IRON RULE (seen 2026-09-14): a bundle version consumed by ANY upload
+   (even a later-discarded draft) can NEVER be re-uploaded ("already been used").
+   Every retry needs a FRESH CI build (higher run_number → higher versionCode).
+   Discard stale drafts from INSIDE the editor (tracks page has no Discard link;
+   confirm in the dialog scope) — but only when a fresh-versioned AAB is ready.
 
 ## 5.4. Keystore gate (once, before the FIRST of the 4 uploads)
 
