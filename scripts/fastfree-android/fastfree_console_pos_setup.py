@@ -937,7 +937,9 @@ def stage5_upload(page, aab: Path | None) -> None:
                 page.wait_for_timeout(2000)
                 for _r2 in ("button", "link"):
                     try:
-                        _c = page.get_by_role(_r2, name=re.compile(r"^discard$|^confirm$", re.I))
+                        _c = page.get_by_role(
+                            _r2, name=re.compile(r"discard draft release|^discard$|^confirm$", re.I)
+                        )
                         _c.first.wait_for(state="visible", timeout=5000)
                         _c.first.click()
                         step("discard confirmed")
