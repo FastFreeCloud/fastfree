@@ -270,6 +270,26 @@ def check_row_for_text(page, pattern, desc: str) -> None:
     failshot(page, desc, RuntimeError(f"no row checkbox found for text: {desc}"))
 
 
+def open_app_editor(page, pattern, desc: str) -> None:
+    """On the user-detail page, open an added app's permission editor via its row arrow.
+
+    Used by the extend flow (SA already a user): no Add-app round-trip needed.
+    Raises on failure so callers can fall back to the Add-app path.
+    """
+    try:
+        anchor = page.get_by_text(pattern).first
+        anchor.wait_for(state="visible", timeout=8000)
+        row = anchor.locator("xpath=ancestor::*[descendant::button][1]")
+        btns = row.locator("button")
+        btns.last.wait_for(state="visible", timeout=5000)
+        btns.last.click()
+        step(f"opened permission editor: {desc}")
+        return
+    except Exception:
+        pass
+    failshot(page, desc, RuntimeError(f"no app row arrow for: {desc}"))
+
+
 def session_expired(page) -> bool:
     if "accounts.google.com" in page.url:
         return True
@@ -745,20 +765,34 @@ def stage3_invite(page) -> None:
             SERVICE_ACCOUNT,
             "SA email",
         )
-    # The tab is often pre-selected — only click when its content is absent.
-    try:
-        page.get_by_text(re.compile(r"grant permissions for 1 or more apps", re.I)).first.wait_for(
-            state="visible", timeout=5000
-        )
-        step("already on App permissions tab — skipping tab click")
-    except Exception:
-        click_any(page, [re.compile(r"app permissions|أذونات التطبيق", re.I)], "App permissions tab")
-        page.wait_for_timeout(1000)
-    click_any(page, [re.compile(r"add app|إضافة تطبيق", re.I)], "Add app")
-    page.wait_for_timeout(2000)
-    check_row_for_text(page, re.compile(re.escape(NAME), re.I), f"select {NAME}")
-    click_any(page, [re.compile(r"^apply$|^تطبيق$", re.I)], "Apply app selection")
-    page.wait_for_timeout(1500)
+    if extended:
+        # Detail page: app already added → open its editor via the row arrow.
+        # (App not on the user yet → fall back to the Add-app path.)
+        try:
+            open_app_editor(page, re.compile(re.escape(NAME), re.I), f"edit {NAME}")
+            page.wait_for_timeout(1500)
+        except Exception:
+            step("app not on user yet — using Add app")
+            click_any(page, [re.compile(r"add app|إضافة تطبيق", re.I)], "Add app")
+            page.wait_for_timeout(2000)
+            check_row_for_text(page, re.compile(re.escape(NAME), re.I), f"select {NAME}")
+            click_any(page, [re.compile(r"^apply$|^تطبيق$", re.I)], "Apply app selection")
+            page.wait_for_timeout(1500)
+    else:
+        # The tab is often pre-selected — only click when its content is absent.
+        try:
+            page.get_by_text(re.compile(r"grant permissions for 1 or more apps", re.I)).first.wait_for(
+                state="visible", timeout=5000
+            )
+            step("already on App permissions tab — skipping tab click")
+        except Exception:
+            click_any(page, [re.compile(r"app permissions|أذونات التطبيق", re.I)], "App permissions tab")
+            page.wait_for_timeout(1000)
+        click_any(page, [re.compile(r"add app|إضافة تطبيق", re.I)], "Add app")
+        page.wait_for_timeout(2000)
+        check_row_for_text(page, re.compile(re.escape(NAME), re.I), f"select {NAME}")
+        click_any(page, [re.compile(r"^apply$|^تطبيق$", re.I)], "Apply app selection")
+        page.wait_for_timeout(1500)
     check_row_for_text(
         page, re.compile(r"release apps to testing tracks", re.I), "testing-tracks permission"
     )
