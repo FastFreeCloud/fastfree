@@ -928,29 +928,34 @@ def stage5_upload(page, aab: Path | None) -> None:
         page.wait_for_timeout(2000)
         click_any(page, [re.compile(r"internal testing|الاختبار الداخلي", re.I)], "Internal testing")
     page.wait_for_timeout(5000)
-    # Stale drafts (rejected bundles) must go: discard, then create fresh so the
-    # release holds ONLY the current AAB.
-    for _role in ("link", "button"):
-        try:
-            _d = page.get_by_role(_role, name=re.compile(r"discard draft", re.I))
-            _d.first.wait_for(state="visible", timeout=5000)
-            _d.first.click()
-            step("discarding stale draft release")
-            page.wait_for_timeout(2000)
-            for _r2 in ("button", "link"):
-                try:
-                    _c = page.get_by_role(_r2, name=re.compile(r"^discard$|^confirm$", re.I))
-                    _c.first.wait_for(state="visible", timeout=5000)
-                    _c.first.click()
-                    step("discard confirmed")
-                    break
-                except Exception:
-                    continue
-            page.wait_for_timeout(3000)
-            break
-        except Exception:
-            continue
-    click_any(page, [re.compile(r"create new release|إنشاء إصدار", re.I)], "Create new release")
+    # Tracks page: fresh (Create enabled) or existing draft (Create disabled → Edit).
+    # A stale draft holds rejected bundles: edit it, discard, then create fresh
+    # so the release holds ONLY the current AAB. ("Discard draft release" lives
+    # inside the editor, not on the tracks page.)
+    if not try_click(page, [re.compile(r"create new release|إنشاء إصدار", re.I)], "Create new release"):
+        click_any(page, [re.compile(r"edit release|تعديل الإصدار", re.I)], "Edit release")
+        page.wait_for_timeout(2500)
+        for _role in ("link", "button"):
+            try:
+                _d = page.get_by_role(_role, name=re.compile(r"discard draft", re.I))
+                _d.first.wait_for(state="visible", timeout=5000)
+                _d.first.click()
+                step("discarding stale draft release")
+                page.wait_for_timeout(2000)
+                for _r2 in ("button", "link"):
+                    try:
+                        _c = page.get_by_role(_r2, name=re.compile(r"^discard$|^confirm$", re.I))
+                        _c.first.wait_for(state="visible", timeout=5000)
+                        _c.first.click()
+                        step("discard confirmed")
+                        break
+                    except Exception:
+                        continue
+                page.wait_for_timeout(3000)
+                break
+            except Exception:
+                continue
+        click_any(page, [re.compile(r"create new release|إنشاء إصدار", re.I)], "Create new release")
     page.wait_for_timeout(2500)
     if try_click(
         page, [re.compile(r"continue|متابعة|accept|قبول|let google manage", re.I)], "Play App Signing"
