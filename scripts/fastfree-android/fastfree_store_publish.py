@@ -66,7 +66,6 @@ def main() -> int:
     parser.add_argument("--aab", default=None)
     parser.add_argument("--status", default="draft")
     parser.add_argument("--version-code", default=None)
-    parser.add_argument("--changes-not-sent-for-review", default="true")
     args = parser.parse_args()
 
     package = args.package
@@ -74,7 +73,6 @@ def main() -> int:
     metadata_dir = Path(args.metadata_dir)
     track = args.track
     status = "completed" if args.status == "completed" else "draft"
-    changes_not_sent = args.changes_not_sent_for_review != "false"
     aab_path = Path(args.aab).resolve() if args.aab else None
     version_code = args.version_code
 
@@ -88,9 +86,9 @@ def main() -> int:
     edit_id = None
     try:
         print(f"Creating edit for {package}...")
-        edit_id = edits.insert(
-            body={"changesNotSentForReview": changes_not_sent}, packageName=package
-        ).execute()["id"]
+        # NOTE: edits.insert takes no body fields in androidpublisher v3
+        # (changesNotSentForReview was rejected with 400 Unknown field).
+        edit_id = edits.insert(body={}, packageName=package).execute()["id"]
         print(f"Edit created: {edit_id}")
 
         for locale in locales:
@@ -188,9 +186,7 @@ def main() -> int:
                 print(f"Track update skipped (no release for versionCode yet): {exc}")
 
         print("Committing edit...")
-        edits.commit(
-            packageName=package, editId=edit_id, body={"changesNotSentForReview": changes_not_sent}
-        ).execute()
+        edits.commit(packageName=package, editId=edit_id).execute()
 
         print("\n=== SUCCESS ===")
         print(f"Edit ID:       {edit_id}")
