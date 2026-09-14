@@ -981,20 +981,42 @@ def stage5_upload(page, aab: Path | None) -> None:
             failshot(page, "upload-wait", RuntimeError(f"upload unfinished in 5 min: {exc}"))
         step("AAB processed")
     page.wait_for_timeout(2000)
+    # Release name is required: its autofill lags under throttling — fill it ourselves.
+    try:
+        from datetime import datetime as _dt
+
+        _rn = page.get_by_label(re.compile(r"release name", re.I)).first
+        if ((_rn.input_value(timeout=5000) or "").strip() == ""):
+            _rn.fill(f"{NAME} {_dt.now():%Y.%m.%d}")
+            step("filled release name")
+    except Exception:
+        pass
+    page.wait_for_timeout(1000)
     # New flow: step 1 ends with "Next" (older UI: "Review release").
     # Next enables only after server-side bundle processing finishes — wait for it.
+    _advanced = False
     try:
         from playwright.sync_api import expect as _expect
 
         _next = page.get_by_role("button", name=re.compile(r"next|التالي", re.I))
+        _next.first.wait_for(state="visible", timeout=180000)
         _expect(_next.first).to_be_enabled(timeout=180000)
         _next.first.click()
         step("preview opened")
+        _advanced = True
     except Exception:
-        review = page.get_by_role("button", name=re.compile(r"review release|مراجعة الإصدار", re.I))
-        review.first.wait_for(state="visible", timeout=60000)
-        review.first.click()
-        step("review opened")
+        pass
+    if not _advanced:
+        try:
+            review = page.get_by_role("button", name=re.compile(r"review release|مراجعة الإصدار", re.I))
+            review.first.wait_for(state="visible", timeout=60000)
+            review.first.click()
+            step("review opened")
+            _advanced = True
+        except Exception:
+            pass
+    if not _advanced:
+        failshot(page, "no-advance", RuntimeError("neither Next nor Review became available"))
     check_blockers(page, "upload")
     page.wait_for_timeout(2500)
     # Bypass links (Proceed anyway) hide inside collapsed error sections:
