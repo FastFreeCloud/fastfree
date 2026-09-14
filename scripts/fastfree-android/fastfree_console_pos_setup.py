@@ -935,17 +935,17 @@ def stage5_upload(page, aab: Path | None) -> None:
                 _d.first.click()
                 step("discarding stale draft release")
                 page.wait_for_timeout(2000)
-                for _r2 in ("button", "link"):
-                    try:
-                        _c = page.get_by_role(
-                            _r2, name=re.compile(r"discard draft release|^discard$|^confirm$", re.I)
-                        )
-                        _c.first.wait_for(state="visible", timeout=5000)
-                        _c.first.click()
-                        step("discard confirmed")
-                        break
-                    except Exception:
-                        continue
+                # Confirm inside the dialog (scoped: background reuses the same labels).
+                try:
+                    _dlg = page.get_by_role("dialog").filter(
+                        has_text=re.compile(r"discard draft release\?", re.I)
+                    )
+                    _dlg.wait_for(state="visible", timeout=15000)
+                    _btn = _dlg.get_by_role("button", name=re.compile(r"discard", re.I))
+                    _btn.first.click(timeout=10000)
+                    step("discard confirmed")
+                except Exception:
+                    pass
                 page.wait_for_timeout(3000)
                 break
             except Exception:
