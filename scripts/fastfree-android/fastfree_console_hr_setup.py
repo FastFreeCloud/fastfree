@@ -977,7 +977,23 @@ def stage5_upload(page, aab: Path | None) -> None:
         step("review opened")
     check_blockers(page, "upload")
     page.wait_for_timeout(2500)
-    click_any(page, [re.compile(r"start rollout to internal|بدء الطرح", re.I)], "Start rollout to Internal")
+    # Step 2 ends with "Save and publish" (disabled while release errors exist).
+    if not try_click(
+        page, [re.compile(r"save and publish|حفظ ونشر|start rollout|بدء الطرح", re.I)],
+        "Save and publish",
+    ):
+        # Reveal the blocking errors for the report — never guess-fix them.
+        try:
+            for _sm in page.get_by_text(re.compile(r"show more", re.I)).all():
+                try:
+                    _sm.click(timeout=3000)
+                    page.wait_for_timeout(1000)
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        page.wait_for_timeout(1000)
+        failshot(page, "rollout-blocked", RuntimeError("release blocked by errors (see screenshot)"))
     page.wait_for_timeout(4000)
     try:
         from playwright.sync_api import expect
