@@ -1004,6 +1004,18 @@ def stage5_upload(page, aab: Path | None) -> None:
         step("review opened")
     check_blockers(page, "upload")
     page.wait_for_timeout(2500)
+    # Bypass links (Proceed anyway) hide inside collapsed error sections:
+    # expand everything FIRST, then acknowledge, then save.
+    try:
+        for _sm in page.get_by_text(re.compile(r"show more", re.I)).all():
+            try:
+                _sm.click(timeout=3000)
+                page.wait_for_timeout(1000)
+            except Exception:
+                continue
+    except Exception:
+        pass
+    page.wait_for_timeout(1000)
     # First-upload version-code warning ("significantly higher…") blocks Save
     # until acknowledged — bypass via its "Proceed anyway" link when present.
     for _role in ("link", "button"):
@@ -1021,16 +1033,6 @@ def stage5_upload(page, aab: Path | None) -> None:
         page, [re.compile(r"save and publish|حفظ ونشر|start rollout|بدء الطرح", re.I)],
         "Save and publish",
     ):
-        # Reveal the blocking errors for the report — never guess-fix them.
-        try:
-            for _sm in page.get_by_text(re.compile(r"show more", re.I)).all():
-                try:
-                    _sm.click(timeout=3000)
-                    page.wait_for_timeout(1000)
-                except Exception:
-                    continue
-        except Exception:
-            pass
         page.wait_for_timeout(1000)
         failshot(page, "rollout-blocked", RuntimeError("release blocked by errors (see screenshot)"))
     page.wait_for_timeout(4000)
