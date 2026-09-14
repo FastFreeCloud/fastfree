@@ -701,6 +701,12 @@ def stage2_create(page) -> None:
     except Exception as exc:
         failshot(page, "submit", RuntimeError(f"submit button not found: {exc}"))
     page.wait_for_timeout(6000)
+    try:
+        # Creation is server-side and slow under throttling: poll for leaving
+        # the form instead of trusting a single fixed wait.
+        page.wait_for_url(lambda u: "create-new-app" not in u, timeout=60000)
+    except Exception:
+        pass
     if "create-new-app" in page.url:
         # Still on the form: the click did nothing (e.g. disabled over an
         # inline error). Diagnose instead of waiting blindly.
