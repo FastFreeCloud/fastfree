@@ -970,6 +970,18 @@ def stage5_upload(page, aab: Path | None) -> None:
         step("review opened")
     check_blockers(page, "upload")
     page.wait_for_timeout(2500)
+    # First-upload version-code warning ("significantly higher…") blocks Save
+    # until acknowledged — bypass via its "Proceed anyway" link when present.
+    for _role in ("link", "button"):
+        try:
+            _pa = page.get_by_role(_role, name=re.compile(r"proceed anyway", re.I))
+            _pa.first.wait_for(state="visible", timeout=5000)
+            _pa.first.click()
+            step("clicked (optional): Proceed anyway (version-code warning)")
+            page.wait_for_timeout(1500)
+            break
+        except Exception:
+            continue
     # Step 2 ends with "Save and publish" (disabled while release errors exist).
     if not try_click(
         page, [re.compile(r"save and publish|حفظ ونشر|start rollout|بدء الطرح", re.I)],

@@ -187,6 +187,37 @@ def wire_signing(app_dir: str | None) -> int:
     return 0
 
 
+TARGET_SDK = 36
+
+
+def pin_target_sdk(app_dir: str | None) -> int:
+    """Pin targetSdkVersion in android/variables.gradle (idempotent, fail-loud).
+
+    Play requires targetSdk >= 36 (seen 2026-09-14: "must target at least API
+    level 36"). compileSdk stays on the Capacitor template default (35 on
+    AGP 8.7.2) — Play only checks the target level, and bumping compileSdk
+    would need a newer AGP. Revisit with Capacitor 8.
+    """
+    if not app_dir:
+        LOG.error("--wire needs --app-dir (e.g. fastfree_pos)")
+        return 1
+    variables = REPO_ROOT / "apps" / app_dir / "src-capacitor" / "android" / "variables.gradle"
+    if not variables.exists():
+        LOG.error("variables.gradle not found (run cap add android first): %s", variables)
+        return 1
+    text = variables.read_text(encoding="utf-8")
+    updated, count = re.subn(r"targetSdkVersion\s*=\s*\d+", f"targetSdkVersion = {TARGET_SDK}", text)
+    if count == 0:
+        LOG.error("targetSdkVersion key not found in %s", variables)
+        return 1
+    if updated != text:
+        variables.write_text(updated, encoding="utf-8")
+        LOG.info("pinned targetSdkVersion=%d: %s", TARGET_SDK, variables)
+    else:
+        LOG.info("targetSdkVersion already %d: %s", TARGET_SDK, variables)
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--gen", action="store_true", help="generate keystore (skip if exists)")
@@ -203,7 +234,10 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.wire:
-        return wire_signing(args.app_dir)
+        rc = wire_signing(args.app_dir)
+        if rc != 0:
+            return rc
+        return pin_target_sdk(args.app_dir)
 
     keytool = ensure_jdk(auto_install=not args.no_auto_jdk)
     if not keytool:

@@ -54,6 +54,8 @@ secret → ephemeral fallback**. Ephemeral keys break Play upgrades (certificate
 - Generate/inspect locally: `uv run fastfree_android_keystore.py --gen` (see skill
   `play-publish-automation` for the uv project setup).
 - CI binds it via `fastfree_android_keystore.py --wire --app-dir <APP_DIR>`.
+- `--wire` also pins `targetSdkVersion = 36` in `variables.gradle` (Play min-target;
+  `compileSdkVersion` stays on the Capacitor template default — Play only checks target).
 
 ## First-aid failures
 
