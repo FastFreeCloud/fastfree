@@ -669,8 +669,13 @@ def stage2_create(page) -> None:
         pick_one(page, "checkbox", [pattern], desc)
 
     try:
+        from playwright.sync_api import expect
+
         submit = page.get_by_role("button", name=re.compile(r"^create app$|^إنشاء التطبيق$", re.I))
         submit.first.wait_for(state="visible", timeout=10000)
+        # The button stays disabled until async form validation finishes
+        # (package availability check). Wait for enabled, never click blindly.
+        expect(submit.first).to_be_enabled(timeout=90000)
         submit.first.click()
         step("submitted Create app")
     except Exception as exc:
@@ -717,17 +722,29 @@ def stage3_invite(page) -> None:
     page.wait_for_timeout(3000)
     activate(page)
     try_click(page, [re.compile(r"accept|agree|موافق|قبول", re.I)], "cookie banner")
-    click_any(page, [re.compile(r"invite new users?|دعوة مستخدمين", re.I)], "Invite new users")
-    page.wait_for_timeout(2000)
-    fill_any(
-        page,
-        [
-            re.compile(r"email|بريد إلكتروني|البريد الإلكتروني", re.I),
-            re.compile(r"user@example", re.I),
-        ],
-        SERVICE_ACCOUNT,
-        "SA email",
-    )
+    extended = False
+    try:
+        # Already a developer user (invited for an earlier app)? Open the row
+        # and extend its permissions — re-inviting fails "User already exists".
+        row = page.get_by_text(re.compile(re.escape(SERVICE_ACCOUNT), re.I)).first
+        row.wait_for(state="visible", timeout=8000)
+        row.click()
+        page.wait_for_timeout(3000)
+        activate(page)
+        step("SA already a user — extending its app permissions")
+        extended = True
+    except Exception:
+        click_any(page, [re.compile(r"invite new users?|دعوة مستخدمين", re.I)], "Invite new users")
+        page.wait_for_timeout(2000)
+        fill_any(
+            page,
+            [
+                re.compile(r"email|بريد إلكتروني|البريد الإلكتروني", re.I),
+                re.compile(r"user@example", re.I),
+            ],
+            SERVICE_ACCOUNT,
+            "SA email",
+        )
     # The tab is often pre-selected — only click when its content is absent.
     try:
         page.get_by_text(re.compile(r"grant permissions for 1 or more apps", re.I)).first.wait_for(
@@ -754,9 +771,17 @@ def stage3_invite(page) -> None:
     # before looking for the main-form Invite button.
     try_click(page, [re.compile(r"^apply$|^تطبيق$", re.I)], "permissions dialog Apply")
     page.wait_for_timeout(1500)
-    click_any(page, [re.compile(r"^invite users?$|^دعوة المستخدم$|إرسال الدعوة", re.I)], "Invite user")
-    # "Invite user" opens a "Send invite?" confirmation — confirm it.
-    try_click(page, [re.compile(r"^send invite$|^إرسال الدعوة$", re.I)], "Send invite confirm")
+    if extended:
+        # Permission extension saves directly (no invite dialog).
+        click_any(
+            page,
+            [re.compile(r"^save( changes)?$|^حفظ$|^send invite$|^إرسال الدعوة$", re.I)],
+            "Save permission changes",
+        )
+    else:
+        click_any(page, [re.compile(r"^invite users?$|^دعوة المستخدم$|إرسال الدعوة", re.I)], "Invite user")
+        # "Invite user" opens a "Send invite?" confirmation — confirm it.
+        try_click(page, [re.compile(r"^send invite$|^إرسال الدعوة$", re.I)], "Send invite confirm")
     page.wait_for_timeout(4000)
     try:
         from playwright.sync_api import expect
@@ -821,11 +846,44 @@ def stage5_upload(page, aab: Path | None) -> None:
     try_click(page, [re.compile(r"accept|agree|موافق|قبول", re.I)], "cookie banner")
     click_any(page, [re.compile(f"^{re.escape(NAME)}$")], f"open {NAME}")
     page.wait_for_timeout(3000)
-    click_any(page, [re.compile(r"test and release|الاختبار والإصدار", re.I)], "Test and release")
-    page.wait_for_timeout(1500)
-    click_any(page, [re.compile(r"internal testing|الاختبار الداخلي", re.I)], "Internal testing")
-    page.wait_for_timeout(3000)
-    click_any(page, [re.compile(r"create new release|إنشاء إصدار", re.I)], "Create new release")
+    try:
+        # Persist the numeric app id + deep-link straight to Internal testing
+        # (the side nav is a collapsed hamburger — menu clicking is fragile).
+        import json as _json
+
+        _m = re.search(r"/app/(\d+)", page.url or "")
+        _app_id = _m.group(1) if _m else None
+        if not _app_id:
+            raise ValueError("no app id in dashboard URL")
+        _ids_file = AUTH_DIR / "app-ids.json"
+        try:
+            _ids = _json.loads(_ids_file.read_text(encoding="utf-8")) if _ids_file.exists() else {}
+        except Exception:
+            _ids = {}
+        _ids[KEY] = _app_id
+        _ids_file.write_text(_json.dumps(_ids, indent=2), encoding="utf-8")
+        step(f"app id persisted: {KEY}={_app_id}")
+    except Exception:
+        pass
+    # Side nav starts collapsed (hamburger): open it, then go to Internal testing.
+    # (Deep-linking .../internal-testing bounces back to app-list under throttling.)
+    page.wait_for_timeout(5000)
+    activate(page)
+    try_click(page, [re.compile(r"menu|navigation|drawer|القائمة", re.I)], "open side nav")
+    page.wait_for_timeout(2000)
+    try:
+        click_any(page, [re.compile(r"^internal testing$|^الاختبار الداخلي$", re.I)], "Internal testing")
+    except Exception:
+        click_any(page, [re.compile(r"test and release|الاختبار والإصدار", re.I)], "Test and release")
+        page.wait_for_timeout(2000)
+        # "Internal testing" nests under the "Testing" subgroup — expand it first.
+        click_any(page, [re.compile(r"^testing$|^الاختبار$", re.I)], "Testing subgroup")
+        page.wait_for_timeout(2000)
+        click_any(page, [re.compile(r"internal testing|الاختبار الداخلي", re.I)], "Internal testing")
+    page.wait_for_timeout(5000)
+    # A previous attempt may have left a draft holding our bundle — reuse it.
+    if not try_click(page, [re.compile(r"create new release|إنشاء إصدار", re.I)], "Create new release"):
+        click_any(page, [re.compile(r"edit( release)?|تعديل( الإصدار)?", re.I)], "Edit draft release")
     page.wait_for_timeout(2500)
     if try_click(
         page, [re.compile(r"continue|متابعة|accept|قبول|let google manage", re.I)], "Play App Signing"
@@ -834,22 +892,42 @@ def stage5_upload(page, aab: Path | None) -> None:
         try_click(page, [re.compile(r"continue|متابعة|accept|قبول|save|حفظ", re.I)], "signing confirm")
         page.wait_for_timeout(2000)
     try:
-        page.locator('input[type="file"]').first.wait_for(state="attached", timeout=30000)
-    except Exception as exc:
-        failshot(page, "upload", RuntimeError(f"file input never attached: {exc}"))
-    inputs = page.locator('input[type="file"]')
-    if inputs.count() == 0:
-        failshot(page, "upload", RuntimeError("no file input on release page"))
-    inputs.first.set_input_files(str(aab))
-    step("AAB attached — waiting up to 5 min…")
-    review = page.get_by_role("button", name=re.compile(r"review release|مراجعة الإصدار", re.I))
-    try:
-        review.first.wait_for(state="visible", timeout=300000)
-    except Exception as exc:
-        failshot(page, "upload-wait", RuntimeError(f"upload unfinished in 5 min: {exc}"))
+        page.get_by_text(re.compile(r"app-release\.aab", re.I)).first.wait_for(
+            state="visible", timeout=8000
+        )
+        step("bundle already attached from previous attempt — reusing draft")
+    except Exception:
+        try:
+            page.locator('input[type="file"]').first.wait_for(state="attached", timeout=30000)
+        except Exception as exc:
+            failshot(page, "upload", RuntimeError(f"file input never attached: {exc}"))
+        inputs = page.locator('input[type="file"]')
+        if inputs.count() == 0:
+            failshot(page, "upload", RuntimeError("no file input on release page"))
+        inputs.first.set_input_files(str(aab))
+        step("AAB attached — waiting for processing (up to 5 min)…")
+        try:
+            page.get_by_text(re.compile(r"202\d{3,}", re.I)).first.wait_for(
+                state="visible", timeout=300000
+            )
+        except Exception as exc:
+            failshot(page, "upload-wait", RuntimeError(f"upload unfinished in 5 min: {exc}"))
+        step("AAB processed")
     page.wait_for_timeout(2000)
-    review.first.click()
-    step("review opened")
+    # New flow: step 1 ends with "Next" (older UI: "Review release").
+    # Next enables only after server-side bundle processing finishes — wait for it.
+    try:
+        from playwright.sync_api import expect as _expect
+
+        _next = page.get_by_role("button", name=re.compile(r"next|التالي", re.I))
+        _expect(_next.first).to_be_enabled(timeout=180000)
+        _next.first.click()
+        step("preview opened")
+    except Exception:
+        review = page.get_by_role("button", name=re.compile(r"review release|مراجعة الإصدار", re.I))
+        review.first.wait_for(state="visible", timeout=60000)
+        review.first.click()
+        step("review opened")
     check_blockers(page, "upload")
     page.wait_for_timeout(2500)
     click_any(page, [re.compile(r"start rollout to internal|بدء الطرح", re.I)], "Start rollout to Internal")
