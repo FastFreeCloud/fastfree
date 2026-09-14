@@ -241,6 +241,35 @@ def pick_one(page, role: str, patterns: list, desc: str, action: str = "check") 
     failshot(page, desc, RuntimeError(f"no {role} matched: {desc}"))
 
 
+def check_row_for_text(page, pattern, desc: str) -> None:
+    """Check the (usually unlabeled) checkbox in the same row as visible text.
+
+    Play Console renders checkboxes with empty accessible names next to their
+    label text, so get_by_role(name=...) never matches. Find the innermost
+    element showing the text, walk up to the nearest row owning a checkbox,
+    and check it. (Seen 2026-09-14: invite-stage app picker.)
+    """
+    try:
+        exact = page.get_by_text(pattern, exact=True)
+        anchor = exact.first if exact.count() > 0 else page.get_by_text(pattern).last
+        anchor.wait_for(state="visible", timeout=5000)
+        row = anchor.locator(
+            "xpath=ancestor::*[descendant::input[@type='checkbox']"
+            " or descendant::*[@role='checkbox']][1]"
+        )
+        box = row.locator("input[type='checkbox'], [role='checkbox']").first
+        box.wait_for(state="visible", timeout=5000)
+        if box.get_attribute("type") == "checkbox":
+            box.check()
+        else:
+            box.click()
+        step(f"checked row checkbox: {desc}")
+        return
+    except Exception:
+        pass
+    failshot(page, desc, RuntimeError(f"no row checkbox found for text: {desc}"))
+
+
 def session_expired(page) -> bool:
     if "accounts.google.com" in page.url:
         return True
@@ -714,19 +743,24 @@ def stage3_invite(page) -> None:
         page.wait_for_timeout(1000)
     click_any(page, [re.compile(r"add app|إضافة تطبيق", re.I)], "Add app")
     page.wait_for_timeout(2000)
-    pick_one(page, "checkbox", [re.compile(re.escape(NAME), re.I)], f"select {NAME}")
+    check_row_for_text(page, re.compile(re.escape(NAME), re.I), f"select {NAME}")
     click_any(page, [re.compile(r"^apply$|^تطبيق$", re.I)], "Apply app selection")
     page.wait_for_timeout(1500)
-    pick_one(
-        page, "checkbox", [re.compile(r"release apps to testing tracks", re.I)], "testing-tracks permission"
+    check_row_for_text(
+        page, re.compile(r"release apps to testing tracks", re.I), "testing-tracks permission"
     )
-    pick_one(
+    check_row_for_text(
         page,
-        "checkbox",
-        [re.compile(r"release to production, exclude devices", re.I)],
+        re.compile(r"release to production, exclude devices", re.I),
         "production permission",
     )
+    # Checking a permission opens the "Permissions for <app>" dialog — confirm it
+    # before looking for the main-form Invite button.
+    try_click(page, [re.compile(r"^apply$|^تطبيق$", re.I)], "permissions dialog Apply")
+    page.wait_for_timeout(1500)
     click_any(page, [re.compile(r"^invite users?$|^دعوة المستخدم$|إرسال الدعوة", re.I)], "Invite user")
+    # "Invite user" opens a "Send invite?" confirmation — confirm it.
+    try_click(page, [re.compile(r"^send invite$|^إرسال الدعوة$", re.I)], "Send invite confirm")
     page.wait_for_timeout(4000)
     try:
         from playwright.sync_api import expect

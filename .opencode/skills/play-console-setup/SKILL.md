@@ -31,7 +31,10 @@ agents/apps concurrently (one browser, one tab, one driver).
 | C (upload) | 4+5 | `stages["4"]` AAB resolved + `stages["5"]` Internal rollout confirmed |
 | — | 0, 1, 6 | env OK / session OK / report printed |
 
-- Current state: POS has `0,1,2=true`; stages 3–6 open. erp/hr/ledger unstarted.
+- Live state first: read `.auth/play-console/<key>.progress.json` before acting (only
+  `pos.progress.json` may exist; erp/hr/ledger start unstarted). Script stages are 0–6
+  (env/session/create/invite/AAB/upload/report); stage 1 ALWAYS re-runs (it builds the
+  live session — skipping it crashes later stages).
 - One driver only: a second process exits on `<key>.run.lock`. With your own open
   CentBrowser use `CENTBROWSER_ATTACH=1`; otherwise scripts launch their own profile.
 - MCP equivalents: keep one tab for the flow; re-`browser_snapshot` after EVERY
@@ -76,7 +79,8 @@ Contact email: `sales@fastfree.cloud`. Type: App. Price: Free.
    protection" notice). Assert exactly 2 checked. Never check anything else.
 7. Screenshot (pre-create proof), then click **Create app** (bottom-right button).
 8. Verify: URL contains `?app=<digits>` (new app dashboard) OR the name row is visible.
-   **Persist the numeric app id** (`POS_APP_ID=<digits>`, etc.) — later visits use
+   **Persist the numeric app id** immediately in `.auth/play-console/app-ids.json`
+   (`{"pos": <digits>, ...}`) — later visits use
    `.../developers/7269125617638997236/app/<id>/dashboard`. On any inline form error:
    screenshot + report, do not retry blindly.
 
@@ -98,9 +102,13 @@ Service account: `fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.co
 
 ## 5. Stage C — first AAB upload (Internal track)
 
-0. Verify the artifact FIRST: `.auth/aabs/<key>/app-release.aab` exists and is non-trivial
-   (baselines: pos ≈5.87 MB, erp ≈5.93 MB, hr ≈5.89 MB, ledger ≈6.89 MB). Confirm the
-   package (`com.fastfree.<key>`) matches the app row. Never upload a 0-byte/wrong AAB.
+0. Verify the artifact FIRST: `.auth/aabs/<key>/app-release.aab` must exist and be
+   non-trivial (observed 2026-09-13: pos ≈5.87 MB, erp ≈5.93 MB, hr ≈5.89 MB,
+   ledger ≈6.89 MB; AABs are local-only, git-ignored, CI-rebuildable). Missing/stale
+   → the bootstrap script pulls `com.fastfree.<key>-aab` from the newest successful
+   `09/10/11/12-build-*-android.yaml` run (`gh run download`); with no green run it
+   SKIPS the upload and finishes create+invite. Same rule by hand: confirm the package
+   (`com.fastfree.<key>`) matches the app row first.
 1. Read the Dashboard state FIRST: `Draft/Unpublished, never rolled out` → proceed.
    `In review` → STOP (screenshot + report, never stack a second release). `Internal
    live` → milestone already met, record `?app=<id>`, move on.
@@ -120,7 +128,9 @@ Service account: `fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.co
 
 - Use ONLY the stable key: alias `fastfree`. Fingerprint-match both on-disk copies
   (`.auth/signing/release.jks` AND `scripts/fastfree-android/keystore/release.jks`)
-  with `fastfree_android_keystore.py --info` — both must report the same SHA-256.
+  with `fastfree_android_keystore.py --info` (second copy: `--info --in <path>`) —
+  both must report the same SHA-256. Copy direction is ALWAYS
+  `.auth/signing/` → `scripts/fastfree-android/keystore/` (CI reads the latter).
   Mismatch → STOP, human reconciles before any upload.
 - NEVER `--gen --force`, never `git add` a `.jks`, never accept CI's ephemeral fallback
   for a first-ever upload (Play pins the first certificate permanently).
@@ -143,7 +153,8 @@ Service account: `fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.co
   **App access credentials**, **Privacy Policy URL field** (`Main store listing →
   Privacy Policy URL` = exactly `https://fastfree.cloud/privacy-policy.html` — NOT the
   privacy sentence the metadata generator appends inside the description),
-  **closed testing (12 testers × 14 days)**, **production application**.
+  **closed testing (12 testers × 14 days)**, **production application**. (Code
+  `stage6_report` prints 5 of these; the other 3 are skill-only — all 8 stay manual.)
 - Post-Internal order (all human-led, API never promotes): Internal confirmed →
   Closed testing → Production application. When Internal is confirmed for all four
   packages, hand the human the four `?app=<id>` Dashboard links + per-app
