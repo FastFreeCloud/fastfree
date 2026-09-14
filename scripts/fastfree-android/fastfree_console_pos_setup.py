@@ -1021,10 +1021,17 @@ def main() -> int:
             elif number == 5:
                 if aab is None and AAB_PATH.exists():
                     aab = AAB_PATH
-                stage5_upload(page, aab)
+                if aab is not None:
+                    stage5_upload(page, aab)
             elif number == 6:
                 stage6_report()
-            mark_done(progress, number)
+            # A skip is not a completion: unmarked stages retry next run.
+            if number == 4 and aab is None:
+                step("stage 4 SKIPPED (no AAB) — will retry next run")
+            elif number == 5 and aab is None:
+                step("stage 5 SKIPPED (no AAB) — will retry next run")
+            else:
+                mark_done(progress, number)
     finally:
         for owned in list(_OWN_PAGES):
             try:
@@ -1059,7 +1066,11 @@ def main() -> int:
                 lock_file.unlink()
         except OSError:
             pass
-    step("ALL STAGES DONE")
+    pending = [str(n) for n in range(7) if str(n) not in progress.get("stages", {})]
+    if pending:
+        step(f"PENDING stages (re-run to complete): {', '.join(pending)}")
+    else:
+        step("ALL STAGES DONE")
     return 0
 
 
