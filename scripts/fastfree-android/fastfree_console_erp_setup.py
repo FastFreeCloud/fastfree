@@ -767,6 +767,13 @@ def stage3_invite(page) -> None:
         re.compile(r"release to production, exclude devices", re.I),
         "production permission",
     )
+    # CI publishes store listings too (titles/descriptions/graphics) — the SA
+    # needs this third permission or edit commit 403s (seen 2026-09-14).
+    check_row_for_text(
+        page,
+        re.compile(r"manage store presence", re.I),
+        "store presence permission",
+    )
     # Checking a permission opens the "Permissions for <app>" dialog — confirm it
     # before looking for the main-form Invite button.
     try_click(page, [re.compile(r"^apply$|^تطبيق$", re.I)], "permissions dialog Apply")
