@@ -1032,13 +1032,24 @@ def stage5_upload(page, aab: Path | None) -> None:
         pass
     page.wait_for_timeout(1000)
     # First-upload version-code warning ("significantly higher…") blocks Save
-    # until acknowledged — bypass via its "Proceed anyway" link when present.
+    # until acknowledged — bypass via its "Proceed anyway" link + dialog when present.
     for _role in ("link", "button"):
         try:
             _pa = page.get_by_role(_role, name=re.compile(r"proceed anyway", re.I))
             _pa.first.wait_for(state="visible", timeout=5000)
             _pa.first.click()
             step("clicked (optional): Proceed anyway (version-code warning)")
+            page.wait_for_timeout(1500)
+            try:
+                _dlg2 = page.get_by_role("dialog").filter(
+                    has_text=re.compile(r"proceed anyway\?", re.I)
+                )
+                _dlg2.wait_for(state="visible", timeout=10000)
+                _btn2 = _dlg2.get_by_role("button", name=re.compile(r"^proceed$", re.I))
+                _btn2.first.click(timeout=10000)
+                step("confirmed Proceed (version-code warning)")
+            except Exception:
+                pass
             page.wait_for_timeout(1500)
             break
         except Exception:
