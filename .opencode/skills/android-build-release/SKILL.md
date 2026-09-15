@@ -15,6 +15,9 @@ description: Build signed APK/AAB for a FastFree Android app locally or via tag-
 | Ledger | `apps/fastfree_ledger` | `com.fastfree.ledger` | `ledger-v*` | `12-build-ledger-android.yaml` |
 
 Versioning: `versionCode = YYYYMMDD × 100 + github.run_number`, `versionName = YYYY.MM.DD`.
+Every upload burns its versionCode — even a discarded Console draft (see skill
+`play-console-setup` §5 rule 6). Never re-upload the same AAB; every retry needs a
+fresh CI build (higher `run_number` → higher versionCode).
 
 ## Local build (per app, e.g. POS)
 
@@ -52,7 +55,10 @@ Priority used by CI `Generate Keystore` step: **repo keystore → `ANDROID_KEYST
 secret → ephemeral fallback**. Ephemeral keys break Play upgrades (certificate pinning).
 
 - Generate/inspect locally: `uv run fastfree_android_keystore.py --gen` (see skill
-  `play-publish-automation` for the uv project setup).
+  `play-publish-automation` for the uv project setup). First-ever uploads obey the
+  keystore gate in skill `play-console-setup` §5.4 (stable alias `fastfree` only,
+  two-copy fingerprint match, `.auth/signing/` → `scripts/` copy direction, never
+  `--force` / `git add` / ephemeral).
 - CI binds it via `fastfree_android_keystore.py --wire --app-dir <APP_DIR>`.
 - `--wire` also pins `targetSdkVersion = 36` in `variables.gradle` (Play min-target;
   `compileSdkVersion` stays on the Capacitor template default — Play only checks target).

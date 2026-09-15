@@ -38,10 +38,15 @@ to production** (closed test 12 testers × 14 days + human application required)
 
 | Failure | Fix |
 |---------|-----|
-| `403 Permission denied` | invite the SA in Play Console → Users and Access |
+| `403 Permission denied` (esp. on `edits.commit`) | SA must be **Active** with all three perms (§Auth above). If 403 persists after that: STOP, screenshot, report — **STILL OPEN, do not claim fixed** |
+| `400 Unknown field` on `edits.insert` | never pass `changesNotSentForReview` — `edits.insert` takes an empty body |
 | `Unable to acquire impersonated credentials` | verify project number + IAM binding `attribute.repository/FastFreeCloud/fastfree` |
 | `Could not load default credentials` | WIF step must run before publish; check `GOOGLE_APPLICATION_CREDENTIALS` |
 | Privacy URL missing from listing | generator appends `https://fastfree.cloud/privacy-policy.html` — rerun metadata |
+| `versionCode has already been used` | every upload burns its version — fresh CI build per retry (see skill `play-console-setup` §5 rule 6) |
+
+`--version-code` is optional: when `--aab` is uploaded the script reads the
+versionCode back from the upload response and uses that for the track release.
 
 ## Boundaries
 

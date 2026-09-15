@@ -814,6 +814,13 @@ def stage3_invite(page) -> None:
         re.compile(r"manage store presence", re.I),
         "store presence permission",
     )
+    # Commit-time union also needs the read-only base permission (diagnosed
+    # 2026-09-15: staged calls pass, commit 403s without it).
+    check_row_for_text(
+        page,
+        re.compile(r"view app information", re.I),
+        "view permission",
+    )
     # Checking a permission opens the "Permissions for <app>" dialog — confirm it
     # before looking for the main-form Invite button.
     try_click(page, [re.compile(r"^apply$|^تطبيق$", re.I)], "permissions dialog Apply")

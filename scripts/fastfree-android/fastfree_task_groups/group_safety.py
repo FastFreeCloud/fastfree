@@ -512,6 +512,164 @@ ADD_TYPE_PATTERNS = [
 ]
 PURPOSE_APP_FUNCTIONALITY = [re.compile(r"app functionality|وظائف التطبيق|وظيفة التطبيق", re.I)]
 PURPOSE_ACCOUNT_MANAGEMENT = [re.compile(r"account management|إدارة الحساب", re.I)]
+ADD_TYPE_WIDE_PATTERNS = [
+    re.compile(r"add data type|manage data types|declare.*data|data.?type|combin", re.I),
+    re.compile(r"add|create|new|declare|manage|combin", re.I),
+    re.compile(r"إضافة نوع بيانات|إدارة أنواع البيانات|الإفصاح عن البيانات|نوع.*بيانات|مجموعة", re.I),
+    re.compile(r"إضافة|إنشاء|جديد|الإفصاح|إدارة", re.I),
+]
+DATA_TYPES_HEADING = [re.compile(r"data types|أنواع البيانات", re.I)]
+PURPOSE_APP_EXACT = ["App functionality", "وظائف التطبيق", "وظيفة التطبيق"]
+PURPOSE_ACCOUNT_EXACT = ["Account management", "إدارة الحساب"]
+NO_EXACT_LABELS = ["No", "لا"]
+
+
+def _label_exact_check(page, ctx: dict, labels: list, desc: str) -> bool:
+    """group_simple.answer_no idiom: exact label, count==1, verify checked."""
+    for lab in labels:
+        try:
+            box = page.get_by_label(lab, exact=True)
+            if box.count() != 1:
+                continue
+            box.first.wait_for(state="visible", timeout=5000)
+            box.first.check()
+            page.wait_for_timeout(500)
+            if box.first.is_checked():
+                step(ctx, f"answered by exact label: {desc} = [{lab}]")
+                return True
+        except Exception:
+            continue
+    return False
+
+
+def _purpose_exact_labels(purposes: list) -> list:
+    """Map decl['purposes'] regexes to candidate exact EN+AR checkbox labels."""
+    try:
+        joined = " ".join(getattr(p, "pattern", "") for p in purposes).lower()
+    except Exception:
+        return list(PURPOSE_APP_EXACT)
+    if "account management" in joined:
+        return list(PURPOSE_ACCOUNT_EXACT)
+    return list(PURPOSE_APP_EXACT)
+
+
+def fill_deletion_contact(page, ctx: dict) -> None:
+    """Fill the deletion contact email; WARNING + continue if no field appears in 30s."""
+    # 1) known-label fast path (no failshot — the live label is still unknown).
+    for pattern in DELETE_CONTACT_PATTERNS:
+        for method in ("label", "placeholder", "textbox"):
+            try:
+                if method == "label":
+                    field = page.get_by_label(pattern)
+                elif method == "placeholder":
+                    field = page.get_by_placeholder(pattern)
+                else:
+                    field = page.get_by_role("textbox", name=pattern)
+                field.first.wait_for(state="visible", timeout=2000)
+                field.first.fill(SUPPORT_EMAIL)
+                page.wait_for_timeout(500)
+                if SUPPORT_EMAIL in (field.first.input_value() or ""):
+                    step(ctx, "filled deletion contact (label match)")
+                    return
+            except Exception:
+                continue
+    # 2) generic: wait up to 30s for ANY new textbox in the deletion container,
+    #    then fill the first empty visible one. Nearest ancestor must own a
+    #    non-radio input/textarea (radios alone must not satisfy the scope).
+    deadline = time.time() + 30
+    while time.time() < deadline:
+        for qpat in DELETE_Q:
+            try:
+                question = page.get_by_text(qpat).first
+                question.wait_for(state="visible", timeout=2000)
+            except Exception:
+                continue
+            try:
+                scope = question.locator(
+                    "xpath=ancestor::*[descendant::input"
+                    "[not(@type='radio') and not(@type='checkbox')]"
+                    " or descendant::textarea][1]"
+                )
+                boxes = scope.get_by_role("textbox").all()
+            except Exception:
+                boxes = []
+            for box in boxes:
+                try:
+                    if not box.is_visible():
+                        continue
+                    if (box.input_value() or "").strip():
+                        continue
+                    box.fill(SUPPORT_EMAIL)
+                    page.wait_for_timeout(500)
+                    if SUPPORT_EMAIL in (box.input_value() or ""):
+                        step(ctx, "filled deletion contact (container scan)")
+                        return
+                except Exception:
+                    continue
+        page.wait_for_timeout(1000)
+    step(ctx, "WARNING: deletion contact field never appeared (30s), continuing")
+
+
+def _log_button_inventory(page, ctx: dict, desc: str) -> None:
+    """Dump visible button/link texts so the next iteration can hard-code the entry."""
+    try:
+        items: list = []
+        for role in ("button", "link"):
+            try:
+                for el in page.get_by_role(role).all():
+                    try:
+                        if not el.is_visible():
+                            continue
+                        txt = (el.inner_text(timeout=1000) or "").strip().replace("\n", " ")
+                        if txt:
+                            items.append(f"{role}:{txt[:80]}")
+                    except Exception:
+                        continue
+            except Exception:
+                continue
+        LOG.error(
+            "[%s] button inventory (%s, %d): %s",
+            _key(ctx),
+            desc,
+            len(items),
+            " | ".join(items[:60]) or "<none>",
+        )
+    except Exception:
+        pass
+
+
+def _click_add_type_entry(page, ctx: dict, desc: str) -> None:
+    """Click the step-3 Data-types entry via a wide EN+AR scan in its container."""
+    scope = None
+    for hpat in DATA_TYPES_HEADING:
+        try:
+            head = page.get_by_text(hpat).first
+            head.wait_for(state="visible", timeout=5000)
+            scope = head.locator("xpath=ancestor::*[descendant::button or descendant::a][1]")
+            step(ctx, f"data-types container scoped: {desc}")
+            break
+        except Exception:
+            continue
+    roots = [scope] if scope is not None else []
+    roots.append(page)
+    for root in roots:
+        for pattern in ADD_TYPE_PATTERNS + ADD_TYPE_WIDE_PATTERNS:
+            for role in ("button", "link"):
+                try:
+                    cands = root.get_by_role(role, name=pattern).all()
+                except Exception:
+                    continue
+                for el in cands:
+                    try:
+                        if not el.is_visible() or not el.is_enabled():
+                            continue
+                        el.click(timeout=5000)
+                        step(ctx, f"clicked {role} entry: {desc}")
+                        return
+                    except Exception:
+                        continue
+    _log_button_inventory(page, ctx, desc)
+    failshot(page, ctx, f"add type entry: {desc}", RuntimeError(f"no add-type control matched: {desc}"))
 
 # (section, type, purposes, desc) — explicit per-item handling with fallbacks.
 DATA_DECLARATIONS = (
@@ -541,7 +699,26 @@ DATA_DECLARATIONS = (
 def declare_data_type(page, ctx: dict, decl: dict) -> None:
     """Add one collected data type: section → type → purposes → sharing NO."""
     desc = str(decl["desc"])
-    click_any(page, ctx, ADD_TYPE_PATTERNS, f"add type entry: {desc}")
+    # (a) reuse: a type row for the target already listed → expand it, no add.
+    _reused = False
+    for _tpat in decl["dtype"]:
+        try:
+            _row = page.get_by_text(_tpat).first
+            _row.wait_for(state="visible", timeout=4000)
+            try:
+                _row.click(timeout=5000)
+                page.wait_for_timeout(1500)
+            except Exception:
+                pass
+            step(ctx, f"reusing existing type row: {desc}")
+            _reused = True
+            break
+        except Exception:
+            continue
+    if not _reused:
+        # (b) wide EN+AR button/link scan in the Data-types container;
+        # (c) on total miss failshot after dumping the button inventory.
+        _click_add_type_entry(page, ctx, desc)
     page.wait_for_timeout(2000)
     expand_all(page, ctx)
     # Category then concrete type: row-checkbox idiom with dialog fallback.
@@ -571,25 +748,29 @@ def declare_data_type(page, ctx: dict, decl: dict) -> None:
     try_click(page, ctx, NEXT_PATTERNS + APPLY_PATTERNS, f"confirm type picker: {desc}")
     page.wait_for_timeout(2000)
     expand_all(page, ctx)
-    # Purposes for this type (decl["purposes"] is a flat pattern list).
-    _p_answered = False
-    for pattern in decl["purposes"]:
-        try:
-            check_row_for_text(page, ctx, pattern, f"purpose: {desc}")
-            _p_answered = True
-            break
-        except Exception:
-            continue
+    # Purposes: label-exact FIRST (answer_no idiom), then row-walk, then flat picker.
+    _p_answered = _label_exact_check(
+        page, ctx, _purpose_exact_labels(decl["purposes"]), f"purpose: {desc}"
+    )
+    if not _p_answered:
+        for pattern in decl["purposes"]:
+            try:
+                check_row_for_text(page, ctx, pattern, f"purpose: {desc}")
+                _p_answered = True
+                break
+            except Exception:
+                continue
     if not _p_answered:
         try:
             pick_one(page, ctx, "checkbox", decl["purposes"], f"purpose: {desc}")
         except Exception:
             step(ctx, f"WARNING: purpose checkbox not found, continuing: {desc}")
-    # Sharing with third parties: NO for every declared type.
-    try:
-        answer_near(page, ctx, SHARING_Q, NO_PATTERNS, f"sharing NO: {desc}")
-    except Exception:
-        step(ctx, f"WARNING: sharing question not found, continuing: {desc}")
+    # Sharing with third parties NO: label-exact FIRST, then scoped row-walk.
+    if not _label_exact_check(page, ctx, NO_EXACT_LABELS, f"sharing NO: {desc}"):
+        try:
+            answer_near(page, ctx, SHARING_Q, NO_PATTERNS, f"sharing NO: {desc}")
+        except Exception:
+            step(ctx, f"WARNING: sharing question not found, continuing: {desc}")
     page.wait_for_timeout(1000)
     try_click(page, ctx, NEXT_PATTERNS + APPLY_PATTERNS, f"confirm type detail: {desc}")
     save_and_verify(page, ctx, f"data type {desc}")
@@ -640,11 +821,13 @@ def run_data_safety(page, ctx: dict) -> None:
     except Exception:
         step(ctx, "WARNING: encryption question not found, continuing")
     page.wait_for_timeout(1500)
-    # Deletion: users can request deletion via the support email.
+    # Deletion: users can request deletion via the support email. The contact
+    # field label is unknown — fill_deletion_contact waits 30s for ANY new
+    # textbox in the deletion container, else WARNING + continue (Next safe).
     try:
         answer_near(page, ctx, DELETE_Q, YES_PATTERNS, "deletion available YES")
         page.wait_for_timeout(1500)
-        fill_any(page, ctx, DELETE_CONTACT_PATTERNS, SUPPORT_EMAIL, "deletion contact email")
+        fill_deletion_contact(page, ctx)
     except Exception:
         step(ctx, "WARNING: deletion question not found, continuing")
     page.wait_for_timeout(1500)

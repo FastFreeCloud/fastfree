@@ -35,8 +35,12 @@ agents/apps concurrently (one browser, one tab, one driver).
   `pos.progress.json` may exist; erp/hr/ledger start unstarted). Script stages are 0–6
   (env/session/create/invite/AAB/upload/report); stage 1 ALWAYS re-runs (it builds the
   live session — skipping it crashes later stages).
-- One driver only: a second process exits on `<key>.run.lock`. With your own open
+- One driver only: a second process exits on `<key>.run.lock` (per-key lock, also used
+  by the §5.5 runner). With your own open
   CentBrowser use `CENTBROWSER_ATTACH=1`; otherwise scripts launch their own profile.
+- Resume flags: `--from N` / `--only N` (re-run without them if stage 2/3/5 complains
+  about no live session — stage 1 must run to build it). Skip ≠ done: stages 4/5
+  without an AAB stay pending and retry next run (honest progress).
 - MCP equivalents: keep one tab for the flow; re-`browser_snapshot` after EVERY
   navigation/dialog (refs die on re-render); never chain two clicks on one snapshot.
 
@@ -93,12 +97,17 @@ Service account: `fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.co
 2. Tab **App permissions** (NOT Account permissions) → **Add app** → filter/search the
    EXACT app name → tick its checkbox row → **Apply** (closes picker, NOT Invite yet).
    Assert the app chip/row appears.
-3. Tick both (least privilege — never a broad Release-manager role):
-   **Release apps to testing tracks** AND
-   **Release to production, exclude devices, and use Play App Signing**.
-   Assert both `checked` via snapshot.
+3. Tick all three (least privilege — never a broad Release-manager role):
+    **Release apps to testing tracks** AND
+    **Release to production, exclude devices, and use Play App Signing** AND
+    **Manage store presence** (without it the API edit commit 403s — seen
+    2026-09-14; the SA publish 403 is STILL OPEN, do not claim fixed).
+    Assert all three `checked` via snapshot.
 4. Click **Invite user** (singular, bottom-right) → wait for **Active** (service accounts
-   flip instantly). If it sticks on Invited/pending: screenshot, report, do NOT re-click.
+    flip instantly). If it sticks on Invited/pending: screenshot, report, do NOT re-click.
+    If the SA row already exists ("User already exists" on re-invite): open its row
+    and extend its app permissions via the row arrow instead (Add-app path is the
+    fallback when the app is not on the user yet).
 
 ## 5. Stage C — first AAB upload (Internal track)
 
@@ -142,8 +151,45 @@ Service account: `fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.co
   Mismatch → STOP, human reconciles before any upload.
 - NEVER `--gen --force`, never `git add` a `.jks`, never accept CI's ephemeral fallback
   for a first-ever upload (Play pins the first certificate permanently).
+- CI binds the key via `fastfree_android_keystore.py --wire --app-dir <APP_DIR>`, which
+  also pins `targetSdkVersion = 36` (Play min-target — see skill
+  `android-build-release`).
 - Upload rejected with certificate/SHA mismatch → STOP all four apps, screenshot,
   human owns recovery (key upgrade in Console, not a re-upload).
+
+## 5.5. Setup questionnaires (11 tasks per app — runner `fastfree_setup_tasks.py --app <key>`)
+
+Order matters: **Sign in details BEFORE Target audience** (console blocks the
+audience questionnaire until sign-in is done). Progress: `.auth/play-console/<key>.tasks.json`.
+
+Section slugs (`.../app/<id>/app-content/<slug>`, observed — never guess others):
+`ads-declaration`, `government-apps`, `finance`, `health`, `testing-credentials`,
+`target-audience-content`, `content-rating-overview`, `content-rating-iarc-questionnaire`,
+`data-privacy-security`, `store-settings`. Tracks: `.../app/<id>/tracks/internal-testing(?tab=testers)`.
+
+Fixed answer bank (identical all 4 apps): ads No · government No · financial NONE
+("My app doesn't provide any financial features" opt-out checkbox) · health NONE
+("My app does not have any health features") · privacy `https://fastfree.cloud/privacy-policy.html`
+· category **Business** · contact `mohamed.fastfree@gmail.com` / `+201091999937` ·
+sign-in `Administrator` + password runtime-read from `apps/fastfree_os/nix/clients/client3.nix`
+(`passwords.admin`, verified live) · audience **18+ only** · rating **Everyone**
+(email + All-Other-Types + IARC terms, all-No bank) · data safety collects Name /
+Phone / Credentials, no sharing, encrypted in transit Yes, deletion via support email.
+
+Iron rules: radios carry USELESS accessible names — answer ONLY via `get_by_label` exact
+text + `count()==1` + `is_checked()` verify (banner copy like "not a government app"
+otherwise selects Yes!). Dashboard task rows hide collapsed (expand "View tasks",
+aria-checked) and row-text clicks often don't navigate (verify `app-content` in URL,
+retry via app-list row click). Wizards (finance/health/audience/rating/safety) end in
+Next, not Save — Next enables late (Save first, it unlocks server-side). IARC auto-submits
+(detect `IARC status Completed` + rating badges, don't chase Next forever).
+
+## 5.6. Internal testers
+
+Email lists are ACCOUNT-WIDE (`dev` list reused); each track ATTACHES it (Testers tab).
+Add `mohamed.fastfree@gmail.com` once via Edit-email-list dialog + confirm dialog.
+Track stays Inactive until a release + testers exist. Closed testing later needs
+12+ opted-in tester emails (only 1 known today) + 14 days — Google-mandated, unskippable.
 
 ## 6. Rules (hard)
 
@@ -156,13 +202,12 @@ Service account: `fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.co
   (needs `--caps=devtools`); screenshots: JPEG for routine proof, PNG on failure.
 - File uploads need ABSOLUTE paths inside the workspace. Never touch the human's tabs.
 - Never commit `.auth/` (git-ignored live session).
-- These stay **MANUAL, do not attempt** (app Dashboard → Policy sections, human completes):
-  **Content rating**, **Data safety**, **Target audience**, **Ads declaration**,
-  **App access credentials**, **Privacy Policy URL field** (`Main store listing →
-  Privacy Policy URL` = exactly `https://fastfree.cloud/privacy-policy.html` — NOT the
-  privacy sentence the metadata generator appends inside the description),
-  **closed testing (12 testers × 14 days)**, **production application**. (Code
-  `stage6_report` prints 5 of these; the other 3 are skill-only — all 8 stay manual.)
+- These stay **MANUAL, do not attempt** (human completes; the 11 questionnaires in
+  §5.5 are automated by the runner, NOT manual — the old `stage6_report` line naming
+  5 of them as "remaining manual" predates the runner and is stale):
+  **closed testing (12 testers × 14 days)**, **production application**.
+  (Privacy Policy URL field = exactly `https://fastfree.cloud/privacy-policy.html` —
+  NOT the privacy sentence the metadata generator appends inside the description.)
 - Post-Internal order (all human-led, API never promotes): Internal confirmed →
   Closed testing → Production application. When Internal is confirmed for all four
   packages, hand the human the four `?app=<id>` Dashboard links + per-app

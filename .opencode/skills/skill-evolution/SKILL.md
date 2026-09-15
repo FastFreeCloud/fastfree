@@ -16,14 +16,17 @@ only in chat history.
 2. **Distill ONE rule**: symptom → root cause → fix → a single imperative sentence
    ("Never X; always Y"). If it takes two sentences, it is two rules.
 3. **Place it**: the most specific skill that owns the step (console create/invite/upload
-   → `play-console-setup`; publish API → `play-publish-automation`; builds →
-   `android-build-release`; gates → `quasar-quality-gates`; hosts →
-   `nixos-host-deploy`; images → `web-backend-release`; domain code →
-   `erp-domain-development`). Cross-skill facts (keystore, WIF, app table) go in
-   exactly one skill; others link to it.
-4. **Verify**: re-read the edited section; grep for contradictions across all 7 skills
-   (same fact must read identically everywhere); validate frontmatter
-   (`^[a-z0-9]+(-[a-z0-9]+)*$`, dir match, description 1–1024 chars).
+    → `play-console-setup`; setup questionnaires → `play-console-setup` §5.5;
+    publish API → `play-publish-automation`; builds →
+    `android-build-release`; gates → `quasar-quality-gates`; hosts →
+    `nixos-host-deploy`; images → `web-backend-release`; domain code →
+    `erp-domain-development`). Cross-skill facts go in
+    exactly one skill; others link to it: keystore gate → `play-console-setup`
+    §5.4; WIF/auth → `play-publish-automation`; app/workflow table →
+    `android-build-release`.
+4. **Verify**: re-read the edited section; grep for contradictions across all skills
+    (same fact must read identically everywhere); validate frontmatter
+    (`^[a-z0-9]+(-[a-z0-9]+)*$`, dir match, description 1–1024 chars).
 5. **Commit**: `docs(skills): <what changed> + <failure it prevents>`.
 
 ## Hard prohibitions
