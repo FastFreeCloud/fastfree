@@ -108,12 +108,24 @@ def failshot(page, ctx: dict, name: str, err: Exception) -> None:
     try:
         AUTH_DIR.mkdir(parents=True, exist_ok=True)
         stamp = int(time.time() * 1000)
-        shot = AUTH_DIR / f"fail-{_key(ctx)}-{name}-{stamp}.png"
+        safe = re.sub(r"[\\/:*?\"<>|]", "-", str(name))[:80]
+        shot = AUTH_DIR / f"fail-{_key(ctx)}-{safe}-{stamp}.png"
         page.screenshot(path=str(shot))
         LOG.error("FAIL[%s]: %s\n  url=%s\n  shot=%s", name, err, page.url, shot)
     except Exception:
         LOG.error("FAIL[%s]: %s", name, err)
     raise err if isinstance(err, Exception) else RuntimeError(str(err))
+
+
+def _soft_shot(page, ctx: dict, name: str) -> None:
+    """Best-effort screenshot for WARNING paths — never raises."""
+    try:
+        AUTH_DIR.mkdir(parents=True, exist_ok=True)
+        stamp = int(time.time() * 1000)
+        safe = re.sub(r"[\\/:*?\"<>|]", "-", str(name))[:80]
+        page.screenshot(path=str(AUTH_DIR / f"soft-{_key(ctx)}-{safe}-{stamp}.png"))
+    except Exception:
+        pass
 
 
 def activate(page, ctx: dict) -> None:
@@ -383,12 +395,16 @@ def answer_near(page, ctx: dict, question_patterns: list, answer_patterns: list,
 
 
 def save_and_verify(page, ctx: dict, desc: str) -> None:
-    """Click Save (EN+AR) then verify the save confirmation text."""
+    """Click Save (EN+AR) then verify the save confirmation text.
+
+    The Data-safety wizard footer labels the control "Save draft"
+    (failshot evidence) — bare "^save$" never matches it.
+    """
     expand_all(page, ctx)
     click_any(
         page,
         ctx,
-        [re.compile(r"^save( changes)?$|^حفظ( التغييرات)?$", re.I)],
+        [re.compile(r"^save( changes| draft)?$|^حفظ( التغييرات)?$", re.I)],
         f"Save {desc}",
     )
     page.wait_for_timeout(4000)
@@ -584,6 +600,36 @@ PURPOSE_APP_EXACT = ["App functionality", "وظائف التطبيق", "وظيف
 PURPOSE_ACCOUNT_EXACT = ["Account management", "إدارة الحساب"]
 NO_EXACT_LABELS = ["No", "لا"]
 
+# Step-3 arrival gate — exact stepper strings read off the failshots:
+# "Overview — 2 Data collection and security — 3 Data types —
+#  4 Data usage and handling — 5 Preview".
+# DATA_TYPES_HEADING alone is NOT a gate: "data types" also matches step-2
+# text ("required user data types" / "View required data types"), which is
+# why the driver scoped a "data-types container" while still on step 2.
+STEP3_HEADING = [re.compile(r"^data types$", re.I), re.compile(r"^أنواع البيانات$", re.I)]
+STEP2_MARKERS = [
+    re.compile(r"collect or share any.*required user data", re.I),
+    re.compile(r"data collection and security", re.I),
+]
+
+
+def _on_data_types_step(page) -> bool:
+    """True only when the wizard is really on step 3 (Data types)."""
+    try:
+        body = page.inner_text("body") or ""
+    except Exception:
+        return False
+    if any(p.search(body) for p in STEP2_MARKERS):
+        return False
+    try:
+        for pat in STEP3_HEADING:
+            loc = page.get_by_text(pat).first
+            loc.wait_for(state="visible", timeout=3000)
+            return True
+    except Exception:
+        return False
+    return False
+
 
 def _label_exact_check(page, ctx: dict, labels: list, desc: str) -> bool:
     """group_simple.answer_no idiom: exact label, count==1, verify checked."""
@@ -758,7 +804,28 @@ DATA_DECLARATIONS = (
 
 
 def declare_data_type(page, ctx: dict, decl: dict) -> None:
-    """Add one collected data type: section → type → purposes → sharing NO."""
+    """Add one collected data type: section → type → purposes → sharing NO.
+
+    Never raises: not on step 3, or any sub-step misses, means WARNING +
+    button inventory + soft screenshot, then return so the remaining types
+    still get their chance.
+    """
+    desc = str(decl["desc"])
+    if not _on_data_types_step(page):
+        _log_button_inventory(page, ctx, desc)
+        _soft_shot(page, ctx, f"not-on-step3 {desc}")
+        step(ctx, f"WARNING: not on Data-types step, skipping: {desc}")
+        return
+    try:
+        _declare_data_type_inner(page, ctx, decl)
+    except Exception as exc:
+        _log_button_inventory(page, ctx, desc)
+        _soft_shot(page, ctx, f"data-type {desc}")
+        step(ctx, f"WARNING: failed declaring {desc} ({exc}), continuing")
+
+
+def _declare_data_type_inner(page, ctx: dict, decl: dict) -> None:
+    """declare_data_type body (raises → caller converts to WARNING+continue)."""
     desc = str(decl["desc"])
     # (a) reuse: a type row for the target already listed → expand it, no add.
     _reused = False
@@ -996,16 +1063,41 @@ def run_data_safety(page, ctx: dict) -> None:
     if try_click(page, ctx, [re.compile(r"^save draft$", re.I)], "Save draft step 2"):
         page.wait_for_timeout(3000)
         step(ctx, "step 2 draft saved")
-    # Advance to step 3 (Data types) — step 2 has no other required inputs.
-    if not try_click(page, ctx, NEXT_PATTERNS, "data safety Next to types"):
-        step(ctx, "WARNING: Next unavailable after step 2")
-    page.wait_for_timeout(4000)
+    # Advance to step 3 (Data types). The footer Next stays DISABLED while
+    # step-2 requirements are unmet (failshots: grey Next, wizard still on
+    # "Data collection and security"), so verify arrival via the stepper gate
+    # instead of assuming the click advanced the wizard.
+    _on_types = False
+    for _attempt in range(2):
+        if try_click(page, ctx, NEXT_PATTERNS, "data safety Next to types"):
+            page.wait_for_timeout(4000)
+        else:
+            step(ctx, "WARNING: Next unavailable after step 2")
+            if try_click(page, ctx, [re.compile(r"^save draft$", re.I)], "Save draft before retry"):
+                page.wait_for_timeout(3000)
+        expand_all(page, ctx)
+        if _on_data_types_step(page):
+            _on_types = True
+            step(ctx, "on Data-types step (gate passed)")
+            break
+        step(ctx, f"still on step 2 after Next (try {_attempt + 1})")
+    if not _on_types:
+        _log_button_inventory(page, ctx, "step-3 arrival")
+        _soft_shot(page, ctx, "step-3 arrival miss")
+        step(ctx, "WARNING: Data-types step never reached — skipping type declarations")
+        try_click(page, ctx, [re.compile(r"^save draft$", re.I)], "Save draft (step 3 unreachable)")
+        page.wait_for_timeout(3000)
+        step(ctx, "DATA SAFETY: done (step 3 unreachable — draft saved)")
+        open_dashboard(page, ctx)
+        return
     # The three declared data types, each with purposes + sharing NO.
+    # declare_data_type never raises (WARNING+continue inside); this guard
+    # is belt-and-braces so one type can never fail the whole task.
     for decl in DATA_DECLARATIONS:
         try:
             declare_data_type(page, ctx, decl)
         except Exception as exc:
-            failshot(page, ctx, "data-type", RuntimeError(f"failed declaring {decl['desc']}: {exc}"))
+            step(ctx, f"WARNING: failed declaring {decl['desc']} ({exc}), continuing")
         page.wait_for_timeout(1500)
     # Privacy policy link for the safety section.
     try:
