@@ -88,8 +88,8 @@ def main() -> int:
     if other_pid is not None:
         try:
             os.kill(other_pid, 0)
-        except OSError:
-            other_pid = None
+        except Exception:
+            other_pid = None  # stale lock (dead/recycled pid)
         else:
             print(f"[{key}] another run is active (pid={other_pid}) — refusing a second driver")
             return 2

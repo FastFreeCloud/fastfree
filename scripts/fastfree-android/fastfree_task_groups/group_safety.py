@@ -278,6 +278,67 @@ def confirm_in_dialog(page, ctx: dict, dialog_patterns: list, button_patterns: l
     failshot(page, ctx, desc, RuntimeError(f"dialog confirm failed: {desc}"))
 
 
+def _radio_label(page, radio) -> str:
+    """Best-effort visible label for one radio input."""
+    try:
+        _id = radio.get_attribute("id")
+        if _id:
+            _lab = page.locator(f"label[for='{_id}']")
+            if _lab.count() > 0:
+                return (_lab.first.inner_text() or "").strip()
+    except Exception:
+        pass
+    try:
+        _wrap = radio.locator("xpath=ancestor::label[1]")
+        if _wrap.count() > 0:
+            return (_wrap.first.inner_text() or "").strip()
+    except Exception:
+        pass
+    try:
+        return (radio.get_attribute("aria-label") or "").strip()
+    except Exception:
+        return ""
+
+
+def answer_question(page, ctx: dict, qpat, want: str, desc: str) -> None:
+    """Answer the question matching qpat with the option labeled `want`.
+
+    Deterministic: takes the radios FOLLOWING the question text (a Yes/No pair
+    belongs to its question), resolves each radio's own <label>, clicks the one
+    whose label equals `want`, and verifies THAT radio is checked. Shared
+    containers can no longer misroute the click to a sibling question.
+    """
+    try:
+        questions = page.get_by_text(qpat).all()
+    except Exception as exc:
+        failshot(page, ctx, desc, RuntimeError(f"question not found: {exc}"))
+        return
+    for q in questions:
+        try:
+            q.wait_for(state="visible", timeout=4000)
+        except Exception:
+            continue
+        try:
+            radios = q.locator("xpath=following::input[@type='radio']").all()[:4]
+        except Exception:
+            continue
+        for r in radios:
+            try:
+                lab = _radio_label(page, r)
+                if lab.lower() != want.lower():
+                    continue
+                r.wait_for(state="visible", timeout=4000)
+                r.check()
+                page.wait_for_timeout(500)
+                if r.is_checked():
+                    step(ctx, f"answered [{lab}]: {desc}")
+                    page.wait_for_timeout(1000)
+                    return
+            except Exception:
+                continue
+    failshot(page, ctx, desc, RuntimeError(f"no '{want}' option after question: {desc}"))
+
+
 def answer_near(page, ctx: dict, question_patterns: list, answer_patterns: list, desc: str) -> None:
     """Answer a YES/NO radio scoped to the container owning the question text."""
     for qpat in question_patterns:
@@ -472,7 +533,7 @@ def open_task(page, ctx: dict, label_patterns: list, desc: str) -> None:
 
 YES_PATTERNS = [re.compile(r"^yes$", re.I), re.compile(r"^نعم$", re.I)]
 NO_PATTERNS = [re.compile(r"^no$", re.I), re.compile(r"^لا$", re.I)]
-NEXT_PATTERNS = [re.compile(r"^next$|^continue$|^التالي$|^متابعة$", re.I)]
+NEXT_PATTERNS = [re.compile(r"next|continue|التالي|متابعة", re.I)]
 ADD_PATTERNS = [re.compile(r"^add$|^add new$|إضافة|إضافة جديد", re.I)]
 APPLY_PATTERNS = [re.compile(r"^apply$|^تطبيق$", re.I)]
 SUBMIT_PATTERNS = [re.compile(r"submit|send for review|إرسال للمراجعة|تقديم", re.I)]
@@ -707,7 +768,6 @@ def declare_data_type(page, ctx: dict, decl: dict) -> None:
             _row.wait_for(state="visible", timeout=4000)
             try:
                 _row.click(timeout=5000)
-                page.wait_for_timeout(1500)
             except Exception:
                 pass
             step(ctx, f"reusing existing type row: {desc}")
@@ -812,12 +872,43 @@ def run_data_safety(page, ctx: dict) -> None:
         page.wait_for_timeout(2500)
         if not _clicked:
             break
+    # Gate: FULL step-2 CONTROLS rendered. Texts render before controls under
+    # throttle, and partial saves can persist partial state — never act partial.
+    _needles = [
+        re.compile(r"collect or share any.*required user data", re.I),
+        re.compile(r"encrypted in transit", re.I),
+        re.compile(r"account creation", re.I),
+    ]
+    _deadline = time.time() + 300
+    while time.time() < _deadline:
+        _nr = _nc = _nx = 0
+        _bt = ""
+        _ok = False
+        try:
+            _nr = page.get_by_role("radio").count()
+            _nc = page.get_by_role("checkbox").count()
+            _nx = page.get_by_role("button", name=re.compile(r"next", re.I)).count()
+            _bt = page.inner_text("body") or ""
+            _ok = (
+                _nr >= 6
+                and _nc >= 1
+                and _nx >= 1
+                and all(p.search(_bt) for p in _needles)
+            )
+        except Exception:
+            _ok = False
+        if _ok:
+            step(ctx, f"step-2 controls ready (radios={_nr} checks={_nc})")
+            break
+        page.wait_for_timeout(5000)
+    else:
+        step(ctx, "WARNING: step-2 controls never complete — proceeding anyway")
     # Q1: collects user data → YES (we declare Name / Phone / Credentials).
-    answer_near(page, ctx, COLLECT_Q, YES_PATTERNS, "collects user data YES")
+    answer_question(page, ctx, COLLECT_Q[0], "Yes", "collects user data YES")
     page.wait_for_timeout(1500)
     # Security: encrypted in transit YES (https to backend.fastfree.cloud).
     try:
-        answer_near(page, ctx, ENCRYPT_Q, YES_PATTERNS, "encrypted in transit YES")
+        answer_question(page, ctx, ENCRYPT_Q[0], "Yes", "encrypted in transit YES")
     except Exception:
         step(ctx, "WARNING: encryption question not found, continuing")
     page.wait_for_timeout(1500)
@@ -825,7 +916,7 @@ def run_data_safety(page, ctx: dict) -> None:
     # field label is unknown — fill_deletion_contact waits 30s for ANY new
     # textbox in the deletion container, else WARNING + continue (Next safe).
     try:
-        answer_near(page, ctx, DELETE_Q, YES_PATTERNS, "deletion available YES")
+        answer_question(page, ctx, DELETE_Q[0], "Yes", "deletion available YES")
         page.wait_for_timeout(1500)
         fill_deletion_contact(page, ctx)
     except Exception:
@@ -847,6 +938,64 @@ def run_data_safety(page, ctx: dict) -> None:
     except Exception as exc:
         step(ctx, f"WARNING: account-method question not found ({exc}), continuing")
     page.wait_for_timeout(1500)
+    # Deletion URL (appears after deletion-YES): use the privacy page, which
+    # carries the support contact for deletion requests. Flagged to the human.
+    try:
+        _du = page.get_by_label(re.compile(r"delete account", re.I))
+        if _du.count() >= 1:
+            _du.first.wait_for(state="visible", timeout=8000)
+            _du.first.fill(PRIVACY_URL)
+            page.wait_for_timeout(800)
+            if PRIVACY_URL in (_du.first.input_value() or ""):
+                step(ctx, "filled deletion URL (privacy page)")
+            else:
+                step(ctx, "WARNING: deletion URL fill unverified")
+        else:
+            step(ctx, "WARNING: deletion URL field absent")
+    except Exception:
+        step(ctx, "WARNING: deletion URL field not found, continuing")
+    page.wait_for_timeout(1500)
+    # Re-assert every step-2 answer (throttled re-renders can reset controls).
+    try:
+        for _pat, _dn in (
+            (re.compile(r"collect or share any.*required user data", re.I), "collects"),
+            (re.compile(r"encrypted in transit", re.I), "encrypted"),
+        ):
+            try:
+                _q = page.get_by_text(_pat).first
+                _q.wait_for(state="visible", timeout=8000)
+                _scope = _q.locator("xpath=ancestor::*[descendant::*[@role='radio']][1]")
+                _yes = _scope.get_by_label(re.compile(r"^yes$", re.I)).first
+                _yes.wait_for(state="visible", timeout=5000)
+                try:
+                    if not _yes.is_checked():
+                        _yes.check()
+                        page.wait_for_timeout(800)
+                except Exception:
+                    _yes.check()
+                    page.wait_for_timeout(800)
+                if _yes.is_checked():
+                    step(ctx, f"re-asserted {_dn}=YES")
+            except Exception:
+                continue
+    except Exception:
+        pass
+    try:
+        _ac2 = page.get_by_label("Username and password", exact=True)
+        if _ac2.count() == 1:
+            try:
+                if not _ac2.first.is_checked():
+                    _ac2.first.check()
+                    page.wait_for_timeout(800)
+            except Exception:
+                pass
+            if _ac2.first.is_checked():
+                step(ctx, "re-asserted account method")
+    except Exception:
+        pass
+    if try_click(page, ctx, [re.compile(r"^save draft$", re.I)], "Save draft step 2"):
+        page.wait_for_timeout(3000)
+        step(ctx, "step 2 draft saved")
     # Advance to step 3 (Data types) — step 2 has no other required inputs.
     if not try_click(page, ctx, NEXT_PATTERNS, "data safety Next to types"):
         step(ctx, "WARNING: Next unavailable after step 2")
