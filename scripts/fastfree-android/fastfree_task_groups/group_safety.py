@@ -599,6 +599,14 @@ DATA_TYPES_HEADING = [re.compile(r"data types|أنواع البيانات", re.I
 PURPOSE_APP_EXACT = ["App functionality", "وظائف التطبيق", "وظيفة التطبيق"]
 PURPOSE_ACCOUNT_EXACT = ["Account management", "إدارة الحساب"]
 NO_EXACT_LABELS = ["No", "لا"]
+# Section/type exact labels (answer_no idiom: get_by_label exact + count==1 +
+# is_checked verify; count guard makes extra candidates safe to probe).
+SECTION_PERSONAL_EXACT = ["Personal info", "معلومات شخصية"]
+SECTION_CONTACT_EXACT = ["Contact", "جهات الاتصال", "معلومات الاتصال"]
+SECTION_ACTIVITY_EXACT = ["App activity", "نشاط التطبيق"]
+DTYPE_NAME_EXACT = ["Name", "Full name", "الاسم"]
+DTYPE_PHONE_EXACT = ["Phone number", "رقم الهاتف"]
+DTYPE_CREDENTIALS_EXACT = ["Account credentials", "بيانات الاعتماد"]
 
 # Step-3 arrival gate — exact stepper strings read off the failshots:
 # "Overview — 2 Data collection and security — 3 Data types —
@@ -611,24 +619,88 @@ STEP2_MARKERS = [
     re.compile(r"collect or share any.*required user data", re.I),
     re.compile(r"data collection and security", re.I),
 ]
+# Stepper-current evidence (EN+AR): the stepper item carries "3" together with
+# the Data-types label when step 3 is the current step.
+STEP3_ACTIVE_PATTERNS = [
+    re.compile(r"3\s*data types", re.I),
+    re.compile(r"3\s*أنواع البيانات", re.I),
+]
+
+
+def _step3_entry_visible(page) -> bool:
+    """Probe only (never click): any add/entry control visible+enabled."""
+    for pattern in ADD_TYPE_PATTERNS + ADD_TYPE_WIDE_PATTERNS:
+        for role in ("button", "link"):
+            try:
+                cands = page.get_by_role(role, name=pattern).all()
+            except Exception:
+                continue
+            for el in cands:
+                try:
+                    if el.is_visible() and el.is_enabled():
+                        return True
+                except Exception:
+                    continue
+    return False
 
 
 def _on_data_types_step(page) -> bool:
-    """True only when the wizard is really on step 3 (Data types)."""
+    """True only when the wizard is really on step 3 (Data types).
+
+    Requires BOTH (a) stepper shows step 3 active — visible exact
+    "Data types" heading PLUS current-step evidence (visible "3 Data types"
+    stepper text EN+AR, or an aria-current/selected or active-class element
+    owning the Data-types label); AND (b) at least one add/entry control
+    visible+enabled (probe only). STEP2 markers present → False (still on
+    step 2). Caller logs the button inventory + soft shot on False.
+    """
     try:
         body = page.inner_text("body") or ""
     except Exception:
         return False
     if any(p.search(body) for p in STEP2_MARKERS):
         return False
-    try:
-        for pat in STEP3_HEADING:
-            loc = page.get_by_text(pat).first
-            loc.wait_for(state="visible", timeout=3000)
-            return True
-    except Exception:
+    _heading_ok = False
+    for pat in STEP3_HEADING:
+        try:
+            page.get_by_text(pat).first.wait_for(state="visible", timeout=3000)
+            _heading_ok = True
+            break
+        except Exception:
+            continue
+    if not _heading_ok:
         return False
-    return False
+    # (a) stepper-current evidence: stepper text first, then aria/class state.
+    _active = False
+    for pat in STEP3_ACTIVE_PATTERNS:
+        try:
+            page.get_by_text(pat).first.wait_for(state="visible", timeout=3000)
+            _active = True
+            break
+        except Exception:
+            continue
+    if not _active:
+        try:
+            sels = page.locator(
+                "[aria-current], [aria-selected='true'], "
+                "[class*='active'], [class*='current'], [class*='selected']"
+            ).all()
+        except Exception:
+            sels = []
+        for el in sels:
+            try:
+                if not el.is_visible():
+                    continue
+                txt = (el.inner_text(timeout=1000) or "").strip()
+                if re.search(r"data types|أنواع البيانات", txt, re.I):
+                    _active = True
+                    break
+            except Exception:
+                continue
+    if not _active:
+        return False
+    # (b) at least one add/entry control visible+enabled.
+    return _step3_entry_visible(page)
 
 
 def _label_exact_check(page, ctx: dict, labels: list, desc: str) -> bool:
@@ -778,25 +850,33 @@ def _click_add_type_entry(page, ctx: dict, desc: str) -> None:
     _log_button_inventory(page, ctx, desc)
     failshot(page, ctx, f"add type entry: {desc}", RuntimeError(f"no add-type control matched: {desc}"))
 
-# (section, type, purposes, desc) — explicit per-item handling with fallbacks.
+# (section, section_exact, dtype, dtype_exact, purposes, desc) — explicit
+# per-item handling: label-EXACT first (answer_no idiom), regex row-walk as
+# fallback, flat checkbox picker last. Misses WARNING + continue, never raise.
 DATA_DECLARATIONS = (
     {
         "section": [re.compile(r"personal info|معلومات شخصية", re.I)],
+        "section_exact": SECTION_PERSONAL_EXACT,
         "dtype": [re.compile(r"^name$|full name|الاسم", re.I)],
+        "dtype_exact": DTYPE_NAME_EXACT,
         "purposes": PURPOSE_APP_FUNCTIONALITY,
         "desc": "Personal info / Name (App functionality)",
     },
     {
         "section": [re.compile(r"contact|جهات الاتصال|معلومات الاتصال", re.I)],
+        "section_exact": SECTION_CONTACT_EXACT,
         "dtype": [re.compile(r"phone number|رقم الهاتف", re.I)],
+        "dtype_exact": DTYPE_PHONE_EXACT,
         "purposes": PURPOSE_APP_FUNCTIONALITY,
         "desc": "Contact / Phone number (App functionality)",
     },
     {
         "section": [re.compile(r"app activity|نشاط التطبيق", re.I)],
+        "section_exact": SECTION_ACTIVITY_EXACT,
         "dtype": [
             re.compile(r"account credentials|credentials|login|user.?name|password|بيانات الاعتماد", re.I)
         ],
+        "dtype_exact": DTYPE_CREDENTIALS_EXACT,
         "purposes": PURPOSE_ACCOUNT_MANAGEMENT,
         "desc": "App activity / Account credentials (Account management)",
     },
@@ -848,29 +928,31 @@ def _declare_data_type_inner(page, ctx: dict, decl: dict) -> None:
         _click_add_type_entry(page, ctx, desc)
     page.wait_for_timeout(2000)
     expand_all(page, ctx)
-    # Category then concrete type: row-checkbox idiom with dialog fallback.
-    checked = False
-    for patterns, what in ((decl["section"], "section"), (decl["dtype"], "type")):
-        for pattern in patterns:
+    # Category then concrete type: label-EXACT FIRST (answer_no idiom:
+    # get_by_label exact + count==1 + is_checked verify), regex row-walk
+    # second, flat checkbox picker last. A miss is WARNING + continue only.
+    for _slot, _what in (("section", "section"), ("dtype", "dtype")):
+        _answered = False
+        _exact = list(decl.get(f"{_slot}_exact", []) or [])
+        if _exact:
+            _answered = _label_exact_check(page, ctx, _exact, f"{_what} exact: {desc}")
+        if not _answered:
+            for _pat in decl[_slot]:
+                try:
+                    check_row_for_text(page, ctx, _pat, f"{_what}: {desc}")
+                    _answered = True
+                    break
+                except Exception:
+                    continue
+        if not _answered:
             try:
-                check_row_for_text(page, ctx, pattern, f"{what}: {desc}")
-                checked = True
-                break
+                pick_one(page, ctx, "checkbox", decl[_slot], f"flat picker {_what}: {desc}")
+                _answered = True
             except Exception:
-                continue
-        if checked and what == "section":
-            checked = False  # reset for the type pass below
-            page.wait_for_timeout(1500)
-            continue
-        if checked:
-            break
-    if not checked:
-        # Fallback: checkbox roles directly (newer flat picker layout).
-        for patterns in (decl["section"], decl["dtype"]):
-            try:
-                pick_one(page, ctx, "checkbox", patterns, f"flat picker: {desc}")
-            except Exception:
-                continue
+                pass
+        if not _answered:
+            step(ctx, f"WARNING: {_what} checkbox not found, continuing: {desc}")
+        page.wait_for_timeout(1500)
     page.wait_for_timeout(1500)
     try_click(page, ctx, NEXT_PATTERNS + APPLY_PATTERNS, f"confirm type picker: {desc}")
     page.wait_for_timeout(2000)
@@ -1022,44 +1104,68 @@ def run_data_safety(page, ctx: dict) -> None:
     except Exception:
         step(ctx, "WARNING: deletion URL field not found, continuing")
     page.wait_for_timeout(1500)
-    # Re-assert every step-2 answer (throttled re-renders can reset controls).
-    try:
-        for _pat, _dn in (
-            (re.compile(r"collect or share any.*required user data", re.I), "collects"),
-            (re.compile(r"encrypted in transit", re.I), "encrypted"),
-        ):
-            try:
-                _q = page.get_by_text(_pat).first
-                _q.wait_for(state="visible", timeout=8000)
-                _scope = _q.locator("xpath=ancestor::*[descendant::*[@role='radio']][1]")
-                _yes = _scope.get_by_label(re.compile(r"^yes$", re.I)).first
-                _yes.wait_for(state="visible", timeout=5000)
+    # Re-assert EVERY step-2 answer right before Next (throttled re-renders
+    # reset radios): collects + encrypted + deletion YES, deletion-URL refill
+    # if emptied, account-method checked. Footer Next stays DISABLED until ALL
+    # stick — then Save-draft, then advance. Re-asserted again before every
+    # Next retry inside the advance loop below.
+    def _reassert_step2() -> None:
+        try:
+            for _pat, _dn in (
+                (re.compile(r"collect or share any.*required user data", re.I), "collects"),
+                (re.compile(r"encrypted in transit", re.I), "encrypted"),
+                (DELETE_Q[0], "deletion"),
+            ):
                 try:
-                    if not _yes.is_checked():
+                    _q = page.get_by_text(_pat).first
+                    _q.wait_for(state="visible", timeout=8000)
+                    _scope = _q.locator("xpath=ancestor::*[descendant::*[@role='radio']][1]")
+                    _yes = _scope.get_by_label(re.compile(r"^yes$", re.I)).first
+                    _yes.wait_for(state="visible", timeout=5000)
+                    try:
+                        if not _yes.is_checked():
+                            _yes.check()
+                            page.wait_for_timeout(800)
+                    except Exception:
                         _yes.check()
                         page.wait_for_timeout(800)
+                    if _yes.is_checked():
+                        step(ctx, f"re-asserted {_dn}=YES")
                 except Exception:
-                    _yes.check()
-                    page.wait_for_timeout(800)
-                if _yes.is_checked():
-                    step(ctx, f"re-asserted {_dn}=YES")
-            except Exception:
-                continue
-    except Exception:
-        pass
-    try:
-        _ac2 = page.get_by_label("Username and password", exact=True)
-        if _ac2.count() == 1:
-            try:
-                if not _ac2.first.is_checked():
-                    _ac2.first.check()
-                    page.wait_for_timeout(800)
-            except Exception:
-                pass
-            if _ac2.first.is_checked():
-                step(ctx, "re-asserted account method")
-    except Exception:
-        pass
+                    continue
+        except Exception:
+            pass
+        try:
+            _du2 = page.get_by_label(re.compile(r"delete account", re.I))
+            if _du2.count() >= 1:
+                try:
+                    _du2.first.wait_for(state="visible", timeout=5000)
+                    if PRIVACY_URL not in (_du2.first.input_value() or ""):
+                        _du2.first.fill(PRIVACY_URL)
+                        page.wait_for_timeout(800)
+                    if PRIVACY_URL in (_du2.first.input_value() or ""):
+                        step(ctx, "re-asserted deletion URL")
+                    else:
+                        step(ctx, "WARNING: deletion URL refill unverified")
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        try:
+            _ac2 = page.get_by_label("Username and password", exact=True)
+            if _ac2.count() == 1:
+                try:
+                    if not _ac2.first.is_checked():
+                        _ac2.first.check()
+                        page.wait_for_timeout(800)
+                except Exception:
+                    pass
+                if _ac2.first.is_checked():
+                    step(ctx, "re-asserted account method")
+        except Exception:
+            pass
+
+    _reassert_step2()
     if try_click(page, ctx, [re.compile(r"^save draft$", re.I)], "Save draft step 2"):
         page.wait_for_timeout(3000)
         step(ctx, "step 2 draft saved")
@@ -1069,6 +1175,7 @@ def run_data_safety(page, ctx: dict) -> None:
     # instead of assuming the click advanced the wizard.
     _on_types = False
     for _attempt in range(2):
+        _reassert_step2()
         if try_click(page, ctx, NEXT_PATTERNS, "data safety Next to types"):
             page.wait_for_timeout(4000)
         else:
@@ -1161,9 +1268,14 @@ def slug_from_package(package: str) -> str:
 
 
 def read_locale_texts(slug: str, locale: str) -> dict:
-    """Read title/short/full at RUNTIME from the fastlane metadata dirs."""
+    """Read title/short/full at RUNTIME from the fastlane metadata dirs.
+
+    Hardened: utf-8-sig (BOM-safe), CRLF-normalized, single-line guards
+    for title/short; fails loudly with locale-qualified paths so a human
+    fixes the fastlane txt instead of us truncating store copy.
+    """
     base = REPO_ROOT / "apps" / f"fastfree_{slug}" / "fastlane" / "metadata" / "android" / locale
-    texts = {}
+    texts: dict = {}
     for key, filename in (
         ("title", "title.txt"),
         ("short", "short_description.txt"),
@@ -1171,51 +1283,113 @@ def read_locale_texts(slug: str, locale: str) -> dict:
     ):
         path = base / filename
         if not path.is_file():
-            raise RuntimeError(f"missing listing asset: {path}")
-        texts[key] = path.read_text(encoding="utf-8").strip()
+            raise RuntimeError(f"missing listing asset [{locale}]: {path}")
+        raw = path.read_text(encoding="utf-8-sig").replace("\r\n", "\n").strip()
+        texts[key] = "\n".join(line.rstrip() for line in raw.split("\n")).strip()
         if not texts[key]:
-            raise RuntimeError(f"empty listing asset: {path}")
+            raise RuntimeError(f"empty listing asset [{locale}]: {path}")
+    if "\n" in texts["title"]:
+        raise RuntimeError(f"title must be single-line [{locale}] (fix {base}/title.txt)")
+    if "\n" in texts["short"]:
+        raise RuntimeError(f"short must be single-line [{locale}] (fix {base})")
     if len(texts["title"]) > TITLE_LIMIT:
-        raise RuntimeError(f"title {len(texts['title'])} chars > {TITLE_LIMIT} (fix {base}/title.txt)")
+        raise RuntimeError(f"title {len(texts['title'])} chars > {TITLE_LIMIT} [{locale}]")
     if len(texts["short"]) > SHORT_LIMIT:
-        raise RuntimeError(f"short {len(texts['short'])} chars > {SHORT_LIMIT} (fix {base})")
+        raise RuntimeError(f"short {len(texts['short'])} chars > {SHORT_LIMIT} [{locale}]")
     if len(texts["full"]) > FULL_LIMIT:
-        raise RuntimeError(f"full {len(texts['full'])} chars > {FULL_LIMIT} (fix {base})")
+        raise RuntimeError(f"full {len(texts['full'])} chars > {FULL_LIMIT} [{locale}]")
     return texts
 
 
 def resolve_images(slug: str, locale: str) -> dict:
-    """Per-locale images dir, falling back to en-US when a file is absent."""
+    """Per-locale images dir, falling back to en-US when a file is absent.
+
+    Hardened: rejects empty (0-byte) files, logs fallback usage, sorts
+    shots deterministically so uploads are stable across runs.
+    """
     want = REPO_ROOT / "apps" / f"fastfree_{slug}" / "fastlane" / "metadata" / "android"
     fallback = want / "en-US" / "images"
     local = want / locale / "images"
     resolved: dict = {}
     shots = sorted(local.glob("phone-screenshots/*.png")) or sorted(fallback.glob("phone-screenshots/*.png"))
+    shots = [p for p in shots if p.is_file() and p.stat().st_size > 0]
     for key, filename in (("icon", "icon.png"), ("feature", "feature-graphic.png")):
         candidate = local / filename
+        used_fallback = False
         if not candidate.is_file():
             candidate = fallback / filename
+            used_fallback = True
         if not candidate.is_file():
-            raise RuntimeError(f"missing graphic asset: {candidate}")
+            raise RuntimeError(f"missing graphic asset [{locale}/{key}]: {candidate}")
+        if candidate.stat().st_size == 0:
+            raise RuntimeError(f"empty graphic asset [{locale}/{key}]: {candidate}")
+        if used_fallback and locale != "en-US":
+            LOG.info("listing image fallback to en-US: [%s] %s", locale, filename)
         resolved[key] = candidate
     if not shots:
         raise RuntimeError(f"no phone screenshots in {local} nor {fallback}")
     resolved["shots"] = shots
+    LOG.info("listing images [%s]: shots=%d", locale, len(shots))
     return resolved
 
 
 def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
-    """Switch the store-listing editor to locale; add the language if absent."""
-    for pattern in name_patterns:
+    """Switch the store-listing editor to locale; add the language if absent.
+
+    Hardened: verifies the tab is ACTIVE after click (aria-selected /
+    aria-current / active class, else editor textboxes rendered) and
+    retries the click once before falling back to add-language.
+    """
+
+    def _is_active(tab) -> bool:
         try:
-            tab = page.get_by_text(pattern).first
-            tab.wait_for(state="visible", timeout=5000)
-            tab.click()
-            step(ctx, f"locale tab selected: {locale}")
-            page.wait_for_timeout(2500)
-            return
+            if (tab.get_attribute("aria-selected") or "").lower() == "true":
+                return True
         except Exception:
-            continue
+            pass
+        try:
+            if (tab.get_attribute("aria-current") or "").lower() in ("true", "page"):
+                return True
+        except Exception:
+            pass
+        try:
+            cls = (tab.get_attribute("class") or "").lower()
+            if "active" in cls or "selected" in cls:
+                return True
+        except Exception:
+            pass
+        return False
+
+    def _click_once(tag: str) -> bool:
+        for pattern in name_patterns:
+            try:
+                tab = page.get_by_text(pattern).first
+                tab.wait_for(state="visible", timeout=5000)
+                tab.click(timeout=5000)
+            except Exception:
+                continue
+            page.wait_for_timeout(2500)
+            try:
+                fresh = page.get_by_text(pattern).first
+                if _is_active(fresh):
+                    step(ctx, f"locale tab active verified [{tag}]: {locale}")
+                    return True
+            except Exception:
+                pass
+            try:
+                if page.get_by_role("textbox").count() >= 3:
+                    step(ctx, f"locale editor ready [{tag}]: {locale}")
+                    return True
+            except Exception:
+                pass
+        return False
+
+    if _click_once("direct"):
+        return
+    page.wait_for_timeout(1500)
+    if _click_once("retry"):
+        step(ctx, f"locale tab selected on retry: {locale}")
+        return
     # Language tab missing → add it, then retry the tab click.
     step(ctx, f"locale tab {locale} absent — adding language")
     click_any(page, ctx, ADD_LANGUAGE_PATTERNS, f"add language {locale}")
@@ -1233,22 +1407,49 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
         failshot(page, ctx, f"locale-{locale}", RuntimeError(f"language {locale} not offered"))
     try_click(page, ctx, APPLY_PATTERNS + NEXT_PATTERNS, f"confirm add language {locale}")
     page.wait_for_timeout(2500)
-    for pattern in name_patterns:
-        try:
-            tab = page.get_by_text(pattern).first
-            tab.wait_for(state="visible", timeout=8000)
-            tab.click()
-            step(ctx, f"locale tab selected after add: {locale}")
-            page.wait_for_timeout(2500)
-            return
-        except Exception:
-            continue
-    failshot(page, ctx, f"locale-{locale}", RuntimeError(f"locale tab {locale} never appeared"))
+    if _click_once("after-add"):
+        return
+    page.wait_for_timeout(1500)
+    if _click_once("after-add-retry"):
+        return
+    failshot(page, ctx, f"locale-{locale}", RuntimeError(f"locale tab {locale} never active"))
 
 
 def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -> None:
-    """Set file input(s) inside the section owning the label text (never OS picker)."""
+    """Set file input(s) inside the section owning the label text (never OS picker).
+
+    Hardened: scoped to the nearest file-input ancestor, then verifies the
+    file-row text (basename/stem) appears; retries set_input_files once.
+    """
     tried: list = []
+    wanted = [Path(p).name for p in paths]
+
+    def _row_visible(root, name: str) -> bool:
+        try:
+            root.get_by_text(re.compile(re.escape(name), re.I)).first.wait_for(
+                state="visible", timeout=2000
+            )
+            return True
+        except Exception:
+            return False
+
+    def _verify(section, tag: str) -> bool:
+        deadline = time.time() + 30
+        while time.time() < deadline:
+            hit = 0
+            for name in wanted:
+                stem = Path(name).stem
+                found = _row_visible(section, name) or _row_visible(section, stem)
+                if not found:
+                    found = _row_visible(page, name) or _row_visible(page, stem)
+                if found:
+                    hit += 1
+            if hit >= len(wanted):
+                step(ctx, f"upload verified [{tag}]: {desc} ({hit}/{len(wanted)})")
+                return True
+            page.wait_for_timeout(1000)
+        return False
+
     for pattern in label_patterns:
         try:
             anchor = page.get_by_text(pattern).first
@@ -1256,45 +1457,174 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -
             section = anchor.locator("xpath=ancestor::*[descendant::input[@type='file']][1]")
             box = section.locator("input[type='file']").first
             box.wait_for(state="attached", timeout=15000)
-            box.set_input_files([str(p) for p in paths])
-            step(ctx, f"uploaded {desc} ({len(paths)} file(s))")
-            page.wait_for_timeout(5000)
-            return
         except Exception as exc:
             tried.append(str(exc)[:120])
             continue
-    failshot(page, ctx, desc, RuntimeError(f"no upload input near {desc}: {' | '.join(tried)}"))
+        try:
+            box.set_input_files([str(p) for p in paths])
+            step(ctx, f"uploaded {desc} ({len(paths)} file(s))")
+        except Exception as exc:
+            tried.append(str(exc)[:120])
+            continue
+        page.wait_for_timeout(3000)
+        if _verify(section, "direct"):
+            return
+        try:
+            box.set_input_files([str(p) for p in paths])
+            page.wait_for_timeout(3000)
+        except Exception as exc:
+            tried.append(str(exc)[:120])
+            continue
+        if _verify(section, "retry"):
+            step(ctx, f"upload verified on retry: {desc}")
+            return
+        tried.append(f"{desc}: file-row never appeared")
+    failshot(page, ctx, desc, RuntimeError(f"no verified upload near {desc}: {' | '.join(tried)}"))
 
 
 def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
-    """Fill texts + graphics + privacy URL for one locale, then save+verify."""
+    """Fill texts + graphics + privacy URL for one locale, then save+verify.
+
+    Hardened: every text fill is re-read via input_value, uploads verify
+    file-row inside upload_near, save uses save_and_verify (Saved-text).
+    Raises → run_store_listing converts to WARNING+continue per locale.
+    """
     step(ctx, f"STORE LISTING [{locale}]: start")
     select_locale(page, ctx, locale, [p for _, pats in LOCALES if _ == locale for p in pats])
     texts = read_locale_texts(slug, locale)
     images = resolve_images(slug, locale)
-    fill_any(page, ctx, TITLE_PATTERNS, texts["title"], f"[{locale}] app name")
-    fill_any(page, ctx, SHORT_PATTERNS, texts["short"], f"[{locale}] short description")
-    fill_any(page, ctx, FULL_PATTERNS, texts["full"], f"[{locale}] full description")
+
+    def _fill_verified(patterns: list, value: str, desc: str) -> None:
+        fill_any(page, ctx, patterns, value, desc)
+        want = (value or "").strip()
+        probe = want[:60]
+        deadline = time.time() + 15
+        while time.time() < deadline:
+            for pattern in patterns:
+                for method in ("label", "placeholder", "textbox"):
+                    try:
+                        if method == "label":
+                            field = page.get_by_label(pattern)
+                        elif method == "placeholder":
+                            field = page.get_by_placeholder(pattern)
+                        else:
+                            field = page.get_by_role("textbox", name=pattern)
+                        first = field.first
+                        first.wait_for(state="visible", timeout=2000)
+                        cur = first.input_value() or ""
+                        if want in cur or (probe and probe in cur):
+                            step(ctx, f"fill verified: {desc}")
+                            return
+                    except Exception:
+                        continue
+            try:
+                for box in page.get_by_role("textbox").all():
+                    try:
+                        if not box.is_visible():
+                            continue
+                        if probe and probe in (box.input_value() or ""):
+                            step(ctx, f"fill verified (sweep): {desc}")
+                            return
+                    except Exception:
+                        continue
+            except Exception:
+                pass
+            page.wait_for_timeout(1000)
+        _soft_shot(page, ctx, f"fill-verify {desc}")
+        raise RuntimeError(f"fill not reflected in input_value: {desc}")
+
+    _fill_verified(TITLE_PATTERNS, texts["title"], f"[{locale}] app name")
+    _fill_verified(SHORT_PATTERNS, texts["short"], f"[{locale}] short description")
+    _fill_verified(FULL_PATTERNS, texts["full"], f"[{locale}] full description")
     page.wait_for_timeout(1500)
     upload_near(page, ctx, ICON_UPLOAD_PATTERNS, [images["icon"]], f"[{locale}] app icon")
     upload_near(page, ctx, FEATURE_UPLOAD_PATTERNS, [images["feature"]], f"[{locale}] feature graphic")
     upload_near(page, ctx, SHOTS_UPLOAD_PATTERNS, images["shots"], f"[{locale}] phone screenshots")
-    fill_any(page, ctx, PRIVACY_PATTERNS, PRIVACY_URL, f"[{locale}] privacy policy URL")
+    _fill_verified(PRIVACY_PATTERNS, PRIVACY_URL, f"[{locale}] privacy policy URL")
     save_and_verify(page, ctx, f"store listing {locale}")
     step(ctx, f"STORE LISTING [{locale}]: done")
 
 
 def run_store_listing(page, ctx: dict) -> None:
-    """'Set up your store listing' → per-locale (ar + en-US) texts + graphics."""
+    """'Set up your store listing' → per-locale (ar + en-US) texts + graphics.
+
+    Hardened: CONTROLS gate after entering the editor (never text alone),
+    per-locale isolation (one locale WARNING+continues), final re-visit
+    verifies both locales show saved state.
+    """
     step(ctx, "STORE LISTING: start")
     slug = slug_from_package(_get(ctx, "PACKAGE"))
     step(ctx, f"resolved slug: {slug}")
     open_task(page, ctx, STORE_LISTING_LABELS, "store listing")
     try_click(page, ctx, MANAGE_PATTERNS, "enter main listing editor")
     page.wait_for_timeout(2000)
+    expand_all(page, ctx)
+    gate_deadline = time.time() + 120
+    while time.time() < gate_deadline:
+        try:
+            n_box = page.get_by_role("textbox").count()
+            n_btn = page.get_by_role("button").count()
+            if n_box >= 3 and n_btn >= 1:
+                step(ctx, f"listing controls ready (textboxes={n_box} buttons={n_btn})")
+                break
+        except Exception:
+            pass
+        page.wait_for_timeout(5000)
+    else:
+        step(ctx, "WARNING: listing controls gate timed out — proceeding anyway")
+    failures: dict = {}
     for locale, _pats in LOCALES:
-        fill_locale_listing(page, ctx, slug, locale)
+        try:
+            fill_locale_listing(page, ctx, slug, locale)
+        except Exception as exc:
+            _soft_shot(page, ctx, f"store-listing {locale}")
+            step(ctx, f"WARNING: store listing [{locale}] failed ({exc}), continuing")
+            failures[locale] = str(exc)[:200]
         page.wait_for_timeout(2000)
+    if len(failures) == len(LOCALES):
+        failshot(page, ctx, "store-listing-all-locales", RuntimeError(f"all locales failed: {failures}"))
+    if failures:
+        step(ctx, f"WARNING: locales failed, final verify will decide: {sorted(failures)}")
+    for locale, pats in LOCALES:
+        try:
+            select_locale(page, ctx, locale, list(pats))
+            want_title = read_locale_texts(slug, locale)["title"].strip()
+            found_title = False
+            title_deadline = time.time() + 20
+            while time.time() < title_deadline and not found_title:
+                try:
+                    for box in page.get_by_role("textbox").all():
+                        try:
+                            if want_title and want_title in (box.input_value() or ""):
+                                found_title = True
+                                break
+                        except Exception:
+                            continue
+                except Exception:
+                    pass
+                if not found_title:
+                    page.wait_for_timeout(1000)
+            if not found_title:
+                raise RuntimeError(f"saved title not present for {locale}")
+            try:
+                saved = page.get_by_text(re.compile(r"saved|draft saved|تم الحفظ", re.I)).first
+                saved.wait_for(state="visible", timeout=15000)
+                step(ctx, f"final verify saved-text [{locale}]")
+            except Exception:
+                try:
+                    save_btn = page.get_by_role(
+                        "button", name=re.compile(r"^save( changes| draft)?$|^حفظ", re.I)
+                    ).first
+                    save_btn.wait_for(state="visible", timeout=8000)
+                    if save_btn.is_disabled():
+                        step(ctx, f"final verify save-disabled [{locale}]")
+                    else:
+                        raise RuntimeError(f"unsaved changes remain for {locale}")
+                except Exception as exc:
+                    raise RuntimeError(f"saved state not shown for {locale}: {exc}") from exc
+            step(ctx, f"final verify OK [{locale}]")
+        except Exception as exc:
+            failshot(page, ctx, f"store-listing-verify-{locale}", exc)
     step(ctx, "STORE LISTING: done")
     open_dashboard(page, ctx)
 
