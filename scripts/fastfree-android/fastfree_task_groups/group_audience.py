@@ -25,6 +25,7 @@ Fixed answer bank (NEVER invent beyond this):
 
 from __future__ import annotations
 
+import os
 import re
 import time
 from pathlib import Path
@@ -36,6 +37,85 @@ CONSOLE = "https://play.google.com/console"
 
 DEV_ACCOUNT_NAME = "fastfree.cloud"
 DEFAULT_DEV_ID = "7269125617638997236"
+
+# ── low-footprint mode (default ON; FASTFREE_LOW_FOOTPRINT=0 disables) ─────────
+# Play Console throttles sustained automation (HTTP 429). Questionnaire flows
+# never need images/media/fonts (form JS, XHR, stylesheets kept; screenshots
+# capture DOM rendering which works headless without them), so
+# arm_low_footprint route-aborts those classes. pace() is the single helper
+# for every fixed sleep (post-navigation waits default to NAV_PACE_SECS);
+# settle() replaces networkidle, which holds the CDP session open on
+# long-polling XHRs that 429 anyway. The ONE retained networkidle is the
+# questionnaire Next advance (in-place SPA transition: no URL change, so
+# domcontentloaded cannot gate it), reduced 25s→15s. Poll loops keep their
+# deadlines but sleep with exponential backoff via pace() (fewer CDP
+# round-trips, same timeouts).
+
+LOW_FOOTPRINT = os.environ.get("FASTFREE_LOW_FOOTPRINT", "1") != "0"
+
+
+def _env_secs(name: str, default: float) -> float:
+    try:
+        return float(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
+NAV_PACE_SECS = _env_secs("FASTFREE_NAV_PACE_SECS", 4.0)
+
+_BLOCKED_RESOURCE_TYPES = frozenset({"image", "media", "font"})
+
+
+def arm_low_footprint(page: Any) -> None:
+    """Abort heavy subresources only when explicitly enabled.
+
+    Default OFF: a no-image waterfall is itself a bot tell and buys little
+    quota (research 2026-09-15). Enable with FASTFREE_BLOCK_RESOURCES=1.
+    Pacing/backoff (LOW_FOOTPRINT) stays independent and default-ON.
+    """
+    if not (LOW_FOOTPRINT and os.environ.get("FASTFREE_BLOCK_RESOURCES", "0") != "0"):
+        return
+    try:
+        if getattr(page, "_fastfree_low_fp", False):
+            return
+
+        def _block(route: Any) -> None:
+            try:
+                if route.request.resource_type in _BLOCKED_RESOURCE_TYPES:
+                    route.abort()
+                else:
+                    route.continue_()
+            except Exception:
+                try:
+                    route.continue_()
+                except Exception:
+                    pass
+
+        page.route("**/*", _block)
+        page._fastfree_low_fp = True
+    except Exception:
+        pass
+
+
+def pace(page: Any, secs: float = NAV_PACE_SECS) -> None:
+    """Single pacing helper: fixed CDP-side sleep (falls back to time.sleep)."""
+    try:
+        page.wait_for_timeout(int(secs * 1000))
+    except Exception:
+        time.sleep(secs)
+
+
+def settle(page: Any, secs: float = 2.0) -> None:
+    """Post-navigation settle WITHOUT networkidle (long-poll XHRs 429 anyway).
+
+    domcontentloaded returns immediately when already loaded; the short pace
+    lets the SPA hydrate while targeted waits below do the real gating.
+    """
+    try:
+        page.wait_for_load_state("domcontentloaded", timeout=15000)
+    except Exception:
+        pass
+    pace(page, secs)
 
 # ── context helpers (ctx is a dict with NAME/PACKAGE/APP_ID/DEV_ID/KEY) ──────
 
@@ -215,16 +295,17 @@ def failshot(page: Any, ctx: Any, desc: str, err: Exception) -> NoReturn:
 
 def activate(page: Any, ctx: Any) -> None:
     """Bring our tab forward; resolve the developer chooser when it appears."""
+    arm_low_footprint(page)  # idempotent: covers every navigation via activate()
     try:
         page.bring_to_front()
     except Exception:
         pass
-    page.wait_for_timeout(1500)
+    pace(page, 1.5)
     try:
         if re.search(r"/console/developers/?(?:\?.*)?$", page.url or ""):
             step(ctx, "developer chooser — selecting account")
             click_any(page, ctx, DEV_CHOOSER_PATTERNS, "select developer account")
-            page.wait_for_timeout(5000)
+            pace(page, 5.0)
     except Exception:
         pass
 
@@ -419,7 +500,7 @@ def expand_all(page: Any, ctx: Any) -> None:
         for item in page.get_by_text(re.compile(r"show more", re.I)).all():
             try:
                 item.click(timeout=3000)
-                page.wait_for_timeout(800)
+                pace(page, 0.8)
             except Exception:
                 continue
     except Exception:
@@ -441,27 +522,28 @@ def goto_dashboard(page: Any, ctx: Any) -> None:
             wait_until="domcontentloaded",
             timeout=60000,
         )
-        page.wait_for_timeout(4000)
+        arm_low_footprint(page)
+        pace(page)
         activate(page, ctx)
         if f"/app/{app_id}/" in (page.url or ""):
             break
         step(ctx, "dashboard bounced — retrying via app list")
         page.goto(f"{base}/u/0/developers/{dev}/app-list", wait_until="domcontentloaded", timeout=60000)
-        page.wait_for_timeout(4000)
+        arm_low_footprint(page)
+        pace(page)
         activate(page, ctx)
         try_click(page, ctx, COOKIE_PATTERNS, "cookie banner")
         click_any(
             page, ctx, [re.compile(f"^{re.escape(_app_label(ctx))}$")], "open app row"
         )
-        page.wait_for_timeout(5000)
+        pace(page, 5.0)
         activate(page, ctx)
     if f"/app/{app_id}/" not in (page.url or ""):
         failshot(page, ctx, "dashboard-unreachable", RuntimeError("dashboard bounced twice"))
     assert_developer(page, ctx)
-    try:
-        page.wait_for_load_state("networkidle", timeout=30000)
-    except Exception:
-        pass
+    # Was networkidle(30s): holds the CDP session on long-polling XHRs that
+    # 429 anyway — domcontentloaded + short pace, targeted waits gate below.
+    settle(page)
     try_click(page, ctx, COOKIE_PATTERNS, "cookie banner")
     step(ctx, f"dashboard open: {_app_label(ctx)}")
 
@@ -477,7 +559,7 @@ def expand_view_tasks(page: Any, ctx: Any) -> None:
             if (tg.get_attribute("aria-expanded") or "").lower() == "true":
                 continue
             tg.click(timeout=3000)
-            page.wait_for_timeout(1500)
+            pace(page, 1.5)
         except Exception:
             continue
     step(ctx, "view-tasks toggles expanded (if any)")
@@ -485,7 +567,7 @@ def expand_view_tasks(page: Any, ctx: Any) -> None:
 
 def open_task(page: Any, ctx: Any, patterns: list, desc: str) -> None:
     """Open a dashboard task card. Expands parent groups first (§5 nesting lesson)."""
-    page.wait_for_timeout(2500)
+    pace(page, 2.5)
     activate(page, ctx)
     expand_view_tasks(page, ctx)
     for pattern in patterns:
@@ -493,7 +575,7 @@ def open_task(page: Any, ctx: Any, patterns: list, desc: str) -> None:
             loc = page.get_by_role("link", name=pattern)
             loc.first.wait_for(state="visible", timeout=5000)
             loc.first.click()
-            page.wait_for_timeout(3000)
+            pace(page, 3.0)
             activate(page, ctx)
             assert_developer(page, ctx)
             step(ctx, f"opened task link: {desc}")
@@ -507,14 +589,14 @@ def open_task(page: Any, ctx: Any, patterns: list, desc: str) -> None:
         re.compile(r"^testing$", re.I),
     ]:
         try_click(page, ctx, [group], "expand parent group")
-        page.wait_for_timeout(1200)
+        pace(page, 1.2)
     for pattern in patterns:
         for role in ("button", "link"):
             try:
                 loc = page.get_by_role(role, name=pattern)
                 loc.first.wait_for(state="visible", timeout=5000)
                 loc.first.click()
-                page.wait_for_timeout(3000)
+                pace(page, 3.0)
                 activate(page, ctx)
                 assert_developer(page, ctx)
                 step(ctx, f"opened task {role}: {desc}")
@@ -525,7 +607,7 @@ def open_task(page: Any, ctx: Any, patterns: list, desc: str) -> None:
             txt = page.get_by_text(pattern)
             txt.first.wait_for(state="visible", timeout=5000)
             txt.first.click()
-            page.wait_for_timeout(3000)
+            pace(page, 3.0)
             activate(page, ctx)
             assert_developer(page, ctx)
             step(ctx, f"opened task text: {desc}")
@@ -538,6 +620,7 @@ def open_task(page: Any, ctx: Any, patterns: list, desc: str) -> None:
 def wait_for_questions(page: Any, ctx: Any, desc: str, timeout_ms: int = 45000) -> None:
     """Generous wait: question pages render slowly under throttling."""
     deadline = time.time() + timeout_ms / 1000
+    poll = 0
     while time.time() < deadline:
         try:
             for pattern in QUESTION_HINT_PATTERNS + NONE_PATTERNS + NEXT_PATTERNS + SUBMIT_PATTERNS:
@@ -558,7 +641,9 @@ def wait_for_questions(page: Any, ctx: Any, desc: str, timeout_ms: int = 45000) 
                     continue
         except Exception:
             pass
-        page.wait_for_timeout(1500)
+        # Backoff (1.5s→6s cap): same deadline, fewer CDP round-trips.
+        pace(page, min(6.0, 1.5 * (2.0**poll)))
+        poll += 1
     failshot(page, ctx, f"wait-{desc}", RuntimeError(f"question page never rendered: {desc}"))
 
 
@@ -576,7 +661,7 @@ def confirm_dialog(page: Any, ctx: Any, patterns: list, desc: str) -> bool:
             btn = scoped.get_by_role("button", name=pattern)
             btn.first.click(timeout=8000)
             step(ctx, f"dialog confirm: {desc}")
-            page.wait_for_timeout(2000)
+            pace(page, 2.0)
             return True
         except Exception:
             continue
@@ -586,7 +671,7 @@ def confirm_dialog(page: Any, ctx: Any, patterns: list, desc: str) -> bool:
             btn.first.wait_for(state="visible", timeout=5000)
             btn.first.click(timeout=8000)
             step(ctx, f"dialog confirm (unscoped): {desc}")
-            page.wait_for_timeout(2000)
+            pace(page, 2.0)
             return True
         except Exception:
             continue
@@ -595,7 +680,7 @@ def confirm_dialog(page: Any, ctx: Any, patterns: list, desc: str) -> bool:
 
 def verify_saved(page: Any, ctx: Any, desc: str) -> None:
     """Verify a save/submit stuck: success toast, or task-complete state, no error."""
-    page.wait_for_timeout(3500)
+    pace(page, 3.5)
     try:
         body = page.inner_text("body") or ""
     except Exception:
@@ -647,7 +732,7 @@ def run_target_audience(page: Any, ctx: Any) -> None:
                 deselected += 1
         except Exception:
             continue
-        page.wait_for_timeout(400)
+        pace(page, 0.4)
     step(ctx, f"children brackets deselected: {deselected}")
 
     if not set_checkbox(page, ctx, ADULT_PATTERNS, True, "select 18+ only"):
@@ -656,7 +741,7 @@ def run_target_audience(page: Any, ctx: Any) -> None:
             check_row_for_text(page, ctx, ADULT_PATTERNS[0], "select 18+ row")
         except Exception as exc:
             failshot(page, ctx, "audience-18plus", exc)
-    page.wait_for_timeout(1000)
+    pace(page, 1.0)
 
     # "Does your app appeal to children?" (and siblings) -> No. Fixed bank only.
     expand_all(page, ctx)
@@ -673,13 +758,13 @@ def run_target_audience(page: Any, ctx: Any) -> None:
         # Question may still exist without the heading text; a blind No click
         # would invent answers, so only answer when the heading is confirmed.
         step(ctx, "no appeal-to-children heading found — skipping appeal question")
-    page.wait_for_timeout(1000)
+    pace(page, 1.0)
 
     expand_all(page, ctx)
     # Wizard: Target age -> App details -> Ads -> Store presence -> Summary.
     # Step forward; unknown question pages stop the loop for diagnosis.
     for _s in range(6):
-        page.wait_for_timeout(2500)
+        pace(page, 2.5)
         if _click_submit(page, ctx):
             step(ctx, "wizard submitted")
             break
@@ -736,7 +821,7 @@ def _answer_page_none(page: Any, ctx: Any) -> int:
                 b = loc.nth(i)
                 b.wait_for(state="visible", timeout=3000)
                 b.check(timeout=5000)
-                page.wait_for_timeout(300)
+                pace(page, 0.3)
                 if b.is_checked():
                     answered += 1
             except Exception:
@@ -834,13 +919,17 @@ def _capture_rating(page: Any, ctx: Any) -> str:
             wait_until="domcontentloaded",
             timeout=60000,
         )
-        page.wait_for_timeout(6000)
+        arm_low_footprint(page)
+        pace(page, 6.0)
     except Exception:
         pass
     deadline = time.time() + 90
     body = ""
+    poll = 0
     while time.time() < deadline:
-        page.wait_for_timeout(4000)
+        # Backoff (4s→8s cap): same 90s deadline, ~half the body reads.
+        pace(page, min(8.0, 4.0 * (2.0**poll)))
+        poll += 1
         try:
             body = page.inner_text("body") or ""
         except Exception:
@@ -852,6 +941,7 @@ def _capture_rating(page: Any, ctx: Any) -> str:
         if "Loading Google Play Console" in body:
             try:
                 page.reload(wait_until="domcontentloaded", timeout=60000)
+                arm_low_footprint(page)
             except Exception:
                 pass
     if not body:
@@ -926,7 +1016,7 @@ def _fill_iarc_category(page: Any, ctx: Any) -> bool:
         except Exception:
             _box = _em
         _box.fill("mohamed.fastfree@gmail.com")
-        page.wait_for_timeout(500)
+        pace(page, 0.5)
         if "mohamed.fastfree@gmail.com" in (_box.input_value() or ""):
             step(ctx, "filled rating contact email")
     except Exception:
@@ -936,7 +1026,7 @@ def _fill_iarc_category(page: Any, ctx: Any) -> bool:
         _box = page.get_by_label("All Other App Types", exact=True)
         if _box.count() == 1:
             _box.first.check()
-            page.wait_for_timeout(500)
+            pace(page, 0.5)
             if _box.first.is_checked():
                 _picked = True
                 step(ctx, "picked: All Other App Types")
@@ -946,7 +1036,7 @@ def _fill_iarc_category(page: Any, ctx: Any) -> bool:
         _tm = page.get_by_label(re.compile(r"agree to the terms of use", re.I))
         if _tm.count() >= 1:
             _tm.first.check()
-            page.wait_for_timeout(500)
+            pace(page, 0.5)
             if _tm.first.is_checked():
                 step(ctx, "accepted IARC terms")
     except Exception:
@@ -972,7 +1062,8 @@ def run_content_rating(page: Any, ctx: Any) -> None:
             wait_until="domcontentloaded",
             timeout=60000,
         )
-        page.wait_for_timeout(5000)
+        arm_low_footprint(page)
+        pace(page, 5.0)
         activate(page, ctx)
         if "content-rating" in (page.url or ""):
             _opened = True
@@ -1011,16 +1102,16 @@ def run_content_rating(page: Any, ctx: Any) -> None:
             [re.compile(r"start (new )?questionnaire", re.I), re.compile(r"بدء الاستبيان", re.I)]
         ):
             step(ctx, "started questionnaire")
-        page.wait_for_timeout(4000)
+        pace(page)
         try:
             if "questionnaire" in (page.url or "") and "overview" not in (page.url or ""):
                 break
         except Exception:
             pass
-    page.wait_for_timeout(2000)
+    pace(page, 2.0)
     # IARC step 1 is a Category form (email + app-type + terms), not questions.
     _fill_iarc_category(page, ctx)
-    page.wait_for_timeout(1500)
+    pace(page, 1.5)
 
     for page_no in range(1, 31):
         step(ctx, f"questionnaire page {page_no}")
@@ -1037,7 +1128,7 @@ def run_content_rating(page: Any, ctx: Any) -> None:
                 pass
             break
         expand_all(page, ctx)
-        page.wait_for_timeout(1500)
+        pace(page, 1.5)
         if _is_category_page(page, ctx):
             _handle_category_page(page, ctx)
         else:
@@ -1045,10 +1136,10 @@ def run_content_rating(page: Any, ctx: Any) -> None:
             # rounds only while Next stays disabled. Checkbox-list pages with
             # zero safe options are valid untouched (none apply).
             _answer_page_none(page, ctx)
-            page.wait_for_timeout(1200)
+            pace(page, 1.2)
             expand_all(page, ctx)
             if try_click(page, ctx, SAVE_PATTERNS, "questionnaire Save"):
-                page.wait_for_timeout(3000)
+                pace(page, 3.0)
                 step(ctx, f"page {page_no} saved")
             for _round in range(2):
                 if _next_enabled(page, ctx):
@@ -1057,13 +1148,13 @@ def run_content_rating(page: Any, ctx: Any) -> None:
                 _answer_page_none(page, ctx)
                 try:
                     page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-                    page.wait_for_timeout(1200)
+                    pace(page, 1.2)
                     page.evaluate("window.scrollTo(0, 0)")
-                    page.wait_for_timeout(1200)
+                    pace(page, 1.2)
                 except Exception:
                     pass
                 expand_all(page, ctx)
-        page.wait_for_timeout(800)
+        pace(page, 0.8)
         # Submit takes precedence on the last page; otherwise advance.
         submitted = False
         try:
@@ -1074,9 +1165,13 @@ def run_content_rating(page: Any, ctx: Any) -> None:
         if last_page_hint and _click_submit(page, ctx):
             submitted = True
         elif _click_next(page, ctx):
-            page.wait_for_timeout(3500)
+            pace(page, 3.5)
             try:
-                page.wait_for_load_state("networkidle", timeout=25000)
+                # SOLE retained networkidle (15s, was 25s): the Next advance is
+                # an in-place SPA transition with no URL change, so
+                # domcontentloaded cannot gate it — networkidle is the only
+                # load-state signal here.
+                page.wait_for_load_state("networkidle", timeout=15000)
             except Exception:
                 pass
             activate(page, ctx)

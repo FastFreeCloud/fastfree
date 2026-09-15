@@ -25,6 +25,7 @@ text is read at RUNTIME from the fastfree_<slug> fastlane metadata dirs.
 from __future__ import annotations
 
 import logging
+import os
 import re
 import sys
 import time
@@ -68,6 +69,84 @@ def get_logger() -> logging.Logger:
 
 
 LOG = get_logger()
+
+
+# ── low-footprint mode (default ON; FASTFREE_LOW_FOOTPRINT=0 disables) ─────────
+# Play Console throttles sustained automation (HTTP 429). Questionnaire flows
+# never need images/media/fonts (form JS, XHR, stylesheets kept; screenshots
+# capture DOM rendering which works headless without them; input[type=file]
+# uploads are DOM ops, unaffected), so arm_low_footprint route-aborts those
+# classes. pace() is the single helper for every fixed sleep (post-navigation
+# waits default to NAV_PACE_SECS); settle() replaces networkidle, which holds
+# the CDP session open on long-polling XHRs that 429 anyway. Poll loops keep
+# their deadlines but sleep with exponential backoff via pace() (fewer CDP
+# round-trips, same timeouts).
+
+LOW_FOOTPRINT = os.environ.get("FASTFREE_LOW_FOOTPRINT", "1") != "0"
+
+
+def _env_secs(name: str, default: float) -> float:
+    try:
+        return float(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
+NAV_PACE_SECS = _env_secs("FASTFREE_NAV_PACE_SECS", 4.0)
+
+_BLOCKED_RESOURCE_TYPES = frozenset({"image", "media", "font"})
+
+
+def arm_low_footprint(page) -> None:
+    """Abort heavy subresources only when explicitly enabled.
+
+    Default OFF: a no-image waterfall is itself a bot tell and buys little
+    quota (research 2026-09-15). Enable with FASTFREE_BLOCK_RESOURCES=1.
+    Pacing/backoff (LOW_FOOTPRINT) stays independent and default-ON.
+    """
+    if not (LOW_FOOTPRINT and os.environ.get("FASTFREE_BLOCK_RESOURCES", "0") != "0"):
+        return
+    try:
+        if getattr(page, "_fastfree_low_fp", False):
+            return
+
+        def _block(route) -> None:
+            try:
+                if route.request.resource_type in _BLOCKED_RESOURCE_TYPES:
+                    route.abort()
+                else:
+                    route.continue_()
+            except Exception:
+                try:
+                    route.continue_()
+                except Exception:
+                    pass
+
+        page.route("**/*", _block)
+        page._fastfree_low_fp = True
+    except Exception:
+        pass
+
+
+def pace(page, secs: float = NAV_PACE_SECS) -> None:
+    """Single pacing helper: fixed CDP-side sleep (falls back to time.sleep)."""
+    try:
+        page.wait_for_timeout(int(secs * 1000))
+    except Exception:
+        time.sleep(secs)
+
+
+def settle(page, secs: float = 2.0) -> None:
+    """Post-navigation settle WITHOUT networkidle (long-poll XHRs 429 anyway).
+
+    domcontentloaded returns immediately when already loaded; the short pace
+    lets the SPA hydrate while targeted waits below do the real gating.
+    """
+    try:
+        page.wait_for_load_state("domcontentloaded", timeout=15000)
+    except Exception:
+        pass
+    pace(page, secs)
 
 
 # ── ctx access ─────────────────────────────────────────────────────────────
@@ -130,16 +209,17 @@ def _soft_shot(page, ctx: dict, name: str) -> None:
 
 def activate(page, ctx: dict) -> None:
     """Bring our tab forward; background tabs stall the Console SPA."""
+    arm_low_footprint(page)  # idempotent: covers every navigation via activate()
     try:
         page.bring_to_front()
     except Exception:
         pass
-    page.wait_for_timeout(1500)
+    pace(page, 1.5)
     try:
         if re.search(r"/console/developers/?(?:\?.*)?$", page.url or ""):
             step(ctx, "developer chooser — selecting account")
             click_any(page, ctx, [re.compile(r"fastfree\.cloud", re.I)], "select developer account")
-            page.wait_for_timeout(5000)
+            pace(page, 5.0)
     except Exception:
         pass
 
@@ -261,7 +341,7 @@ def expand_all(page, ctx: dict) -> None:
         for expander in page.get_by_text(re.compile(r"show more|expand|عرض المزيد|توسيع", re.I)).all():
             try:
                 expander.click(timeout=3000)
-                page.wait_for_timeout(800)
+                pace(page, 0.8)
             except Exception:
                 continue
     except Exception:
@@ -281,7 +361,7 @@ def confirm_in_dialog(page, ctx: dict, dialog_patterns: list, button_patterns: l
                     btn.first.wait_for(state="visible", timeout=5000)
                     btn.first.click(timeout=10000)
                     step(ctx, f"confirmed in dialog: {desc}")
-                    page.wait_for_timeout(2000)
+                    pace(page, 2.0)
                     return
                 except Exception:
                     continue
@@ -341,10 +421,10 @@ def answer_question(page, ctx: dict, qpat, want: str, desc: str) -> None:
                     continue
                 r.wait_for(state="visible", timeout=4000)
                 r.check()
-                page.wait_for_timeout(500)
+                pace(page, 0.5)
                 if r.is_checked():
                     step(ctx, f"answered [{lab}]: {desc}")
-                    page.wait_for_timeout(1000)
+                    pace(page, 1.0)
                     return
             except Exception:
                 continue
@@ -365,10 +445,10 @@ def answer_near(page, ctx: dict, question_patterns: list, answer_patterns: list,
                     opt = scope.get_by_label(apat).first
                     opt.wait_for(state="visible", timeout=4000)
                     opt.check()
-                    page.wait_for_timeout(500)
+                    pace(page, 0.5)
                     if opt.is_checked():
                         step(ctx, f"answered by label: {desc}")
-                        page.wait_for_timeout(1000)
+                        pace(page, 1.0)
                         return
                 except Exception:
                     pass
@@ -378,7 +458,7 @@ def answer_near(page, ctx: dict, question_patterns: list, answer_patterns: list,
                     opt.first.wait_for(state="visible", timeout=4000)
                     opt.first.check()
                     step(ctx, f"answered: {desc}")
-                    page.wait_for_timeout(1000)
+                    pace(page, 1.0)
                     return
                 except Exception:
                     continue
@@ -407,7 +487,7 @@ def save_and_verify(page, ctx: dict, desc: str) -> None:
         [re.compile(r"^save( changes| draft)?$|^حفظ( التغييرات)?$", re.I)],
         f"Save {desc}",
     )
-    page.wait_for_timeout(4000)
+    pace(page)
     try:
         from playwright.sync_api import expect
 
@@ -433,29 +513,31 @@ def open_dashboard(page, ctx: dict) -> None:
             wait_until="domcontentloaded",
             timeout=60000,
         )
-        page.wait_for_timeout(4000)
+        arm_low_footprint(page)
+        pace(page)
         activate(page, ctx)
         if aid and f"/app/{aid}/" in (page.url or ""):
             break
         step(ctx, "dashboard bounced — retrying via app list")
         page.goto(f"{base}/u/0/developers/{dev}/app-list", wait_until="domcontentloaded", timeout=60000)
-        page.wait_for_timeout(4000)
+        arm_low_footprint(page)
+        pace(page)
         activate(page, ctx)
         try_click(page, ctx, [re.compile(r"accept|agree|موافق|قبول", re.I)], "cookie banner")
         click_any(page, ctx, [re.compile(f"^{re.escape(_get(ctx, 'NAME'))}$")], "open app row")
-        page.wait_for_timeout(5000)
+        pace(page, 5.0)
         activate(page, ctx)
     if not (aid and f"/app/{aid}/" in (page.url or "")):
         failshot(page, ctx, "dashboard-unreachable", RuntimeError("dashboard bounced twice"))
     assert_dev(page, ctx, "dashboard-id")
-    try:
-        page.wait_for_load_state("networkidle", timeout=45000)
-    except Exception:
-        pass
+    # Was networkidle(45s): redundant with the marker poll below and holds the
+    # CDP session on long-polling XHRs that 429 anyway.
+    settle(page)
     try:
         # Generic dashboard markers: task rows hide collapsed, and .first can
         # resolve hidden — accept the first VISIBLE match instead.
         deadline = time.time() + 60
+        poll = 0
         seen = False
         while time.time() < deadline and not seen:
             try:
@@ -471,7 +553,9 @@ def open_dashboard(page, ctx: dict) -> None:
             except Exception:
                 pass
             if not seen:
-                page.wait_for_timeout(1000)
+                # Backoff (1s→5s cap): same 60s deadline, ~4x fewer CDP round-trips.
+                pace(page, min(5.0, 1.0 * (2.0**poll)))
+                poll += 1
         if not seen:
             raise RuntimeError("dashboard markers never visible")
     except Exception as exc:
@@ -490,7 +574,7 @@ def expand_view_tasks(page, ctx: dict) -> None:
             if (tg.get_attribute("aria-expanded") or "").lower() == "true":
                 continue
             tg.click(timeout=3000)
-            page.wait_for_timeout(1500)
+            pace(page, 1.5)
         except Exception:
             continue
     step(ctx, "view-tasks toggles expanded (if any)")
@@ -510,7 +594,8 @@ def open_section(page, ctx: dict, slug: str, desc: str) -> None:
             wait_until="domcontentloaded",
             timeout=60000,
         )
-        page.wait_for_timeout(5000)
+        arm_low_footprint(page)
+        pace(page, 5.0)
         activate(page, ctx)
         if f"app-content/{slug}" in (page.url or ""):
             step(ctx, f"section open (direct): {desc}")
@@ -530,7 +615,7 @@ def open_task(page, ctx: dict, label_patterns: list, desc: str) -> None:
             click_any(page, ctx, label_patterns, f"open {desc}")
         except Exception:
             pass
-        page.wait_for_timeout(4000)
+        pace(page)
         activate(page, ctx)
         if "app-content" in (page.url or ""):
             break
@@ -539,10 +624,9 @@ def open_task(page, ctx: dict, label_patterns: list, desc: str) -> None:
     if "app-content" not in (page.url or ""):
         failshot(page, ctx, f"open-{desc}", RuntimeError("task click never navigated"))
     assert_dev(page, ctx, f"{desc}-id")
-    try:
-        page.wait_for_load_state("networkidle", timeout=45000)
-    except Exception:
-        pass
+    # Was networkidle(45s): holds the CDP session on long-polling XHRs that
+    # 429 anyway — domcontentloaded + short pace, targeted waits gate below.
+    settle(page)
 
 
 # ── shared EN+AR patterns ──────────────────────────────────────────────────
@@ -712,7 +796,7 @@ def _label_exact_check(page, ctx: dict, labels: list, desc: str) -> bool:
                 continue
             box.first.wait_for(state="visible", timeout=5000)
             box.first.check()
-            page.wait_for_timeout(500)
+            pace(page, 0.5)
             if box.first.is_checked():
                 step(ctx, f"answered by exact label: {desc} = [{lab}]")
                 return True
@@ -746,7 +830,7 @@ def fill_deletion_contact(page, ctx: dict) -> None:
                     field = page.get_by_role("textbox", name=pattern)
                 field.first.wait_for(state="visible", timeout=2000)
                 field.first.fill(SUPPORT_EMAIL)
-                page.wait_for_timeout(500)
+                pace(page, 0.5)
                 if SUPPORT_EMAIL in (field.first.input_value() or ""):
                     step(ctx, "filled deletion contact (label match)")
                     return
@@ -756,6 +840,7 @@ def fill_deletion_contact(page, ctx: dict) -> None:
     #    then fill the first empty visible one. Nearest ancestor must own a
     #    non-radio input/textarea (radios alone must not satisfy the scope).
     deadline = time.time() + 30
+    poll = 0
     while time.time() < deadline:
         for qpat in DELETE_Q:
             try:
@@ -779,13 +864,15 @@ def fill_deletion_contact(page, ctx: dict) -> None:
                     if (box.input_value() or "").strip():
                         continue
                     box.fill(SUPPORT_EMAIL)
-                    page.wait_for_timeout(500)
+                    pace(page, 0.5)
                     if SUPPORT_EMAIL in (box.input_value() or ""):
                         step(ctx, "filled deletion contact (container scan)")
                         return
                 except Exception:
                     continue
-        page.wait_for_timeout(1000)
+        # Backoff (1s→5s cap): same 30s deadline, fewer CDP round-trips.
+        pace(page, min(5.0, 1.0 * (2.0**poll)))
+        poll += 1
     step(ctx, "WARNING: deletion contact field never appeared (30s), continuing")
 
 
@@ -926,7 +1013,7 @@ def _declare_data_type_inner(page, ctx: dict, decl: dict) -> None:
         # (b) wide EN+AR button/link scan in the Data-types container;
         # (c) on total miss failshot after dumping the button inventory.
         _click_add_type_entry(page, ctx, desc)
-    page.wait_for_timeout(2000)
+    pace(page, 2.0)
     expand_all(page, ctx)
     # Category then concrete type: label-EXACT FIRST (answer_no idiom:
     # get_by_label exact + count==1 + is_checked verify), regex row-walk
@@ -952,10 +1039,10 @@ def _declare_data_type_inner(page, ctx: dict, decl: dict) -> None:
                 pass
         if not _answered:
             step(ctx, f"WARNING: {_what} checkbox not found, continuing: {desc}")
-        page.wait_for_timeout(1500)
-    page.wait_for_timeout(1500)
+        pace(page, 1.5)
+    pace(page, 1.5)
     try_click(page, ctx, NEXT_PATTERNS + APPLY_PATTERNS, f"confirm type picker: {desc}")
-    page.wait_for_timeout(2000)
+    pace(page, 2.0)
     expand_all(page, ctx)
     # Purposes: label-exact FIRST (answer_no idiom), then row-walk, then flat picker.
     _p_answered = _label_exact_check(
@@ -980,7 +1067,7 @@ def _declare_data_type_inner(page, ctx: dict, decl: dict) -> None:
             answer_near(page, ctx, SHARING_Q, NO_PATTERNS, f"sharing NO: {desc}")
         except Exception:
             step(ctx, f"WARNING: sharing question not found, continuing: {desc}")
-    page.wait_for_timeout(1000)
+    pace(page, 1.0)
     try_click(page, ctx, NEXT_PATTERNS + APPLY_PATTERNS, f"confirm type detail: {desc}")
     save_and_verify(page, ctx, f"data type {desc}")
 
@@ -990,7 +1077,7 @@ def run_data_safety(page, ctx: dict) -> None:
     step(ctx, "DATA SAFETY: start")
     open_task(page, ctx, DATA_SAFETY_LABELS, "Data safety")
     try_click(page, ctx, MANAGE_PATTERNS + NEXT_PATTERNS, "enter questionnaire")
-    page.wait_for_timeout(2000)
+    pace(page, 2.0)
     expand_all(page, ctx)
     # Intro carousel ("Help users understand..."): advance past it until a
     # real question appears. Only ENABLED Next controls are clicked.
@@ -1018,7 +1105,7 @@ def run_data_safety(page, ctx: dict) -> None:
                     break
             except Exception:
                 continue
-        page.wait_for_timeout(2500)
+        pace(page, 2.5)
         if not _clicked:
             break
     # Gate: FULL step-2 CONTROLS rendered. Texts render before controls under
@@ -1029,6 +1116,7 @@ def run_data_safety(page, ctx: dict) -> None:
         re.compile(r"account creation", re.I),
     ]
     _deadline = time.time() + 300
+    _poll = 0
     while time.time() < _deadline:
         _nr = _nc = _nx = 0
         _bt = ""
@@ -1049,35 +1137,37 @@ def run_data_safety(page, ctx: dict) -> None:
         if _ok:
             step(ctx, f"step-2 controls ready (radios={_nr} checks={_nc})")
             break
-        page.wait_for_timeout(5000)
+        # Backoff (5s→10s cap): same 300s deadline, ~half the body reads.
+        pace(page, min(10.0, 5.0 * (2.0**_poll)))
+        _poll += 1
     else:
         step(ctx, "WARNING: step-2 controls never complete — proceeding anyway")
     # Q1: collects user data → YES (we declare Name / Phone / Credentials).
     answer_question(page, ctx, COLLECT_Q[0], "Yes", "collects user data YES")
-    page.wait_for_timeout(1500)
+    pace(page, 1.5)
     # Security: encrypted in transit YES (https to backend.fastfree.cloud).
     try:
         answer_question(page, ctx, ENCRYPT_Q[0], "Yes", "encrypted in transit YES")
     except Exception:
         step(ctx, "WARNING: encryption question not found, continuing")
-    page.wait_for_timeout(1500)
+    pace(page, 1.5)
     # Deletion: users can request deletion via the support email. The contact
     # field label is unknown — fill_deletion_contact waits 30s for ANY new
     # textbox in the deletion container, else WARNING + continue (Next safe).
     try:
         answer_question(page, ctx, DELETE_Q[0], "Yes", "deletion available YES")
-        page.wait_for_timeout(1500)
+        pace(page, 1.5)
         fill_deletion_contact(page, ctx)
     except Exception:
         step(ctx, "WARNING: deletion question not found, continuing")
-    page.wait_for_timeout(1500)
+    pace(page, 1.5)
     # Account creation methods (Frappe login): Username and password ONLY.
     try:
         _ac = page.get_by_label("Username and password", exact=True)
         if _ac.count() == 1:
             _ac.first.wait_for(state="visible", timeout=8000)
             _ac.first.check()
-            page.wait_for_timeout(800)
+            pace(page, 0.8)
             if _ac.first.is_checked():
                 step(ctx, "checked account method: Username and password")
             else:
@@ -1086,7 +1176,7 @@ def run_data_safety(page, ctx: dict) -> None:
             step(ctx, "WARNING: account-method label not unique, skipping")
     except Exception as exc:
         step(ctx, f"WARNING: account-method question not found ({exc}), continuing")
-    page.wait_for_timeout(1500)
+    pace(page, 1.5)
     # Deletion URL (appears after deletion-YES): use the privacy page, which
     # carries the support contact for deletion requests. Flagged to the human.
     try:
@@ -1094,7 +1184,7 @@ def run_data_safety(page, ctx: dict) -> None:
         if _du.count() >= 1:
             _du.first.wait_for(state="visible", timeout=8000)
             _du.first.fill(PRIVACY_URL)
-            page.wait_for_timeout(800)
+            pace(page, 0.8)
             if PRIVACY_URL in (_du.first.input_value() or ""):
                 step(ctx, "filled deletion URL (privacy page)")
             else:
@@ -1103,7 +1193,7 @@ def run_data_safety(page, ctx: dict) -> None:
             step(ctx, "WARNING: deletion URL field absent")
     except Exception:
         step(ctx, "WARNING: deletion URL field not found, continuing")
-    page.wait_for_timeout(1500)
+    pace(page, 1.5)
     # Re-assert EVERY step-2 answer right before Next (throttled re-renders
     # reset radios): collects + encrypted + deletion YES, deletion-URL refill
     # if emptied, account-method checked. Footer Next stays DISABLED until ALL
@@ -1125,10 +1215,10 @@ def run_data_safety(page, ctx: dict) -> None:
                     try:
                         if not _yes.is_checked():
                             _yes.check()
-                            page.wait_for_timeout(800)
+                            pace(page, 0.8)
                     except Exception:
                         _yes.check()
-                        page.wait_for_timeout(800)
+                        pace(page, 0.8)
                     if _yes.is_checked():
                         step(ctx, f"re-asserted {_dn}=YES")
                 except Exception:
@@ -1142,7 +1232,7 @@ def run_data_safety(page, ctx: dict) -> None:
                     _du2.first.wait_for(state="visible", timeout=5000)
                     if PRIVACY_URL not in (_du2.first.input_value() or ""):
                         _du2.first.fill(PRIVACY_URL)
-                        page.wait_for_timeout(800)
+                        pace(page, 0.8)
                     if PRIVACY_URL in (_du2.first.input_value() or ""):
                         step(ctx, "re-asserted deletion URL")
                     else:
@@ -1157,7 +1247,7 @@ def run_data_safety(page, ctx: dict) -> None:
                 try:
                     if not _ac2.first.is_checked():
                         _ac2.first.check()
-                        page.wait_for_timeout(800)
+                        pace(page, 0.8)
                 except Exception:
                     pass
                 if _ac2.first.is_checked():
@@ -1167,7 +1257,7 @@ def run_data_safety(page, ctx: dict) -> None:
 
     _reassert_step2()
     if try_click(page, ctx, [re.compile(r"^save draft$", re.I)], "Save draft step 2"):
-        page.wait_for_timeout(3000)
+        pace(page, 3.0)
         step(ctx, "step 2 draft saved")
     # Advance to step 3 (Data types). The footer Next stays DISABLED while
     # step-2 requirements are unmet (failshots: grey Next, wizard still on
@@ -1177,11 +1267,11 @@ def run_data_safety(page, ctx: dict) -> None:
     for _attempt in range(2):
         _reassert_step2()
         if try_click(page, ctx, NEXT_PATTERNS, "data safety Next to types"):
-            page.wait_for_timeout(4000)
+            pace(page)
         else:
             step(ctx, "WARNING: Next unavailable after step 2")
             if try_click(page, ctx, [re.compile(r"^save draft$", re.I)], "Save draft before retry"):
-                page.wait_for_timeout(3000)
+                pace(page, 3.0)
         expand_all(page, ctx)
         if _on_data_types_step(page):
             _on_types = True
@@ -1193,7 +1283,7 @@ def run_data_safety(page, ctx: dict) -> None:
         _soft_shot(page, ctx, "step-3 arrival miss")
         step(ctx, "WARNING: Data-types step never reached — skipping type declarations")
         try_click(page, ctx, [re.compile(r"^save draft$", re.I)], "Save draft (step 3 unreachable)")
-        page.wait_for_timeout(3000)
+        pace(page, 3.0)
         step(ctx, "DATA SAFETY: done (step 3 unreachable — draft saved)")
         open_dashboard(page, ctx)
         return
@@ -1205,7 +1295,7 @@ def run_data_safety(page, ctx: dict) -> None:
             declare_data_type(page, ctx, decl)
         except Exception as exc:
             step(ctx, f"WARNING: failed declaring {decl['desc']} ({exc}), continuing")
-        page.wait_for_timeout(1500)
+        pace(page, 1.5)
     # Privacy policy link for the safety section.
     try:
         fill_any(page, ctx, PRIVACY_PATTERNS, PRIVACY_URL, "privacy policy URL")
@@ -1214,7 +1304,7 @@ def run_data_safety(page, ctx: dict) -> None:
     save_and_verify(page, ctx, "data safety answers")
     # Submit for review (dialog-scoped confirm, §5).
     if try_click(page, ctx, SUBMIT_PATTERNS, "submit data safety"):
-        page.wait_for_timeout(2000)
+        pace(page, 2.0)
         try:
             confirm_in_dialog(
                 page,
@@ -1225,7 +1315,7 @@ def run_data_safety(page, ctx: dict) -> None:
             )
         except Exception:
             step(ctx, "no submit confirmation dialog — continuing to verify")
-        page.wait_for_timeout(4000)
+        pace(page)
         try:
             from playwright.sync_api import expect
 
@@ -1368,7 +1458,7 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
                 tab.click(timeout=5000)
             except Exception:
                 continue
-            page.wait_for_timeout(2500)
+            pace(page, 2.5)
             try:
                 fresh = page.get_by_text(pattern).first
                 if _is_active(fresh):
@@ -1386,14 +1476,14 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
 
     if _click_once("direct"):
         return
-    page.wait_for_timeout(1500)
+    pace(page, 1.5)
     if _click_once("retry"):
         step(ctx, f"locale tab selected on retry: {locale}")
         return
     # Language tab missing → add it, then retry the tab click.
     step(ctx, f"locale tab {locale} absent — adding language")
     click_any(page, ctx, ADD_LANGUAGE_PATTERNS, f"add language {locale}")
-    page.wait_for_timeout(2000)
+    pace(page, 2.0)
     expand_all(page, ctx)
     added = False
     for pattern in name_patterns:
@@ -1406,10 +1496,10 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
     if not added:
         failshot(page, ctx, f"locale-{locale}", RuntimeError(f"language {locale} not offered"))
     try_click(page, ctx, APPLY_PATTERNS + NEXT_PATTERNS, f"confirm add language {locale}")
-    page.wait_for_timeout(2500)
+    pace(page, 2.5)
     if _click_once("after-add"):
         return
-    page.wait_for_timeout(1500)
+    pace(page, 1.5)
     if _click_once("after-add-retry"):
         return
     failshot(page, ctx, f"locale-{locale}", RuntimeError(f"locale tab {locale} never active"))
@@ -1435,6 +1525,7 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -
 
     def _verify(section, tag: str) -> bool:
         deadline = time.time() + 30
+        poll = 0
         while time.time() < deadline:
             hit = 0
             for name in wanted:
@@ -1447,7 +1538,9 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -
             if hit >= len(wanted):
                 step(ctx, f"upload verified [{tag}]: {desc} ({hit}/{len(wanted)})")
                 return True
-            page.wait_for_timeout(1000)
+            # Backoff (1s→5s cap): same 30s deadline, fewer CDP round-trips.
+            pace(page, min(5.0, 1.0 * (2.0**poll)))
+            poll += 1
         return False
 
     for pattern in label_patterns:
@@ -1466,12 +1559,12 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -
         except Exception as exc:
             tried.append(str(exc)[:120])
             continue
-        page.wait_for_timeout(3000)
+        pace(page, 3.0)
         if _verify(section, "direct"):
             return
         try:
             box.set_input_files([str(p) for p in paths])
-            page.wait_for_timeout(3000)
+            pace(page, 3.0)
         except Exception as exc:
             tried.append(str(exc)[:120])
             continue
@@ -1499,6 +1592,7 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
         want = (value or "").strip()
         probe = want[:60]
         deadline = time.time() + 15
+        poll = 0
         while time.time() < deadline:
             for pattern in patterns:
                 for method in ("label", "placeholder", "textbox"):
@@ -1529,14 +1623,16 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
                         continue
             except Exception:
                 pass
-            page.wait_for_timeout(1000)
+            # Backoff (1s→5s cap): same 15s deadline, fewer CDP round-trips.
+            pace(page, min(5.0, 1.0 * (2.0**poll)))
+            poll += 1
         _soft_shot(page, ctx, f"fill-verify {desc}")
         raise RuntimeError(f"fill not reflected in input_value: {desc}")
 
     _fill_verified(TITLE_PATTERNS, texts["title"], f"[{locale}] app name")
     _fill_verified(SHORT_PATTERNS, texts["short"], f"[{locale}] short description")
     _fill_verified(FULL_PATTERNS, texts["full"], f"[{locale}] full description")
-    page.wait_for_timeout(1500)
+    pace(page, 1.5)
     upload_near(page, ctx, ICON_UPLOAD_PATTERNS, [images["icon"]], f"[{locale}] app icon")
     upload_near(page, ctx, FEATURE_UPLOAD_PATTERNS, [images["feature"]], f"[{locale}] feature graphic")
     upload_near(page, ctx, SHOTS_UPLOAD_PATTERNS, images["shots"], f"[{locale}] phone screenshots")
@@ -1557,9 +1653,10 @@ def run_store_listing(page, ctx: dict) -> None:
     step(ctx, f"resolved slug: {slug}")
     open_task(page, ctx, STORE_LISTING_LABELS, "store listing")
     try_click(page, ctx, MANAGE_PATTERNS, "enter main listing editor")
-    page.wait_for_timeout(2000)
+    pace(page, 2.0)
     expand_all(page, ctx)
     gate_deadline = time.time() + 120
+    gate_poll = 0
     while time.time() < gate_deadline:
         try:
             n_box = page.get_by_role("textbox").count()
@@ -1569,7 +1666,9 @@ def run_store_listing(page, ctx: dict) -> None:
                 break
         except Exception:
             pass
-        page.wait_for_timeout(5000)
+        # Backoff (5s→10s cap): same 120s deadline, ~half the polls.
+        pace(page, min(10.0, 5.0 * (2.0**gate_poll)))
+        gate_poll += 1
     else:
         step(ctx, "WARNING: listing controls gate timed out — proceeding anyway")
     failures: dict = {}
@@ -1580,7 +1679,7 @@ def run_store_listing(page, ctx: dict) -> None:
             _soft_shot(page, ctx, f"store-listing {locale}")
             step(ctx, f"WARNING: store listing [{locale}] failed ({exc}), continuing")
             failures[locale] = str(exc)[:200]
-        page.wait_for_timeout(2000)
+        pace(page, 2.0)
     if len(failures) == len(LOCALES):
         failshot(page, ctx, "store-listing-all-locales", RuntimeError(f"all locales failed: {failures}"))
     if failures:
@@ -1591,6 +1690,7 @@ def run_store_listing(page, ctx: dict) -> None:
             want_title = read_locale_texts(slug, locale)["title"].strip()
             found_title = False
             title_deadline = time.time() + 20
+            title_poll = 0
             while time.time() < title_deadline and not found_title:
                 try:
                     for box in page.get_by_role("textbox").all():
@@ -1603,7 +1703,9 @@ def run_store_listing(page, ctx: dict) -> None:
                 except Exception:
                     pass
                 if not found_title:
-                    page.wait_for_timeout(1000)
+                    # Backoff (1s→5s cap): same 20s deadline, fewer polls.
+                    pace(page, min(5.0, 1.0 * (2.0**title_poll)))
+                    title_poll += 1
             if not found_title:
                 raise RuntimeError(f"saved title not present for {locale}")
             try:
@@ -1677,7 +1779,7 @@ def read_demo_password() -> str:
 
 def _verify_app_access_saved(page, ctx: dict) -> None:
     """Credentials row present + page Save state settled (shared tail)."""
-    page.wait_for_timeout(3000)
+    pace(page, 3.0)
     try:
         page.get_by_text(re.compile(r"demo account", re.I)).first.wait_for(
             state="visible", timeout=30000
@@ -1693,7 +1795,7 @@ def _verify_app_access_saved(page, ctx: dict) -> None:
             step(ctx, "page Save disabled = nothing pending")
         else:
             _save.click()
-            page.wait_for_timeout(4000)
+            pace(page)
             step(ctx, "clicked page Save")
     except Exception:
         step(ctx, "no page Save control — continuing")
@@ -1724,16 +1826,16 @@ def run_sign_in_details(page, ctx: dict) -> None:
         _verify_app_access_saved(page, ctx)
         return
     try_click(page, ctx, MANAGE_PATTERNS, "enter app access editor")
-    page.wait_for_timeout(2000)
+    pace(page, 2.0)
     expand_all(page, ctx)
     # Restricted functionality → YES so the instructions form appears.
     try:
         answer_near(page, ctx, RESTRICTED_Q, YES_PATTERNS, "restricted functionality YES")
     except Exception:
         step(ctx, "WARNING: restricted-access question not found, continuing to add form")
-    page.wait_for_timeout(1500)
+    pace(page, 1.5)
     click_any(page, ctx, ADD_INSTRUCTIONS_PATTERNS, "add instructions")
-    page.wait_for_timeout(2000)
+    pace(page, 2.0)
     # Details dialog: fields lack label association — fill by order
     # (Name, Username, Password, [+Other info]) scoped to the dialog.
     try:
@@ -1752,7 +1854,7 @@ def run_sign_in_details(page, ctx: dict) -> None:
             _aboxes[3].fill(NOTE_TEXT)
         except Exception:
             step(ctx, "WARNING: notes field not fillable")
-    page.wait_for_timeout(1000)
+    pace(page, 1.0)
     if DEMO_USERNAME not in (_aboxes[1].input_value() or ""):
         failshot(page, ctx, "app-access-form", RuntimeError("username fill failed"))
     step(ctx, "details filled + verified")
@@ -1763,7 +1865,7 @@ def run_sign_in_details(page, ctx: dict) -> None:
             failshot(page, ctx, "app-access-form", RuntimeError("full-access checkbox not unique"))
         _full.first.wait_for(state="visible", timeout=8000)
         _full.first.check()
-        page.wait_for_timeout(1000)
+        pace(page, 1.0)
         if not _full.first.is_checked():
             failshot(page, ctx, "app-access-form", RuntimeError("full-access did not stick"))
         step(ctx, "confirmed full-access checkbox")
@@ -1776,7 +1878,7 @@ def run_sign_in_details(page, ctx: dict) -> None:
         step(ctx, "clicked dialog Add")
     except Exception as exc:
         failshot(page, ctx, "app-access-form", RuntimeError(f"dialog Add missing: {exc}"))
-    page.wait_for_timeout(2000)
+    pace(page, 2.0)
     _verify_app_access_saved(page, ctx)
 
 

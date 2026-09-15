@@ -18,6 +18,7 @@ redefined here parameterized by ctx["KEY"]. Auth dir: .auth/play-console/.
 
 from __future__ import annotations
 
+import os
 import re
 import time
 from pathlib import Path
@@ -49,6 +50,81 @@ SHOW_MORE_PATTERNS = [
     re.compile(r"عرض المزيد", re.I),
 ]
 
+# ── low-footprint mode (default ON; FASTFREE_LOW_FOOTPRINT=0 disables) ─────────
+# Play Console throttles sustained automation (HTTP 429). Questionnaire flows
+# never need images/media/fonts (form JS, XHR, stylesheets kept; screenshots
+# capture DOM rendering which works headless without them; input[type=file]
+# uploads are DOM ops, unaffected), so arm_low_footprint route-aborts those
+# classes. pace() is the single helper for every fixed sleep (post-navigation
+# waits default to NAV_PACE_SECS); settle() replaces networkidle, which holds
+# the CDP session open on long-polling XHRs that 429 anyway.
+
+LOW_FOOTPRINT = os.environ.get("FASTFREE_LOW_FOOTPRINT", "1") != "0"
+
+
+def _env_secs(name: str, default: float) -> float:
+    try:
+        return float(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
+NAV_PACE_SECS = _env_secs("FASTFREE_NAV_PACE_SECS", 4.0)
+
+_BLOCKED_RESOURCE_TYPES = frozenset({"image", "media", "font"})
+
+
+def arm_low_footprint(page) -> None:
+    """Abort heavy subresources only when explicitly enabled.
+
+    Default OFF: a no-image waterfall is itself a bot tell and buys little
+    quota (research 2026-09-15). Enable with FASTFREE_BLOCK_RESOURCES=1.
+    Pacing/backoff (LOW_FOOTPRINT) stays independent and default-ON.
+    """
+    if not (LOW_FOOTPRINT and os.environ.get("FASTFREE_BLOCK_RESOURCES", "0") != "0"):
+        return
+    try:
+        if getattr(page, "_fastfree_low_fp", False):
+            return
+
+        def _block(route) -> None:
+            try:
+                if route.request.resource_type in _BLOCKED_RESOURCE_TYPES:
+                    route.abort()
+                else:
+                    route.continue_()
+            except Exception:
+                try:
+                    route.continue_()
+                except Exception:
+                    pass
+
+        page.route("**/*", _block)
+        page._fastfree_low_fp = True
+    except Exception:
+        pass
+
+
+def pace(page, secs: float = NAV_PACE_SECS) -> None:
+    """Single pacing helper: fixed CDP-side sleep (falls back to time.sleep)."""
+    try:
+        page.wait_for_timeout(int(secs * 1000))
+    except Exception:
+        time.sleep(secs)
+
+
+def settle(page, secs: float = 2.0) -> None:
+    """Post-navigation settle WITHOUT networkidle (long-poll XHRs 429 anyway).
+
+    domcontentloaded returns immediately when already loaded; the short pace
+    lets the SPA hydrate while targeted waits below do the real gating.
+    """
+    try:
+        page.wait_for_load_state("domcontentloaded", timeout=15000)
+    except Exception:
+        pass
+    pace(page, secs)
+
 
 def step(ctx: dict, msg: str) -> None:
     print(f"[{ctx.get('KEY', '?')}] {msg}", flush=True)
@@ -68,16 +144,17 @@ def failshot(page, ctx: dict, name: str, err: Exception) -> None:
 
 
 def activate(page, ctx: dict) -> None:
+    arm_low_footprint(page)  # idempotent: covers every navigation via activate()
     try:
         page.bring_to_front()
     except Exception:
         step(ctx, "bring_to_front unavailable, continuing")
-    page.wait_for_timeout(1500)
+    pace(page, 1.5)
     try:
         if re.search(r"/console/developers/?(?:\?.*)?$", page.url or ""):
             step(ctx, "developer chooser — selecting account")
             click_any(page, ctx, [re.compile(r"fastfree\.cloud", re.I)], "select developer")
-            page.wait_for_timeout(5000)
+            pace(page, 5.0)
     except Exception:
         step(ctx, "developer chooser check skipped")
 
@@ -177,7 +254,7 @@ def expand_all(page, ctx: dict) -> None:
         for item in page.get_by_text(SHOW_MORE_PATTERNS[0]).all():
             try:
                 item.click(timeout=3000)
-                page.wait_for_timeout(800)
+                pace(page, 0.8)
             except Exception:
                 continue
         step(ctx, "expanded collapsed sections")
@@ -196,7 +273,7 @@ def expand_view_tasks(page, ctx: dict) -> None:
             if (tg.get_attribute("aria-expanded") or "").lower() == "true":
                 continue
             tg.click(timeout=3000)
-            page.wait_for_timeout(1500)
+            pace(page, 1.5)
         except Exception:
             continue
     step(ctx, "view-tasks toggles expanded (if any)")
@@ -208,18 +285,20 @@ def ensure_dashboard(page, ctx: dict) -> None:
     aid = str(ctx.get("APP_ID") or "")
     for _attempt in range(2):
         page.goto(dashboard_url(ctx), wait_until="domcontentloaded", timeout=60000)
-        page.wait_for_timeout(4000)
+        arm_low_footprint(page)
+        pace(page)
         activate(page, ctx)
         if aid and f"/app/{aid}/" in (page.url or ""):
             assert_dev(page, ctx)
             return
         step(ctx, "dashboard bounced — retrying via app list")
         page.goto(f"{CONSOLE}/u/0/developers/{dev}/app-list", wait_until="domcontentloaded", timeout=60000)
-        page.wait_for_timeout(4000)
+        arm_low_footprint(page)
+        pace(page)
         activate(page, ctx)
         try_click(page, ctx, [re.compile(r"accept|agree|موافق|قبول", re.I)], "cookie banner")
         click_any(page, ctx, [re.compile(f"^{re.escape(ctx.get('NAME', ''))}$")], "open app row")
-        page.wait_for_timeout(5000)
+        pace(page, 5.0)
         activate(page, ctx)
         if aid and f"/app/{aid}/" in (page.url or ""):
             assert_dev(page, ctx)
@@ -229,14 +308,13 @@ def ensure_dashboard(page, ctx: dict) -> None:
 
 def open_task(page, ctx: dict, patterns: list, desc: str) -> None:
     ensure_dashboard(page, ctx)
-    try:
-        page.wait_for_load_state("networkidle", timeout=30000)
-    except Exception:
-        step(ctx, "networkidle wait skipped")
+    # Was networkidle(30s): holds the CDP session on long-polling XHRs that
+    # 429 anyway — domcontentloaded + short pace, targeted waits gate below.
+    settle(page)
     try_click(page, ctx, [re.compile(r"accept|agree|موافق|قبول", re.I)], "cookie banner")
     expand_view_tasks(page, ctx)
     click_any(page, ctx, patterns, f"open task: {desc}")
-    page.wait_for_timeout(4000)
+    pace(page)
     activate(page, ctx)
 
 
@@ -248,7 +326,7 @@ def confirm_dialog(page, ctx: dict, desc: str) -> None:
         btn = dlg.get_by_role("button", name=re.compile(r"save|confirm|^ok$|حفظ|تأكيد|موافق", re.I))
         btn.first.click(timeout=8000)
         step(ctx, f"confirmed dialog: {desc}")
-        page.wait_for_timeout(2000)
+        pace(page, 2.0)
     except Exception:
         step(ctx, f"no confirm dialog: {desc}")
 
@@ -256,9 +334,9 @@ def confirm_dialog(page, ctx: dict, desc: str) -> None:
 def save_and_verify(page, ctx: dict, desc: str) -> None:
     expand_all(page, ctx)
     click_any(page, ctx, SAVE_PATTERNS, f"save {desc}")
-    page.wait_for_timeout(3000)
+    pace(page, 3.0)
     confirm_dialog(page, ctx, desc)
-    page.wait_for_timeout(3000)
+    pace(page, 3.0)
     for pattern in SAVED_PATTERNS:
         try:
             page.get_by_text(pattern).first.wait_for(state="visible", timeout=15000)
@@ -292,7 +370,7 @@ def answer_no(page, ctx: dict, question_patterns: list, desc: str, no_labels=Non
                 continue
             box.first.wait_for(state="visible", timeout=5000)
             box.first.check()
-            page.wait_for_timeout(500)
+            pace(page, 0.5)
             if box.first.is_checked():
                 step(ctx, f"answered: {desc} = [{lab}]")
                 return
@@ -364,7 +442,8 @@ def run_health(page, ctx: dict) -> None:
         except Exception:
             step(ctx, "features form slow — reloading once")
             page.reload(wait_until="domcontentloaded", timeout=60000)
-            page.wait_for_timeout(5000)
+            arm_low_footprint(page)
+            pace(page, 5.0)
     if not found:
         failshot(page, ctx, "health", RuntimeError("features form not visible"))
     step(ctx, "question visible: health (none apply)")
@@ -373,7 +452,7 @@ def run_health(page, ctx: dict) -> None:
         if none_box.count() == 1:
             none_box.first.wait_for(state="visible", timeout=8000)
             none_box.first.check()
-            page.wait_for_timeout(1000)
+            pace(page, 1.0)
             if none_box.first.is_checked():
                 step(ctx, "checked: no health features")
             else:
@@ -383,9 +462,9 @@ def run_health(page, ctx: dict) -> None:
     except Exception as exc:
         failshot(page, ctx, "health", RuntimeError(f"opt-out missing: {exc}"))
     for _i in range(4):
-        page.wait_for_timeout(2000)
+        pace(page, 2.0)
         if try_click(page, ctx, [re.compile(r"^next$|^التالي$", re.I)], "wizard Next"):
-            page.wait_for_timeout(3000)
+            pace(page, 3.0)
             continue
         break
     save_and_verify(page, ctx, "health")
@@ -414,7 +493,8 @@ def run_financial(page, ctx: dict) -> None:
         except Exception:
             step(ctx, "features form slow — reloading once")
             page.reload(wait_until="domcontentloaded", timeout=60000)
-            page.wait_for_timeout(5000)
+            arm_low_footprint(page)
+            pace(page, 5.0)
     if not found:
         failshot(page, ctx, "financial", RuntimeError("features form not visible"))
     step(ctx, "question visible: financial (none apply)")
@@ -424,7 +504,7 @@ def run_financial(page, ctx: dict) -> None:
         if none_box.count() == 1:
             none_box.first.wait_for(state="visible", timeout=8000)
             none_box.first.check()
-            page.wait_for_timeout(1000)
+            pace(page, 1.0)
             if none_box.first.is_checked():
                 step(ctx, "checked: no financial features")
             else:
@@ -435,9 +515,9 @@ def run_financial(page, ctx: dict) -> None:
         failshot(page, ctx, "financial", RuntimeError(f"opt-out missing: {exc}"))
     # Multi-step wizard: Next through steps, then Save on the last one.
     for _i in range(4):
-        page.wait_for_timeout(2000)
+        pace(page, 2.0)
         if try_click(page, ctx, [re.compile(r"^next$|^التالي$", re.I)], "wizard Next"):
-            page.wait_for_timeout(3000)
+            pace(page, 3.0)
             continue
         break
     save_and_verify(page, ctx, "financial")
@@ -497,7 +577,7 @@ def select_business_category(page, ctx: dict) -> None:
     if not edits:
         failshot(page, ctx, "category", RuntimeError("no Edit controls on store settings"))
     edits[0].click()
-    page.wait_for_timeout(3000)
+    pace(page, 3.0)
     # Work inside the App-category dialog (the select has no usable role).
     try:
         dlg = page.get_by_role("dialog").filter(has_text=re.compile(r"app category", re.I))
@@ -514,7 +594,7 @@ def select_business_category(page, ctx: dict) -> None:
         _need_select = False
         step(ctx, "category already set — verifying")
     if _need_select:
-        page.wait_for_timeout(2000)
+        pace(page, 2.0)
         try:
             opt = page.get_by_role("option", name=re.compile(r"^business$", re.I))
             opt.first.wait_for(state="visible", timeout=10000)
@@ -527,15 +607,15 @@ def select_business_category(page, ctx: dict) -> None:
                 [re.compile(r"^business$", re.I), re.compile(r"^الأعمال$", re.I)],
                 "select Business category",
             )
-        page.wait_for_timeout(1500)
+        pace(page, 1.5)
         confirm_dialog(page, ctx, "category")
-        page.wait_for_timeout(2000)
+        pace(page, 2.0)
     else:
         try:
             page.keyboard.press("Escape")
         except Exception:
             pass
-        page.wait_for_timeout(1500)
+        pace(page, 1.5)
     try:
         page.get_by_text(re.compile(r"^business$", re.I)).first.wait_for(
             state="visible", timeout=15000
@@ -568,14 +648,15 @@ def run_category(page, ctx: dict) -> None:
         page.keyboard.press("Escape")
     except Exception:
         pass
-    page.wait_for_timeout(2000)
+    pace(page, 2.0)
     edits = _section_edits(page)
     try:
         edits[1].click(timeout=15000)
     except Exception:
         step(ctx, "contacts Edit blocked — reloading (category saved)")
         page.reload(wait_until="domcontentloaded", timeout=60000)
-        page.wait_for_timeout(5000)
+        arm_low_footprint(page)
+        pace(page, 5.0)
         edits = _section_edits(page)
         if len(edits) < 2:
             failshot(page, ctx, "category", RuntimeError("contacts Edit control missing"))
@@ -583,7 +664,7 @@ def run_category(page, ctx: dict) -> None:
             edits[1].click(timeout=15000)
         except Exception as exc:
             failshot(page, ctx, "category", RuntimeError(f"contacts Edit blocked: {exc}"))
-    page.wait_for_timeout(3000)
+    pace(page, 3.0)
     # Contacts dialog: fields have no label association — fill by order
     # (Email, Phone, Website) scoped to the dialog, then verify values.
     try:
@@ -596,7 +677,7 @@ def run_category(page, ctx: dict) -> None:
         failshot(page, ctx, "category", RuntimeError("contacts fields missing"))
     _vis[0].fill(CONTACT_EMAIL)
     _vis[1].fill(CONTACT_PHONE)
-    page.wait_for_timeout(1000)
+    pace(page, 1.0)
     if CONTACT_EMAIL not in (_vis[0].input_value() or ""):
         failshot(page, ctx, "category", RuntimeError("email fill failed"))
     if CONTACT_PHONE not in (_vis[1].input_value() or ""):
@@ -609,7 +690,7 @@ def run_category(page, ctx: dict) -> None:
         step(ctx, "saved contacts dialog")
     except Exception as exc:
         failshot(page, ctx, "category", RuntimeError(f"contacts save missing: {exc}"))
-    page.wait_for_timeout(3000)
+    pace(page, 3.0)
     try:
         page.get_by_text(re.compile(re.escape(CONTACT_EMAIL))).first.wait_for(
             state="visible", timeout=15000

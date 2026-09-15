@@ -11,7 +11,9 @@ as the fastfree_console_*_setup.py scripts).
 
 import argparse
 import json
+import os
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -22,6 +24,66 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 AUTH_DIR = REPO_ROOT / ".auth" / "play-console"
 DEV_ID = "7269125617638997236"
 CDP = "http://127.0.0.1:9222"
+
+# ── low-footprint mode (default ON; FASTFREE_LOW_FOOTPRINT=0 disables) ─────────
+# Play Console throttles sustained automation (HTTP 429). Every page load pulls
+# images/media/fonts that our questionnaire flows never need (form JS, XHR and
+# stylesheets are kept; input[type=file] uploads are DOM ops, unaffected), so we
+# route-abort those classes on the single driver page. TASK_PACE_SECS spaces the
+# 11 sequential tasks; per-navigation pacing lives in the group modules' pace().
+
+LOW_FOOTPRINT = os.environ.get("FASTFREE_LOW_FOOTPRINT", "1") != "0"
+
+
+def _env_secs(name: str, default: float) -> float:
+    try:
+        return float(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
+TASK_PACE_SECS = _env_secs("FASTFREE_TASK_PACE_SECS", 8.0)
+
+_BLOCKED_RESOURCE_TYPES = frozenset({"image", "media", "font"})
+
+
+def arm_low_footprint(page) -> None:
+    """Abort heavy subresources only when explicitly enabled.
+
+    Default OFF: a no-image waterfall is itself a bot tell and buys little
+    quota (research 2026-09-15). Enable with FASTFREE_BLOCK_RESOURCES=1.
+    Pacing/backoff (LOW_FOOTPRINT) stays independent and default-ON.
+    """
+    if not (LOW_FOOTPRINT and os.environ.get("FASTFREE_BLOCK_RESOURCES", "0") != "0"):
+        return
+    try:
+        if getattr(page, "_fastfree_low_fp", False):
+            return
+
+        def _block(route) -> None:
+            try:
+                if route.request.resource_type in _BLOCKED_RESOURCE_TYPES:
+                    route.abort()
+                else:
+                    route.continue_()
+            except Exception:
+                try:
+                    route.continue_()
+                except Exception:
+                    pass
+
+        page.route("**/*", _block)
+        page._fastfree_low_fp = True
+    except Exception:
+        pass
+
+
+def pace(page, secs: float) -> None:
+    """Single pacing helper: fixed CDP-side sleep (falls back to time.sleep)."""
+    try:
+        page.wait_for_timeout(int(secs * 1000))
+    except Exception:
+        time.sleep(secs)
 
 APPS = {
     "pos": ("FastFree POS", "com.fastfree.pos"),
@@ -78,8 +140,6 @@ def main() -> int:
         return 1
     ctx = {"KEY": key, "NAME": name, "PACKAGE": package, "APP_ID": app_id, "DEV_ID": DEV_ID}
 
-    import os
-
     lock_file = AUTH_DIR / f"{key}.run.lock"
     try:
         other_pid = int(lock_file.read_text(encoding="utf-8").strip())
@@ -105,12 +165,17 @@ def main() -> int:
             browser = playwright.chromium.connect_over_cdp(CDP)
             context = browser.contexts[0]
             page = context.new_page()
+            arm_low_footprint(page)
+            ran_any = False
             for tasks, label in ORDER:
                 if label in done:
                     print(f"[{key}] task already done — skipping: {label}")
                     continue
+                if ran_any:
+                    pace(page, TASK_PACE_SECS)  # global gap between tasks (default 8s)
                 print(f"[{key}] task: {label}")
                 tasks[label](page, ctx)
+                ran_any = True
                 mark_done(progress, key, label)
                 print(f"[{key}] task DONE: {label}")
     finally:
