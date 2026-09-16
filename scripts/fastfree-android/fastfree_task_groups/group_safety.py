@@ -1914,7 +1914,7 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
         pace(page, 3.0)
 
         # After Apply, the page usually navigates straight to the new
-        # locale's form, whose locale button reads "Arabic – ar". Detect
+        # locale's form, whose locale button reads "Arabic - ar". Detect
         # that FIRST: the generic dropdown re-select below cannot work
         # there (the menu no longer lists the active locale).
         try:
