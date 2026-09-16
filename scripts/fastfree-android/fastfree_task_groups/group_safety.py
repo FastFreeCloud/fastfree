@@ -282,12 +282,14 @@ def try_click(page, ctx: dict, patterns: list, desc: str) -> bool:
 
 def fill_any(page, ctx: dict, patterns: list, value: str, desc: str) -> None:
     for pattern in patterns:
-        for method in ("label", "placeholder", "textbox"):
+        for method in ("label", "placeholder", "textbox", "aria-label"):
             try:
                 if method == "label":
                     field = page.get_by_label(pattern)
                 elif method == "placeholder":
                     field = page.get_by_placeholder(pattern)
+                elif method == "aria-label":
+                    field = page.locator(f"textarea[aria-label*='{pattern}'], input[aria-label*='{pattern}']")
                 else:
                     field = page.get_by_role("textbox", name=pattern)
                 field.first.wait_for(state="visible", timeout=4000)
@@ -296,6 +298,15 @@ def fill_any(page, ctx: dict, patterns: list, value: str, desc: str) -> None:
                 return
             except Exception:
                 continue
+    # Last resort: try all visible textboxes and fill the first empty one.
+    try:
+        for box in page.get_by_role("textbox").all():
+            if box.is_visible() and not (box.input_value() or "").strip():
+                box.fill(value)
+                step(ctx, f"filled (fallback empty box): {desc}")
+                return
+    except Exception:
+        pass
     failshot(page, ctx, desc, RuntimeError(f"no input matched: {desc}"))
 
 
@@ -1833,6 +1844,7 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
         step(ctx, f"locale dropdown selected on retry: {locale}")
         return
     # Option absent → "Manage languages" option in the dropdown opens the manager.
+    manage_opened = False
     try:
         _dbs = _dropdown_buttons()
         if _dbs:
@@ -1843,8 +1855,61 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
             _mg.first.click(timeout=5000)
             step(ctx, f"opened Manage languages for {locale}")
             pace(page, 3.0)
+            manage_opened = True
     except Exception as exc:
         step(ctx, f"Manage languages open failed ({exc}) — falling back to Add button")
+
+    if manage_opened:
+        # Dialog has a Search box + checkbox list + Apply/Cancel.
+        search = page.get_by_placeholder("Search")
+        try:
+            search.first.wait_for(state="visible", timeout=8000)
+            search.first.fill("")
+            search.first.press_sequentially(locale, delay=80)
+            step(ctx, f"searched language {locale} in Manage languages")
+            pace(page, 2.0)
+        except Exception:
+            pass
+
+        added = False
+        for pat in list(name_patterns or []) + tokens:
+            try:
+                check_row_for_text(page, ctx, pat, f"pick language {locale}")
+                added = True
+                break
+            except Exception:
+                continue
+        if not added:
+            # Fallback: click checkbox near text
+            for tok in [locale] + (tokens or []):
+                try:
+                    row = page.get_by_text(re.compile(re.escape(tok), re.I)).first
+                    cb = row.locator("input[type='checkbox'], .mat-mdc-checkbox").first
+                    cb.click(timeout=3000)
+                    added = True
+                    step(ctx, f"checked language checkbox via fallback [{tok}]")
+                    break
+                except Exception:
+                    continue
+        if not added:
+            _log_option_inventory(f"add-miss {locale}")
+            msg = f"language {locale} not offered in Manage languages"
+            failshot(page, ctx, f"locale-{locale}", RuntimeError(msg))
+        pace(page, 1.0)
+        try_click(page, ctx, APPLY_PATTERNS, f"confirm Manage languages for {locale}")
+        pace(page, 3.0)
+        # Re-open the locale dropdown and select the newly added language.
+        if _select_via_dropdown("after-manage"):
+            return
+        pace(page, 1.5)
+        if _select_via_dropdown("after-manage-retry"):
+            return
+        _log_option_inventory(f"final-after-manage {locale}")
+        msg = f"locale dropdown {locale} never active after Manage languages"
+        failshot(page, ctx, f"locale-{locale}", RuntimeError(msg))
+        return
+
+    # Fallback: try "Add language" button directly (older console layout).
     step(ctx, f"locale {locale} absent — trying Add language")
     add_pats = [*ADD_LANGUAGE_PATTERNS, re.compile(r"add (a )?language", re.I)]
     if not try_click(page, ctx, add_pats, f"add language {locale}"):
@@ -1952,10 +2017,40 @@ def _expand_listing_section(page, ctx: dict, heading_patterns: list, desc: str) 
         try:
             head = page.get_by_text(pat).first
             head.wait_for(state="visible", timeout=8000)
+            # Try clicking the chevron/expand icon next to the heading.
+            try:
+                _anc = (
+                    "ancestor::mat-expansion-panel-header|"
+                    "ancestor::*[contains(@class,'expansion')]|"
+                    "ancestor::tr|"
+                    "ancestor::*[role='button']"
+                )
+                row = head.locator(f"xpath={_anc}").first
+                row.click(timeout=4000)
+                pace(page, 2.5)
+            except Exception:
+                head.click(timeout=5000)
+                pace(page, 2.5)
+            # Verify: wait for any textbox or file input to appear.
+            for _attempt in range(4):
+                try:
+                    n = page.get_by_role("textbox").count()
+                    if n >= 1:
+                        step(ctx, f"expanded section: {desc} (textboxes={n})")
+                        return
+                except Exception:
+                    pass
+                pace(page, 2.0)
+            # Still collapsed — try clicking the heading text directly again.
             head.click(timeout=5000)
-            page.wait_for_timeout(2000)
-            step(ctx, f"expanded section: {desc}")
-            return
+            pace(page, 3.0)
+            try:
+                n = page.get_by_role("textbox").count()
+                if n >= 1:
+                    step(ctx, f"expanded section on retry: {desc} (textboxes={n})")
+                    return
+            except Exception:
+                pass
         except Exception:
             continue
     step(ctx, f"WARNING: section not expandable (maybe open): {desc}")
