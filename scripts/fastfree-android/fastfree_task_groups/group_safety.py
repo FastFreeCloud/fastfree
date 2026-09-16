@@ -1898,12 +1898,53 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
         pace(page, 1.0)
         try_click(page, ctx, APPLY_PATTERNS, f"confirm Manage languages for {locale}")
         pace(page, 3.0)
-        # Re-open the locale dropdown and select the newly added language.
-        if _select_via_dropdown("after-manage"):
+
+        # After Apply, page may navigate to the new locale's form.
+        # Check if we're already on the target locale page.
+        cur_url = page.url
+        if locale.replace("-", "").lower() in cur_url.lower():
+            step(ctx, f"navigated to {locale} page directly")
             return
-        pace(page, 1.5)
-        if _select_via_dropdown("after-manage-retry"):
+
+        # Check if dropdown still exists and try selecting.
+        _dbs2 = _dropdown_buttons()
+        if _dbs2:
+            if _select_via_dropdown("after-manage"):
+                return
+            pace(page, 1.5)
+            if _select_via_dropdown("after-manage-retry"):
+                return
+
+        # Page may have navigated — check if target locale content is visible.
+        try:
+            page.get_by_text(re.compile(re.escape(locale), re.I)).first.wait_for(
+                state="visible", timeout=5000
+            )
+            step(ctx, f"locale {locale} content visible after Manage languages")
             return
+        except Exception:
+            pass
+
+        # Check if "Select language" button appeared (multi-language mode).
+        try:
+            sel_btn = page.get_by_role("button", name=re.compile(r"select language", re.I))
+            sel_btn.first.wait_for(state="visible", timeout=5000)
+            sel_btn.first.click(timeout=5000)
+            pace(page, 2.0)
+            # Try selecting from this alternate dropdown.
+            for opt in page.get_by_role("option").all():
+                try:
+                    txt = opt.text_content() or ""
+                    if locale.lower() in txt.lower():
+                        opt.click(timeout=3000)
+                        pace(page, 2.0)
+                        step(ctx, f"selected {locale} from Select language menu")
+                        return
+                except Exception:
+                    continue
+        except Exception:
+            pass
+
         _log_option_inventory(f"final-after-manage {locale}")
         msg = f"locale dropdown {locale} never active after Manage languages"
         failshot(page, ctx, f"locale-{locale}", RuntimeError(msg))
@@ -2071,6 +2112,12 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
     _expand_listing_section(
         page, ctx, [re.compile(r"common text assets", re.I)], "Common text assets"
     )
+    # Scroll to top before filling text fields (page may have auto-scrolled).
+    try:
+        page.evaluate("window.scrollTo(0, 0)")
+        pace(page, 1.0)
+    except Exception:
+        pass
     def _fill_verified(patterns: list, value: str, desc: str) -> None:
         fill_any(page, ctx, patterns, value, desc)
         want = (value or "").strip()
@@ -2114,7 +2161,18 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
         raise RuntimeError(f"fill not reflected in input_value: {desc}")
 
     _fill_verified(TITLE_PATTERNS, texts["title"], f"[{locale}] app name")
+    # Scroll up before each fill (page may auto-scroll after filling).
+    try:
+        page.evaluate("window.scrollTo(0, 0)")
+        pace(page, 0.5)
+    except Exception:
+        pass
     _fill_verified(SHORT_PATTERNS, texts["short"], f"[{locale}] short description")
+    try:
+        page.evaluate("window.scrollTo(0, 0)")
+        pace(page, 0.5)
+    except Exception:
+        pass
     _fill_verified(FULL_PATTERNS, texts["full"], f"[{locale}] full description")
     pace(page, 1.5)
     _expand_listing_section(
