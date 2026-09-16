@@ -2016,6 +2016,20 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -
     """
     tried: list = []
     wanted = [Path(p).name for p in paths]
+    # Sweep the page top→bottom once so lazy-rendered upload labels attach.
+    try:
+        page.evaluate(
+            """(async () => {
+                const h = document.documentElement.scrollHeight;
+                for (let y = 0; y <= h; y += 600) {
+                    window.scrollTo(0, y);
+                    await new Promise(r => setTimeout(r, 120));
+                }
+            })()"""
+        )
+        pace(page, 1.5)
+    except Exception:
+        pass
 
     def _row_visible(root, name: str) -> bool:
         try:
@@ -2128,58 +2142,95 @@ def _visible_in(node, role=None, name_pat=None, input_type=None) -> list:
 def _expand_listing_section(
     page, ctx: dict, heading_patterns: list, desc: str, expect: str = "textboxes"
 ) -> None:
-    """Expand a collapsed store-listing section, verified inside its panel.
+    """Expand a collapsed store-listing section via its chevron state.
 
     expect="textboxes" → ≥3 visible textboxes in the panel (Common text).
     expect="uploads" → ≥1 visible Add-assets button in the panel (visual).
-    Clicks the heading until the panel shows its controls (max 4 tries);
-    clicking an open panel closes it, so state is re-checked every try.
+    Reads the expand_more (collapsed) / expand_less (open) chevron owning
+    the heading — never blind-toggles — and re-checks state every attempt.
     """
     add_pat = re.compile(r"add assets", re.I)
-    for pat in heading_patterns:
-        head, container = _section_container(
+
+    def _chevron(head):
+        """(button, is_open) for the chevron owning this heading."""
+        node = head
+        for _d in range(8):
+            try:
+                node = node.locator("xpath=..")
+            except Exception:
+                return None, None
+            for nm, is_open in (("expand_less", True), ("expand_more", False)):
+                try:
+                    btns = node.get_by_role(
+                        "button", name=re.compile(f"^{nm}$", re.I)
+                    ).all()
+                except Exception:
+                    continue
+                for b in btns:
+                    try:
+                        if b.is_visible():
+                            return b, is_open
+                    except Exception:
+                        continue
+        return None, None
+
+    def _panel_open(pat) -> bool:
+        _, container = _section_container(
             page,
             ctx,
             pat,
             min_textboxes=3 if expect == "textboxes" else 0,
             min_files=1 if expect == "uploads" else 0,
         )
-        if head is None:
-            continue
-        scope = container if container is not None else page
-        for _attempt in range(4):
-            try:
-                head.scroll_into_view_if_needed(timeout=4000)
-            except Exception:
-                pass
-            if expect == "textboxes":
-                if len(_visible_in(scope, role="textbox")) >= 3:
-                    step(ctx, f"section open: {desc}")
-                    return
-            else:
-                if _visible_in(scope, role="button", name_pat=add_pat):
-                    step(ctx, f"section open: {desc}")
-                    return
-            try:
-                head.click(timeout=5000)
-            except Exception:
-                break
-            pace(page, 2.5)
-        # Final check after the clicks.
-        _, container2 = _section_container(
-            page,
-            ctx,
-            pat,
-            min_textboxes=3 if expect == "textboxes" else 0,
-            min_files=1 if expect == "uploads" else 0,
-        )
-        scope2 = container2 if container2 is not None else page
+        if container is None:
+            return False
+        try:
+            container.scroll_into_view_if_needed(timeout=3000)
+        except Exception:
+            pass
         if expect == "textboxes":
-            n = len(_visible_in(scope2, role="textbox"))
-            if n >= 3:
-                step(ctx, f"expanded section: {desc} (textboxes={n})")
+            return len(_visible_in(container, role="textbox")) >= 3
+        return bool(_visible_in(container, role="button", name_pat=add_pat))
+
+    for pat in heading_patterns:
+        for _attempt in range(4):
+            if _panel_open(pat):
+                step(ctx, f"section open: {desc}")
                 return
-        elif _visible_in(scope2, role="button", name_pat=add_pat):
+            try:
+                heads = page.get_by_text(pat).all()
+            except Exception:
+                heads = []
+            clicked = False
+            for head in heads:
+                try:
+                    if not head.is_visible():
+                        continue
+                except Exception:
+                    continue
+                btn, is_open = _chevron(head)
+                if btn is None:
+                    continue
+                if is_open:
+                    # Chevron says open but panel not showing content:
+                    # scroll and wait for lazy render.
+                    try:
+                        head.scroll_into_view_if_needed(timeout=3000)
+                    except Exception:
+                        pass
+                    pace(page, 2.0)
+                    clicked = True
+                    break
+                try:
+                    btn.click(timeout=5000)
+                    clicked = True
+                except Exception:
+                    continue
+                pace(page, 2.5)
+                break
+            if not clicked:
+                break
+        if _panel_open(pat):
             step(ctx, f"expanded section: {desc}")
             return
         step(ctx, f"WARNING: section not expandable: {desc}")
