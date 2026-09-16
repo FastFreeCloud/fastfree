@@ -2009,10 +2009,12 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
 
 
 def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -> None:
-    """Set file input(s) inside the section owning the label text (never OS picker).
+    """Upload file(s) into the slot owning the label text (never OS picker).
 
-    Hardened: scoped to the nearest file-input ancestor, then verifies the
-    file-row text (basename/stem) appears; retries set_input_files once.
+    Probed: slots expose NO input[type=file] — the "Add assets" button opens
+    an OS file chooser, handled via expect_file_chooser. Labels are matched
+    by short visible text (description paragraphs skipped by length).
+    Verifies the file-row text (basename/stem) appears after upload.
     """
     tried: list = []
     wanted = [Path(p).name for p in paths]
@@ -2060,43 +2062,88 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -
             poll += 1
         return False
 
+    # Label candidates: short visible text only (skip description paragraphs).
+    cands: list = []
     for pattern in label_patterns:
         try:
-            anchor = page.get_by_text(pattern).first
-            anchor.wait_for(state="visible", timeout=8000)
-            section = anchor.locator("xpath=ancestor::*[descendant::input[@type='file']][1]")
-            box = section.locator("input[type='file']").first
-            box.wait_for(state="attached", timeout=15000)
-        except Exception as exc:
-            tried.append(str(exc)[:120])
+            els = page.get_by_text(pattern).all()
+        except Exception:
+            continue
+        for el in els:
+            try:
+                if not el.is_visible():
+                    continue
+                txt = (el.text_content() or "").strip()
+            except Exception:
+                continue
+            if not txt or len(txt) > 120:
+                continue
+            cands.append(el)
+    if not cands:
+        failshot(page, ctx, desc, RuntimeError(f"no upload label visible: {desc}"))
+
+    for lab in cands:
+        node = lab
+        btn = None
+        section = None
+        for _d in range(14):
+            try:
+                node = node.locator("xpath=..")
+                btns = node.locator("button:has-text('Add assets')").all()
+            except Exception:
+                break
+            vis = []
+            for b in btns:
+                try:
+                    if b.is_visible() and b.is_enabled():
+                        vis.append(b)
+                except Exception:
+                    continue
+            if vis:
+                btn = vis[0]
+                section = node
+                break
+        if btn is None or section is None:
+            tried.append("no Add-assets button near label")
             continue
         try:
-            box.set_input_files([str(p) for p in paths])
-            step(ctx, f"uploaded {desc} ({len(paths)} file(s))")
+            btn.scroll_into_view_if_needed(timeout=4000)
+        except Exception:
+            pass
+        uploaded = False
+        try:
+            with page.expect_file_chooser(timeout=10000) as fc:
+                btn.click(timeout=5000)
+            fc.value.set_files([str(p) for p in paths])
+            step(ctx, f"chose files for {desc} ({len(paths)})")
+            uploaded = True
         except Exception as exc:
-            tried.append(str(exc)[:120])
+            # Fallback: dynamically attached file input.
+            try:
+                box = section.locator("input[type='file']").first
+                box.wait_for(state="attached", timeout=8000)
+                box.set_input_files([str(p) for p in paths])
+                step(ctx, f"uploaded {desc} ({len(paths)} file(s))")
+                uploaded = True
+            except Exception as exc2:
+                tried.append(f"{str(exc)[:80]} / {str(exc2)[:80]}")
+                continue
+        if not uploaded:
             continue
         pace(page, 3.0)
         if _verify(section, "direct"):
-            return
-        try:
-            box.set_input_files([str(p) for p in paths])
-            pace(page, 3.0)
-        except Exception as exc:
-            tried.append(str(exc)[:120])
-            continue
-        if _verify(section, "retry"):
-            step(ctx, f"upload verified on retry: {desc}")
             return
         tried.append(f"{desc}: file-row never appeared")
     failshot(page, ctx, desc, RuntimeError(f"no verified upload near {desc}: {' | '.join(tried)}"))
 
 
-def _section_container(page, ctx: dict, heading_pat, min_textboxes=0, min_files=0):
+def _section_container(page, ctx: dict, heading_pat, min_textboxes=0, min_files=0,
+                       min_addbtn=0):
     """Smallest ancestor of the heading with enough attached controls.
 
     Returns (head, container). Container may be None when the panel content
-    is not attached yet (section collapsed or lazy).
+    is not attached yet (section collapsed or lazy). Upload panels expose
+    no file inputs even when open — use min_addbtn for those.
     """
     try:
         head = page.get_by_text(heading_pat).first
@@ -2112,6 +2159,13 @@ def _section_container(page, ctx: dict, heading_pat, min_textboxes=0, min_files=
                 ok = False
             if min_files and node.locator("input[type='file']").count() < min_files:
                 ok = False
+            if min_addbtn:
+                try:
+                    n_add = node.locator("button:has-text('Add assets')").count()
+                except Exception:
+                    n_add = 0
+                if n_add < min_addbtn:
+                    ok = False
             if ok:
                 return head, node
         except Exception:
@@ -2152,18 +2206,20 @@ def _expand_listing_section(
     add_pat = re.compile(r"add assets", re.I)
 
     def _chevron(head):
-        """(button, is_open) for the chevron owning this heading."""
+        """(button, is_open) for the chevron owning this heading.
+
+        NOTE: chevron buttons carry no usable accessible name — find them
+        by the mat-icon ligature text (expand_more / expand_less).
+        """
         node = head
-        for _d in range(8):
+        for _d in range(10):
             try:
                 node = node.locator("xpath=..")
             except Exception:
                 return None, None
-            for nm, is_open in (("expand_less", True), ("expand_more", False)):
+            for lig, is_open in (("expand_less", True), ("expand_more", False)):
                 try:
-                    btns = node.get_by_role(
-                        "button", name=re.compile(f"^{nm}$", re.I)
-                    ).all()
+                    btns = node.locator(f"button:has-text('{lig}')").all()
                 except Exception:
                     continue
                 for b in btns:
@@ -2180,7 +2236,7 @@ def _expand_listing_section(
             ctx,
             pat,
             min_textboxes=3 if expect == "textboxes" else 0,
-            min_files=1 if expect == "uploads" else 0,
+            min_addbtn=1 if expect == "uploads" else 0,
         )
         if container is None:
             return False
