@@ -1832,7 +1832,19 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
     if _select_via_dropdown("retry"):
         step(ctx, f"locale dropdown selected on retry: {locale}")
         return
-    # Option absent → add the language, then re-select.
+    # Option absent → "Manage languages" option in the dropdown opens the manager.
+    try:
+        _dbs = _dropdown_buttons()
+        if _dbs:
+            _dbs[0].click(timeout=5000)
+            pace(page, 2.0)
+            _mg = page.get_by_role("option", name=re.compile(r"manage languages", re.I))
+            _mg.first.wait_for(state="visible", timeout=8000)
+            _mg.first.click(timeout=5000)
+            step(ctx, f"opened Manage languages for {locale}")
+            pace(page, 3.0)
+    except Exception as exc:
+        step(ctx, f"Manage languages open failed ({exc}) — falling back to Add button")
     step(ctx, f"locale {locale} absent — trying Add language")
     add_pats = [*ADD_LANGUAGE_PATTERNS, re.compile(r"add (a )?language", re.I)]
     if not try_click(page, ctx, add_pats, f"add language {locale}"):
@@ -1934,6 +1946,21 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -
     failshot(page, ctx, desc, RuntimeError(f"no verified upload near {desc}: {' | '.join(tried)}"))
 
 
+def _expand_listing_section(page, ctx: dict, heading_patterns: list, desc: str) -> None:
+    """Expand a collapsed store-listing section by clicking its heading."""
+    for pat in heading_patterns:
+        try:
+            head = page.get_by_text(pat).first
+            head.wait_for(state="visible", timeout=8000)
+            head.click(timeout=5000)
+            page.wait_for_timeout(2000)
+            step(ctx, f"expanded section: {desc}")
+            return
+        except Exception:
+            continue
+    step(ctx, f"WARNING: section not expandable (maybe open): {desc}")
+
+
 def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
     """Fill texts + graphics + privacy URL for one locale, then save+verify.
 
@@ -1946,6 +1973,9 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
     texts = read_locale_texts(slug, locale)
     images = resolve_images(slug, locale)
 
+    _expand_listing_section(
+        page, ctx, [re.compile(r"common text assets", re.I)], "Common text assets"
+    )
     def _fill_verified(patterns: list, value: str, desc: str) -> None:
         fill_any(page, ctx, patterns, value, desc)
         want = (value or "").strip()
@@ -1992,8 +2022,14 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
     _fill_verified(SHORT_PATTERNS, texts["short"], f"[{locale}] short description")
     _fill_verified(FULL_PATTERNS, texts["full"], f"[{locale}] full description")
     pace(page, 1.5)
+    _expand_listing_section(
+        page, ctx, [re.compile(r"common visual assets", re.I)], "Common visual assets"
+    )
     upload_near(page, ctx, ICON_UPLOAD_PATTERNS, [images["icon"]], f"[{locale}] app icon")
     upload_near(page, ctx, FEATURE_UPLOAD_PATTERNS, [images["feature"]], f"[{locale}] feature graphic")
+    _expand_listing_section(
+        page, ctx, [re.compile(r"^phone assets", re.I)], "Phone assets"
+    )
     upload_near(page, ctx, SHOTS_UPLOAD_PATTERNS, images["shots"], f"[{locale}] phone screenshots")
     _fill_verified(PRIVACY_PATTERNS, PRIVACY_URL, f"[{locale}] privacy policy URL")
     save_and_verify(page, ctx, f"store listing {locale}")
