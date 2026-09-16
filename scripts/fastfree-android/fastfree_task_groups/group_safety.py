@@ -2008,13 +2008,14 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
     failshot(page, ctx, f"locale-{locale}", RuntimeError(f"locale dropdown {locale} never active"))
 
 
-def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -> None:
+def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
+                heading_patterns: tuple = ()) -> None:
     """Upload file(s) into the slot owning the label text (never OS picker).
 
-    Probed: slots expose NO input[type=file] — the "Add assets" button opens
-    an OS file chooser, handled via expect_file_chooser. Labels are matched
-    by short visible text (description paragraphs skipped by length).
-    Verifies the file-row text (basename/stem) appears after upload.
+    Probed flow: slot "Add assets" button → right drawer ("Add assets to
+    your library") → drawer "Upload" button → OS file chooser → asset row
+    appears (auto-selected) → drawer "Add" attaches it to the slot.
+    Uploads are verified by file-row text (basename/stem) in the slot.
     """
     tried: list = []
     wanted = [Path(p).name for p in paths]
@@ -2063,24 +2064,135 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -
         return False
 
     # Label candidates: short visible text only (skip description paragraphs).
-    cands: list = []
-    for pattern in label_patterns:
-        try:
-            els = page.get_by_text(pattern).all()
-        except Exception:
-            continue
-        for el in els:
+    def _collect():
+        cands: list = []
+        for pattern in label_patterns:
             try:
-                if not el.is_visible():
-                    continue
-                txt = (el.text_content() or "").strip()
+                els = page.get_by_text(pattern).all()
             except Exception:
                 continue
-            if not txt or len(txt) > 120:
-                continue
-            cands.append(el)
+            for el in els:
+                try:
+                    if not el.is_visible():
+                        continue
+                    txt = (el.text_content() or "").strip()
+                except Exception:
+                    continue
+                if not txt or len(txt) > 120:
+                    continue
+                cands.append(el)
+        return cands
+
+    cands = _collect()
+    if not cands and heading_patterns:
+        for _r in range(3):
+            _expand_listing_section(
+                page, ctx, list(heading_patterns), f"{desc} section",
+                expect="uploads",
+            )
+            pace(page, 2.0)
+            cands = _collect()
+            if cands:
+                break
     if not cands:
         failshot(page, ctx, desc, RuntimeError(f"no upload label visible: {desc}"))
+
+    def _drawer_scope():
+        try:
+            s = page.get_by_text(re.compile(r"search assets", re.I)).first
+            s.wait_for(state="visible", timeout=8000)
+            n = s
+            for _ in range(14):
+                n = n.locator("xpath=..")
+                try:
+                    if n.get_by_role(
+                        "button", name=re.compile(r"manage tags", re.I)
+                    ).count() >= 1:
+                        return n
+                except Exception:
+                    return None
+        except Exception:
+            return None
+        return None
+
+    def _drawer_attach() -> bool:
+        """Upload (if needed) + select + Add inside the open drawer."""
+        drawer = _drawer_scope()
+        if drawer is None:
+            tried.append("drawer scope not found")
+            return False
+
+        def _rows_present() -> bool:
+            try:
+                txt = drawer.text_content() or ""
+            except Exception:
+                return False
+            return all(w in txt for w in wanted)
+
+        if not _rows_present():
+            try:
+                up = drawer.get_by_role(
+                    "button", name=re.compile(r"^upload$", re.I)
+                ).first
+                up.wait_for(state="visible", timeout=8000)
+                with page.expect_file_chooser(timeout=10000) as fc:
+                    up.click(timeout=5000)
+                fc.value.set_files([str(p) for p in paths])
+                step(ctx, f"chose files for {desc} ({len(paths)})")
+            except Exception as exc:
+                tried.append(f"drawer upload failed: {str(exc)[:100]}")
+                return False
+            deadline = time.time() + 60
+            while time.time() < deadline:
+                if _rows_present():
+                    break
+                pace(page, 2.0)
+            if not _rows_present():
+                tried.append(f"uploaded rows never appeared: {wanted}")
+                return False
+            step(ctx, f"drawer rows present: {desc}")
+        try:
+            add_btn = drawer.get_by_role(
+                "button", name=re.compile(r"^add$", re.I)
+            ).first
+            add_btn.wait_for(state="visible", timeout=8000)
+        except Exception as exc:
+            tried.append(f"drawer Add missing: {str(exc)[:80]}")
+            return False
+        try:
+            enabled = add_btn.is_enabled()
+        except Exception:
+            enabled = True
+        if not enabled:
+            # Nothing selected — click each wanted row, then re-check.
+            for w in wanted:
+                try:
+                    drawer.get_by_text(
+                        re.compile(re.escape(w), re.I)
+                    ).first.click(timeout=4000)
+                    pace(page, 1.0)
+                except Exception:
+                    pass
+            try:
+                enabled = add_btn.is_enabled()
+            except Exception:
+                enabled = True
+        if not enabled:
+            tried.append("drawer Add stayed disabled")
+            return False
+        try:
+            add_btn.click(timeout=5000)
+        except Exception as exc:
+            tried.append(f"drawer Add click failed: {str(exc)[:80]}")
+            return False
+        try:
+            page.get_by_text(re.compile(r"search assets", re.I)).first.wait_for(
+                state="hidden", timeout=15000
+            )
+            step(ctx, f"drawer closed after Add: {desc}")
+        except Exception:
+            step(ctx, f"WARNING: drawer still open after Add: {desc}")
+        return True
 
     for lab in cands:
         node = lab
@@ -2110,35 +2222,31 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -
             btn.scroll_into_view_if_needed(timeout=4000)
         except Exception:
             pass
-        uploaded = False
         try:
-            with page.expect_file_chooser(timeout=10000) as fc:
-                btn.click(timeout=5000)
-            fc.value.set_files([str(p) for p in paths])
-            step(ctx, f"chose files for {desc} ({len(paths)})")
-            uploaded = True
+            btn.click(timeout=5000)
+            page.get_by_text(
+                re.compile(r"search assets|add assets to your library", re.I)
+            ).first.wait_for(state="visible", timeout=10000)
+            step(ctx, f"asset drawer opened: {desc}")
         except Exception as exc:
-            # Fallback: dynamically attached file input.
-            try:
-                box = section.locator("input[type='file']").first
-                box.wait_for(state="attached", timeout=8000)
-                box.set_input_files([str(p) for p in paths])
-                step(ctx, f"uploaded {desc} ({len(paths)} file(s))")
-                uploaded = True
-            except Exception as exc2:
-                tried.append(f"{str(exc)[:80]} / {str(exc2)[:80]}")
-                continue
-        if not uploaded:
+            tried.append(f"drawer never opened: {str(exc)[:80]}")
             continue
-        pace(page, 3.0)
+        if not _drawer_attach():
+            try:
+                page.keyboard.press("Escape")
+            except Exception:
+                pass
+            pace(page, 1.0)
+            continue
+        pace(page, 2.0)
         if _verify(section, "direct"):
             return
-        tried.append(f"{desc}: file-row never appeared")
+        tried.append(f"{desc}: file-row never appeared after Add")
     failshot(page, ctx, desc, RuntimeError(f"no verified upload near {desc}: {' | '.join(tried)}"))
 
 
 def _section_container(page, ctx: dict, heading_pat, min_textboxes=0, min_files=0,
-                       min_addbtn=0):
+                       min_addbtn=0, max_depth=14):
     """Smallest ancestor of the heading with enough attached controls.
 
     Returns (head, container). Container may be None when the panel content
@@ -2151,7 +2259,7 @@ def _section_container(page, ctx: dict, heading_pat, min_textboxes=0, min_files=
     except Exception:
         return None, None
     node = head
-    for _depth in range(14):
+    for _depth in range(max_depth):
         try:
             node = node.locator("xpath=..")
             ok = True
@@ -2231,12 +2339,15 @@ def _expand_listing_section(
         return None, None
 
     def _panel_open(pat) -> bool:
+        # Depth-capped: without a cap the walk balloons to the whole form
+        # and borrows other sections' controls as false "open" evidence.
         _, container = _section_container(
             page,
             ctx,
             pat,
             min_textboxes=3 if expect == "textboxes" else 0,
             min_addbtn=1 if expect == "uploads" else 0,
+            max_depth=8,
         )
         if container is None:
             return False
@@ -2423,17 +2534,22 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
         ]
     )
     pace(page, 1.5)
+    vis_headings = (re.compile(r"common visual assets", re.I),)
+    phone_headings = (re.compile(r"^phone assets", re.I),)
     _expand_listing_section(
-        page, ctx, [re.compile(r"common visual assets", re.I)], "Common visual assets",
+        page, ctx, list(vis_headings), "Common visual assets",
         expect="uploads",
     )
-    upload_near(page, ctx, ICON_UPLOAD_PATTERNS, [images["icon"]], f"[{locale}] app icon")
-    upload_near(page, ctx, FEATURE_UPLOAD_PATTERNS, [images["feature"]], f"[{locale}] feature graphic")
+    upload_near(page, ctx, ICON_UPLOAD_PATTERNS, [images["icon"]],
+                f"[{locale}] app icon", heading_patterns=vis_headings)
+    upload_near(page, ctx, FEATURE_UPLOAD_PATTERNS, [images["feature"]],
+                f"[{locale}] feature graphic", heading_patterns=vis_headings)
     _expand_listing_section(
-        page, ctx, [re.compile(r"^phone assets", re.I)], "Phone assets",
+        page, ctx, list(phone_headings), "Phone assets",
         expect="uploads",
     )
-    upload_near(page, ctx, SHOTS_UPLOAD_PATTERNS, images["shots"], f"[{locale}] phone screenshots")
+    upload_near(page, ctx, SHOTS_UPLOAD_PATTERNS, images["shots"],
+                f"[{locale}] phone screenshots", heading_patterns=phone_headings)
     _fill_verified(PRIVACY_PATTERNS, PRIVACY_URL, f"[{locale}] privacy policy URL")
     save_and_verify(page, ctx, f"store listing {locale}")
     step(ctx, f"STORE LISTING [{locale}]: done")
