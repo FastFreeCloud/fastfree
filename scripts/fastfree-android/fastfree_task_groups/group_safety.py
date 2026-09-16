@@ -1844,18 +1844,32 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
         step(ctx, f"locale dropdown selected on retry: {locale}")
         return
     # Option absent → "Manage languages" option in the dropdown opens the manager.
+    # NOTE: Play renders the items as role=option OR role=menuitem (varies).
+    def _click_manage_languages(tag: str) -> bool:
+        mg_pat = re.compile(r"manage languages", re.I)
+        for role in ("option", "menuitem"):
+            try:
+                mg = page.get_by_role(role, name=mg_pat)
+                mg.first.wait_for(state="visible", timeout=6000)
+                mg.first.click(timeout=5000)
+                step(ctx, f"clicked Manage languages [{tag}/{role}]")
+                return True
+            except Exception:
+                continue
+        return False
+
     manage_opened = False
     try:
         _dbs = _dropdown_buttons()
         if _dbs:
             _dbs[0].click(timeout=5000)
             pace(page, 2.0)
-            _mg = page.get_by_role("option", name=re.compile(r"manage languages", re.I))
-            _mg.first.wait_for(state="visible", timeout=8000)
-            _mg.first.click(timeout=5000)
-            step(ctx, f"opened Manage languages for {locale}")
-            pace(page, 3.0)
-            manage_opened = True
+            if _click_manage_languages("open"):
+                step(ctx, f"opened Manage languages for {locale}")
+                pace(page, 3.0)
+                manage_opened = True
+            else:
+                step(ctx, "Manage languages item not found — falling back")
     except Exception as exc:
         step(ctx, f"Manage languages open failed ({exc}) — falling back to Add button")
 
@@ -1932,16 +1946,28 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
             sel_btn.first.click(timeout=5000)
             pace(page, 2.0)
             # Try selecting from this alternate dropdown.
-            for opt in page.get_by_role("option").all():
+            _alt_roles = ("option", "menuitem")
+            for _role in _alt_roles:
+                _done = False
                 try:
-                    txt = opt.text_content() or ""
-                    if locale.lower() in txt.lower():
-                        opt.click(timeout=3000)
-                        pace(page, 2.0)
-                        step(ctx, f"selected {locale} from Select language menu")
-                        return
+                    _opts = page.get_by_role(_role).all()
                 except Exception:
                     continue
+                for opt in _opts:
+                    try:
+                        txt = opt.text_content() or ""
+                        if not txt or not opt.is_visible():
+                            continue
+                        if locale.lower() in txt.lower():
+                            opt.click(timeout=3000)
+                            pace(page, 2.0)
+                            step(ctx, f"selected {locale} from Select language menu")
+                            _done = True
+                            break
+                    except Exception:
+                        continue
+                if _done:
+                    return
         except Exception:
             pass
 
@@ -2160,20 +2186,72 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
         _soft_shot(page, ctx, f"fill-verify {desc}")
         raise RuntimeError(f"fill not reflected in input_value: {desc}")
 
-    _fill_verified(TITLE_PATTERNS, texts["title"], f"[{locale}] app name")
-    # Scroll up before each fill (page may auto-scroll after filling).
-    try:
-        page.evaluate("window.scrollTo(0, 0)")
-        pace(page, 0.5)
-    except Exception:
-        pass
-    _fill_verified(SHORT_PATTERNS, texts["short"], f"[{locale}] short description")
-    try:
-        page.evaluate("window.scrollTo(0, 0)")
-        pace(page, 0.5)
-    except Exception:
-        pass
-    _fill_verified(FULL_PATTERNS, texts["full"], f"[{locale}] full description")
+    def _fill_texts_in_order(pairs: list) -> None:
+        """Fill Common-text-assets textboxes by DOM order (title, short, full).
+
+        Play's inputs carry no usable accessible names, so match by order
+        inside the smallest ancestor containing all text fields.
+        """
+        container = None
+        try:
+            head = page.get_by_text(re.compile(r"common text assets", re.I)).first
+            node = head
+            for _depth in range(10):
+                try:
+                    node = node.locator("xpath=..")
+                    if node.get_by_role("textbox").count() >= len(pairs):
+                        container = node
+                        break
+                except Exception:
+                    break
+        except Exception:
+            pass
+        root = container if container is not None else page
+        boxes: list = []
+        try:
+            for box in root.get_by_role("textbox").all():
+                try:
+                    if box.is_visible():
+                        boxes.append(box)
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        if len(boxes) < len(pairs):
+            failshot(
+                page, ctx, f"[{locale}] text fields",
+                RuntimeError(f"found {len(boxes)} textboxes, need {len(pairs)}"),
+            )
+        for box, item in zip(boxes, pairs, strict=False):
+            d, val = item
+            try:
+                box.scroll_into_view_if_needed(timeout=5000)
+            except Exception:
+                pass
+            pace(page, 0.5)
+            try:
+                box.click(timeout=3000)
+                box.fill("")
+            except Exception:
+                pass
+            box.fill(val)
+            pace(page, 1.0)
+            try:
+                cur = box.input_value() or ""
+            except Exception:
+                cur = ""
+            probe = (val or "").strip()[:60]
+            if probe and probe not in cur and (val or "").strip() not in cur:
+                failshot(page, ctx, d, RuntimeError(f"ordered fill not reflected: {d}"))
+            step(ctx, f"fill verified (ordered): {d}")
+
+    _fill_texts_in_order(
+        [
+            (f"[{locale}] app name", texts["title"]),
+            (f"[{locale}] short description", texts["short"]),
+            (f"[{locale}] full description", texts["full"]),
+        ]
+    )
     pace(page, 1.5)
     _expand_listing_section(
         page, ctx, [re.compile(r"common visual assets", re.I)], "Common visual assets"
