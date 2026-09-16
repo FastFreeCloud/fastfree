@@ -2207,15 +2207,14 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
                 return False
             step(ctx, f"drawer rows present: {desc}")
         add_btn = _drawer_button(drawer, "Add")
-        if add_btn is None:
-            tried.append("drawer Add missing")
-            return False
         try:
-            enabled = add_btn.is_enabled()
+            enabled = add_btn.is_enabled() if add_btn is not None else False
         except Exception:
-            enabled = True
-        if not enabled:
-            # Nothing selected — click each wanted row, then re-check.
+            enabled = add_btn is not None
+        if add_btn is None or not enabled:
+            # Fresh drawer shows no Add until a row is selected — click each
+            # wanted row, then re-find Add. (Missing Add implies nothing is
+            # selected, so row clicks cannot toggle a selection off.)
             for w in wanted:
                 try:
                     drawer.get_by_text(
@@ -2224,10 +2223,14 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
                     pace(page, 1.0)
                 except Exception:
                     pass
-            try:
-                enabled = add_btn.is_enabled()
-            except Exception:
-                enabled = True
+            add_btn = _drawer_button(drawer, "Add")
+        if add_btn is None:
+            tried.append("drawer Add missing")
+            return False
+        try:
+            enabled = add_btn.is_enabled()
+        except Exception:
+            enabled = True
         if not enabled:
             tried.append("drawer Add stayed disabled")
             return False
