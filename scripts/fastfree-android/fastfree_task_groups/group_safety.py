@@ -392,6 +392,29 @@ def _radio_label(page, radio) -> str:
         return ""
 
 
+def _click_label_for(page, radio) -> bool:
+    """Click the <label> of a radio/checkbox (fires Angular change; .check() may not)."""
+    try:
+        _id = radio.get_attribute("id")
+        if _id:
+            _lab = page.locator(f"label[for='{_id}']")
+            if _lab.count() > 0:
+                _lab.first.wait_for(state="visible", timeout=4000)
+                _lab.first.click(timeout=5000)
+                return True
+    except Exception:
+        pass
+    try:
+        _wrap = radio.locator("xpath=ancestor::label[1]")
+        if _wrap.count() > 0:
+            _wrap.first.wait_for(state="visible", timeout=4000)
+            _wrap.first.click(timeout=5000)
+            return True
+    except Exception:
+        pass
+    return False
+
+
 def answer_question(page, ctx: dict, qpat, want: str, desc: str) -> None:
     """Answer the question matching qpat with the option labeled `want`.
 
@@ -420,7 +443,10 @@ def answer_question(page, ctx: dict, qpat, want: str, desc: str) -> None:
                 if lab.lower() != want.lower():
                     continue
                 r.wait_for(state="visible", timeout=4000)
-                r.check()
+                # Click the LABEL (fires framework change events); fall back
+                # to programmatic check only if no label element resolves.
+                if not _click_label_for(page, r):
+                    r.check()
                 pace(page, 0.5)
                 if r.is_checked():
                     step(ctx, f"answered [{lab}]: {desc}")
@@ -608,20 +634,22 @@ def open_task(page, ctx: dict, label_patterns: list, desc: str) -> None:
     """From the dashboard, open one policy/store task row by its label."""
     open_dashboard(page, ctx)
     expand_view_tasks(page, ctx)
-    # Unhydrated row text clicks do nothing under throttle — verify navigation
-    # to app-content, else re-expand + retry.
+    # Unhydrated row text clicks do nothing under throttle — verify we LEFT
+    # the dashboard (sections live under app-content/* AND store-listings/*).
     for _retry in range(3):
         try:
             click_any(page, ctx, label_patterns, f"open {desc}")
         except Exception:
             pass
-        pace(page)
+        page.wait_for_timeout(4000)
         activate(page, ctx)
-        if "app-content" in (page.url or ""):
+        _u = page.url or ""
+        if "/app-dashboard" not in _u and not _u.rstrip("/").endswith("app-list"):
             break
         step(ctx, f"still on dashboard — re-expanding (try {_retry + 1})")
         expand_view_tasks(page, ctx)
-    if "app-content" not in (page.url or ""):
+    _u = page.url or ""
+    if "/app-dashboard" in _u or _u.rstrip("/").endswith("app-list"):
         failshot(page, ctx, f"open-{desc}", RuntimeError("task click never navigated"))
     assert_dev(page, ctx, f"{desc}-id")
     # Was networkidle(45s): holds the CDP session on long-polling XHRs that
@@ -713,6 +741,7 @@ STEP3_ACTIVE_PATTERNS = [
 
 def _step3_entry_visible(page) -> bool:
     """Probe only (never click): any add/entry control visible+enabled."""
+    _total = _visible = 0
     for pattern in ADD_TYPE_PATTERNS + ADD_TYPE_WIDE_PATTERNS:
         for role in ("button", "link"):
             try:
@@ -720,11 +749,16 @@ def _step3_entry_visible(page) -> bool:
             except Exception:
                 continue
             for el in cands:
+                _total += 1
                 try:
+                    if el.is_visible():
+                        _visible += 1
                     if el.is_visible() and el.is_enabled():
+                        LOG.info("step-3 probe: entry control visible+enabled (%s)", role)
                         return True
                 except Exception:
                     continue
+    LOG.warning("step-3 probe: no enabled entry control (cands=%d visible=%d)", _total, _visible)
     return False
 
 
@@ -741,8 +775,10 @@ def _on_data_types_step(page) -> bool:
     try:
         body = page.inner_text("body") or ""
     except Exception:
+        LOG.warning("step-3 gate: body unreadable")
         return False
     if any(p.search(body) for p in STEP2_MARKERS):
+        LOG.warning("step-3 gate: STEP2 markers present — still on step 2")
         return False
     _heading_ok = False
     for pat in STEP3_HEADING:
@@ -753,6 +789,7 @@ def _on_data_types_step(page) -> bool:
         except Exception:
             continue
     if not _heading_ok:
+        LOG.warning("step-3 gate: Data-types heading not visible")
         return False
     # (a) stepper-current evidence: stepper text first, then aria/class state.
     _active = False
@@ -782,9 +819,15 @@ def _on_data_types_step(page) -> bool:
             except Exception:
                 continue
     if not _active:
+        LOG.warning("step-3 gate: stepper not showing step 3 active")
         return False
     # (b) at least one add/entry control visible+enabled.
-    return _step3_entry_visible(page)
+    _entry = _step3_entry_visible(page)
+    if not _entry:
+        LOG.warning("step-3 gate: heading+stepper OK but no entry control")
+    else:
+        LOG.info("step-3 gate: PASSED (heading+stepper+entry)")
+    return _entry
 
 
 def _label_exact_check(page, ctx: dict, labels: list, desc: str) -> bool:
@@ -1162,11 +1205,17 @@ def run_data_safety(page, ctx: dict) -> None:
         step(ctx, "WARNING: deletion question not found, continuing")
     pace(page, 1.5)
     # Account creation methods (Frappe login): Username and password ONLY.
+    # Click the LABEL text (fires framework change events like a human tap).
     try:
         _ac = page.get_by_label("Username and password", exact=True)
         if _ac.count() == 1:
             _ac.first.wait_for(state="visible", timeout=8000)
-            _ac.first.check()
+            try:
+                _aclab = page.get_by_text("Username and password", exact=True).first
+                _aclab.wait_for(state="visible", timeout=5000)
+                _aclab.click(timeout=5000)
+            except Exception:
+                _ac.first.check()
             pace(page, 0.8)
             if _ac.first.is_checked():
                 step(ctx, "checked account method: Username and password")
@@ -1183,8 +1232,12 @@ def run_data_safety(page, ctx: dict) -> None:
         _du = page.get_by_label(re.compile(r"delete account", re.I))
         if _du.count() >= 1:
             _du.first.wait_for(state="visible", timeout=8000)
-            _du.first.fill(PRIVACY_URL)
-            pace(page, 0.8)
+            _du.first.scroll_into_view_if_needed()
+            _du.first.click()
+            _du.first.clear()
+            _du.first.press_sequentially(PRIVACY_URL, delay=10)
+            _du.first.press("Tab")  # blur: touched+dirty so Angular keeps it
+            pace(page, 1.0)
             if PRIVACY_URL in (_du.first.input_value() or ""):
                 step(ctx, "filled deletion URL (privacy page)")
             else:
@@ -1194,91 +1247,278 @@ def run_data_safety(page, ctx: dict) -> None:
     except Exception:
         step(ctx, "WARNING: deletion URL field not found, continuing")
     pace(page, 1.5)
-    # Re-assert EVERY step-2 answer right before Next (throttled re-renders
-    # reset radios): collects + encrypted + deletion YES, deletion-URL refill
-    # if emptied, account-method checked. Footer Next stays DISABLED until ALL
-    # stick — then Save-draft, then advance. Re-asserted again before every
-    # Next retry inside the advance loop below.
-    def _reassert_step2() -> None:
-        try:
-            for _pat, _dn in (
-                (re.compile(r"collect or share any.*required user data", re.I), "collects"),
-                (re.compile(r"encrypted in transit", re.I), "encrypted"),
-                (DELETE_Q[0], "deletion"),
-            ):
-                try:
-                    _q = page.get_by_text(_pat).first
-                    _q.wait_for(state="visible", timeout=8000)
-                    _scope = _q.locator("xpath=ancestor::*[descendant::*[@role='radio']][1]")
-                    _yes = _scope.get_by_label(re.compile(r"^yes$", re.I)).first
-                    _yes.wait_for(state="visible", timeout=5000)
+    # Step-2 Next-gate diagnosis (live: answers stick + draft saves, yet the
+    # footer Next stays DISABLED). Suspected gates, likelihood order:
+    #  (1) deletion CONTACT email empty — a field DISTINCT from the deletion
+    #      URL (fill_deletion_contact probes it separately); Next needs both.
+    #  (2) account-method unchecked by a re-render AFTER our check.
+    #  (3) a YES answered on a stale render, then reset server-side by Save.
+    #  (4) conditionally-revealed follow-up left empty after its parent YES.
+    #  (5) badges/opt-out section needing an explicit choice.
+    # Guard: re-assert every item in dependency order with per-item verify
+    # logging, immediately before each Next attempt. No blind Next retries:
+    # Next is clicked ONLY when probed ENABLED; DISABLED -> 10s gap, one
+    # retry, then FULL control inventory + soft return (draft saved).
+    def _reassert_step2(tag: str) -> None:
+        for _pat, _dn in (
+            (re.compile(r"collect or share any.*required user data", re.I), "collects"),
+            (re.compile(r"encrypted in transit", re.I), "encrypted"),
+            (DELETE_Q[0], "deletion"),
+        ):
+            try:
+                _q = page.get_by_text(_pat).first
+                _q.wait_for(state="visible", timeout=8000)
+                _scope = _q.locator("xpath=ancestor::*[descendant::*[@role='radio']][1]")
+                _yes = None
+                for _ypat in YES_PATTERNS:
                     try:
-                        if not _yes.is_checked():
-                            _yes.check()
-                            pace(page, 0.8)
+                        _cand = _scope.get_by_label(_ypat).first
+                        _cand.wait_for(state="visible", timeout=3000)
+                        _yes = _cand
+                        break
                     except Exception:
-                        _yes.check()
+                        continue
+                if _yes is None:
+                    step(ctx, f"WARNING: [{tag}] {_dn} YES option not found")
+                    continue
+                try:
+                    if not _yes.is_checked():
+                        if not _click_label_for(page, _yes):
+                            _yes.check()
                         pace(page, 0.8)
-                    if _yes.is_checked():
-                        step(ctx, f"re-asserted {_dn}=YES")
+                except Exception:
+                    try:
+                        if not _click_label_for(page, _yes):
+                            _yes.check()
+                        pace(page, 0.8)
+                    except Exception:
+                        pass
+                if _yes.is_checked():
+                    step(ctx, f"re-asserted {_dn}=YES [{tag}]")
+                else:
+                    step(ctx, f"WARNING: [{tag}] {_dn}=YES did not stick")
+            except Exception as exc:
+                step(ctx, f"WARNING: [{tag}] {_dn} re-assert skipped ({exc})")
+        # Gate (1): deletion CONTACT email — distinct from the URL field.
+        try:
+            _email_ok = False
+            try:
+                _boxes = page.get_by_role("textbox").all()
+            except Exception:
+                _boxes = []
+            for _box in _boxes:
+                try:
+                    if not _box.is_visible():
+                        continue
+                    if SUPPORT_EMAIL in (_box.input_value() or ""):
+                        _email_ok = True
+                        break
                 except Exception:
                     continue
-        except Exception:
-            pass
+            if _email_ok:
+                step(ctx, f"re-asserted deletion contact email [{tag}]")
+            else:
+                try:
+                    fill_deletion_contact(page, ctx)
+                    step(ctx, f"WARNING: [{tag}] deletion email empty — refill attempted (see above)")
+                except Exception as exc:
+                    step(ctx, f"WARNING: [{tag}] deletion email refill failed ({exc})")
+        except Exception as exc:
+            step(ctx, f"WARNING: [{tag}] deletion-email probe skipped ({exc})")
+        # Gate (4): deletion URL refill if a re-render emptied it.
         try:
             _du2 = page.get_by_label(re.compile(r"delete account", re.I))
             if _du2.count() >= 1:
                 try:
                     _du2.first.wait_for(state="visible", timeout=5000)
                     if PRIVACY_URL not in (_du2.first.input_value() or ""):
-                        _du2.first.fill(PRIVACY_URL)
+                        _du2.first.click()
+                        _du2.first.clear()
+                        _du2.first.press_sequentially(PRIVACY_URL, delay=10)
+                        _du2.first.press("Tab")
                         pace(page, 0.8)
                     if PRIVACY_URL in (_du2.first.input_value() or ""):
-                        step(ctx, "re-asserted deletion URL")
+                        step(ctx, f"re-asserted deletion URL [{tag}]")
                     else:
-                        step(ctx, "WARNING: deletion URL refill unverified")
-                except Exception:
-                    pass
-        except Exception:
-            pass
+                        step(ctx, f"WARNING: [{tag}] deletion URL refill unverified")
+                except Exception as exc:
+                    step(ctx, f"WARNING: [{tag}] deletion URL re-assert skipped ({exc})")
+            else:
+                step(ctx, f"WARNING: [{tag}] deletion URL field absent")
+        except Exception as exc:
+            step(ctx, f"WARNING: [{tag}] deletion URL probe skipped ({exc})")
+        # Gate (2): account-method — a re-render can uncheck AFTER our check.
         try:
             _ac2 = page.get_by_label("Username and password", exact=True)
             if _ac2.count() == 1:
                 try:
                     if not _ac2.first.is_checked():
-                        _ac2.first.check()
+                        try:
+                            _aclab2 = page.get_by_text("Username and password", exact=True).first
+                            _aclab2.wait_for(state="visible", timeout=5000)
+                            _aclab2.click(timeout=5000)
+                        except Exception:
+                            _ac2.first.check()
                         pace(page, 0.8)
                 except Exception:
                     pass
                 if _ac2.first.is_checked():
-                    step(ctx, "re-asserted account method")
-        except Exception:
-            pass
+                    step(ctx, f"re-asserted account method [{tag}]")
+                else:
+                    step(ctx, f"WARNING: [{tag}] account method did not stick")
+            else:
+                step(ctx, f"WARNING: [{tag}] account-method count={_ac2.count()} (want 1)")
+        except Exception as exc:
+            step(ctx, f"WARNING: [{tag}] account-method probe skipped ({exc})")
+        # Gates (4/5): any visible radio group with nothing checked — a
+        # conditionally-revealed or badges/opt-out question blocks Next.
+        try:
+            try:
+                _radios = page.get_by_role("radio").all()
+            except Exception:
+                _radios = []
+            _groups: dict = {}
+            _checked_total = 0
+            for _r in _radios:
+                try:
+                    if not _r.is_visible():
+                        continue
+                    if _r.is_checked():
+                        _checked_total += 1
+                    _nm = _r.get_attribute("name") or ""
+                    _groups.setdefault(_nm, []).append(_r)
+                except Exception:
+                    continue
+            _unanswered: list = []
+            for _nm, _members in _groups.items():
+                try:
+                    if any(_m.is_checked() for _m in _members):
+                        continue
+                    _qlab = _radio_label(page, _members[0])[:60]
+                    _unanswered.append(f"name={_nm or '<noname>'} first={_qlab or '<nolabel>'}")
+                except Exception:
+                    continue
+            step(ctx, f"step-2 unanswered radio groups={len(_unanswered)} [{tag}]")
+            for _u in _unanswered[:5]:
+                step(ctx, f"WARNING: [{tag}] unanswered radio group: {_u}")
+        except Exception as exc:
+            step(ctx, f"WARNING: [{tag}] unanswered-scan skipped ({exc})")
 
-    _reassert_step2()
+    def _next_probe() -> tuple:
+        """Footer Next state without clicking (no blind retries)."""
+        for _pat in NEXT_PATTERNS:
+            try:
+                for _el in page.get_by_role("button", name=_pat).all():
+                    try:
+                        if not _el.is_visible():
+                            continue
+                        try:
+                            _disabled = _el.is_disabled()
+                        except Exception:
+                            _disabled = not _el.is_enabled()
+                        return ("disabled" if _disabled else "enabled", _el)
+                    except Exception:
+                        continue
+            except Exception:
+                continue
+        return ("absent", None)
+
+    def _log_step2_inventory(desc: str) -> None:
+        """FULL step-2 inventory: every visible radio/checkbox/textbox + state."""
+        try:
+            _rows: list = []
+            for _role in ("radio", "checkbox", "textbox"):
+                try:
+                    _els = page.get_by_role(_role).all()
+                except Exception:
+                    continue
+                for _el in _els:
+                    try:
+                        if not _el.is_visible():
+                            continue
+                        if _role == "textbox":
+                            _val = (_el.input_value() or "")[:60]
+                            _st = f"value={_val!r}"
+                        else:
+                            try:
+                                _st = "checked" if _el.is_checked() else "unchecked"
+                            except Exception:
+                                _st = "state?"
+                            try:
+                                _st += ",disabled" if _el.is_disabled() else ",enabled"
+                            except Exception:
+                                pass
+                        _lab = _radio_label(page, _el)[:70]
+                        if not _lab:
+                            try:
+                                _lab = (_el.get_attribute("aria-label") or "")[:70]
+                            except Exception:
+                                _lab = ""
+                        _rows.append(f"{_role}:{_lab or '<nolabel>'} [{_st}]")
+                    except Exception:
+                        continue
+            LOG.error(
+                "[%s] step-2 control inventory (%s, %d): %s",
+                _key(ctx),
+                desc,
+                len(_rows),
+                " | ".join(_rows[:120]) or "<none>",
+            )
+            step(ctx, f"step-2 control inventory dumped ({len(_rows)} controls): {desc}")
+        except Exception as exc:
+            step(ctx, f"WARNING: control inventory failed ({exc})")
+
+    # Reordered pre-Next sequence: re-assert ALL -> Save draft -> wait ->
+    # verify toast -> Next (max 2, 10s gap). A stuck step-2 soft-returns.
+    _reassert_step2("pre-save")
     if try_click(page, ctx, [re.compile(r"^save draft$", re.I)], "Save draft step 2"):
-        pace(page, 3.0)
-        step(ctx, "step 2 draft saved")
+        pace(page, 4.0)
+        try:
+            from playwright.sync_api import expect
+
+            expect(
+                page.get_by_text(
+                    re.compile(r"changes have been saved|draft saved|changes saved|تم الحفظ", re.I)
+                ).first
+            ).to_be_visible(timeout=30000)
+            step(ctx, "step-2 save verified (toast seen)")
+        except Exception:
+            step(ctx, "WARNING: step-2 save toast never appeared")
+    else:
+        step(ctx, "WARNING: Save draft button unavailable before Next")
     # Advance to step 3 (Data types). The footer Next stays DISABLED while
     # step-2 requirements are unmet (failshots: grey Next, wizard still on
     # "Data collection and security"), so verify arrival via the stepper gate
     # instead of assuming the click advanced the wizard.
     _on_types = False
     for _attempt in range(2):
-        _reassert_step2()
-        if try_click(page, ctx, NEXT_PATTERNS, "data safety Next to types"):
-            pace(page)
+        # Deterministic guard immediately before the attempt (dependency
+        # order inside); a Save-wait re-render may have reset answers.
+        _reassert_step2(f"pre-next-{_attempt + 1}")
+        _state, _next_el = _next_probe()
+        step(ctx, f"Next state before attempt {_attempt + 1}: {_state}")
+        if _state == "enabled" and _next_el is not None:
+            try:
+                _next_el.click(timeout=5000)
+                step(ctx, f"Next clicked (enabled) attempt {_attempt + 1}")
+            except Exception as exc:
+                step(ctx, f"WARNING: Next click failed ({exc})")
+            pace(page, 4.0)
+        elif _state == "disabled":
+            step(ctx, f"Next DISABLED before attempt {_attempt + 1} — no blind click")
         else:
-            step(ctx, "WARNING: Next unavailable after step 2")
-            if try_click(page, ctx, [re.compile(r"^save draft$", re.I)], "Save draft before retry"):
-                pace(page, 3.0)
+            step(ctx, f"WARNING: Next {_state} before attempt {_attempt + 1} — no blind click")
         expand_all(page, ctx)
         if _on_data_types_step(page):
             _on_types = True
             step(ctx, "on Data-types step (gate passed)")
             break
         step(ctx, f"still on step 2 after Next (try {_attempt + 1})")
+        if _attempt == 0:
+            pace(page, 10.0)
     if not _on_types:
+        step(ctx, "step-2 STUCK — Next still disabled after 2 attempts (draft saved, soft return)")
+        _log_step2_inventory("step-3 arrival")
         _log_button_inventory(page, ctx, "step-3 arrival")
         _soft_shot(page, ctx, "step-3 arrival miss")
         step(ctx, "WARNING: Data-types step never reached — skipping type declarations")
@@ -1424,85 +1664,204 @@ def resolve_images(slug: str, locale: str) -> dict:
 
 
 def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
-    """Switch the store-listing editor to locale; add the language if absent.
+    """Switch the store-listing editor to locale via the language dropdown.
 
-    Hardened: verifies the tab is ACTIVE after click (aria-selected /
-    aria-current / active class, else editor textboxes rendered) and
-    retries the click once before falling back to add-language.
+    UI model (observed live, .../store-listings/default/edit): header
+    "Default store listing" + "Select a language to edit" + ONE dropdown
+    button showing e.g. "Default - English (United States) - en-US". There
+    are NO locale tabs; sections below are App details / Graphics (icon,
+    feature, screenshots) / Chromebook assets / Android XR assets (SKIP
+    non-Android sections); footer Discard | Save as draft | Next(enabled).
+
+    Flow: (1) read current dropdown text — match means already active;
+    (2) else click dropdown, log every visible option FIRST, then click the
+    option loosely matching the locale (en-US ~ "English (United States)",
+    ar ~ "Arabic"); dropdown option markup is UNKNOWN (a prior probe hung
+    on click) so every wait/click here is timeout-bounded and every miss
+    dumps the option inventory to the log; (3) option absent means look for
+    an "Add language" control, add, then re-select; (4) verify the dropdown
+    text matches the wanted locale, else failshot after the inventory.
+
+    name_patterns is kept for callers and used as fallback matchers.
     """
+    want = (locale or "").strip().lower().replace("_", "-")
+    if want.startswith("en"):
+        tokens = ["english (united states)", "en-us", "english"]
+    elif want.startswith("ar"):
+        tokens = ["arabic", "العربية", "- ar", "(ar)"]
+    else:
+        tokens = [want] if want else []
 
-    def _is_active(tab) -> bool:
-        try:
-            if (tab.get_attribute("aria-selected") or "").lower() == "true":
+    def _matches(text: str) -> bool:
+        low = (text or "").lower()
+        for tok in tokens:
+            if tok and tok in low:
                 return True
-        except Exception:
-            pass
-        try:
-            if (tab.get_attribute("aria-current") or "").lower() in ("true", "page"):
-                return True
-        except Exception:
-            pass
-        try:
-            cls = (tab.get_attribute("class") or "").lower()
-            if "active" in cls or "selected" in cls:
-                return True
-        except Exception:
-            pass
-        return False
-
-    def _click_once(tag: str) -> bool:
-        for pattern in name_patterns:
+        for pat in name_patterns or []:
             try:
-                tab = page.get_by_text(pattern).first
-                tab.wait_for(state="visible", timeout=5000)
-                tab.click(timeout=5000)
+                if isinstance(pat, str):
+                    if pat.lower() in low:
+                        return True
+                elif pat.search(text or ""):
+                    return True
             except Exception:
                 continue
-            pace(page, 2.5)
-            try:
-                fresh = page.get_by_text(pattern).first
-                if _is_active(fresh):
-                    step(ctx, f"locale tab active verified [{tag}]: {locale}")
-                    return True
-            except Exception:
-                pass
-            try:
-                if page.get_by_role("textbox").count() >= 3:
-                    step(ctx, f"locale editor ready [{tag}]: {locale}")
-                    return True
-            except Exception:
-                pass
         return False
 
-    if _click_once("direct"):
+    def _dropdown_buttons() -> list:
+        found: list = []
+        for role in ("button", "combobox"):
+            try:
+                cands = page.get_by_role(role).all()
+            except Exception:
+                continue
+            for el in cands:
+                try:
+                    if not el.is_visible():
+                        continue
+                    txt = (el.inner_text(timeout=1000) or "").strip()
+                except Exception:
+                    continue
+                if not txt:
+                    continue
+                low = txt.lower()
+                if (
+                    "default" in low
+                    or "english" in low
+                    or "arabic" in low
+                    or "en-us" in low
+                    or "العربية" in txt
+                    or _matches(txt)
+                ):
+                    found.append(el)
+        return found
+
+    def _read_active() -> str:
+        for el in _dropdown_buttons():
+            try:
+                txt = (el.inner_text(timeout=1000) or "").strip().replace("\n", " ")
+                if txt:
+                    return txt
+            except Exception:
+                continue
+        return ""
+
+    def _log_option_inventory(desc: str) -> None:
+        items: list = []
+        for role in ("option", "menuitem"):
+            try:
+                cands = page.get_by_role(role).all()
+            except Exception:
+                continue
+            for el in cands:
+                try:
+                    if not el.is_visible():
+                        continue
+                    txt = (el.inner_text(timeout=1000) or "").strip().replace("\n", " ")
+                    if txt:
+                        items.append(f"{role}:{txt[:80]}")
+                except Exception:
+                    continue
+        LOG.error(
+            "[%s] locale-option inventory (%s, %d): %s",
+            _key(ctx),
+            desc,
+            len(items),
+            " | ".join(items[:60]) or "<none>",
+        )
+        _log_button_inventory(page, ctx, f"locale-options {desc}")
+
+    def _click_matching_option(desc: str) -> bool:
+        for role in ("option", "menuitem"):
+            try:
+                cands = page.get_by_role(role).all()
+            except Exception:
+                continue
+            for el in cands:
+                try:
+                    if not el.is_visible() or not el.is_enabled():
+                        continue
+                    txt = (el.inner_text(timeout=1000) or "").strip()
+                except Exception:
+                    continue
+                if txt and _matches(txt):
+                    try:
+                        el.click(timeout=5000)
+                        step(ctx, f"clicked locale option [{desc}]: {txt[:80]}")
+                        return True
+                    except Exception:
+                        continue
+        return False
+
+    def _select_via_dropdown(tag: str) -> bool:
+        buttons = _dropdown_buttons()
+        if not buttons:
+            step(ctx, f"locale dropdown button not found [{tag}]")
+            return False
+        try:
+            buttons[0].click(timeout=5000)
+        except Exception:
+            step(ctx, f"locale dropdown click hung/failed [{tag}]")
+            return False
+        pace(page, 2.0)
+        _log_option_inventory(f"{tag} {locale}")
+        if _click_matching_option(tag):
+            pace(page, 2.0)
+            active = _read_active()
+            if active and _matches(active):
+                step(ctx, f"locale dropdown verified [{tag}]: {locale} ({active[:80]})")
+                return True
+            step(ctx, f"option clicked but dropdown unverified [{tag}]: {active[:80]}")
+            return False
+        step(ctx, f"locale {locale} not among dropdown options [{tag}]")
+        try:
+            page.keyboard.press("Escape")
+        except Exception:
+            pass
+        pace(page, 1.0)
+        return False
+
+    active = _read_active()
+    step(ctx, f"locale dropdown current: {active[:100]!r} (want {locale})")
+    if active and _matches(active):
+        step(ctx, f"locale already active: {locale}")
+        return
+    if _select_via_dropdown("direct"):
         return
     pace(page, 1.5)
-    if _click_once("retry"):
-        step(ctx, f"locale tab selected on retry: {locale}")
+    if _select_via_dropdown("retry"):
+        step(ctx, f"locale dropdown selected on retry: {locale}")
         return
-    # Language tab missing → add it, then retry the tab click.
-    step(ctx, f"locale tab {locale} absent — adding language")
-    click_any(page, ctx, ADD_LANGUAGE_PATTERNS, f"add language {locale}")
+    # Option absent → add the language, then re-select.
+    step(ctx, f"locale {locale} absent — trying Add language")
+    add_pats = [*ADD_LANGUAGE_PATTERNS, re.compile(r"add (a )?language", re.I)]
+    if not try_click(page, ctx, add_pats, f"add language {locale}"):
+        _log_option_inventory(f"no-add-control {locale}")
+        failshot(
+            page, ctx, f"locale-{locale}", RuntimeError(f"locale {locale} absent, no Add language")
+        )
     pace(page, 2.0)
     expand_all(page, ctx)
     added = False
-    for pattern in name_patterns:
+    for pat in list(name_patterns or []) + tokens:
         try:
-            check_row_for_text(page, ctx, pattern, f"pick language {locale}")
+            check_row_for_text(page, ctx, pat, f"pick language {locale}")
             added = True
             break
         except Exception:
             continue
     if not added:
+        _log_option_inventory(f"add-miss {locale}")
         failshot(page, ctx, f"locale-{locale}", RuntimeError(f"language {locale} not offered"))
     try_click(page, ctx, APPLY_PATTERNS + NEXT_PATTERNS, f"confirm add language {locale}")
     pace(page, 2.5)
-    if _click_once("after-add"):
+    if _select_via_dropdown("after-add"):
         return
     pace(page, 1.5)
-    if _click_once("after-add-retry"):
+    if _select_via_dropdown("after-add-retry"):
         return
-    failshot(page, ctx, f"locale-{locale}", RuntimeError(f"locale tab {locale} never active"))
+    _log_option_inventory(f"final {locale}")
+    failshot(page, ctx, f"locale-{locale}", RuntimeError(f"locale dropdown {locale} never active"))
 
 
 def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -> None:
