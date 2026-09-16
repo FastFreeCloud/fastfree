@@ -1913,7 +1913,18 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
         try_click(page, ctx, APPLY_PATTERNS, f"confirm Manage languages for {locale}")
         pace(page, 3.0)
 
-        # After Apply, page may navigate to the new locale's form.
+        # After Apply, the page usually navigates straight to the new
+        # locale's form, whose locale button reads "Arabic – ar". Detect
+        # that FIRST: the generic dropdown re-select below cannot work
+        # there (the menu no longer lists the active locale).
+        try:
+            ab = page.get_by_role("button", name=re.compile(r"arabic", re.I))
+            ab.first.wait_for(state="visible", timeout=8000)
+            step(ctx, f"locale {locale} form active after Manage languages")
+            return
+        except Exception:
+            pass
+
         # Check if we're already on the target locale page.
         cur_url = page.url
         if locale.replace("-", "").lower() in cur_url.lower():
@@ -1929,12 +1940,11 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
             if _select_via_dropdown("after-manage-retry"):
                 return
 
-        # Page may have navigated — check if target locale content is visible.
+        # Re-check the locale-form button (navigation may have lagged).
         try:
-            page.get_by_text(re.compile(re.escape(locale), re.I)).first.wait_for(
-                state="visible", timeout=5000
-            )
-            step(ctx, f"locale {locale} content visible after Manage languages")
+            ab = page.get_by_role("button", name=re.compile(r"arabic", re.I))
+            ab.first.wait_for(state="visible", timeout=8000)
+            step(ctx, f"locale {locale} form active after Manage languages")
             return
         except Exception:
             pass
@@ -2098,22 +2108,67 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
         failshot(page, ctx, desc, RuntimeError(f"no upload label visible: {desc}"))
 
     def _drawer_scope():
+        # Fresh drawer shows Upload/Add-from-Drive; post-upload drawer shows
+        # Manage tags. Accept an ancestor containing any drawer marker.
+        markers = (
+            re.compile(r"manage tags", re.I),
+            re.compile(r"add from drive", re.I),
+        )
         try:
             s = page.get_by_text(re.compile(r"search assets", re.I)).first
             s.wait_for(state="visible", timeout=8000)
             n = s
-            for _ in range(14):
+            for _ in range(16):
                 n = n.locator("xpath=..")
                 try:
-                    if n.get_by_role(
-                        "button", name=re.compile(r"manage tags", re.I)
-                    ).count() >= 1:
-                        return n
+                    for mp in markers:
+                        if n.get_by_role("button", name=mp).count() >= 1:
+                            return n
                 except Exception:
                     return None
         except Exception:
             return None
         return None
+
+    def _drawer_button(drawer, exact: str):
+        """Find a drawer button by exact accessible name, then exact text."""
+        try:
+            b = drawer.get_by_role(
+                "button", name=re.compile(f"^{exact}$", re.I)
+            ).first
+            b.wait_for(state="visible", timeout=4000)
+            return b
+        except Exception:
+            pass
+        try:
+            for b in drawer.get_by_role("button").all():
+                try:
+                    if b.is_visible() and (b.text_content() or "").strip() == exact:
+                        return b
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        return None
+
+    def _close_drawer() -> None:
+        drawer = _drawer_scope()
+        if drawer is None:
+            return
+        try:
+            cb = _drawer_button(drawer, "close")
+            if cb is not None:
+                cb.click(timeout=4000)
+                pace(page, 1.5)
+                step(ctx, f"drawer closed: {desc}")
+                return
+        except Exception:
+            pass
+        try:
+            page.keyboard.press("Escape")
+            pace(page, 1.0)
+        except Exception:
+            pass
 
     def _drawer_attach() -> bool:
         """Upload (if needed) + select + Add inside the open drawer."""
@@ -2130,11 +2185,11 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
             return all(w in txt for w in wanted)
 
         if not _rows_present():
+            up = _drawer_button(drawer, "Upload")
+            if up is None:
+                tried.append("drawer Upload missing")
+                return False
             try:
-                up = drawer.get_by_role(
-                    "button", name=re.compile(r"^upload$", re.I)
-                ).first
-                up.wait_for(state="visible", timeout=8000)
                 with page.expect_file_chooser(timeout=10000) as fc:
                     up.click(timeout=5000)
                 fc.value.set_files([str(p) for p in paths])
@@ -2151,13 +2206,9 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
                 tried.append(f"uploaded rows never appeared: {wanted}")
                 return False
             step(ctx, f"drawer rows present: {desc}")
-        try:
-            add_btn = drawer.get_by_role(
-                "button", name=re.compile(r"^add$", re.I)
-            ).first
-            add_btn.wait_for(state="visible", timeout=8000)
-        except Exception as exc:
-            tried.append(f"drawer Add missing: {str(exc)[:80]}")
+        add_btn = _drawer_button(drawer, "Add")
+        if add_btn is None:
+            tried.append("drawer Add missing")
             return False
         try:
             enabled = add_btn.is_enabled()
@@ -2232,16 +2283,14 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
             tried.append(f"drawer never opened: {str(exc)[:80]}")
             continue
         if not _drawer_attach():
-            try:
-                page.keyboard.press("Escape")
-            except Exception:
-                pass
-            pace(page, 1.0)
+            _close_drawer()
             continue
         pace(page, 2.0)
         if _verify(section, "direct"):
+            _close_drawer()
             return
         tried.append(f"{desc}: file-row never appeared after Add")
+    _close_drawer()
     failshot(page, ctx, desc, RuntimeError(f"no verified upload near {desc}: {' | '.join(tried)}"))
 
 
@@ -2339,15 +2388,17 @@ def _expand_listing_section(
         return None, None
 
     def _panel_open(pat) -> bool:
-        # Depth-capped: without a cap the walk balloons to the whole form
-        # and borrows other sections' controls as false "open" evidence.
+        # Depth-capped for uploads (without a cap the walk balloons to the
+        # whole form and borrows other sections' Add buttons as false "open"
+        # evidence). Text panels nest deep — full depth, balloon risk is low
+        # (min 3 attached textboxes rarely exists outside the open panel).
         _, container = _section_container(
             page,
             ctx,
             pat,
             min_textboxes=3 if expect == "textboxes" else 0,
             min_addbtn=1 if expect == "uploads" else 0,
-            max_depth=8,
+            max_depth=14 if expect == "textboxes" else 8,
         )
         if container is None:
             return False
