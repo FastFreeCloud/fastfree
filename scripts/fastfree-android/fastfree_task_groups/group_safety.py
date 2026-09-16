@@ -2212,17 +2212,11 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
         except Exception:
             enabled = add_btn is not None
         if add_btn is None or not enabled:
-            # Fresh drawer shows no Add until a row is selected — click each
-            # wanted row's RADIO/checkbox (probed: rows render "Deselected
-            # asset" with radio_button_unchecked; row-text clicks do not
-            # select). Missing Add implies nothing selected, so these clicks
-            # cannot toggle a selection off.
-            _radio_sels = (
-                "input[type='radio']",
-                "input[type='checkbox']",
-                "[role='radio']",
-                "[role='checkbox']",
-            )
+            # Fresh drawer shows no Add until a tile is selected — click each
+            # wanted tile's SELECT button (probed: asset-tile hosts
+            # a[debug-id='select-button']; tile/text clicks do not select).
+            # Missing Add implies nothing selected, so these clicks cannot
+            # toggle a selection off.
             for w in wanted:
                 try:
                     t = drawer.get_by_text(
@@ -2230,23 +2224,34 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
                     ).first
                     t.wait_for(state="visible", timeout=4000)
                     n = t
-                    picked = False
-                    for _ in range(8):
+                    tile = None
+                    for _ in range(10):
                         n = n.locator("xpath=..")
-                        for sel in _radio_sels:
-                            try:
-                                r = n.locator(sel).first
-                                if r.is_visible():
-                                    r.click(timeout=3000)
-                                    picked = True
-                                    break
-                            except Exception:
-                                continue
-                        if picked:
+                        try:
+                            if n.locator("asset-tile").count() >= 1:
+                                tile = n.locator("asset-tile").first
+                                break
+                        except Exception:
                             break
-                    if not picked:
-                        t.click(timeout=4000)
-                    pace(page, 1.0)
+                    if tile is None:
+                        continue
+                    sel = None
+                    for cand_sel in (
+                        "[debug-id='select-button']",
+                        "a.select-button",
+                    ):
+                        try:
+                            c = tile.locator(cand_sel).first
+                            c.wait_for(state="visible", timeout=3000)
+                            sel = c
+                            break
+                        except Exception:
+                            continue
+                    if sel is None:
+                        tile.click(timeout=4000)
+                    else:
+                        sel.click(timeout=5000)
+                    pace(page, 1.5)
                 except Exception:
                     pass
             add_btn = _drawer_button(drawer, "Add")
