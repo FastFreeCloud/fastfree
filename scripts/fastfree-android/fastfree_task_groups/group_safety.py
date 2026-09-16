@@ -2078,48 +2078,112 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str) -
     failshot(page, ctx, desc, RuntimeError(f"no verified upload near {desc}: {' | '.join(tried)}"))
 
 
-def _expand_listing_section(page, ctx: dict, heading_patterns: list, desc: str) -> None:
-    """Expand a collapsed store-listing section by clicking its heading."""
-    for pat in heading_patterns:
+def _section_container(page, ctx: dict, heading_pat, min_textboxes=0, min_files=0):
+    """Smallest ancestor of the heading with enough attached controls.
+
+    Returns (head, container). Container may be None when the panel content
+    is not attached yet (section collapsed or lazy).
+    """
+    try:
+        head = page.get_by_text(heading_pat).first
+        head.wait_for(state="visible", timeout=8000)
+    except Exception:
+        return None, None
+    node = head
+    for _depth in range(14):
         try:
-            head = page.get_by_text(pat).first
-            head.wait_for(state="visible", timeout=8000)
-            # Try clicking the chevron/expand icon next to the heading.
-            try:
-                _anc = (
-                    "ancestor::mat-expansion-panel-header|"
-                    "ancestor::*[contains(@class,'expansion')]|"
-                    "ancestor::tr|"
-                    "ancestor::*[role='button']"
-                )
-                row = head.locator(f"xpath={_anc}").first
-                row.click(timeout=4000)
-                pace(page, 2.5)
-            except Exception:
-                head.click(timeout=5000)
-                pace(page, 2.5)
-            # Verify: wait for any textbox or file input to appear.
-            for _attempt in range(4):
-                try:
-                    n = page.get_by_role("textbox").count()
-                    if n >= 1:
-                        step(ctx, f"expanded section: {desc} (textboxes={n})")
-                        return
-                except Exception:
-                    pass
-                pace(page, 2.0)
-            # Still collapsed — try clicking the heading text directly again.
-            head.click(timeout=5000)
-            pace(page, 3.0)
-            try:
-                n = page.get_by_role("textbox").count()
-                if n >= 1:
-                    step(ctx, f"expanded section on retry: {desc} (textboxes={n})")
-                    return
-            except Exception:
-                pass
+            node = node.locator("xpath=..")
+            ok = True
+            if min_textboxes and node.get_by_role("textbox").count() < min_textboxes:
+                ok = False
+            if min_files and node.locator("input[type='file']").count() < min_files:
+                ok = False
+            if ok:
+                return head, node
+        except Exception:
+            break
+    return head, None
+
+
+def _visible_in(node, role=None, name_pat=None, input_type=None) -> list:
+    found: list = []
+    try:
+        if input_type:
+            cands = node.locator(f"input[type='{input_type}']").all()
+        elif name_pat is not None:
+            cands = node.get_by_role(role, name=name_pat).all()
+        else:
+            cands = node.get_by_role(role).all()
+    except Exception:
+        return found
+    for el in cands:
+        try:
+            if el.is_visible():
+                found.append(el)
         except Exception:
             continue
+    return found
+
+
+def _expand_listing_section(
+    page, ctx: dict, heading_patterns: list, desc: str, expect: str = "textboxes"
+) -> None:
+    """Expand a collapsed store-listing section, verified inside its panel.
+
+    expect="textboxes" → ≥3 visible textboxes in the panel (Common text).
+    expect="uploads" → ≥1 visible Add-assets button in the panel (visual).
+    Clicks the heading until the panel shows its controls (max 4 tries);
+    clicking an open panel closes it, so state is re-checked every try.
+    """
+    add_pat = re.compile(r"add assets", re.I)
+    for pat in heading_patterns:
+        head, container = _section_container(
+            page,
+            ctx,
+            pat,
+            min_textboxes=3 if expect == "textboxes" else 0,
+            min_files=1 if expect == "uploads" else 0,
+        )
+        if head is None:
+            continue
+        scope = container if container is not None else page
+        for _attempt in range(4):
+            try:
+                head.scroll_into_view_if_needed(timeout=4000)
+            except Exception:
+                pass
+            if expect == "textboxes":
+                if len(_visible_in(scope, role="textbox")) >= 3:
+                    step(ctx, f"section open: {desc}")
+                    return
+            else:
+                if _visible_in(scope, role="button", name_pat=add_pat):
+                    step(ctx, f"section open: {desc}")
+                    return
+            try:
+                head.click(timeout=5000)
+            except Exception:
+                break
+            pace(page, 2.5)
+        # Final check after the clicks.
+        _, container2 = _section_container(
+            page,
+            ctx,
+            pat,
+            min_textboxes=3 if expect == "textboxes" else 0,
+            min_files=1 if expect == "uploads" else 0,
+        )
+        scope2 = container2 if container2 is not None else page
+        if expect == "textboxes":
+            n = len(_visible_in(scope2, role="textbox"))
+            if n >= 3:
+                step(ctx, f"expanded section: {desc} (textboxes={n})")
+                return
+        elif _visible_in(scope2, role="button", name_pat=add_pat):
+            step(ctx, f"expanded section: {desc}")
+            return
+        step(ctx, f"WARNING: section not expandable: {desc}")
+        return
     step(ctx, f"WARNING: section not expandable (maybe open): {desc}")
 
 
@@ -2186,37 +2250,36 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
         _soft_shot(page, ctx, f"fill-verify {desc}")
         raise RuntimeError(f"fill not reflected in input_value: {desc}")
 
+    TEXT_PAT = re.compile(r"common text assets", re.I)
+
     def _fill_texts_in_order(pairs: list) -> None:
         """Fill Common-text-assets textboxes by DOM order (title, short, full).
 
         Play's inputs carry no usable accessible names, so match by order
-        inside the smallest ancestor containing all text fields.
+        inside the section panel. Retries ~30s: the full-description
+        textarea lazy-renders on scroll.
         """
-        container = None
-        try:
-            head = page.get_by_text(re.compile(r"common text assets", re.I)).first
-            node = head
-            for _depth in range(10):
-                try:
-                    node = node.locator("xpath=..")
-                    if node.get_by_role("textbox").count() >= len(pairs):
-                        container = node
-                        break
-                except Exception:
-                    break
-        except Exception:
-            pass
-        root = container if container is not None else page
+        head, container = _section_container(page, ctx, TEXT_PAT, min_textboxes=3)
+        if head is None or container is None:
+            failshot(
+                page, ctx, f"[{locale}] text fields",
+                RuntimeError("Common text assets panel not attached"),
+            )
         boxes: list = []
-        try:
-            for box in root.get_by_role("textbox").all():
-                try:
-                    if box.is_visible():
-                        boxes.append(box)
-                except Exception:
-                    continue
-        except Exception:
-            pass
+        deadline = time.time() + 30
+        while time.time() < deadline:
+            boxes = _visible_in(container, role="textbox")
+            if len(boxes) >= len(pairs):
+                break
+            try:
+                container.scroll_into_view_if_needed(timeout=3000)
+            except Exception:
+                pass
+            try:
+                head.click(timeout=4000)
+            except Exception:
+                pass
+            pace(page, 2.0)
         if len(boxes) < len(pairs):
             failshot(
                 page, ctx, f"[{locale}] text fields",
@@ -2254,12 +2317,14 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
     )
     pace(page, 1.5)
     _expand_listing_section(
-        page, ctx, [re.compile(r"common visual assets", re.I)], "Common visual assets"
+        page, ctx, [re.compile(r"common visual assets", re.I)], "Common visual assets",
+        expect="uploads",
     )
     upload_near(page, ctx, ICON_UPLOAD_PATTERNS, [images["icon"]], f"[{locale}] app icon")
     upload_near(page, ctx, FEATURE_UPLOAD_PATTERNS, [images["feature"]], f"[{locale}] feature graphic")
     _expand_listing_section(
-        page, ctx, [re.compile(r"^phone assets", re.I)], "Phone assets"
+        page, ctx, [re.compile(r"^phone assets", re.I)], "Phone assets",
+        expect="uploads",
     )
     upload_near(page, ctx, SHOTS_UPLOAD_PATTERNS, images["shots"], f"[{locale}] phone screenshots")
     _fill_verified(PRIVACY_PATTERNS, PRIVACY_URL, f"[{locale}] privacy policy URL")

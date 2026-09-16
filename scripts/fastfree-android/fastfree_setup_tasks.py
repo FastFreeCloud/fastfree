@@ -20,6 +20,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from fastfree_task_groups import group_audience, group_safety, group_simple
 
+# Windows console is cp1252: Arabic log text (patterns, step msgs) crashes
+# print/logging with UnicodeEncodeError. Force UTF-8 with replacement.
+for _stream in (sys.stdout, sys.stderr):
+    _reconf = getattr(_stream, "reconfigure", None)
+    if callable(_reconf):
+        try:
+            _reconf(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 AUTH_DIR = REPO_ROOT / ".auth" / "play-console"
 DEV_ID = "7269125617638997236"
