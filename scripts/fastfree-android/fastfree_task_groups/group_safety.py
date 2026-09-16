@@ -2213,13 +2213,39 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
             enabled = add_btn is not None
         if add_btn is None or not enabled:
             # Fresh drawer shows no Add until a row is selected — click each
-            # wanted row, then re-find Add. (Missing Add implies nothing is
-            # selected, so row clicks cannot toggle a selection off.)
+            # wanted row's RADIO/checkbox (probed: rows render "Deselected
+            # asset" with radio_button_unchecked; row-text clicks do not
+            # select). Missing Add implies nothing selected, so these clicks
+            # cannot toggle a selection off.
+            _radio_sels = (
+                "input[type='radio']",
+                "input[type='checkbox']",
+                "[role='radio']",
+                "[role='checkbox']",
+            )
             for w in wanted:
                 try:
-                    drawer.get_by_text(
+                    t = drawer.get_by_text(
                         re.compile(re.escape(w), re.I)
-                    ).first.click(timeout=4000)
+                    ).first
+                    t.wait_for(state="visible", timeout=4000)
+                    n = t
+                    picked = False
+                    for _ in range(8):
+                        n = n.locator("xpath=..")
+                        for sel in _radio_sels:
+                            try:
+                                r = n.locator(sel).first
+                                if r.is_visible():
+                                    r.click(timeout=3000)
+                                    picked = True
+                                    break
+                            except Exception:
+                                continue
+                        if picked:
+                            break
+                    if not picked:
+                        t.click(timeout=4000)
                     pace(page, 1.0)
                 except Exception:
                     pass
