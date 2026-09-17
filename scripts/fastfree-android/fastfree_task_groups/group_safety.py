@@ -519,6 +519,11 @@ def save_and_verify(page, ctx: dict, desc: str) -> None:
     listing footer labels it "Save as draft" — match that too.
     """
     expand_all(page, ctx)
+    try:
+        sv = page.get_by_role("button", name=re.compile(r"^save as draft$", re.I)).first
+        step(ctx, f"save button state: visible={sv.is_visible()} enabled={sv.is_enabled()}")
+    except Exception as exc:
+        step(ctx, f"save button probe failed: {str(exc)[:100]}")
     click_any(
         page,
         ctx,
@@ -2188,16 +2193,22 @@ def _ensure_drawer_closed(page, ctx: dict, desc: str) -> None:
         except Exception:
             return False
 
-    if _try_x():
+    def _closed_settled() -> bool:
+        # Post-Add async processing can reopen the panel seconds after a
+        # close: only report closed when it STAYS closed.
+        pace(page, 3.0)
+        return not _drawer_open(page)
+
+    if _try_x() and _closed_settled():
         step(ctx, f"drawer closed: {desc}")
         return
-    if _try_escape():
+    if _try_escape() and _closed_settled():
         step(ctx, f"drawer closed: {desc}")
         return
-    if _try_backdrop_once():
+    if _try_backdrop_once() and _closed_settled():
         step(ctx, f"drawer closed: {desc}")
         return
-    if _try_x():
+    if _try_x() and _closed_settled():
         step(ctx, f"drawer closed: {desc}")
         return
     step(ctx, f"WARNING: drawer may still be open: {desc}")
@@ -2876,8 +2887,55 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
     # The drawer must be gone: fill_any's empty-box fallback once typed the
     # privacy URL into the drawer's own search box, and the drawer overlay
     # covers the Save control. Refill if a race reopened it mid-fill.
+    def _fill_privacy_scoped() -> bool:
+        """Fill the listing's own privacy field (never the drawer search).
+
+        Label-scoped: nearest textbox to the "Privacy policy" label. The
+        generic empty-box fallback once typed the URL into the open
+        drawer's search box and then verified it there.
+        """
+        try:
+            lab = page.get_by_text(re.compile(r"privacy policy", re.I)).first
+            lab.wait_for(state="visible", timeout=8000)
+            node = lab
+            box = None
+            for _ in range(10):
+                node = node.locator("xpath=..")
+                try:
+                    tbs = node.get_by_role("textbox").all()
+                except Exception:
+                    continue
+                for b in tbs:
+                    try:
+                        if b.is_visible():
+                            box = b
+                            break
+                    except Exception:
+                        continue
+                if box is not None:
+                    break
+            if box is None:
+                return False
+            try:
+                box.scroll_into_view_if_needed(timeout=4000)
+            except Exception:
+                pass
+            box.click(timeout=3000)
+            box.fill("")
+            box.fill(PRIVACY_URL)
+            pace(page, 1.0)
+            if PRIVACY_URL in (box.input_value() or ""):
+                step(ctx, f"fill verified: [{locale}] privacy policy URL")
+                return True
+        except Exception:
+            pass
+        return False
+
     for _pf in range(2):
         _ensure_drawer_closed(page, ctx, f"[{locale}] pre-privacy")
+        if _fill_privacy_scoped() and not _drawer_open(page):
+            break
+        step(ctx, f"privacy scoped fill missed, legacy fallback [{locale}]")
         _fill_verified(PRIVACY_PATTERNS, PRIVACY_URL, f"[{locale}] privacy policy URL")
         if not _drawer_open(page):
             break
