@@ -2187,16 +2187,15 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
             return False
 
     def _verify(section, tag: str) -> bool:
+        # SECTION-ONLY: the open drawer lists the same basenames, so a page
+        # fallback would false-positive on drawer rows instead of the slot.
         deadline = time.time() + 30
         poll = 0
         while time.time() < deadline:
             hit = 0
             for name in wanted:
                 stem = Path(name).stem
-                found = _row_visible(section, name) or _row_visible(section, stem)
-                if not found:
-                    found = _row_visible(page, name) or _row_visible(page, stem)
-                if found:
+                if _row_visible(section, name) or _row_visible(section, stem):
                     hit += 1
             if hit >= len(wanted):
                 step(ctx, f"upload verified [{tag}]: {desc} ({hit}/{len(wanted)})")
@@ -2388,13 +2387,15 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
             continue
         # Idempotence: the draft persists server-side, so a slot may already
         # carry the file from an earlier run. Skip the drawer dance if every
-        # wanted basename/stem already shows in the owning scope.
-        present = 0
-        for name in wanted:
-            stem = Path(name).stem
-            if _row_visible(section, name) or _row_visible(section, stem):
-                present += 1
-        if present >= len(wanted):
+        # wanted basename/stem shows in the owning scope. SECTION-ONLY: the
+        # asset drawer lists the same filenames, so any page-level fallback
+        # would false-positive on drawer rows (seen: shots "attached" while
+        # the slot sat empty).
+        try:
+            scope_txt = section.text_content() or ""
+        except Exception:
+            scope_txt = ""
+        if all((w in scope_txt or Path(w).stem in scope_txt) for w in wanted):
             step(ctx, f"already attached, skipping drawer: {desc}")
             _ensure_drawer_closed(page, ctx, f"{desc} already-attached")
             return
@@ -2414,7 +2415,14 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
                     pass
             pace(page, 1.0)
             try:
-                btn.click(timeout=10000)
+                if _try >= 2:
+                    # Last resort: overlay-proof DOM click (sticky footer or
+                    # drawer remnants can cover the button; a JS click fires
+                    # its handlers regardless and is safe here — worst case
+                    # the drawer simply does not open).
+                    btn.evaluate("e => e.click()")
+                else:
+                    btn.click(timeout=10000)
                 page.get_by_text(
                     re.compile(r"search assets|add assets to your library", re.I)
                 ).first.wait_for(state="visible", timeout=10000)
@@ -2432,6 +2440,22 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
             continue
         pace(page, 2.0)
         if _verify(section, "direct"):
+            _ensure_drawer_closed(page, ctx, desc)
+            return
+        # Filename row absent — but a thumbnail-only render also means the
+        # slot is filled: if its Add-assets button is gone, accept it.
+        remaining: list = []
+        try:
+            for b in section.locator("button:has-text('Add assets')").all():
+                try:
+                    if b.is_visible():
+                        remaining.append(b)
+                except Exception:
+                    continue
+        except Exception:
+            remaining = [True]
+        if not remaining:
+            step(ctx, f"attached (thumbnail render, no file row): {desc}")
             _ensure_drawer_closed(page, ctx, desc)
             return
         tried.append(f"{desc}: file-row never appeared after Add")
