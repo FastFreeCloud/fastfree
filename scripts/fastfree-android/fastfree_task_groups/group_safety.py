@@ -2107,10 +2107,10 @@ def _ensure_drawer_closed(page, ctx: dict, desc: str) -> None:
     backdrop JS-click (coordinate clicks risk the nav rail) → Escape. Each
     attempt logs its method so runs reveal which dismissal actually works.
     """
-    if _drawer_scope(page) is None:
+    if _drawer_scope(page) is None and not _drawer_open(page):
         return
     for _attempt in range(3):
-        if _drawer_scope(page) is None:
+        if not _drawer_open(page):
             step(ctx, f"drawer closed: {desc}")
             return
         drawer = _drawer_scope(page)
@@ -2136,7 +2136,7 @@ def _ensure_drawer_closed(page, ctx: dict, desc: str) -> None:
                 cands[0][1].click(timeout=4000)
                 step(ctx, f"drawer close attempt: header-X [{desc}]")
                 pace(page, 2.0)
-                if _drawer_scope(page) is None:
+                if not _drawer_open(page):
                     step(ctx, f"drawer closed: {desc}")
                     return
         except Exception:
@@ -2155,7 +2155,7 @@ def _ensure_drawer_closed(page, ctx: dict, desc: str) -> None:
             if hit:
                 step(ctx, f"drawer close attempt: backdrop [{desc}]")
                 pace(page, 2.0)
-                if _drawer_scope(page) is None:
+                if not _drawer_open(page):
                     step(ctx, f"drawer closed: {desc}")
                     return
         except Exception:
@@ -2164,7 +2164,7 @@ def _ensure_drawer_closed(page, ctx: dict, desc: str) -> None:
         try:
             page.keyboard.press("Escape")
             pace(page, 2.0)
-            if _drawer_scope(page) is None:
+            if not _drawer_open(page):
                 step(ctx, f"drawer closed: {desc}")
                 return
         except Exception:
@@ -2175,17 +2175,19 @@ def _ensure_drawer_closed(page, ctx: dict, desc: str) -> None:
 def _slot_filled(section, wanted: list) -> bool:
     """True when the slot already carries every wanted file.
 
-    Filename text OR thumbnail-only render (slots keep showing the
+    Full basenames OR thumbnail-only render (slots keep showing the
     "Add assets" link when full, so button-absence proves nothing):
     uploaded assets are served from Google hosts (absolute http img),
     while empty-slot placeholders are icon fonts. SECTION scope only —
-    the drawer lists the same names.
+    the drawer lists the same names. Deliberately NO stem-substring
+    matching: stems like "1"/"2" (shots) or "icon" (matches its own
+    "App icon" label) false-positive everywhere.
     """
     try:
         txt = section.text_content() or ""
     except Exception:
         return False
-    if all((w in txt or Path(w).stem in txt) for w in wanted):
+    if all(w in txt for w in wanted):
         return True
     try:
         vis = 0
@@ -2197,6 +2199,46 @@ def _slot_filled(section, wanted: list) -> bool:
                 continue
         if vis >= len(wanted):
             return True
+    except Exception:
+        pass
+    return False
+
+
+def _node_has_open_drawer(page, node) -> bool:
+    """True when this subtree contains the open drawer or its backdrop."""
+    try:
+        vp = page.viewport_size or {"width": 1600}
+        for d in node.locator("material-drawer, mat-drawer").all():
+            try:
+                if not d.is_visible():
+                    continue
+                box = d.bounding_box() or {}
+                if box.get("width", 0) > 100 and box.get("x", 0) < vp["width"] - 50:
+                    return True
+            except Exception:
+                continue
+        for b in node.locator("div.drawer-background").all():
+            try:
+                if b.is_visible():
+                    return True
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return False
+
+
+def _drawer_open(page) -> bool:
+    """Blocking overlay present: open drawer element OR visible backdrop."""
+    if _drawer_scope(page) is not None:
+        return True
+    try:
+        for b in page.locator("div.drawer-background").all():
+            try:
+                if b.is_visible():
+                    return True
+            except Exception:
+                continue
     except Exception:
         pass
     return False
@@ -2238,18 +2280,13 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
             return False
 
     def _verify(section, tag: str) -> bool:
-        # SECTION-ONLY: the open drawer lists the same basenames, so a page
-        # fallback would false-positive on drawer rows instead of the slot.
+        # Polls _slot_filled (full basenames or http thumbnails, section
+        # scope only) so row-text and thumbnail renders both verify.
         deadline = time.time() + 30
         poll = 0
         while time.time() < deadline:
-            hit = 0
-            for name in wanted:
-                stem = Path(name).stem
-                if _row_visible(section, name) or _row_visible(section, stem):
-                    hit += 1
-            if hit >= len(wanted):
-                step(ctx, f"upload verified [{tag}]: {desc} ({hit}/{len(wanted)})")
+            if _slot_filled(section, wanted):
+                step(ctx, f"upload verified [{tag}]: {desc} ({len(wanted)})")
                 return True
             # Backoff (1s→5s cap): same 30s deadline, fewer CDP round-trips.
             pace(page, min(5.0, 1.0 * (2.0**poll)))
@@ -2416,6 +2453,7 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
         node = lab
         btn = None
         section = None
+        polluted = False
         for _d in range(14):
             try:
                 node = node.locator("xpath=..")
@@ -2429,12 +2467,21 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
                         vis.append(b)
                 except Exception:
                     continue
-            if vis:
-                btn = vis[0]
-                section = node
-                break
+            if not vis:
+                continue
+            # The open drawer lives in the same walk-up tree: a scope that
+            # contains it would match drawer rows/buttons as slot content.
+            if _node_has_open_drawer(page, node):
+                polluted = True
+                continue
+            btn = vis[0]
+            section = node
+            break
         if btn is None or section is None:
-            tried.append("no Add-assets button near label")
+            tried.append(
+                "drawer pollutes slot scope" if polluted
+                else "no Add-assets button near label"
+            )
             continue
         # Idempotence: the draft persists server-side, so a slot may already
         # carry the file from an earlier run (filename row or thumbnail).
@@ -2485,13 +2532,7 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
         if _verify(section, "direct"):
             _ensure_drawer_closed(page, ctx, desc)
             return
-        # Filename row absent — but a thumbnail-only render also fills the
-        # slot (slots keep their Add-assets link when full).
-        if _slot_filled(section, wanted):
-            step(ctx, f"slot filled after Add (thumbnail render): {desc}")
-            _ensure_drawer_closed(page, ctx, desc)
-            return
-        tried.append(f"{desc}: file-row never appeared after Add")
+        tried.append(f"{desc}: slot never filled after Add")
     _ensure_drawer_closed(page, ctx, desc)
     failshot(page, ctx, desc, RuntimeError(f"no verified upload near {desc}: {' | '.join(tried)}"))
 
@@ -2808,9 +2849,13 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
                 f"[{locale}] phone screenshots", heading_patterns=phone_headings)
     # The drawer must be gone: fill_any's empty-box fallback once typed the
     # privacy URL into the drawer's own search box, and the drawer overlay
-    # covers the Save control.
-    _ensure_drawer_closed(page, ctx, f"[{locale}] pre-privacy")
-    _fill_verified(PRIVACY_PATTERNS, PRIVACY_URL, f"[{locale}] privacy policy URL")
+    # covers the Save control. Refill if a race reopened it mid-fill.
+    for _pf in range(2):
+        _ensure_drawer_closed(page, ctx, f"[{locale}] pre-privacy")
+        _fill_verified(PRIVACY_PATTERNS, PRIVACY_URL, f"[{locale}] privacy policy URL")
+        if not _drawer_open(page):
+            break
+        step(ctx, f"privacy fill raced drawer, retrying [{locale}]")
     _ensure_drawer_closed(page, ctx, f"[{locale}] pre-save")
     save_and_verify(page, ctx, f"store listing {locale}")
     step(ctx, f"STORE LISTING [{locale}]: done")
