@@ -2901,59 +2901,12 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
     # The drawer must be gone: fill_any's empty-box fallback once typed the
     # privacy URL into the drawer's own search box, and the drawer overlay
     # covers the Save control. Refill if a race reopened it mid-fill.
-    def _fill_privacy_scoped() -> bool:
-        """Fill the listing's own privacy field (never the drawer search).
-
-        Label-scoped: nearest textbox to the "Privacy policy" label. The
-        generic empty-box fallback once typed the URL into the open
-        drawer's search box and then verified it there.
-        """
-        try:
-            lab = page.get_by_text(re.compile(r"privacy policy", re.I)).first
-            lab.wait_for(state="visible", timeout=8000)
-            node = lab
-            box = None
-            for _ in range(10):
-                node = node.locator("xpath=..")
-                try:
-                    tbs = node.get_by_role("textbox").all()
-                except Exception:
-                    continue
-                for b in tbs:
-                    try:
-                        if b.is_visible():
-                            box = b
-                            break
-                    except Exception:
-                        continue
-                if box is not None:
-                    break
-            if box is None:
-                return False
-            try:
-                box.scroll_into_view_if_needed(timeout=4000)
-            except Exception:
-                pass
-            box.click(timeout=3000)
-            box.fill("")
-            box.fill(PRIVACY_URL)
-            pace(page, 1.0)
-            if PRIVACY_URL in (box.input_value() or ""):
-                step(ctx, f"fill verified: [{locale}] privacy policy URL")
-                return True
-        except Exception:
-            pass
-        return False
-
-    for _pf in range(2):
-        _ensure_drawer_closed(page, ctx, f"[{locale}] pre-privacy")
-        if _fill_privacy_scoped() and not _drawer_open(page):
-            break
-        step(ctx, f"privacy scoped fill missed, legacy fallback [{locale}]")
-        _fill_verified(PRIVACY_PATTERNS, PRIVACY_URL, f"[{locale}] privacy policy URL")
-        if not _drawer_open(page):
-            break
-        step(ctx, f"privacy fill raced drawer, retrying [{locale}]")
+    upload_near(page, ctx, SHOTS_UPLOAD_PATTERNS, images["shots"],
+                f"[{locale}] phone screenshots", heading_patterns=phone_headings)
+    # NOTE: no privacy-URL fill here — probed: the listing editor has no
+    # privacy field (only title/short/full + a YouTube URL box). Privacy is
+    # covered by the separate app-content task. A generic fill once typed
+    # the URL into the asset drawer's search box instead.
     _ensure_drawer_closed(page, ctx, f"[{locale}] pre-save")
     save_and_verify(page, ctx, f"store listing {locale}")
     step(ctx, f"STORE LISTING [{locale}]: done")
@@ -3005,6 +2958,11 @@ def run_store_listing(page, ctx: dict) -> None:
     for locale, pats in LOCALES:
         try:
             select_locale(page, ctx, locale, list(pats))
+            # Re-visit renders sections collapsed: expand before polling.
+            _expand_listing_section(
+                page, ctx, [re.compile(r"common text assets", re.I)],
+                f"verify {locale} text",
+            )
             want_title = read_locale_texts(slug, locale)["title"].strip()
             found_title = False
             title_deadline = time.time() + 20
