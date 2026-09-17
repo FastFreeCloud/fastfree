@@ -2018,6 +2018,88 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
     failshot(page, ctx, f"locale-{locale}", RuntimeError(f"locale dropdown {locale} never active"))
 
 
+def _drawer_scope(page):
+    """Scope of the open asset-library drawer, or None when closed.
+
+    Fresh drawer shows Upload/Add-from-Drive; post-upload drawer shows
+    Manage tags. Accept an ancestor containing any drawer marker.
+    """
+    markers = (
+        re.compile(r"manage tags", re.I),
+        re.compile(r"add from drive", re.I),
+    )
+    try:
+        s = page.get_by_text(re.compile(r"search assets", re.I)).first
+        s.wait_for(state="visible", timeout=5000)
+        n = s
+        for _ in range(16):
+            n = n.locator("xpath=..")
+            try:
+                for mp in markers:
+                    if n.get_by_role("button", name=mp).count() >= 1:
+                        return n
+            except Exception:
+                return None
+    except Exception:
+        return None
+    return None
+
+
+def _drawer_button(drawer, exact: str):
+    """Find a drawer button by exact accessible name, then exact text."""
+    try:
+        b = drawer.get_by_role(
+            "button", name=re.compile(f"^{exact}$", re.I)
+        ).first
+        b.wait_for(state="visible", timeout=4000)
+        return b
+    except Exception:
+        pass
+    try:
+        for b in drawer.get_by_role("button").all():
+            try:
+                if b.is_visible() and (b.text_content() or "").strip() == exact:
+                    return b
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return None
+
+
+def _ensure_drawer_closed(page, ctx: dict, desc: str) -> None:
+    """Close the asset drawer if open; VERIFY it actually closed (retry).
+
+    A leftover drawer covers the form with a drawer-background overlay that
+    intercepts pointer events (seen blocking the locale dropdown).
+    """
+    for _attempt in range(3):
+        drawer = _drawer_scope(page)
+        if drawer is None:
+            return
+        try:
+            cb = _drawer_button(drawer, "close")
+            if cb is not None:
+                cb.click(timeout=4000)
+                pace(page, 1.5)
+        except Exception:
+            pass
+        try:
+            page.get_by_text(re.compile(r"search assets", re.I)).first.wait_for(
+                state="hidden", timeout=8000
+            )
+            step(ctx, f"drawer closed: {desc}")
+            return
+        except Exception:
+            pass
+        try:
+            page.keyboard.press("Escape")
+            pace(page, 1.5)
+        except Exception:
+            pass
+    step(ctx, f"WARNING: drawer may still be open: {desc}")
+
+
 def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
                 heading_patterns: tuple = ()) -> None:
     """Upload file(s) into the slot owning the label text (never OS picker).
@@ -2107,72 +2189,9 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
     if not cands:
         failshot(page, ctx, desc, RuntimeError(f"no upload label visible: {desc}"))
 
-    def _drawer_scope():
-        # Fresh drawer shows Upload/Add-from-Drive; post-upload drawer shows
-        # Manage tags. Accept an ancestor containing any drawer marker.
-        markers = (
-            re.compile(r"manage tags", re.I),
-            re.compile(r"add from drive", re.I),
-        )
-        try:
-            s = page.get_by_text(re.compile(r"search assets", re.I)).first
-            s.wait_for(state="visible", timeout=8000)
-            n = s
-            for _ in range(16):
-                n = n.locator("xpath=..")
-                try:
-                    for mp in markers:
-                        if n.get_by_role("button", name=mp).count() >= 1:
-                            return n
-                except Exception:
-                    return None
-        except Exception:
-            return None
-        return None
-
-    def _drawer_button(drawer, exact: str):
-        """Find a drawer button by exact accessible name, then exact text."""
-        try:
-            b = drawer.get_by_role(
-                "button", name=re.compile(f"^{exact}$", re.I)
-            ).first
-            b.wait_for(state="visible", timeout=4000)
-            return b
-        except Exception:
-            pass
-        try:
-            for b in drawer.get_by_role("button").all():
-                try:
-                    if b.is_visible() and (b.text_content() or "").strip() == exact:
-                        return b
-                except Exception:
-                    continue
-        except Exception:
-            pass
-        return None
-
-    def _close_drawer() -> None:
-        drawer = _drawer_scope()
-        if drawer is None:
-            return
-        try:
-            cb = _drawer_button(drawer, "close")
-            if cb is not None:
-                cb.click(timeout=4000)
-                pace(page, 1.5)
-                step(ctx, f"drawer closed: {desc}")
-                return
-        except Exception:
-            pass
-        try:
-            page.keyboard.press("Escape")
-            pace(page, 1.0)
-        except Exception:
-            pass
-
     def _drawer_attach() -> bool:
         """Upload (if needed) + select + Add inside the open drawer."""
-        drawer = _drawer_scope()
+        drawer = _drawer_scope(page)
         if drawer is None:
             tried.append("drawer scope not found")
             return False
@@ -2303,28 +2322,43 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
         if btn is None or section is None:
             tried.append("no Add-assets button near label")
             continue
-        try:
-            btn.scroll_into_view_if_needed(timeout=4000)
-        except Exception:
-            pass
-        try:
-            btn.click(timeout=5000)
-            page.get_by_text(
-                re.compile(r"search assets|add assets to your library", re.I)
-            ).first.wait_for(state="visible", timeout=10000)
-            step(ctx, f"asset drawer opened: {desc}")
-        except Exception as exc:
-            tried.append(f"drawer never opened: {str(exc)[:80]}")
+        # Retry loop: the page may still be processing the previous slot's
+        # upload, and scroll_into_view can park the button under the sticky
+        # footer — center-scroll via JS before each attempt.
+        opened = False
+        last_exc = ""
+        for _try in range(3):
+            try:
+                btn.evaluate("e => e.scrollIntoView({block: 'center'})")
+            except Exception:
+                try:
+                    btn.scroll_into_view_if_needed(timeout=4000)
+                except Exception:
+                    pass
+            pace(page, 1.0)
+            try:
+                btn.click(timeout=10000)
+                page.get_by_text(
+                    re.compile(r"search assets|add assets to your library", re.I)
+                ).first.wait_for(state="visible", timeout=10000)
+                step(ctx, f"asset drawer opened: {desc}")
+                opened = True
+                break
+            except Exception as exc:
+                last_exc = str(exc)[:80]
+                pace(page, 2.0)
+        if not opened:
+            tried.append(f"drawer never opened: {last_exc}")
             continue
         if not _drawer_attach():
-            _close_drawer()
+            _ensure_drawer_closed(page, ctx, desc)
             continue
         pace(page, 2.0)
         if _verify(section, "direct"):
-            _close_drawer()
+            _ensure_drawer_closed(page, ctx, desc)
             return
         tried.append(f"{desc}: file-row never appeared after Add")
-    _close_drawer()
+    _ensure_drawer_closed(page, ctx, desc)
     failshot(page, ctx, desc, RuntimeError(f"no verified upload near {desc}: {' | '.join(tried)}"))
 
 
@@ -2498,6 +2532,9 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
     Raises → run_store_listing converts to WARNING+continue per locale.
     """
     step(ctx, f"STORE LISTING [{locale}]: start")
+    # A leftover asset drawer covers the form with an overlay that blocks
+    # the locale dropdown — make sure it is closed before starting.
+    _ensure_drawer_closed(page, ctx, f"[{locale}] pre-locale")
     select_locale(page, ctx, locale, [p for _, pats in LOCALES if _ == locale for p in pats])
     texts = read_locale_texts(slug, locale)
     images = resolve_images(slug, locale)
