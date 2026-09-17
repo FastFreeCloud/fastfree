@@ -2040,32 +2040,53 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
     failshot(page, ctx, f"locale-{locale}", RuntimeError(f"locale dropdown {locale} never active"))
 
 
-_DRAWER_SEL = (
-    "material-drawer[end].mat-drawer-expanded, "
-    "mat-drawer[end].mat-drawer-expanded, "
-    "material-drawer[end][visible], mat-drawer[end][visible]"
-)
+_DRAWER_SEL = "material-drawer.side-panel, mat-drawer.side-panel"
+
+
+def _pe_on(el) -> bool:
+    """True when the element can intercept pointer events."""
+    try:
+        return bool(el.is_visible()) and (
+            el.evaluate("e => getComputedStyle(e).pointerEvents") != "none"
+        )
+    except Exception:
+        return False
+
+
+def _drawer_open(page) -> bool:
+    """True when the asset drawer is open and blocking.
+
+    Probed (probe7/8/9): open ⟺ side-panel carries mat-drawer-expanded
+    (bounding boxes lie — collapsed drawers report w=600). A visible
+    backdrop with pointer-events on also counts as blocking.
+    """
+    try:
+        for d in page.locator(_DRAWER_SEL).all():
+            try:
+                if "mat-drawer-expanded" in (d.get_attribute("class") or ""):
+                    return True
+            except Exception:
+                continue
+    except Exception:
+        pass
+    try:
+        for b in page.locator("div.drawer-background").all():
+            try:
+                if _pe_on(b):
+                    return True
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return False
 
 
 def _drawer_scope(page):
-    """Scope of the open right asset drawer, else None.
-
-    Probed: "Search assets" is a placeholder (get_by_text never matches an
-    empty search box), so text-walking misses wide-open drawers. Detect the
-    temporary material drawer itself: visible + non-trivial on-screen width
-    left of the viewport edge (a closed drawer is hidden or translated
-    off-canvas).
-    """
+    """The EXPANDED side-panel drawer element, else None (for X scoping)."""
     try:
-        vp = page.viewport_size or {"width": 1600, "height": 900}
         for d in page.locator(_DRAWER_SEL).all():
             try:
-                if not d.is_visible():
-                    continue
-                box = d.bounding_box() or {}
-                w = box.get("width", 0)
-                x = box.get("x", 0)
-                if w > 100 and x < vp["width"] - 50:
+                if "mat-drawer-expanded" in (d.get_attribute("class") or ""):
                     return d
             except Exception:
                 continue
@@ -2097,78 +2118,88 @@ def _drawer_button(drawer, exact: str):
 
 
 def _ensure_drawer_closed(page, ctx: dict, desc: str) -> None:
-    """Close the asset drawer if open; VERIFY it actually closed (retry).
+    """Close the asset drawer if open; VERIFY via drawer class (probed).
 
-    A leftover drawer covers the form with a drawer-background overlay that
-    intercepts pointer events (seen blocking slot buttons, locale dropdown,
-    save). Open-detection is the material drawer itself (the "Search assets"
-    label is a placeholder get_by_text never matches). Dismissal order per
-    attempt: header X (topmost close — lower ones belong to filter chips) →
-    backdrop JS-click (coordinate clicks risk the nav rail) → Escape. Each
-    attempt logs its method so runs reveal which dismissal actually works.
+    Probed truths (probe7/8/9): open ⟺ side-panel has mat-drawer-expanded
+    (bboxes lie); the X close + Escape never close it; the backdrop click
+    TOGGLES — clicking while closed OPENS it — so backdrop is last-resort,
+    exactly once, only while verified open (targeting the pe!=none one).
+    Each attempt logs its method so runs reveal what actually works.
     """
-    if _drawer_scope(page) is None and not _drawer_open(page):
+    if not _drawer_open(page):
         return
-    for _attempt in range(3):
-        if not _drawer_open(page):
-            step(ctx, f"drawer closed: {desc}")
-            return
-        drawer = _drawer_scope(page)
-        # 1. Header X.
+
+    def _try_x() -> bool:
         try:
+            drawer = _drawer_scope(page)
+            if drawer is None:
+                return False
             cands: list = []
-            if drawer is not None:
-                try:
-                    btns = drawer.get_by_role(
-                        "button", name=re.compile(r"^close$", re.I)
-                    ).all()
-                except Exception:
-                    btns = []
-                for b in btns:
-                    try:
-                        if b.is_visible():
-                            box = b.bounding_box() or {}
-                            cands.append((box.get("y", 1e9), b))
-                    except Exception:
-                        continue
-            if cands:
-                cands.sort(key=lambda t: t[0])
-                cands[0][1].click(timeout=4000)
-                step(ctx, f"drawer close attempt: header-X [{desc}]")
-                pace(page, 2.0)
-                if not _drawer_open(page):
-                    step(ctx, f"drawer closed: {desc}")
-                    return
-        except Exception:
-            pass
-        # 2. Backdrop JS-click (no coordinates → cannot mis-hit the nav).
-        try:
-            hit = False
-            for b in page.locator("div.drawer-background").all():
+            try:
+                btns = drawer.get_by_role(
+                    "button", name=re.compile(r"^close$", re.I)
+                ).all()
+            except Exception:
+                btns = []
+            for b in btns:
                 try:
                     if b.is_visible():
-                        b.evaluate("e => e.click()")
-                        hit = True
-                        break
+                        box = b.bounding_box() or {}
+                        cands.append((box.get("y", 1e9), b))
                 except Exception:
                     continue
-            if hit:
-                step(ctx, f"drawer close attempt: backdrop [{desc}]")
-                pace(page, 2.0)
-                if not _drawer_open(page):
-                    step(ctx, f"drawer closed: {desc}")
-                    return
+            if not cands:
+                return False
+            cands.sort(key=lambda t: t[0])
+            cands[0][1].click(timeout=4000)
+            step(ctx, f"drawer close attempt: header-X [{desc}]")
+            pace(page, 2.0)
+            return not _drawer_open(page)
         except Exception:
-            pass
-        # 3. Escape.
+            return False
+
+    def _try_escape() -> bool:
         try:
             page.keyboard.press("Escape")
             pace(page, 2.0)
-            if not _drawer_open(page):
-                step(ctx, f"drawer closed: {desc}")
-                return
+            return not _drawer_open(page)
         except Exception:
-            pass
+            return False
+
+    def _try_backdrop_once() -> bool:
+        try:
+            if not _drawer_open(page):
+                return True
+            try:
+                bds = page.locator("div.drawer-background").all()
+            except Exception:
+                return False
+            ordered = sorted(bds, key=lambda b: 0 if _pe_on(b) else 1)
+            for b in ordered:
+                try:
+                    if b.is_visible():
+                        b.evaluate("e => e.click()")
+                        step(ctx, f"drawer close attempt: backdrop [{desc}]")
+                        pace(page, 2.0)
+                        break
+                except Exception:
+                    continue
+            return not _drawer_open(page)
+        except Exception:
+            return False
+
+    if _try_x():
+        step(ctx, f"drawer closed: {desc}")
+        return
+    if _try_escape():
+        step(ctx, f"drawer closed: {desc}")
+        return
+    if _try_backdrop_once():
+        step(ctx, f"drawer closed: {desc}")
+        return
+    if _try_x():
+        step(ctx, f"drawer closed: {desc}")
+        return
     step(ctx, f"WARNING: drawer may still be open: {desc}")
 
 
@@ -2205,37 +2236,21 @@ def _slot_filled(section, wanted: list) -> bool:
 
 
 def _node_has_open_drawer(page, node) -> bool:
-    """True when this subtree contains the open drawer or its backdrop."""
+    """True when this subtree contains the open drawer or blocking backdrop.
+
+    Class-based (bboxes lie): expanded side-panel, or a backdrop with
+    pointer-events on. `page` kept for signature symmetry.
+    """
     try:
-        vp = page.viewport_size or {"width": 1600}
-        for d in node.locator("material-drawer, mat-drawer").all():
+        for d in node.locator("material-drawer.side-panel, mat-drawer.side-panel").all():
             try:
-                if not d.is_visible():
-                    continue
-                box = d.bounding_box() or {}
-                if box.get("width", 0) > 100 and box.get("x", 0) < vp["width"] - 50:
+                if "mat-drawer-expanded" in (d.get_attribute("class") or ""):
                     return True
             except Exception:
                 continue
         for b in node.locator("div.drawer-background").all():
             try:
-                if b.is_visible():
-                    return True
-            except Exception:
-                continue
-    except Exception:
-        pass
-    return False
-
-
-def _drawer_open(page) -> bool:
-    """Blocking overlay present: open drawer element OR visible backdrop."""
-    if _drawer_scope(page) is not None:
-        return True
-    try:
-        for b in page.locator("div.drawer-background").all():
-            try:
-                if b.is_visible():
+                if _pe_on(b):
                     return True
             except Exception:
                 continue
@@ -2775,6 +2790,17 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
         textarea lazy-renders on scroll.
         """
         head, container = _section_container(page, ctx, TEXT_PAT, min_textboxes=3)
+        if head is None or container is None:
+            # Content pane sometimes renders empty under throttle (seen:
+            # solid-white panel, no sections). Reload once and re-expand.
+            step(ctx, f"[{locale}] text panel missing — reloading once")
+            try:
+                page.reload(wait_until="domcontentloaded", timeout=60000)
+                pace(page, 5.0)
+            except Exception:
+                pass
+            _expand_listing_section(page, ctx, [TEXT_PAT], "Common text assets")
+            head, container = _section_container(page, ctx, TEXT_PAT, min_textboxes=3)
         if head is None or container is None:
             failshot(
                 page, ctx, f"[{locale}] text fields",
