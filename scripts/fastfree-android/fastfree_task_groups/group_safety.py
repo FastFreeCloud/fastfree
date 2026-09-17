@@ -524,13 +524,27 @@ def save_and_verify(page, ctx: dict, desc: str) -> None:
         step(ctx, f"save button state: visible={sv.is_visible()} enabled={sv.is_enabled()}")
     except Exception as exc:
         step(ctx, f"save button probe failed: {str(exc)[:100]}")
-    click_any(
-        page,
-        ctx,
-        [re.compile(r"^save( changes| draft| as draft)?$|^حفظ( التغييرات| كمسودة)?$", re.I)],
-        f"Save {desc}",
-    )
-    pace(page)
+    # Prefer a DOM click for Save-as-draft: transparent drawer remnants can
+    # cover the button and swallow hit-tested clicks (probed:
+    # elementFromPoint at the visible+enabled Save button returns
+    # drawer-subtree DIVs). Falls back to click_any on any miss.
+    try:
+        sv = page.get_by_role("button", name=re.compile(r"^save as draft$", re.I)).first
+        sv.wait_for(state="visible", timeout=8000)
+        if not sv.is_enabled():
+            raise RuntimeError("save button disabled")
+        sv.evaluate("e => e.click()")
+        step(ctx, f"clicked button (DOM): Save {desc}")
+        pace(page)
+    except Exception as exc:
+        step(ctx, f"DOM save click missed ({str(exc)[:120]}), click_any fallback")
+        click_any(
+            page,
+            ctx,
+            [re.compile(r"^save( changes| draft| as draft)?$|^حفظ( التغييرات| كمسودة)?$", re.I)],
+            f"Save {desc}",
+        )
+        pace(page)
     try:
         from playwright.sync_api import expect
 
