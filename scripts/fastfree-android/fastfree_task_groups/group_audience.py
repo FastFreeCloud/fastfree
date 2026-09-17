@@ -566,54 +566,111 @@ def expand_view_tasks(page: Any, ctx: Any) -> None:
 
 
 def open_task(page: Any, ctx: Any, patterns: list, desc: str) -> None:
-    """Open a dashboard task card. Expands parent groups first (§5 nesting lesson)."""
-    pace(page, 2.5)
-    activate(page, ctx)
-    expand_view_tasks(page, ctx)
-    for pattern in patterns:
+    """Open a dashboard task card. Expands parent groups first (§5 nesting lesson).
+
+    Hardened: multi-round attempts with scroll sweeps (lazy checklist
+    render); fallback clicks are EXPANDERS ONLY (aria-expanded toggles /
+    view-tasks buttons) — never nav links (a "Grow users" fallback once
+    navigated away and killed the run). Dashboard-URL guard navigates back
+    whenever a click leaves the dashboard.
+    """
+    def _on_dashboard() -> bool:
         try:
-            loc = page.get_by_role("link", name=pattern)
-            loc.first.wait_for(state="visible", timeout=5000)
-            loc.first.click()
-            pace(page, 3.0)
-            activate(page, ctx)
-            assert_developer(page, ctx)
-            step(ctx, f"opened task link: {desc}")
-            return
+            return "dashboard" in (page.url or "")
         except Exception:
-            continue
-    # Task may nest under a collapsed Policy/App-content subgroup — expand, then retry.
-    for group in [
-        re.compile(r"policy|app content|moneti[sz]e|grow", re.I),
-        re.compile(r"السياسة|محتوى التطبيق|تحقيق الربح", re.I),
-        re.compile(r"^testing$", re.I),
-    ]:
-        try_click(page, ctx, [group], "expand parent group")
-        pace(page, 1.2)
-    for pattern in patterns:
-        for role in ("button", "link"):
+            return False
+
+    def _try_direct(tag: str) -> bool:
+        for pattern in patterns:
             try:
-                loc = page.get_by_role(role, name=pattern)
-                loc.first.wait_for(state="visible", timeout=5000)
+                loc = page.get_by_role("link", name=pattern)
+                loc.first.wait_for(state="visible", timeout=4000)
                 loc.first.click()
                 pace(page, 3.0)
                 activate(page, ctx)
                 assert_developer(page, ctx)
-                step(ctx, f"opened task {role}: {desc}")
-                return
+                step(ctx, f"opened task link [{tag}]: {desc}")
+                return True
             except Exception:
                 continue
+        for pattern in patterns:
+            for role in ("button", "link"):
+                try:
+                    loc = page.get_by_role(role, name=pattern)
+                    loc.first.wait_for(state="visible", timeout=4000)
+                    loc.first.click()
+                    pace(page, 3.0)
+                    activate(page, ctx)
+                    assert_developer(page, ctx)
+                    step(ctx, f"opened task {role} [{tag}]: {desc}")
+                    return True
+                except Exception:
+                    continue
+            try:
+                txt = page.get_by_text(pattern)
+                txt.first.wait_for(state="visible", timeout=4000)
+                txt.first.click()
+                pace(page, 3.0)
+                activate(page, ctx)
+                assert_developer(page, ctx)
+                step(ctx, f"opened task text [{tag}]: {desc}")
+                return True
+            except Exception:
+                continue
+        return False
+
+    def _expand_only() -> None:
+        # Expander toggles and show-more buttons — never nav links.
         try:
-            txt = page.get_by_text(pattern)
-            txt.first.wait_for(state="visible", timeout=5000)
-            txt.first.click()
-            pace(page, 3.0)
-            activate(page, ctx)
-            assert_developer(page, ctx)
-            step(ctx, f"opened task text: {desc}")
-            return
+            for b in page.get_by_role("button").all():
+                try:
+                    if not b.is_visible():
+                        continue
+                    if (b.get_attribute("aria-expanded") or "") != "false":
+                        continue
+                    txt = (b.text_content() or "").lower()
+                    if "task" in txt or "more" in txt or "show" in txt or not txt.strip():
+                        b.click(timeout=3000)
+                        pace(page, 1.2)
+                except Exception:
+                    continue
         except Exception:
+            pass
+        try_click(page, ctx, EXPAND_PATTERNS, "expand parent group")
+        expand_view_tasks(page, ctx)
+        pace(page, 1.2)
+
+    pace(page, 2.5)
+    activate(page, ctx)
+    expand_view_tasks(page, ctx)
+    for _round in range(3):
+        if _try_direct(f"r{_round}"):
+            return
+        if not _on_dashboard():
+            step(ctx, f"left dashboard during open-{desc} — navigating back")
+            try:
+                goto_dashboard(page, ctx)
+            except Exception:
+                pass
+            pace(page, 2.0)
             continue
+        if _round < 2:
+            # Scroll sweep to trigger lazy checklist render, then expanders.
+            try:
+                page.evaluate(
+                    """(async () => {
+                        const h = document.documentElement.scrollHeight;
+                        for (let y = 0; y <= h; y += 600) {
+                            window.scrollTo(0, y);
+                            await new Promise(r => setTimeout(r, 120));
+                        }
+                        window.scrollTo(0, 0);
+                    })()"""
+                )
+                pace(page, 1.5)
+            except Exception:
+                pass
+            _expand_only()
     failshot(page, ctx, f"open-{desc}", RuntimeError(f"task not found on dashboard: {desc}"))
 
 
