@@ -97,14 +97,18 @@ Service account: `fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.co
 2. Tab **App permissions** (NOT Account permissions) → **Add app** → filter/search the
    EXACT app name → tick its checkbox row → **Apply** (closes picker, NOT Invite yet).
    Assert the app chip/row appears.
-3. Tick all three (least privilege — never a broad Release-manager role):
+3. Tick all four (least privilege — never a broad Release-manager role):
     **Release apps to testing tracks** AND
     **Release to production, exclude devices, and use Play App Signing** AND
     **Manage store presence** (without it the API edit commit 403s — seen
-    2026-09-14; the SA publish 403 is STILL OPEN, do not claim fixed).
-    Assert all three `checked` via snapshot.
-4. Click **Invite user** (singular, bottom-right) → wait for **Active** (service accounts
-    flip instantly). If it sticks on Invited/pending: screenshot, report, do NOT re-click.
+    2026-09-14; the SA publish 403 is STILL OPEN, do not claim fixed) AND
+    **View app information** (read-only base — commit-time union 403s without
+    it; diagnosed 2026-09-15: staged calls pass, commit 403s).
+    After ticking: **Apply** in the permissions dialog (required per app).
+    Assert the four via snapshot.
+4. Click **Invite user** (singular, bottom-right) → confirm **Send invite?** dialog →
+    wait for **Active** (service accounts flip instantly). If it sticks on
+    Invited/pending: screenshot, report, do NOT re-click.
     If the SA row already exists ("User already exists" on re-invite): open its row
     and extend its app permissions via the row arrow instead (Add-app path is the
     fallback when the app is not on the user yet).
@@ -179,10 +183,48 @@ Phone / Credentials, no sharing, encrypted in transit Yes, deletion via support 
 Iron rules: radios carry USELESS accessible names — answer ONLY via `get_by_label` exact
 text + `count()==1` + `is_checked()` verify (banner copy like "not a government app"
 otherwise selects Yes!). Dashboard task rows hide collapsed (expand "View tasks",
-aria-checked) and row-text clicks often don't navigate (verify `app-content` in URL,
+`aria-expanded`) and row-text clicks often don't navigate (verify `app-content` in URL,
 retry via app-list row click). Wizards (finance/health/audience/rating/safety) end in
 Next, not Save — Next enables late (Save first, it unlocks server-side). IARC auto-submits
 (detect `IARC status Completed` + rating badges, don't chase Next forever).
+
+Probed store-listing DOM behaviors (2026-09-17, 12 probes — trust these over guesses):
+- Locale picker is a DROPDOWN (button), not tabs; options render as EITHER
+  `role=option` or `role=menuitem` (varies per render — probe both). Absent locale →
+  "Manage languages" option opens a searchable checkbox dialog: fill Search with the
+  FULL language name ("Arabic", not "ar"), label-click the exact row, assert the
+  counter flips `1 selected` → `2 selected` BEFORE Apply. After Apply the page
+  navigates straight to the new locale form (detect the `Arabic – ar` button first;
+  the menu no longer lists the active locale).
+- Listing inputs carry NO usable accessible names — fill Common-text-assets
+  title/short/full by DOM ORDER inside the section panel (re-read `input_value`
+  to verify). Slot filled ⟺ full basename in slot text OR `img[alt=basename]`
+  thumbnail (never stem-substrings: "1"/"2"/"icon" false-positive; slots keep
+  their Add-assets link when full so button-absence proves nothing).
+- Sections collapse/expand via chevron buttons with NO accessible name — find by
+  mat-icon ligature text `button:has-text('expand_more'/'expand_less')`, read state,
+  never blind-toggle. Verify expansion INSIDE the panel (page-wide counts borrow
+  other sections' controls).
+- Graphics upload: slots expose NO `input[type=file]` — slot "Add assets" →
+  right asset-library drawer → drawer "Upload" → OS file chooser (`expect_file_chooser`
+  + `set_files`) → tile auto-selects → drawer "Add" attaches. Tile selection ONLY
+  via `a[debug-id='select-button']` (row/text clicks do NOT select); verify the
+  file-row text after. First uploads can stall minutes under throttle — 150s wait
+  with drawer-text diagnostics.
+- Drawer dismissal: open ⟺ side-panel has `mat-drawer-expanded` (bboxes lie);
+  header-X and Escape never close it; the backdrop click TOGGLES (clicking while
+  closed OPENS it!) — so backdrop is last-resort-once while verified open,
+  targeting the `pointer-events != none` backdrop. A leftover drawer covers the
+  form (dropdown/save clicks die with "intercepts pointer events"). Save itself:
+  DOM-click (`evaluate click`) the visible+enabled Save-as-draft — transparent
+  drawer remnants swallow hit-tested clicks (`elementFromPoint` proof).
+- Windows console is cp1252: reconfigure stdout/stderr to UTF-8 at startup or
+  Arabic log text crashes with UnicodeEncodeError.
+- The listing editor has NO privacy-URL field (only title/short/full + YouTube
+  box) — privacy lives in the app-content task; never pattern-fill blindly or
+  the URL lands in the drawer's search box.
+- Pace everything (8s task / 4s nav), never hammer through 429s (30–60 min
+  silence to cool down); uploads stall first under throttle while GETs pass.
 
 ## 5.6. Internal testers
 

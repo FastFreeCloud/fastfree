@@ -2,7 +2,9 @@
 
 Usage: uv run fastfree_store_publish.py --package PKG --metadata-dir DIR
   [--locales ar,en-US] [--track internal] [--status draft] [--aab FILE]
-  [--version-code N] [--changes-not-sent-for-review true]
+  [--version-code N]
+  (No changesNotSentForReview flag — edits.insert takes an empty body;
+  the field was rejected with 400 Unknown field.)
 Port of the retired Node publisher. Auth: Application Default Credentials
 (WIF GOOGLE_APPLICATION_CREDENTIALS) with the androidpublisher scope.
 """

@@ -28,17 +28,19 @@ to production** (closed test 12 testers × 14 days + human application required)
 - Local: `gcloud auth login` + `gcloud config set project fastfree-508417`.
 - WIF identifiers (public values, also hardcoded in `09-12` workflows — read them there,
   don't copy them here): provider, service account, project number.
-- Service account needs these **three granular permissions** on each app (least privilege —
+- Service account needs these **four granular permissions** on each app (least privilege —
   never the broad Release-manager role; see skill `play-console-setup` §4):
   - Release apps to testing tracks (upload AABs, rollout to Internal)
   - Release to production, exclude devices, and use Play App Signing
   - Manage store presence (titles/descriptions/graphics — without it edit commit 403s)
+  - View app information (read-only base — commit-time union 403s without it,
+    diagnosed 2026-09-15: staged calls pass, commit 403s)
 
 ## First-aid failures
 
 | Failure | Fix |
 |---------|-----|
-| `403 Permission denied` (esp. on `edits.commit`) | SA must be **Active** with all three perms (§Auth above). If 403 persists after that: STOP, screenshot, report — **STILL OPEN, do not claim fixed** |
+| `403 Permission denied` (esp. on `edits.commit`) | SA must be **Active** with all four perms (§Auth above). If 403 persists after that: STOP, screenshot, report — **STILL OPEN, do not claim fixed** |
 | `400 Unknown field` on `edits.insert` | never pass `changesNotSentForReview` — `edits.insert` takes an empty body |
 | `Unable to acquire impersonated credentials` | verify project number + IAM binding `attribute.repository/FastFreeCloud/fastfree` |
 | `Could not load default credentials` | WIF step must run before publish; check `GOOGLE_APPLICATION_CREDENTIALS` |
