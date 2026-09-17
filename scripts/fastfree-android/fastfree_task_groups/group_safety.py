@@ -1875,25 +1875,46 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
         step(ctx, f"Manage languages open failed ({exc}) — falling back to Add button")
 
     if manage_opened:
-        # Dialog has a Search box + checkbox list + Apply/Cancel.
+        # Dialog has a Search box + checkbox list + Apply/Cancel. Search the
+        # full language name ("ar" alone matches Search/Afrikaans/Albanian…).
+        lang_name = {"ar": "Arabic", "en-US": "English"}.get(locale, locale)
         search = page.get_by_placeholder("Search")
         try:
             search.first.wait_for(state="visible", timeout=8000)
             search.first.fill("")
-            search.first.press_sequentially(locale, delay=80)
-            step(ctx, f"searched language {locale} in Manage languages")
+            search.first.press_sequentially(lang_name, delay=80)
+            step(ctx, f"searched language {lang_name} in Manage languages")
             pace(page, 2.0)
         except Exception:
             pass
 
+        # Primary: label-click the exact language row, then verify the
+        # counter flipped from "1 selected" to "2 selected" BEFORE Apply.
         added = False
-        for pat in list(name_patterns or []) + tokens:
+        try:
+            row = page.get_by_text(re.compile(rf"^{lang_name}\b", re.I)).first
+            row.wait_for(state="visible", timeout=8000)
             try:
-                check_row_for_text(page, ctx, pat, f"pick language {locale}")
-                added = True
-                break
+                row.scroll_into_view_if_needed(timeout=4000)
             except Exception:
-                continue
+                pass
+            row.click(timeout=5000)
+            pace(page, 1.5)
+            page.get_by_text(re.compile(r"2 selected", re.I)).first.wait_for(
+                state="visible", timeout=8000
+            )
+            step(ctx, f"language row checked (2 selected): {locale}")
+            added = True
+        except Exception as exc:
+            step(ctx, f"row label-click pick failed ({str(exc)[:100]})")
+        if not added:
+            for pat in list(name_patterns or []) + tokens:
+                try:
+                    check_row_for_text(page, ctx, pat, f"pick language {locale}")
+                    added = True
+                    break
+                except Exception:
+                    continue
         if not added:
             # Fallback: click checkbox near text
             for tok in [locale] + (tokens or []):
@@ -2151,6 +2172,36 @@ def _ensure_drawer_closed(page, ctx: dict, desc: str) -> None:
     step(ctx, f"WARNING: drawer may still be open: {desc}")
 
 
+def _slot_filled(section, wanted: list) -> bool:
+    """True when the slot already carries every wanted file.
+
+    Filename text OR thumbnail-only render (slots keep showing the
+    "Add assets" link when full, so button-absence proves nothing):
+    uploaded assets are served from Google hosts (absolute http img),
+    while empty-slot placeholders are icon fonts. SECTION scope only —
+    the drawer lists the same names.
+    """
+    try:
+        txt = section.text_content() or ""
+    except Exception:
+        return False
+    if all((w in txt or Path(w).stem in txt) for w in wanted):
+        return True
+    try:
+        vis = 0
+        for im in section.locator("img[src*='http']").all():
+            try:
+                if im.is_visible():
+                    vis += 1
+            except Exception:
+                continue
+        if vis >= len(wanted):
+            return True
+    except Exception:
+        pass
+    return False
+
+
 def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
                 heading_patterns: tuple = ()) -> None:
     """Upload file(s) into the slot owning the label text (never OS picker).
@@ -2386,16 +2437,8 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
             tried.append("no Add-assets button near label")
             continue
         # Idempotence: the draft persists server-side, so a slot may already
-        # carry the file from an earlier run. Skip the drawer dance if every
-        # wanted basename/stem shows in the owning scope. SECTION-ONLY: the
-        # asset drawer lists the same filenames, so any page-level fallback
-        # would false-positive on drawer rows (seen: shots "attached" while
-        # the slot sat empty).
-        try:
-            scope_txt = section.text_content() or ""
-        except Exception:
-            scope_txt = ""
-        if all((w in scope_txt or Path(w).stem in scope_txt) for w in wanted):
+        # carry the file from an earlier run (filename row or thumbnail).
+        if _slot_filled(section, wanted):
             step(ctx, f"already attached, skipping drawer: {desc}")
             _ensure_drawer_closed(page, ctx, f"{desc} already-attached")
             return
@@ -2442,20 +2485,10 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
         if _verify(section, "direct"):
             _ensure_drawer_closed(page, ctx, desc)
             return
-        # Filename row absent — but a thumbnail-only render also means the
-        # slot is filled: if its Add-assets button is gone, accept it.
-        remaining: list = []
-        try:
-            for b in section.locator("button:has-text('Add assets')").all():
-                try:
-                    if b.is_visible():
-                        remaining.append(b)
-                except Exception:
-                    continue
-        except Exception:
-            remaining = [True]
-        if not remaining:
-            step(ctx, f"attached (thumbnail render, no file row): {desc}")
+        # Filename row absent — but a thumbnail-only render also fills the
+        # slot (slots keep their Add-assets link when full).
+        if _slot_filled(section, wanted):
+            step(ctx, f"slot filled after Add (thumbnail render): {desc}")
             _ensure_drawer_closed(page, ctx, desc)
             return
         tried.append(f"{desc}: file-row never appeared after Add")
