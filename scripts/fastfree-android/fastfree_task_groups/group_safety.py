@@ -2407,13 +2407,23 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
             except Exception as exc:
                 tried.append(f"drawer upload failed: {str(exc)[:100]}")
                 return False
-            deadline = time.time() + 60
+            deadline = time.time() + 150
+            last_snapshot = ""
             while time.time() < deadline:
                 if _rows_present():
                     break
-                pace(page, 2.0)
+                try:
+                    last_snapshot = ((drawer.text_content() or "").strip().replace("\n", " "))[:300]
+                except Exception:
+                    pass
+                if last_snapshot and re.search(
+                    r"error|fail|couldn|invalid|too large|too big|retry", last_snapshot, re.I
+                ):
+                    tried.append(f"drawer shows error: {last_snapshot[:150]}")
+                    return False
+                pace(page, 3.0)
             if not _rows_present():
-                tried.append(f"uploaded rows never appeared: {wanted}")
+                tried.append(f"uploaded rows never appeared: {wanted} | drawer: {last_snapshot[:150]}")
                 return False
             step(ctx, f"drawer rows present: {desc}")
         add_btn = _drawer_button(drawer, "Add")
