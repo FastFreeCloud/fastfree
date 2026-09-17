@@ -2071,33 +2071,77 @@ def _ensure_drawer_closed(page, ctx: dict, desc: str) -> None:
     """Close the asset drawer if open; VERIFY it actually closed (retry).
 
     A leftover drawer covers the form with a drawer-background overlay that
-    intercepts pointer events (seen blocking the locale dropdown).
+    intercepts pointer events (seen blocking slot buttons + locale dropdown).
+    Dismissal order: header X → backdrop click (canonical for temporary
+    material drawers) → Escape. The X lookup may hit filter-chip closes, so
+    the hidden-verify after every attempt is load-bearing, not the click.
     """
+    try:
+        els = page.get_by_text(re.compile(r"search assets", re.I)).all()
+        if not any(_is_vis(e) for e in els):
+            return
+    except Exception:
+        return
+
+    def _hidden_ok() -> bool:
+        try:
+            page.get_by_text(re.compile(r"search assets", re.I)).first.wait_for(
+                state="hidden", timeout=8000
+            )
+            return True
+        except Exception:
+            return False
+
     for _attempt in range(3):
         drawer = _drawer_scope(page)
         if drawer is None:
+            if _hidden_ok():
+                step(ctx, f"drawer closed: {desc}")
             return
+        # 1. Header X.
         try:
             cb = _drawer_button(drawer, "close")
             if cb is not None:
                 cb.click(timeout=4000)
                 pace(page, 1.5)
+                if _hidden_ok():
+                    step(ctx, f"drawer closed: {desc}")
+                    return
         except Exception:
             pass
+        # 2. Backdrop click (canonical dismiss for temporary drawers).
         try:
-            page.get_by_text(re.compile(r"search assets", re.I)).first.wait_for(
-                state="hidden", timeout=8000
-            )
-            step(ctx, f"drawer closed: {desc}")
-            return
+            bd = page.locator("div.drawer-background").all()
+            for b in bd:
+                try:
+                    if b.is_visible():
+                        b.click(timeout=3000, position={"x": 5, "y": 5})
+                        break
+                except Exception:
+                    continue
+            pace(page, 1.5)
+            if _hidden_ok():
+                step(ctx, f"drawer closed via backdrop: {desc}")
+                return
         except Exception:
             pass
+        # 3. Escape.
         try:
             page.keyboard.press("Escape")
             pace(page, 1.5)
+            if _hidden_ok():
+                step(ctx, f"drawer closed via Escape: {desc}")
+                return
         except Exception:
             pass
     step(ctx, f"WARNING: drawer may still be open: {desc}")
+
+
+def _is_vis(el) -> bool:
+    try:
+        return bool(el.is_visible())
+    except Exception:
+        return False
 
 
 def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
@@ -2322,6 +2366,19 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
         if btn is None or section is None:
             tried.append("no Add-assets button near label")
             continue
+        # Idempotence: the draft persists server-side, so a slot may already
+        # carry the file from an earlier run. Skip the drawer dance if every
+        # wanted basename/stem already shows in the owning scope.
+        present = 0
+        for name in wanted:
+            stem = Path(name).stem
+            if _row_visible(section, name) or _row_visible(section, stem):
+                present += 1
+        if present >= len(wanted):
+            step(ctx, f"already attached, skipping drawer: {desc}")
+            _ensure_drawer_closed(page, ctx, f"{desc} already-attached")
+            return
+        _ensure_drawer_closed(page, ctx, f"{desc} pre-slot")
         # Retry loop: the page may still be processing the previous slot's
         # upload, and scroll_into_view can park the button under the sticky
         # footer — center-scroll via JS before each attempt.
