@@ -515,13 +515,14 @@ def save_and_verify(page, ctx: dict, desc: str) -> None:
     """Click Save (EN+AR) then verify the save confirmation text.
 
     The Data-safety wizard footer labels the control "Save draft"
-    (failshot evidence) — bare "^save$" never matches it.
+    (failshot evidence) — bare "^save$" never matches it. The store
+    listing footer labels it "Save as draft" — match that too.
     """
     expand_all(page, ctx)
     click_any(
         page,
         ctx,
-        [re.compile(r"^save( changes| draft)?$|^حفظ( التغييرات)?$", re.I)],
+        [re.compile(r"^save( changes| draft| as draft)?$|^حفظ( التغييرات| كمسودة)?$", re.I)],
         f"Save {desc}",
     )
     pace(page)
@@ -2018,30 +2019,37 @@ def select_locale(page, ctx: dict, locale: str, name_patterns: list) -> None:
     failshot(page, ctx, f"locale-{locale}", RuntimeError(f"locale dropdown {locale} never active"))
 
 
-def _drawer_scope(page):
-    """Scope of the open asset-library drawer, or None when closed.
+_DRAWER_SEL = (
+    "material-drawer[end].mat-drawer-expanded, "
+    "mat-drawer[end].mat-drawer-expanded, "
+    "material-drawer[end][visible], mat-drawer[end][visible]"
+)
 
-    Fresh drawer shows Upload/Add-from-Drive; post-upload drawer shows
-    Manage tags. Accept an ancestor containing any drawer marker.
+
+def _drawer_scope(page):
+    """Scope of the open right asset drawer, else None.
+
+    Probed: "Search assets" is a placeholder (get_by_text never matches an
+    empty search box), so text-walking misses wide-open drawers. Detect the
+    temporary material drawer itself: visible + non-trivial on-screen width
+    left of the viewport edge (a closed drawer is hidden or translated
+    off-canvas).
     """
-    markers = (
-        re.compile(r"manage tags", re.I),
-        re.compile(r"add from drive", re.I),
-    )
     try:
-        s = page.get_by_text(re.compile(r"search assets", re.I)).first
-        s.wait_for(state="visible", timeout=5000)
-        n = s
-        for _ in range(16):
-            n = n.locator("xpath=..")
+        vp = page.viewport_size or {"width": 1600, "height": 900}
+        for d in page.locator(_DRAWER_SEL).all():
             try:
-                for mp in markers:
-                    if n.get_by_role("button", name=mp).count() >= 1:
-                        return n
+                if not d.is_visible():
+                    continue
+                box = d.bounding_box() or {}
+                w = box.get("width", 0)
+                x = box.get("x", 0)
+                if w > 100 and x < vp["width"] - 50:
+                    return d
             except Exception:
-                return None
+                continue
     except Exception:
-        return None
+        pass
     return None
 
 
@@ -2071,77 +2079,76 @@ def _ensure_drawer_closed(page, ctx: dict, desc: str) -> None:
     """Close the asset drawer if open; VERIFY it actually closed (retry).
 
     A leftover drawer covers the form with a drawer-background overlay that
-    intercepts pointer events (seen blocking slot buttons + locale dropdown).
-    Dismissal order: header X → backdrop click (canonical for temporary
-    material drawers) → Escape. The X lookup may hit filter-chip closes, so
-    the hidden-verify after every attempt is load-bearing, not the click.
+    intercepts pointer events (seen blocking slot buttons, locale dropdown,
+    save). Open-detection is the material drawer itself (the "Search assets"
+    label is a placeholder get_by_text never matches). Dismissal order per
+    attempt: header X (topmost close — lower ones belong to filter chips) →
+    backdrop JS-click (coordinate clicks risk the nav rail) → Escape. Each
+    attempt logs its method so runs reveal which dismissal actually works.
     """
-    try:
-        els = page.get_by_text(re.compile(r"search assets", re.I)).all()
-        if not any(_is_vis(e) for e in els):
-            return
-    except Exception:
+    if _drawer_scope(page) is None:
         return
-
-    def _hidden_ok() -> bool:
-        try:
-            page.get_by_text(re.compile(r"search assets", re.I)).first.wait_for(
-                state="hidden", timeout=8000
-            )
-            return True
-        except Exception:
-            return False
-
     for _attempt in range(3):
-        drawer = _drawer_scope(page)
-        if drawer is None:
-            if _hidden_ok():
-                step(ctx, f"drawer closed: {desc}")
+        if _drawer_scope(page) is None:
+            step(ctx, f"drawer closed: {desc}")
             return
+        drawer = _drawer_scope(page)
         # 1. Header X.
         try:
-            cb = _drawer_button(drawer, "close")
-            if cb is not None:
-                cb.click(timeout=4000)
-                pace(page, 1.5)
-                if _hidden_ok():
+            cands: list = []
+            if drawer is not None:
+                try:
+                    btns = drawer.get_by_role(
+                        "button", name=re.compile(r"^close$", re.I)
+                    ).all()
+                except Exception:
+                    btns = []
+                for b in btns:
+                    try:
+                        if b.is_visible():
+                            box = b.bounding_box() or {}
+                            cands.append((box.get("y", 1e9), b))
+                    except Exception:
+                        continue
+            if cands:
+                cands.sort(key=lambda t: t[0])
+                cands[0][1].click(timeout=4000)
+                step(ctx, f"drawer close attempt: header-X [{desc}]")
+                pace(page, 2.0)
+                if _drawer_scope(page) is None:
                     step(ctx, f"drawer closed: {desc}")
                     return
         except Exception:
             pass
-        # 2. Backdrop click (canonical dismiss for temporary drawers).
+        # 2. Backdrop JS-click (no coordinates → cannot mis-hit the nav).
         try:
-            bd = page.locator("div.drawer-background").all()
-            for b in bd:
+            hit = False
+            for b in page.locator("div.drawer-background").all():
                 try:
                     if b.is_visible():
-                        b.click(timeout=3000, position={"x": 5, "y": 5})
+                        b.evaluate("e => e.click()")
+                        hit = True
                         break
                 except Exception:
                     continue
-            pace(page, 1.5)
-            if _hidden_ok():
-                step(ctx, f"drawer closed via backdrop: {desc}")
-                return
+            if hit:
+                step(ctx, f"drawer close attempt: backdrop [{desc}]")
+                pace(page, 2.0)
+                if _drawer_scope(page) is None:
+                    step(ctx, f"drawer closed: {desc}")
+                    return
         except Exception:
             pass
         # 3. Escape.
         try:
             page.keyboard.press("Escape")
-            pace(page, 1.5)
-            if _hidden_ok():
-                step(ctx, f"drawer closed via Escape: {desc}")
+            pace(page, 2.0)
+            if _drawer_scope(page) is None:
+                step(ctx, f"drawer closed: {desc}")
                 return
         except Exception:
             pass
     step(ctx, f"WARNING: drawer may still be open: {desc}")
-
-
-def _is_vis(el) -> bool:
-    try:
-        return bool(el.is_visible())
-    except Exception:
-        return False
 
 
 def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
@@ -2239,6 +2246,19 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
         if drawer is None:
             tried.append("drawer scope not found")
             return False
+        # Clear a stale drawer search: a previous fill may have typed into
+        # the drawer search box (seen: privacy URL), filtering library rows
+        # out of view for every later slot.
+        try:
+            for inp in drawer.locator("input").all():
+                try:
+                    if inp.is_visible() and (inp.input_value() or ""):
+                        inp.fill("")
+                except Exception:
+                    continue
+            pace(page, 1.0)
+        except Exception:
+            pass
 
         def _rows_present() -> bool:
             try:
@@ -2729,7 +2749,12 @@ def fill_locale_listing(page, ctx: dict, slug: str, locale: str) -> None:
     )
     upload_near(page, ctx, SHOTS_UPLOAD_PATTERNS, images["shots"],
                 f"[{locale}] phone screenshots", heading_patterns=phone_headings)
+    # The drawer must be gone: fill_any's empty-box fallback once typed the
+    # privacy URL into the drawer's own search box, and the drawer overlay
+    # covers the Save control.
+    _ensure_drawer_closed(page, ctx, f"[{locale}] pre-privacy")
     _fill_verified(PRIVACY_PATTERNS, PRIVACY_URL, f"[{locale}] privacy policy URL")
+    _ensure_drawer_closed(page, ctx, f"[{locale}] pre-save")
     save_and_verify(page, ctx, f"store listing {locale}")
     step(ctx, f"STORE LISTING [{locale}]: done")
 
