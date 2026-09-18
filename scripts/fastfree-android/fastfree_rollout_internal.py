@@ -173,7 +173,9 @@ def assert_internal_url(page, ctx: dict, aid: str, where: str) -> None:
         failshot(page, ctx, where, RuntimeError(f"outside developer/app scope: {url}"))
     if "/tracks/internal-testing" in url:
         return
-    m = re.search(r"/tracks/(\d+)/releases/", url)
+    # Tracks landing pages carry the numeric tid WITHOUT a /releases/ suffix
+    # (.../tracks/<tid>?tab=releases) -- accept those too, pinned to tid.
+    m = re.search(r"/tracks/(\d+)(?:/releases/)?", url)
     tid_now = m.group(1) if m else ""
     if not tid_now:
         failshot(page, ctx, where, RuntimeError(f"outside internal track: {url}"))
