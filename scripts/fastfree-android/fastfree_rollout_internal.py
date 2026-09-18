@@ -577,9 +577,9 @@ def stage_verify(page, ctx: dict, aid: str, deadline: float, record: dict) -> No
     _check_deadline(deadline, "verify")
     # The summary renders late and Active flips minutes after publish:
     # poll for a RENDERED summary up to 5 minutes. NOTE: locator
-    # text_content() includes splash <script> JSON and hidden nav, so gates
-    # on it match unrendered pages -- use innerText (rendered text only).
-    # "Latest release"/"Draft release" appear only with real content. A
+    # text_content() includes splash <script> JSON and hidden nav, and even
+    # innerText matches skeleton headings -- so gate on a VERSION NUMBER
+    # (Latest/Draft release lines), which only real content carries. A
     # stuck splash (content never arrives) needs a reload, not more
     # waiting -- reload once midway, then keep polling.
     summary = ""
@@ -592,9 +592,7 @@ def stage_verify(page, ctx: dict, aid: str, deadline: float, record: dict) -> No
         except Exception:
             summary = ""
         summary = summary.replace("\n", " ")
-        if "Track summary" in summary and (
-            "Latest release" in summary or "Draft release" in summary
-        ):
+        if "Track summary" in summary and re.search(r"\b20\d{6,}\b", summary):
             break
         if not reloaded and time.time() > end_sum - 150:
             try:
