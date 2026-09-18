@@ -306,6 +306,29 @@ def stage_testers(page, ctx: dict, aid: str, deadline: float, record: dict) -> N
     tab.click(timeout=8000)
     settle(page, ctx, "testers")
     assert_internal_url(page, ctx, aid, "testers-tab")
+    # Lists table lazy-loads AFTER the splash settles: wait for its anchor
+    # ("Create email list" renders with or without lists), scrolling to
+    # trigger render. The dev-row lookup below must not run on a half
+    # rendered tab (ledger STOP proved it finds nothing).
+    end_lists = time.time() + 90
+    saw_lists = False
+    while time.time() < end_lists:
+        try:
+            body_txt = page.locator("body").text_content(timeout=5000) or ""
+        except Exception:
+            body_txt = ""
+        if "Create email list" in body_txt or "List name" in body_txt:
+            saw_lists = True
+            break
+        try:
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            page.wait_for_timeout(1500)
+            page.evaluate("window.scrollTo(0, 0)")
+        except Exception:
+            pass
+        pace(page, 3.0)
+    if not saw_lists:
+        raise _Stop("testers lists table never rendered -- STOPPING")
     # The list checkbox is a mat-checkbox custom element carrying aria-checked;
     # NO input[type=checkbox] exists, so input-walks fail (probe22/skill §5.7).
     anchor = page.get_by_text(_exact(TESTERS_LIST)).first
