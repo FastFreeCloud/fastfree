@@ -576,17 +576,22 @@ def stage_verify(page, ctx: dict, aid: str, deadline: float, record: dict) -> No
     assert_internal_url(page, ctx, aid, "verify-track")
     _check_deadline(deadline, "verify")
     # The summary renders late and Active flips minutes after publish:
-    # poll for a RENDERED summary (not splash HTML) up to 5 minutes. NOTE:
-    # "Track summary" alone also matches nav/skeleton text -- require the
-    # release line ("Latest release"/"Draft release") that only renders
-    # with real content. A stuck splash (content never arrives) needs a
-    # reload, not more waiting -- reload once midway, then keep polling.
+    # poll for a RENDERED summary up to 5 minutes. NOTE: locator
+    # text_content() includes splash <script> JSON and hidden nav, so gates
+    # on it match unrendered pages -- use innerText (rendered text only).
+    # "Latest release"/"Draft release" appear only with real content. A
+    # stuck splash (content never arrives) needs a reload, not more
+    # waiting -- reload once midway, then keep polling.
     summary = ""
     end_sum = min(time.time() + 300, deadline)
     reloaded = False
     while time.time() < end_sum:
         _check_deadline(deadline, "verify-poll")
-        summary = _read_body(page).replace("\n", " ")
+        try:
+            summary = page.evaluate("() => document.body.innerText || ''") or ""
+        except Exception:
+            summary = ""
+        summary = summary.replace("\n", " ")
         if "Track summary" in summary and (
             "Latest release" in summary or "Draft release" in summary
         ):
