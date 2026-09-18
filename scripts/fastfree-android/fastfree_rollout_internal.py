@@ -585,6 +585,7 @@ def stage_verify(page, ctx: dict, aid: str, deadline: float, record: dict) -> No
     summary = ""
     end_sum = min(time.time() + 300, deadline)
     reloaded = False
+    step(ctx, f"verify poll window: now={time.time():.0f} end={end_sum:.0f} deadline={deadline:.0f}")
     while time.time() < end_sum:
         _check_deadline(deadline, "verify-poll")
         try:
