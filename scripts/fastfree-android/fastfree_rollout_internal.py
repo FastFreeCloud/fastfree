@@ -586,14 +586,20 @@ def stage_verify(page, ctx: dict, aid: str, deadline: float, record: dict) -> No
     end_sum = min(time.time() + 300, deadline)
     reloaded = False
     step(ctx, f"verify poll window: now={time.time():.0f} end={end_sum:.0f} deadline={deadline:.0f}")
+    it = 0
     while time.time() < end_sum:
+        it += 1
         _check_deadline(deadline, "verify-poll")
         try:
             summary = page.evaluate("() => document.body.innerText || ''") or ""
-        except Exception:
+        except Exception as exc:
             summary = ""
+            step(ctx, f"verify poll iter {it}: evaluate failed ({str(exc)[:80]})")
         summary = summary.replace("\n", " ")
-        if "Track summary" in summary and re.search(r"\b20\d{6,}\b", summary):
+        has_ts = "Track summary" in summary
+        has_ver = bool(re.search(r"\b20\d{6,}\b", summary))
+        step(ctx, f"verify poll iter {it}: len={len(summary)} ts={has_ts} ver={has_ver}")
+        if has_ts and has_ver:
             break
         if not reloaded and time.time() > end_sum - 150:
             try:
