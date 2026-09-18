@@ -347,65 +347,62 @@ def stage_testers(page, ctx: dict, aid: str, deadline: float, record: dict) -> N
     # Rows fetch on tab open; perpetual sweeping THRASHES the virtualizer
     # (probed: one scroll + stillness renders, constant motion never does).
     # One gentle sweep up front, then poll still for up to 3 minutes.
-    # Once found, pin the row in view so it does not virtualize back out.
+    # Row+checkbox discovery runs in-DOM (tree-walk): Playwright's text
+    # engine intermittently misses this virtualized row while a DOM walk
+    # finds it (probe31), so never gate on get_by_text here.
     _sweep_content(page)
     end_row = time.time() + 180
-    row_seen = False
+    dev_state: dict = {}
     while time.time() < end_row:
         try:
-            for el in page.get_by_text(_exact(TESTERS_LIST)).all():
-                try:
-                    if el.is_visible():
-                        try:
-                            el.scroll_into_view_if_needed(timeout=3000)
-                        except Exception:
-                            pass
-                        row_seen = True
-                        break
-                except Exception:
-                    continue
+            dev_state = page.evaluate(
+                """() => {
+                    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+                    let n;
+                    while (n = walker.nextNode()) {
+                        if (!/^dev$/i.test((n.nodeValue || '').trim())) continue;
+                        const el = n.parentElement;
+                        if (!el) continue;
+                        let r = el.getBoundingClientRect();
+                        if (r.width <= 0 || r.height <= 0) continue;
+                        try { el.scrollIntoView({block: 'center'}); } catch(e) {}
+                        r = el.getBoundingClientRect();
+                        let best = null, bestDy = 1e9;
+                        for (const cb of document.querySelectorAll('mat-checkbox')) {
+                            try {
+                                const cr = cb.getBoundingClientRect();
+                                if (cr.width <= 0 || cr.height <= 0) continue;
+                                const dy = Math.abs((cr.y + cr.height / 2) - (r.y + r.height / 2));
+                                if (dy < bestDy) { bestDy = dy; best = cb; }
+                            } catch(e) {}
+                        }
+                        if (!best) return {found: true, checked: false, nocb: true};
+                        const before = best.getAttribute('aria-checked');
+                        if (before !== 'true') {
+                            // Click once only: a second programmatic click
+                            // would toggle a just-checked box back off while
+                            // aria is still updating. Stale aria surfaces as
+                            // {checked:false, stale:true} for diagnosis.
+                            if (best.__ffClicked)
+                                return {found: true, checked: false, stale: true};
+                            try { best.click(); best.__ffClicked = true; }
+                            catch(e) { return {found: true, checked: false}; }
+                        }
+                        return {found: true, checked: best.getAttribute('aria-checked') === 'true'};
+                    }
+                    return {found: false};
+                }"""
+            ) or {}
         except Exception:
-            pass
-        if row_seen:
+            dev_state = {}
+        if dev_state.get("found") and dev_state.get("checked"):
             break
         pace(page, 4.0)
-    if not row_seen:
-        raise _Stop(f"{TESTERS_LIST!r} list row never rendered -- STOPPING")
-    # The list checkbox is a mat-checkbox custom element carrying aria-checked;
-    # NO input[type=checkbox] exists, so input-walks fail (probe22/skill §5.7).
-    anchor = page.get_by_text(_exact(TESTERS_LIST)).first
-    try:
-        anchor.wait_for(state="visible", timeout=8000)
-    except Exception as exc:
-        raise _Stop(f"{TESTERS_LIST!r} list row not found -- refusing to guess") from exc
+    if not (dev_state.get("found") and dev_state.get("checked")):
+        raise _Stop(f"{TESTERS_LIST!r} list row never checked (state={dev_state}) -- STOPPING")
+    step(ctx, "dev list checked (aria-checked=true, DOM-picked)")
+    record["steps"].append("dev list checked (aria-checked=true)")
     _check_deadline(deadline, "testers")
-    dev_y = (anchor.bounding_box() or {}).get("y", None)
-    best = None
-    best_dy = 1e9
-    for cb in page.locator("mat-checkbox").all():
-        try:
-            if not cb.is_visible():
-                continue
-            by = (cb.bounding_box() or {}).get("y", 1e9)
-            if dev_y is None or abs(by - dev_y) < best_dy:
-                best_dy = abs(by - dev_y) if dev_y is not None else 0
-                best = cb
-                if dev_y is None:
-                    break
-        except Exception:
-            continue
-    if best is None:
-        raise _Stop("no visible mat-checkbox near the dev row -- STOPPING")
-    checked = best.get_attribute("aria-checked")
-    if checked != "true":
-        best.evaluate("e => e.click()")
-        pace(page, 3.0)
-        checked = best.get_attribute("aria-checked")
-        step(ctx, f"clicked dev checkbox, aria-checked now={checked}")
-    if checked != "true":
-        raise _Stop(f"dev checkbox still aria-checked={checked} after DOM click -- STOPPING")
-    record["steps"].append(f"dev list checked (aria-checked={checked})")
-    step(ctx, f"dev list checked-state: {checked}")
     sv = page.get_by_role("button", name=_exact("save")).first
     try:
         sv.wait_for(state="visible", timeout=8000)
