@@ -225,6 +225,12 @@ Probed store-listing DOM behaviors (2026-09-17, 12 probes — trust these over g
   the URL lands in the drawer's search box.
 - Pace everything (8s task / 4s nav), never hammer through 429s (30–60 min
   silence to cool down); uploads stall first under throttle while GETs pass.
+- `set_files` alone does NOT start the upload — Angular misses it. Dispatch
+  `input`+`change` on `input[type=file]` after every set or the drawer sits
+  idle (probed: backend traffic starts only post-dispatch). `input[type=file]`
+  exists in DOM (count it; earlier "files:0" readings were collapsed-state
+  artifacts). Match library rows by basename; never attach unknown pre-existing
+  assets (Sep-14 "image" rows exist in some libraries).
 
 ## 5.6. Internal testers
 
