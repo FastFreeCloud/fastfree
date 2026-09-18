@@ -1,0 +1,27 @@
+{
+  "name": "playground",
+  "version": "0.0.1",
+  "private": true,
+  "description": "A Quasar App Extension Playground",
+  "author": "FastFree <mohamed.fastfree@gmail.com>",
+  "type": "module",
+  "scripts": {
+    "dev": "quasar dev",
+    "build": "quasar build",
+    "prepare": "quasar prepare --silent",
+    "invoke": "quasar ext invoke fastfree_update",
+    "cycle": "quasar ext uninvoke fastfree_update && quasar ext invoke fastfree_update"
+  },
+  "dependencies": {
+    "@quasar/extras": "^2.1.0",
+    "quasar": "catalog:",
+    "vue": "catalog:",
+    "vue-router": "^5.0.6"
+  },
+  "devDependencies": {
+    "@quasar/app-vite": "catalog:",
+    "@types/node": "^22.19.11",
+    "quasar-app-extension-fastfree_update": "workspace:*"
+  },
+  "productName": "Quasar App Extension Playground"
+}

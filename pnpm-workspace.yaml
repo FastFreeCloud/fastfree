@@ -1,10 +1,12 @@
 packages:
   - 'packages/*'
+  - 'packages/fastfree_update/ae'
   - 'apps/*'
 allowBuilds:
   '@parcel/watcher': true
   '@tailwindcss/oxide': set this to true or false
   esbuild: true
+  sharp: true
   unrs-resolver: set this to true or false
   vue-demi: true
 overrides:
