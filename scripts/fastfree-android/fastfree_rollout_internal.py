@@ -569,6 +569,16 @@ def stage_publish(page, ctx: dict, aid: str, deadline: float, record: dict) -> N
     record["steps"].append(f"publish returned to ?tab=releases: {(page.url or '')[:120]}")
 
 
+def _norm_status(text: str) -> str:
+    """Split camelCase element concatenation from innerText ("ActiveLatest"
+    carries no word boundary for \\bActive\\b). Case is preserved, so
+    "Inactive" (lowercase a) can never false-positive."""
+    try:
+        return re.sub(r"([a-z])([A-Z])", r"\1 \2", text or "")
+    except Exception:
+        return text or ""
+
+
 def stage_verify(page, ctx: dict, aid: str, deadline: float, record: dict) -> None:
     base = f"https://play.google.com/console/u/0/developers/{DEV_ID}"
     page.goto(f"{base}/app/{aid}/tracks/internal-testing", timeout=60000)
@@ -610,7 +620,7 @@ def stage_verify(page, ctx: dict, aid: str, deadline: float, record: dict) -> No
                 pass
             reloaded = True
         pace(page, 5.0)
-    if ACTIVE_RE.search(summary) is None:
+    if ACTIVE_RE.search(_norm_status(summary)) is None:
         raise _Stop(f"track summary lacks Active status -- STOPPING [{summary[:300]}]")
     record["steps"].append("track summary contains Active")
     expected = record.get("expected_version")
