@@ -2403,6 +2403,25 @@ def upload_near(page, ctx: dict, label_patterns: list, paths: list, desc: str,
                 with page.expect_file_chooser(timeout=10000) as fc:
                     up.click(timeout=5000)
                 fc.value.set_files([str(p) for p in paths])
+                # Angular misses CDP set-files: dispatch input+change so the
+                # upload handler fires (probed: backend traffic starts only
+                # after this; set_files alone leaves the drawer idle).
+                try:
+                    page.evaluate(
+                        """() => {
+                            for (const el of document.querySelectorAll(
+                                'input[type=file]')) {
+                                try {
+                                    el.dispatchEvent(
+                                        new Event('input', {bubbles: true}));
+                                    el.dispatchEvent(
+                                        new Event('change', {bubbles: true}));
+                                } catch (e) { /* next input */ }
+                            }
+                        }"""
+                    )
+                except Exception:
+                    pass
                 step(ctx, f"chose files for {desc} ({len(paths)})")
             except Exception as exc:
                 tried.append(f"drawer upload failed: {str(exc)[:100]}")
