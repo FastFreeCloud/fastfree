@@ -172,7 +172,9 @@ def main() -> int:
     print(f"[{key}] setup tasks for {name} ({len(done)}/{len(ORDER)} done)")
     try:
         with sync_playwright() as playwright:
-            browser = playwright.chromium.connect_over_cdp(CDP)
+            # Explicit timeout: a wedged browser accepts TCP but never
+            # finishes the WS handshake (default would hang 180s).
+            browser = playwright.chromium.connect_over_cdp(CDP, timeout=25000)
             context = browser.contexts[0]
             page = context.new_page()
             arm_low_footprint(page)
