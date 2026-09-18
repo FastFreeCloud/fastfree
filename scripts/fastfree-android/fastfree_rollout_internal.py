@@ -329,7 +329,9 @@ def stage_testers(page, ctx: dict, aid: str, deadline: float, record: dict) -> N
         pace(page, 3.0)
     if not saw_lists:
         raise _Stop("testers lists table never rendered -- STOPPING")
-    # Rows render AFTER the table header: wait for the dev row itself.
+    # Rows render AFTER the table header, and only once scrolled into view
+    # (virtualized list -- a static wait never renders them). Sweep while
+    # waiting, ending at top so the row is interactable.
     end_row = time.time() + 90
     row_seen = False
     while time.time() < end_row:
@@ -345,6 +347,12 @@ def stage_testers(page, ctx: dict, aid: str, deadline: float, record: dict) -> N
             pass
         if row_seen:
             break
+        try:
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            page.wait_for_timeout(1500)
+            page.evaluate("window.scrollTo(0, 0)")
+        except Exception:
+            pass
         pace(page, 3.0)
     if not row_seen:
         raise _Stop(f"{TESTERS_LIST!r} list row never rendered -- STOPPING")
