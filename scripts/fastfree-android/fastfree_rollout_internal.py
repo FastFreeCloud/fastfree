@@ -291,6 +291,26 @@ def _read_body(page, timeout: int = 15000) -> str:
 # ── stages ───────────────────────────────────────────────────────────────────
 
 
+def _sweep_content(page) -> None:
+    """Scroll every scrollable container to bottom (probed: document.body
+    does NOT scroll -- bodySH == viewport; the rows render inside
+    DIV.main-content. A body-only sweep is a silent no-op)."""
+    try:
+        page.evaluate(
+            """() => {
+                for (const el of document.querySelectorAll('*')) {
+                    try {
+                        if (el.scrollHeight - el.clientHeight > 150)
+                            el.scrollTop = el.scrollHeight;
+                    } catch(e) {}
+                }
+            }"""
+        )
+        page.wait_for_timeout(1500)
+    except Exception:
+        pass
+
+
 def stage_testers(page, ctx: dict, aid: str, deadline: float, record: dict) -> None:
     base = f"https://play.google.com/console/u/0/developers/{DEV_ID}"
     page.goto(f"{base}/app/{aid}/tracks/internal-testing", timeout=60000)
@@ -320,18 +340,14 @@ def stage_testers(page, ctx: dict, aid: str, deadline: float, record: dict) -> N
         if "Create email list" in body_txt or "List name" in body_txt:
             saw_lists = True
             break
-        try:
-            page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-            page.wait_for_timeout(1500)
-            page.evaluate("window.scrollTo(0, 0)")
-        except Exception:
-            pass
+        _sweep_content(page)
         pace(page, 3.0)
     if not saw_lists:
         raise _Stop("testers lists table never rendered -- STOPPING")
     # Rows render AFTER the table header, and only once scrolled into view
-    # (virtualized list -- a static wait never renders them). Sweep while
-    # waiting, ending at top so the row is interactable.
+    # inside the content container (virtualized list -- body scrolls and
+    # static waits never render them). Sweep while waiting; pin the row in
+    # view once found so it does not virtualize back out.
     end_row = time.time() + 90
     row_seen = False
     while time.time() < end_row:
@@ -339,6 +355,10 @@ def stage_testers(page, ctx: dict, aid: str, deadline: float, record: dict) -> N
             for el in page.get_by_text(_exact(TESTERS_LIST)).all():
                 try:
                     if el.is_visible():
+                        try:
+                            el.scroll_into_view_if_needed(timeout=3000)
+                        except Exception:
+                            pass
                         row_seen = True
                         break
                 except Exception:
@@ -347,12 +367,7 @@ def stage_testers(page, ctx: dict, aid: str, deadline: float, record: dict) -> N
             pass
         if row_seen:
             break
-        try:
-            page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-            page.wait_for_timeout(1500)
-            page.evaluate("window.scrollTo(0, 0)")
-        except Exception:
-            pass
+        _sweep_content(page)
         pace(page, 3.0)
     if not row_seen:
         raise _Stop(f"{TESTERS_LIST!r} list row never rendered -- STOPPING")
