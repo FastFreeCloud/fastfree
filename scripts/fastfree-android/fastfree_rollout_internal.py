@@ -344,13 +344,13 @@ def stage_testers(page, ctx: dict, aid: str, deadline: float, record: dict) -> N
         pace(page, 3.0)
     if not saw_lists:
         raise _Stop("testers lists table never rendered -- STOPPING")
-    # Rows render AFTER the table header. Probed: scrolling DURING the rows
-    # fetch breaks it (virtualizer race) -- so wait QUIETLY first (fetch
-    # completes undisturbed), and only sweep scrollables if still missing.
+    # Rows fetch on tab open; perpetual sweeping THRASHES the virtualizer
+    # (probed: one scroll + stillness renders, constant motion never does).
+    # One gentle sweep up front, then poll still for up to 3 minutes.
     # Once found, pin the row in view so it does not virtualize back out.
-    end_row = time.time() + 150
+    _sweep_content(page)
+    end_row = time.time() + 180
     row_seen = False
-    swept = False
     while time.time() < end_row:
         try:
             for el in page.get_by_text(_exact(TESTERS_LIST)).all():
@@ -368,10 +368,7 @@ def stage_testers(page, ctx: dict, aid: str, deadline: float, record: dict) -> N
             pass
         if row_seen:
             break
-        if time.time() > end_row - 90 and not swept:
-            _sweep_content(page)
-            swept = True
-        pace(page, 3.0)
+        pace(page, 4.0)
     if not row_seen:
         raise _Stop(f"{TESTERS_LIST!r} list row never rendered -- STOPPING")
     # The list checkbox is a mat-checkbox custom element carrying aria-checked;
