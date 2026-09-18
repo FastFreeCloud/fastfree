@@ -233,6 +233,19 @@ Add `mohamed.fastfree@gmail.com` once via Edit-email-list dialog + confirm dialo
 Track stays Inactive until a release + testers exist. Closed testing later needs
 12+ opted-in tester emails (only 1 known today) + 14 days — Google-mandated, unskippable.
 
+## 5.7. Internal-track rollout (draft → Active + opt-in link)
+
+Verified live 2026-09-17 (ERP+POS+HR). Script: `scripts/fastfree-android/fastfree_rollout_internal.py --app <key> [--from <stage>]` (preflight always runs; `--from` ∈ testers/edit/preview/publish/verify). Internal track ONLY — assert same developer + app id and the PINNED numeric track id (captured from the tracks page ancestry); never Discard/Production/other tracks; exactly-1-match clicks (counted across button+link roles); STOP on ambiguity.
+
+- Stage 0 Preflight: CentBrowser must expose CDP :9222 (`--remote-debugging-port=9222`; same profile preserves login). Wedged symptom: HTTP `/json/version` OK but WS handshake times out → restart browser (profile persists, tabs re-navigated). Always pass explicit timeouts (`connect_over_cdp` timeout=25000).
+- Stage 1 Track state: `.../app/<id>/tracks/internal-testing` shows `Set up internal testing track` checklist (Select testers / Create a new release / Preview and confirm). Snapshot 2026-09-17 (re-read live, states move): ERP 2/3 (draft, testers attached), POS/HR/Ledger 1/3 (draft, testers NOT attached). No opt-in link until Active ("The link will be shown here when you publish your app").
+- Stage 2 Testers: Testers tab → `dev` list (8 users) checkbox is a `mat-checkbox` custom element (`aria-checked` true/false; NO `input[type=checkbox]` — input-walks fail). Click via DOM, verify `aria-checked=true`, Save only if enabled.
+- Stage 3 Edit+Preview: Releases tab → exact "Edit release" → Next (≤4) → review URL `.../tracks/<tid>/releases/<n>/review`. Settle splash ("Loading Google Play Console" hidden, 30s cap) after EVERY navigation — content renders minutes late under throttle.
+- Stage 4 Proceed-anyway: review shows 1 Error "version code significantly higher..." + Proceed-anyway LINK (role varies button/link — probe both) hidden behind collapsed "Show more" (expand first). Click → "Proceed anyway?" dialog → "Proceed" → error becomes "(ignored for this release)" → "Save and publish" enables. Stays disabled → STOP, never force (see §5 rule 6).
+- Stage 5 Publish: "Save and publish" → confirm INSIDE dialog scope → returns to `?tab=releases`.
+- Stage 6 Verify: summary reads `Active · Latest release: <versionCode> (date)` (+ "Temporary app name '<pkg> (unreviewed)'" — normal pre-review). Opt-in link `https://play.google.com/apps/internaltest/<id>` appears in Testers tab under "How testers join your test" — generated ASYNC (minutes–hours; ERP observed live: .../4701556479865063787). Absence right after publish is normal, not failure.
+- Tester-side (human): open join link logged in as `mohamed.fastfree@gmail.com`; Play Store on the phone must run the same account; first join can take hours to propagate. Public `store/apps/details?id=` links 404 until production review — expected, not an error.
+
 ## 6. Rules (hard)
 
 - One app at a time, stages in order A → B → C. Never run two apps concurrently.

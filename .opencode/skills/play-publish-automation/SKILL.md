@@ -57,3 +57,6 @@ versionCode back from the upload response and uses that for the track release.
 - Building the AAB itself → skill `android-build-release`.
 - Screenshots capture (emulator + Maestro) → workflow `18-capture-screenshots.yaml`
   (ephemeral `admin_pass` input, never stored).
+- Browser rollout (skill `play-console-setup` §5.7) is separate from API publish here: API `--status draft` uploads never activate the track or mint the opt-in link.
+- Draft → Active + opt-in link happens ONLY via the browser rollout flow (testers/edit/preview/proceed-anyway/publish/verify) — never via a `--status` flag or re-upload.
+- After API upload hand off to `fastfree_rollout_internal.py --app <key>`; absence of the link right after API publish is normal, not failure.
