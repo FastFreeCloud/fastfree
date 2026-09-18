@@ -344,12 +344,13 @@ def stage_testers(page, ctx: dict, aid: str, deadline: float, record: dict) -> N
         pace(page, 3.0)
     if not saw_lists:
         raise _Stop("testers lists table never rendered -- STOPPING")
-    # Rows render AFTER the table header, and only once scrolled into view
-    # inside the content container (virtualized list -- body scrolls and
-    # static waits never render them). Sweep while waiting; pin the row in
-    # view once found so it does not virtualize back out.
-    end_row = time.time() + 90
+    # Rows render AFTER the table header. Probed: scrolling DURING the rows
+    # fetch breaks it (virtualizer race) -- so wait QUIETLY first (fetch
+    # completes undisturbed), and only sweep scrollables if still missing.
+    # Once found, pin the row in view so it does not virtualize back out.
+    end_row = time.time() + 150
     row_seen = False
+    swept = False
     while time.time() < end_row:
         try:
             for el in page.get_by_text(_exact(TESTERS_LIST)).all():
@@ -367,7 +368,9 @@ def stage_testers(page, ctx: dict, aid: str, deadline: float, record: dict) -> N
             pass
         if row_seen:
             break
-        _sweep_content(page)
+        if time.time() > end_row - 90 and not swept:
+            _sweep_content(page)
+            swept = True
         pace(page, 3.0)
     if not row_seen:
         raise _Stop(f"{TESTERS_LIST!r} list row never rendered -- STOPPING")
