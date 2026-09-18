@@ -576,14 +576,25 @@ def stage_verify(page, ctx: dict, aid: str, deadline: float, record: dict) -> No
     assert_internal_url(page, ctx, aid, "verify-track")
     _check_deadline(deadline, "verify")
     # The summary renders late and Active flips minutes after publish:
-    # poll for a RENDERED summary (not splash HTML) up to 5 minutes.
+    # poll for a RENDERED summary (not splash HTML) up to 5 minutes. A
+    # stuck splash (content never arrives) needs a reload, not more
+    # waiting -- reload once midway, then keep polling.
     summary = ""
     end_sum = min(time.time() + 300, deadline)
+    reloaded = False
     while time.time() < end_sum:
         _check_deadline(deadline, "verify-poll")
         summary = _read_body(page).replace("\n", " ")
         if "Track summary" in summary:
             break
+        if not reloaded and time.time() > end_sum - 150:
+            try:
+                page.reload(wait_until="domcontentloaded", timeout=60000)
+                pace(page, 5.0)
+                step(ctx, "verify: reloaded stuck tracks page")
+            except Exception:
+                pass
+            reloaded = True
         pace(page, 5.0)
     if ACTIVE_RE.search(summary) is None:
         raise _Stop(f"track summary lacks Active status -- STOPPING [{summary[:300]}]")
