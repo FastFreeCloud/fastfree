@@ -329,6 +329,25 @@ def stage_testers(page, ctx: dict, aid: str, deadline: float, record: dict) -> N
         pace(page, 3.0)
     if not saw_lists:
         raise _Stop("testers lists table never rendered -- STOPPING")
+    # Rows render AFTER the table header: wait for the dev row itself.
+    end_row = time.time() + 90
+    row_seen = False
+    while time.time() < end_row:
+        try:
+            for el in page.get_by_text(_exact(TESTERS_LIST)).all():
+                try:
+                    if el.is_visible():
+                        row_seen = True
+                        break
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        if row_seen:
+            break
+        pace(page, 3.0)
+    if not row_seen:
+        raise _Stop(f"{TESTERS_LIST!r} list row never rendered -- STOPPING")
     # The list checkbox is a mat-checkbox custom element carrying aria-checked;
     # NO input[type=checkbox] exists, so input-walks fail (probe22/skill §5.7).
     anchor = page.get_by_text(_exact(TESTERS_LIST)).first
