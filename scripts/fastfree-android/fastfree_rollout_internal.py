@@ -575,7 +575,16 @@ def stage_verify(page, ctx: dict, aid: str, deadline: float, record: dict) -> No
     settle(page, ctx, "verify")
     assert_internal_url(page, ctx, aid, "verify-track")
     _check_deadline(deadline, "verify")
-    summary = _read_body(page).replace("\n", " ")
+    # The summary renders late and Active flips minutes after publish:
+    # poll for a RENDERED summary (not splash HTML) up to 5 minutes.
+    summary = ""
+    end_sum = min(time.time() + 300, deadline)
+    while time.time() < end_sum:
+        _check_deadline(deadline, "verify-poll")
+        summary = _read_body(page).replace("\n", " ")
+        if "Track summary" in summary:
+            break
+        pace(page, 5.0)
     if ACTIVE_RE.search(summary) is None:
         raise _Stop(f"track summary lacks Active status -- STOPPING [{summary[:300]}]")
     record["steps"].append("track summary contains Active")
