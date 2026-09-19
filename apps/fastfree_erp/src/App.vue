@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onMounted } from 'vue'
+import { ref, inject, watch } from 'vue'
 import { LcErrorBoundary } from 'quasar-app-extension-fastfree-lowcode'
 import { APP_UPDATE_KEY } from 'quasar-app-extension-fastfree_update/src/runtime/types'
 import type { AppUpdateApi } from 'quasar-app-extension-fastfree_update/src/runtime/useAppUpdate'
@@ -22,22 +22,18 @@ const appUpdate = inject<AppUpdateApi>(APP_UPDATE_KEY)
 const updateAvailable = ref(false)
 const updateVersionInfo = ref('')
 
-onMounted(() => {
-  if (!appUpdate) return
-
-  // Watch for update status changes
-  const unwatch = setInterval(() => {
-    if (appUpdate.status.value.available) {
+watch(
+  () => appUpdate?.status.value.available,
+  (available) => {
+    if (available) {
       updateAvailable.value = true
-      updateVersionInfo.value = appUpdate.status.value.versionCode
+      updateVersionInfo.value = appUpdate?.status.value.versionCode
         ? `v${appUpdate.status.value.versionCode}`
         : ''
     }
-  }, 1000)
-
-  // Stop watching after 30 seconds
-  setTimeout(() => clearInterval(unwatch), 30000)
-})
+  },
+  { immediate: true }
+)
 
 async function handleUpdate() {
   if (!appUpdate) return

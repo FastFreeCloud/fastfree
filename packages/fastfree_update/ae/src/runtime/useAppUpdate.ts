@@ -245,10 +245,14 @@ async function isNative(): Promise<boolean> {
     const cap = rec ? asRecord(rec.Capacitor) : null;
     const fn = asFunction(cap?.isNativePlatform);
     if (!fn) {
+      console.warn('[fastfree-update] Capacitor.isNativePlatform not found');
       return false;
     }
-    return fn() === true;
-  } catch {
+    const result = fn() === true;
+    console.warn('[fastfree-update] isNative:', result);
+    return result;
+  } catch (e) {
+    console.warn('[fastfree-update] isNative import failed:', e);
     return false;
   }
 }
@@ -304,9 +308,12 @@ async function checkNative(): Promise<UpdateStatus> {
   try {
     const plugin = await loadNativePlugin();
     if (!plugin) {
+      console.warn('[fastfree-update] native plugin unavailable');
       return { available: false };
     }
+    console.warn('[fastfree-update] calling getAppUpdateInfo()');
     const raw: unknown = await plugin.getAppUpdateInfo();
+    console.warn('[fastfree-update] getAppUpdateInfo result:', JSON.stringify(raw));
     const info = asRecord(raw) ?? {};
     const current =
       typeof info.currentVersionCode === 'number'

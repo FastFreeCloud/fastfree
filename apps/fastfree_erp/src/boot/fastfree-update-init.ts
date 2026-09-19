@@ -32,9 +32,9 @@ export default boot(({ app }: { app: App }) => {
             if (document.visibilityState !== 'visible') return;
             if (appUpdate.isSnoozed()) return;
             void appUpdate.checkForUpdate();
-          } catch { /* silent */ }
+          } catch (e) { console.warn('[fastfree-update] recheck failed:', e); }
         }, FOREGROUND_DEBOUNCE_MS);
-      } catch { /* silent */ }
+      } catch (e) { console.warn('[fastfree-update] scheduleRecheck failed:', e); }
     };
 
     document.addEventListener('visibilitychange', scheduleRecheck);
@@ -43,9 +43,15 @@ export default boot(({ app }: { app: App }) => {
     // Initial check on cold start (after a short delay to let the app settle)
     setTimeout(() => {
       try {
-        if (appUpdate.isSnoozed()) return;
-        void appUpdate.checkForUpdate();
-      } catch { /* silent */ }
+        if (appUpdate.isSnoozed()) {
+          console.warn('[fastfree-update] snoozed, skipping check');
+          return;
+        }
+        console.warn('[fastfree-update] running initial checkForUpdate()');
+        void appUpdate.checkForUpdate().then((result) => {
+          console.warn('[fastfree-update] checkForUpdate result:', JSON.stringify(result));
+        });
+      } catch (e) { console.warn('[fastfree-update] initial check failed:', e); }
     }, 3000);
-  } catch { /* boot must never crash */ }
+  } catch (e) { console.warn('[fastfree-update] boot failed:', e); }
 });
