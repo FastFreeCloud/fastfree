@@ -65,8 +65,10 @@ const policyUrl = computed(() => getPrivacyPolicyUrl(i18nStore.locale.value))
 
 async function fetchHtml(url: string): Promise<string> {
   try {
-    const { CapacitorHttp } = await import('@capacitor/core')
-    const resp = await CapacitorHttp.get({ url, responseType: 'text' })
+    const mod: Record<string, unknown> = await import(/* @vite-ignore */ '@capacitor/core')
+    const http = mod.CapacitorHttp as { get: (opts: { url: string; responseType: string }) => Promise<{ data: unknown }> } | undefined
+    if (!http) return ''
+    const resp = await http.get({ url, responseType: 'text' })
     return String(resp.data)
   } catch {
     return ''
