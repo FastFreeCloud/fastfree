@@ -39,5 +39,13 @@ export default boot(({ app }: { app: App }) => {
 
     document.addEventListener('visibilitychange', scheduleRecheck);
     window.addEventListener('online', scheduleRecheck);
+
+    // Initial check on cold start (after a short delay to let the app settle)
+    setTimeout(() => {
+      try {
+        if (appUpdate.isSnoozed()) return;
+        void appUpdate.checkForUpdate();
+      } catch { /* silent */ }
+    }, 3000);
   } catch { /* boot must never crash */ }
 });
