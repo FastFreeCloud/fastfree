@@ -39,5 +39,12 @@ export default boot(({ app }: { app: App }) => {
 
     document.addEventListener('visibilitychange', scheduleRecheck);
     window.addEventListener('online', scheduleRecheck);
+
+    setTimeout(() => {
+      try {
+        if (appUpdate.isSnoozed()) return;
+        void appUpdate.checkForUpdate();
+      } catch { /* silent */ }
+    }, 3000);
   } catch { /* boot must never crash */ }
 });
