@@ -41,6 +41,7 @@ export default boot(({ app }: { app: App }) => {
     window.addEventListener('online', scheduleRecheck);
 
     // Initial check on cold start (after a short delay to let the app settle)
+    // v2: added logging for debugging
     setTimeout(() => {
       try {
         if (appUpdate.isSnoozed()) {
