@@ -256,7 +256,7 @@ jobs:
             --metadata-dir "$META_DIR" \
             --track internal \
             --aab "$AAB_PATH" \
-            --status draft \
+            --status completed \
             --version-code "$VERSION_CODE"
           echo "=== Play Store publish complete ==="
 
