@@ -230,6 +230,10 @@ const LC_DEFAULT_MESSAGES_AR: LcMessages = {
   "about.titleDefault": "FastFree Lowcode",
   "about.badgeProd": "إنتاج",
   "about.privacyPolicy": "سياسة الخصوصية",
+  "about.checkUpdate": "التحقق من التحديثات",
+  "about.updateAvailable": "تحديث متاح",
+  "about.upToDate": "محدّث",
+  "about.buildTime": "وقت البناء",
 
   "privacy.title": "سياسة الخصوصية",
   "privacy.loading": "جاري تحميل سياسة الخصوصية…",

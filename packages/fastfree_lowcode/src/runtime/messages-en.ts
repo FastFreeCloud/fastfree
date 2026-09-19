@@ -230,6 +230,10 @@ const LC_DEFAULT_MESSAGES: LcMessages = {
   "about.titleDefault": "FastFree Lowcode",
   "about.badgeProd": "PROD",
   "about.privacyPolicy": "Privacy Policy",
+  "about.checkUpdate": "Check for Updates",
+  "about.updateAvailable": "Update Available",
+  "about.upToDate": "Up to Date",
+  "about.buildTime": "Build Time",
 
   "privacy.title": "Privacy Policy",
   "privacy.loading": "Loading privacy policy…",

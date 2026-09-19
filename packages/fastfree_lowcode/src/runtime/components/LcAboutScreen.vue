@@ -39,6 +39,10 @@
           <span class="info-label">{{ t('about.currentDate') }}</span>
           <span class="info-value">{{ systemInfo.date }}</span>
         </div>
+        <div class="info-row">
+          <span class="info-label">{{ t('about.buildTime') }}</span>
+          <span class="info-value">{{ buildTime }}</span>
+        </div>
       </div>
 
       <q-btn
@@ -78,6 +82,7 @@ const { t } = useLcI18n()
 const desktopStore = useDesktopStore()
 const devMode = import.meta.env.DEV
 const isOnline = ref(typeof navigator !== 'undefined' ? navigator.onLine : true)
+const buildTime = new Date().toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' })
 
 const systemInfo = reactive({ browser: '', os: '', screen: '', date: '' })
 

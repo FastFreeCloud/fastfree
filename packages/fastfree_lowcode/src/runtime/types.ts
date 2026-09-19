@@ -130,6 +130,10 @@ export interface LcMessages {
   "about.titleDefault": string;
   "about.badgeProd": string;
   "about.privacyPolicy": string;
+  "about.checkUpdate": string;
+  "about.updateAvailable": string;
+  "about.upToDate": string;
+  "about.buildTime": string;
 
   "privacy.title": string;
   "privacy.loading": string;
