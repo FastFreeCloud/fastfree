@@ -7,7 +7,7 @@ import { defineConfig } from '#q-app';
 
 export default defineConfig((ctx) => {
   return {
-    boot: ['fastfree-auth-init', 'fastfree-accounting-init', 'fastfree-inventory-init', 'fastfree-sales-init', 'i18n', 'register-service-worker'],
+    boot: ['fastfree-auth-init', 'fastfree-accounting-init', 'fastfree-inventory-init', 'fastfree-sales-init', 'i18n', 'register-service-worker', 'fastfree-update-init'],
 
     css: ['app.scss'],
 
@@ -56,6 +56,9 @@ export default defineConfig((ctx) => {
           tsConfig.compilerOptions.paths['fastfree-sales/*'] = [
             '../../../packages/fastfree_sales/src/*',
           ];
+          tsConfig.compilerOptions.paths['quasar-app-extension-fastfree_update/*'] = [
+            '../../../packages/fastfree_update/ae/*',
+          ];
         },
       },
 
@@ -77,8 +80,15 @@ export default defineConfig((ctx) => {
           path.join(monorepoRoot, 'packages', 'fastfree_accounting'),
           path.join(monorepoRoot, 'packages', 'fastfree_inventory'),
           path.join(monorepoRoot, 'packages', 'fastfree_sales'),
+          path.join(monorepoRoot, 'packages', 'fastfree_update', 'ae'),
           path.join(appRoot, 'node_modules', '@quasar', 'extras'),
         ];
+
+        viteConf.resolve = viteConf.resolve || {};
+        viteConf.resolve.alias = viteConf.resolve.alias || {};
+        viteConf.resolve.alias['quasar-app-extension-fastfree_update'] = path.join(
+          monorepoRoot, 'packages', 'fastfree_update', 'ae'
+        );
       },
 
       vitePlugins: [
