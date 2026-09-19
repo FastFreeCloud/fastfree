@@ -15,8 +15,7 @@
     "@capacitor/keyboard": "^7.0.0",
     "@capacitor/splash-screen": "^7.0.0",
     "@capacitor/status-bar": "^7.0.0",
-    "@capawesome/capacitor-app-update": "^7.2.0",
-    "capacitor-plugin-xframe": "^1.0.0"
+    "@capawesome/capacitor-app-update": "^7.2.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.0.0"

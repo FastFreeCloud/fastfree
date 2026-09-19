@@ -36,12 +36,11 @@
         <div class="text-caption text-grey-6 q-mt-md">{{ t('privacy.loading') }}</div>
       </div>
       <iframe
-        ref="frameRef"
         :key="frameKey"
-        :src="policyUrl"
-        :title="t('privacy.title')"
-        class="lc-privacy-frame"
         referrerpolicy="strict-origin-when-cross-origin"
+        class="lc-privacy-frame"
+        :title="t('privacy.title')"
+        :srcdoc="htmlContent"
         @load="loaded = true"
       />
     </div>
@@ -59,33 +58,44 @@ const i18nStore = useLcI18nStore()
 
 const loaded = ref(false)
 const frameKey = ref(0)
-const frameRef = ref<HTMLIFrameElement | null>(null)
+const htmlContent = ref('')
 const isOffline = ref(typeof navigator !== 'undefined' ? !navigator.onLine : false)
 
 const policyUrl = computed(() => getPrivacyPolicyUrl(i18nStore.locale.value))
 
-let xframeStarted = false
-
-async function startXframe() {
-  if (xframeStarted) return
+async function fetchHtml(url: string): Promise<string> {
   try {
-    const mod = await import('capacitor-plugin-xframe' as string)
-    await mod.Xframe.start()
-    xframeStarted = true
+    const { CapacitorHttp } = await import('@capacitor/core')
+    const resp = await CapacitorHttp.get({ url, responseType: 'text' })
+    return String(resp.data)
   } catch {
-    // Plugin not available (web / SSR) — iframe may fail on some servers
+    return ''
+  }
+}
+
+async function loadContent() {
+  loaded.value = false
+  const html = await fetchHtml(policyUrl.value)
+  if (html) {
+    htmlContent.value = html
+  } else {
+    void openExternalUrl(policyUrl.value)
   }
 }
 
 function updateOnline() {
   isOffline.value = typeof navigator !== 'undefined' ? !navigator.onLine : false
-  if (!isOffline.value && !loaded.value) frameKey.value += 1
+  if (!isOffline.value && !loaded.value) {
+    frameKey.value += 1
+    void loadContent()
+  }
 }
 
 function retry() {
   updateOnline()
   loaded.value = false
   frameKey.value += 1
+  void loadContent()
 }
 
 function openInBrowser() {
@@ -93,24 +103,17 @@ function openInBrowser() {
 }
 
 onMounted(() => {
-  void startXframe()
+  void loadContent()
   if (typeof window !== 'undefined') {
     window.addEventListener('online', updateOnline)
     window.addEventListener('offline', updateOnline)
   }
 })
 
-onUnmounted(async () => {
+onUnmounted(() => {
   if (typeof window !== 'undefined') {
     window.removeEventListener('online', updateOnline)
     window.removeEventListener('offline', updateOnline)
-  }
-  if (xframeStarted) {
-    try {
-      const mod = await import('capacitor-plugin-xframe' as string)
-      await mod.Xframe.stop()
-      xframeStarted = false
-    } catch { /* silent */ }
   }
 })
 </script>
