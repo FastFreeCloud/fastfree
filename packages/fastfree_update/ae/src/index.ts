@@ -7,21 +7,16 @@
 
 import { defineIndexScript } from '#q-app';
 
-const BOOT_FILE =
-  '~quasar-app-extension-fastfree_update/src/runtime/boot.register.ts';
-
 // can be async
 export default defineIndexScript(api => {
   api.compatibleWith('quasar', '^2.0.0');
   api.compatibleWith('@quasar/app-vite', '^3.0.0');
 
   api.extendQuasarConf(conf => {
-    // APPEND (never overwrite): the host app owns `boot` — dedupe so
-    // re-running the extension install cannot register the file twice.
-    const boot = (conf.boot ??= []);
-    if (!boot.includes(BOOT_FILE)) {
-      boot.push(BOOT_FILE);
-    }
+    // NOTE: Boot registration is handled by the host app's quasar.config.ts
+    // because Quasar AE resolves ~quasar-app-extension-* aliases to absolute
+    // Windows paths that Rolldown can't resolve. The host adds the boot file
+    // manually to the boot array.
 
     // UpdateDialog + useAppUpdate require the Dialog and Notify plugins.
     conf.framework ??= {};

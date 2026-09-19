@@ -19,7 +19,7 @@
         </div>
       </q-card-section>
 
-      <q-card-actions align="end" class="ff-update-card__actions">
+      <q-card-actions align="right" class="ff-update-card__actions">
         <q-btn
           flat
           :label="messages.later"
