@@ -12,11 +12,17 @@ export default boot(async () => {
     if (!Capacitor.isNativePlatform()) return;
 
     const eruda = await import('eruda');
-    eruda.default.init({
-      tool: ['console', 'elements', 'network', 'resources', 'info'],
-      useShadowDom: true,
-      autoScale: true,
-    });
+    // Try init without shadowDom first — Capacitor WebView often clips shadow DOM
+    try {
+      eruda.default.init({
+        tool: ['console', 'elements', 'network', 'resources', 'info'],
+        useShadowDom: false,
+        autoScale: true,
+      });
+    } catch {
+      // Fallback: minimal init
+      eruda.default.init();
+    }
     eruda.default.get('entryBtn').hide();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).__eruda = eruda.default;

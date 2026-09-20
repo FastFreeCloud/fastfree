@@ -73,6 +73,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { Notify } from 'quasar'
 import { useLcI18n } from '../i18n'
 import { useDesktopStore } from '../composables/useDesktopStore'
 
@@ -104,7 +105,17 @@ const buildTime = new Date().toLocaleString('ar-EG', { dateStyle: 'medium', time
 const hasEruda = ref(false)
 
 function openEruda() {
-  window.__eruda?.show('console')
+  try {
+    if (window.__eruda) {
+      window.__eruda.show('console')
+      Notify.create({ message: 'Debug Console opened', color: 'orange', position: 'top' })
+    } else {
+      Notify.create({ message: 'Eruda not loaded — check console for errors', color: 'negative', position: 'top' })
+    }
+  } catch (e) {
+    console.warn('[eruda] show failed:', e)
+    Notify.create({ message: 'Failed to open Debug Console: ' + String(e), color: 'negative', position: 'top' })
+  }
 }
 
 const systemInfo = reactive({ browser: '', os: '', screen: '', date: '' })
