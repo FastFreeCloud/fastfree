@@ -490,8 +490,8 @@ function onResize() {
   transition: background-color 0.3s ease, border-color 0.3s ease;
 
   .is-mobile & {
-    padding: 6px 6px;
-    gap: 2px;
+    padding: 6px 8px;
+    gap: 4px;
     border-radius: 20px;
     max-width: 100%;
     overflow: hidden;
@@ -570,7 +570,7 @@ function onResize() {
   }
 
   .is-mobile & {
-    gap: 1px;
+    gap: 2px;
   }
 }
 
@@ -591,9 +591,10 @@ function onResize() {
   width: auto;
 
   .is-mobile & {
-    padding: 6px 8px;
-    min-height: 44px;
+    padding: 6px 6px;
+    min-height: 48px;
     flex-shrink: 1;
+    min-width: 0;
   }
 
   &:focus-visible {
@@ -604,14 +605,25 @@ function onResize() {
   &:hover {
     background: color-mix(in srgb, var(--lc-primary, #1565C0) 8%, transparent);
     color: var(--lc-primary, #1565C0);
-    transform: translateY(-3px);
 
     .dock-icon { transform: scale(1.1); }
+  }
+
+  .is-mobile &:hover {
+    transform: none;
+  }
+
+  .is-desktop &:hover {
+    transform: translateY(-3px);
   }
 
   &:active {
     transform: translateY(-1px) scale(0.96);
     transition-duration: 0.08s;
+  }
+
+  .is-mobile &:active {
+    transform: scale(0.95);
   }
 
   &.active {
@@ -624,7 +636,8 @@ function onResize() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
+  min-width: 0;
 }
 
 .dock-icon {
@@ -654,10 +667,13 @@ function onResize() {
   max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: center;
+  direction: auto;
 
   .is-mobile & {
-    max-width: 56px;
+    max-width: 64px;
     font-size: 10px;
+    line-height: 1.2;
   }
 }
 
@@ -695,8 +711,8 @@ function onResize() {
   margin: 0 4px;
 
   .is-mobile & {
-    height: 20px;
-    margin: 0 1px;
+    height: 24px;
+    margin: 0 2px;
     flex-shrink: 0;
   }
 }
@@ -926,6 +942,29 @@ function onResize() {
   .glass-dock {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+  }
+}
+
+// RTL support
+[dir="rtl"] {
+  .dock-label {
+    direction: rtl;
+    text-align: center;
+  }
+
+  .dock-groups {
+    &.dock-groups--scrollable {
+      &::before {
+        left: auto;
+        right: 0;
+        background: linear-gradient(to left, var(--lc-dock-bg, #fff) 0%, transparent 100%);
+      }
+      &::after {
+        right: auto;
+        left: 0;
+        background: linear-gradient(to right, var(--lc-dock-bg, #fff) 0%, transparent 100%);
+      }
+    }
   }
 }
 </style>

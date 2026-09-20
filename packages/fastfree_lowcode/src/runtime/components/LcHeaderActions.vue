@@ -26,7 +26,6 @@
       flat
       round
       dense
-      :icon="store.isDark ? icons.lightMode : icons.darkMode"
       color="white"
       size="16px"
       class="lc-theme-btn"
