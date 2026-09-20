@@ -17,7 +17,8 @@ export default boot(() => {
         autoScale: true,
       });
       m.default.get('entryBtn').hide();
-      (window as Record<string, unknown>).__eruda = m.default;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).__eruda = m.default;
       console.warn('[eruda] initialized — use window.__eruda.show() to open console');
     });
   });
