@@ -157,7 +157,14 @@ onMounted(() => {
   window.addEventListener('online', updateOnline)
   window.addEventListener('offline', updateOnline)
   updateSystemInfo()
+  // Check immediately and also after a delay (eruda loads asynchronously)
   hasEruda.value = typeof window.__eruda !== 'undefined'
+  if (!hasEruda.value) {
+    const timer = setTimeout(() => {
+      hasEruda.value = typeof window.__eruda !== 'undefined'
+    }, 2000)
+    onUnmounted(() => clearTimeout(timer))
+  }
 })
 
 onUnmounted(() => {
