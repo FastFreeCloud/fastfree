@@ -7,7 +7,7 @@ import { defineConfig } from '#q-app';
 
 export default defineConfig((ctx) => {
   return {
-    boot: ['fastfree-auth-init', 'fastfree-accounting-init', 'fastfree-inventory-init', 'fastfree-sales-init', 'fastfree-purchase-init', 'fastfree-hr-init', 'fastfree-crm-init', 'i18n', 'register-service-worker', 'fastfree-update-init'],
+    boot: ['fastfree-auth-init', 'fastfree-accounting-init', 'fastfree-inventory-init', 'fastfree-sales-init', 'fastfree-purchase-init', 'fastfree-hr-init', 'fastfree-crm-init', 'i18n', 'register-service-worker', 'fastfree-update-init', 'eruda'],
 
     css: ['app.scss'],
 
