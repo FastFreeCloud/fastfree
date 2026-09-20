@@ -414,6 +414,17 @@ const LC_DEFAULT_MESSAGES_AR: LcMessages = {
   "debugger.resetConfirm": "هل أنت متأكد من إعادة تعيين هذا المخزون؟",
   "debugger.clearPersistConfirm": "هل أنت متأكد من مسح البيانات المحفوظة؟",
 
+  // Storage Inspector
+  "debugger.searchStorage": "بحث في التخزين...",
+  "debugger.noData": "لا توجد بيانات محفوظة",
+  "debugger.totalKeys": "إجمالي المفاتيح",
+  "debugger.totalSize": "إجمالي الحجم",
+  "debugger.copied": "تم النسخ",
+  "debugger.storageCleared": "تم مسح التخزين",
+  "debugger.totalCaches": "إجمالي الكاشات",
+  "debugger.records": "سجلات",
+  "debugger.noState": "لا توجد بيانات حالة",
+
   // Excel Export / Print
   "export.noDataToExport": "لا توجد بيانات للتصدير",
   "export.printDate": "تاريخ الطباعة",

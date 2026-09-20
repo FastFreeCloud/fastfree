@@ -418,6 +418,17 @@ const LC_DEFAULT_MESSAGES: LcMessages = {
   "debugger.clearPersistConfirm":
     "Are you sure you want to clear persisted data?",
 
+  // Storage Inspector
+  "debugger.searchStorage": "Search storage...",
+  "debugger.noData": "No data stored",
+  "debugger.totalKeys": "Total keys",
+  "debugger.totalSize": "Total size",
+  "debugger.copied": "Copied to clipboard",
+  "debugger.storageCleared": "Storage cleared",
+  "debugger.totalCaches": "Total caches",
+  "debugger.records": "records",
+  "debugger.noState": "No state data",
+
   // Excel Export / Print
   "export.noDataToExport": "No data to export",
   "export.printDate": "Print Date",

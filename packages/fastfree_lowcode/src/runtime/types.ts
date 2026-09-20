@@ -402,6 +402,17 @@ export interface LcMessages {
   "debugger.resetConfirm": string;
   "debugger.clearPersistConfirm": string;
 
+  // Storage Inspector
+  "debugger.searchStorage": string;
+  "debugger.noData": string;
+  "debugger.totalKeys": string;
+  "debugger.totalSize": string;
+  "debugger.copied": string;
+  "debugger.storageCleared": string;
+  "debugger.totalCaches": string;
+  "debugger.records": string;
+  "debugger.noState": string;
+
   "export.noDataToExport": string;
   "export.printDate": string;
   "export.recordCount": string;

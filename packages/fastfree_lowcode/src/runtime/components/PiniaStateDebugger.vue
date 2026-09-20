@@ -239,6 +239,11 @@
                 <div v-if="mutationLog.length === 0" class="mutation-empty">{{ t('debugger.noMutations') }}</div>
               </div>
             </div>
+
+            <!-- Storage Tab -->
+            <div v-else-if="activeTab === 'storage'" class="tab-panel storage-tab-panel">
+              <StorageInspector />
+            </div>
           </div>
         </div>
       </div>
@@ -254,6 +259,7 @@ import { useQuasar } from 'quasar'
 
 import PiniaStateTreeView from './PiniaStateTreeView.vue'
 import PiniaPersistenceInfo from './PiniaPersistenceInfo.vue'
+import StorageInspector from './StorageInspector.vue'
 import { usePWACache } from '../composables/usePWACache'
 import { useLcI18n } from '../i18n'
 
@@ -301,7 +307,7 @@ const selectedStoreId = ref<string | null>(null)
 const autoRefresh = ref(true)
 const refreshTimer = ref<number | undefined>(undefined)
 const mutationLog = ref<Array<{ store: string; type: string; payload?: unknown; time: Date }>>([])
-const tabs = ['state', 'getters', 'actions', 'persistence', 'mutations']
+const tabs = ['state', 'getters', 'actions', 'persistence', 'mutations', 'storage']
 const activeTab = ref('state')
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const storeSearch = ref('')
