@@ -17,8 +17,12 @@
         <q-icon name="mdi-chevron-left" size="16px" />
       </button>
 
-      <!-- Groups section -->
-      <div class="dock-groups" ref="groupsRef">
+      <!-- Groups section with scroll fade -->
+      <div
+        class="dock-groups"
+        :class="{ 'dock-groups--scrollable': groupsOverflow }"
+        ref="groupsRef"
+      >
         <div
           v-for="group in fixedGroups"
           :key="group.id"
@@ -207,9 +211,14 @@ const isMobile = computed(() => windowWidth.value < 600)
 const isTablet = computed(() => windowWidth.value >= 600 && windowWidth.value < 1024)
 const isCompact = computed(() => windowWidth.value < 768)
 
-// Scroll state
+// Scroll state (windows)
 const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
+
+// Scroll state (groups)
+const groupsCanScrollLeft = ref(false)
+const groupsCanScrollRight = ref(false)
+const groupsOverflow = ref(false)
 
 // Context menu state
 const contextMenu = reactive({
@@ -389,6 +398,16 @@ function updateScrollState() {
   }
 }
 
+function updateGroupsScrollState() {
+  if (groupsRef.value) {
+    const el = groupsRef.value
+    const hasOverflow = el.scrollWidth > el.clientWidth + 2
+    groupsOverflow.value = hasOverflow
+    groupsCanScrollLeft.value = el.scrollLeft > 2
+    groupsCanScrollRight.value = el.scrollLeft < el.scrollWidth - el.clientWidth - 2
+  }
+}
+
 // Close context menu on outside click
 function closeContextMenu() {
   contextMenu.show = false
@@ -407,10 +426,15 @@ onMounted(() => {
       windowsRef.value.addEventListener('scroll', updateScrollState)
       updateScrollState()
     }
+    if (groupsRef.value) {
+      groupsRef.value.addEventListener('scroll', updateGroupsScrollState)
+      updateGroupsScrollState()
+    }
   })
 
   resizeObserver = new ResizeObserver(() => {
     updateScrollState()
+    updateGroupsScrollState()
   })
   if (dockRef.value) {
     resizeObserver.observe(dockRef.value)
@@ -466,10 +490,11 @@ function onResize() {
   transition: background-color 0.3s ease, border-color 0.3s ease;
 
   .is-mobile & {
-    padding: 6px 8px;
-    gap: 4px;
+    padding: 6px 6px;
+    gap: 2px;
     border-radius: 20px;
     max-width: 100%;
+    overflow: hidden;
   }
 
   .is-tablet & {
@@ -509,6 +534,44 @@ function onResize() {
   gap: 2px;
   flex-shrink: 1;
   min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  position: relative;
+
+  &::-webkit-scrollbar { display: none; }
+
+  // Scroll fade indicators (mask-image)
+  &.dock-groups--scrollable {
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 24px;
+      z-index: 2;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    &::before {
+      left: 0;
+      background: linear-gradient(to right, var(--lc-dock-bg, #fff) 0%, transparent 100%);
+      opacity: 1;
+    }
+
+    &::after {
+      right: 0;
+      background: linear-gradient(to left, var(--lc-dock-bg, #fff) 0%, transparent 100%);
+      opacity: 1;
+    }
+  }
+
+  .is-mobile & {
+    gap: 1px;
+  }
 }
 
 .dock-item {
@@ -521,15 +584,16 @@ function onResize() {
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  flex-shrink: 0;
+  flex-shrink: 1;
   color: var(--lc-on-surface-muted, #666);
   min-height: 44px;
-  min-width: 44px;
+  min-width: 0;
+  width: auto;
 
   .is-mobile & {
-    padding: 8px 12px;
-    min-height: 48px;
-    min-width: 48px;
+    padding: 6px 8px;
+    min-height: 44px;
+    flex-shrink: 1;
   }
 
   &:focus-visible {
@@ -590,6 +654,11 @@ function onResize() {
   max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  .is-mobile & {
+    max-width: 56px;
+    font-size: 10px;
+  }
 }
 
 .dock-badge {
@@ -626,8 +695,9 @@ function onResize() {
   margin: 0 4px;
 
   .is-mobile & {
-    height: 24px;
-    margin: 0 2px;
+    height: 20px;
+    margin: 0 1px;
+    flex-shrink: 0;
   }
 }
 
