@@ -1,36 +1,23 @@
 <template>
   <div
-    class="desktop-dock"
+    class="lc-dock"
     v-if="fixedGroups.length > 0"
-    :class="{ 'is-mobile': isMobile, 'is-tablet': isTablet }"
+    :class="{ 'lc-dock--mobile': isMobile, 'lc-dock--tablet': isTablet }"
     role="toolbar"
     :aria-label="t('common.dock')"
   >
-    <div class="glass-dock" ref="dockRef">
-      <!-- Scroll left button -->
-      <button
-        v-if="canScrollLeft"
-        class="dock-scroll-btn dock-scroll-left"
-        @click="scrollTabs(-1)"
-        :aria-label="t('common.scrollLeft')"
-      >
-        <q-icon name="mdi-chevron-left" size="16px" />
-      </button>
-
-      <!-- Groups section with scroll fade -->
-      <div
-        class="dock-groups"
-        :class="{ 'dock-groups--scrollable': groupsOverflow }"
-        ref="groupsRef"
-      >
-        <div
-          v-for="group in fixedGroups"
+    <div class="lc-dock__bar" ref="dockRef">
+      <!-- Groups section -->
+      <div class="lc-dock__groups" ref="groupsRef">
+        <button
+          v-for="(group, idx) in allGroups"
           :key="group.id"
-          class="dock-item"
+          class="lc-dock__item"
           :class="{
-            active: isGroupActive(group.id),
-            'has-badge': openWindowCount(group.id) > 0,
+            'lc-dock__item--active': isGroupActive(group.id),
+            'lc-dock__item--fav': group.id === FAVORITES_GROUP_ID,
           }"
+          :style="{ animationDelay: `${idx * 40}ms` }"
           :aria-label="translatedName(group.id)"
           :aria-selected="isGroupActive(group.id)"
           role="tab"
@@ -39,75 +26,64 @@
           @keydown.enter.prevent="openGroupWorkspace(group.id, translatedName(group.id), group.icon)"
           @keydown.space.prevent="openGroupWorkspace(group.id, translatedName(group.id), group.icon)"
           @touchstart.passive="onTouchStart($event, group)"
-          @touchend="onTouchEnd($event, group)"
+          @touchend="onTouchEnd"
           @contextmenu.prevent="showContextMenu($event, group)"
         >
-          <div class="dock-item-inner">
-            <q-icon :name="group.icon" :size="isMobile ? '22px' : '20px'" class="dock-icon" />
-            <span class="dock-label">{{ translatedName(group.id) }}</span>
-          </div>
-          <Transition name="active-pill">
-            <span v-if="isGroupActive(group.id)" class="dock-active-pill" />
-          </Transition>
-          <Transition name="badge-pop">
-            <span
-              v-if="openWindowCount(group.id) > 0"
-              class="dock-badge"
-              :key="openWindowCount(group.id)"
-            >
-              {{ openWindowCount(group.id) > 99 ? '99+' : openWindowCount(group.id) }}
-            </span>
-          </Transition>
-        </div>
-
-        <!-- Custom groups -->
-        <template v-if="customGroups.length > 0">
-          <div class="dock-divider" />
-          <div
-            v-for="group in customGroups"
-            :key="group.id"
-            class="dock-item"
-            :class="{ active: isGroupActive(group.id) }"
-            :aria-label="translatedName(group.id)"
-            role="tab"
-            tabindex="0"
-            @click="openGroupWorkspace(group.id, translatedName(group.id), group.icon)"
-            @keydown.enter.prevent="openGroupWorkspace(group.id, translatedName(group.id), group.icon)"
-            @touchstart.passive="onTouchStart($event, group)"
-            @touchend="onTouchEnd($event, group)"
-            @contextmenu.prevent="showContextMenu($event, group)"
+          <q-icon :name="group.icon" :size="isMobile ? '20px' : '18px'" class="lc-dock__icon" />
+          <span class="lc-dock__label">{{ translatedName(group.id) }}</span>
+          <span v-if="isGroupActive(group.id)" class="lc-dock__pill" />
+          <span
+            v-if="openWindowCount(group.id) > 0"
+            class="lc-dock__badge"
+            :key="openWindowCount(group.id)"
           >
-            <div class="dock-item-inner">
-              <q-icon :name="group.icon" :size="isMobile ? '22px' : '20px'" class="dock-icon" />
-              <span class="dock-label">{{ translatedName(group.id) }}</span>
-            </div>
-            <Transition name="active-pill">
-              <span v-if="isGroupActive(group.id)" class="dock-active-pill" />
-            </Transition>
-            <Transition name="badge-pop">
-              <span
-                v-if="openWindowCount(group.id) > 0"
-                class="dock-badge"
-                :key="openWindowCount(group.id)"
-              >
-                {{ openWindowCount(group.id) > 99 ? '99+' : openWindowCount(group.id) }}
-              </span>
-            </Transition>
-          </div>
-        </template>
+            {{ openWindowCount(group.id) > 99 ? '99+' : openWindowCount(group.id) }}
+          </span>
+        </button>
+
+        <div v-if="customGroups.length > 0" class="lc-dock__sep" />
+
+        <button
+          v-for="(group, idx) in customGroups"
+          :key="group.id"
+          class="lc-dock__item"
+          :class="{ 'lc-dock__item--active': isGroupActive(group.id) }"
+          :style="{ animationDelay: `${(fixedGroups.length + idx) * 40}ms` }"
+          :aria-label="translatedName(group.id)"
+          role="tab"
+          tabindex="0"
+          @click="openGroupWorkspace(group.id, translatedName(group.id), group.icon)"
+          @keydown.enter.prevent="openGroupWorkspace(group.id, translatedName(group.id), group.icon)"
+          @touchstart.passive="onTouchStart($event, group)"
+          @touchend="onTouchEnd"
+          @contextmenu.prevent="showContextMenu($event, group)"
+        >
+          <q-icon :name="group.icon" :size="isMobile ? '20px' : '18px'" class="lc-dock__icon" />
+          <span class="lc-dock__label">{{ translatedName(group.id) }}</span>
+          <span v-if="isGroupActive(group.id)" class="lc-dock__pill" />
+          <span
+            v-if="openWindowCount(group.id) > 0"
+            class="lc-dock__badge"
+            :key="openWindowCount(group.id)"
+          >
+            {{ openWindowCount(group.id) > 99 ? '99+' : openWindowCount(group.id) }}
+          </span>
+        </button>
       </div>
 
-      <!-- Divider -->
-      <div v-if="windowTabs.length > 0" class="dock-divider" />
+      <!-- Scroll fade -->
+      <div v-if="groupsOverflow" class="lc-dock__fade lc-dock__fade--left" />
+      <div v-if="groupsOverflow" class="lc-dock__fade lc-dock__fade--right" />
 
       <!-- Windows section -->
-      <div class="dock-windows-wrapper" v-if="windowTabs.length > 0" ref="windowsRef">
-        <TransitionGroup name="dock-tab" tag="div" class="dock-windows">
+      <template v-if="windowTabs.length > 0">
+        <div class="lc-dock__sep" />
+        <div class="lc-dock__windows" ref="windowsRef">
           <div
             v-for="tab in windowTabs"
             :key="tab.id"
-            class="dock-tab"
-            :class="{ active: tab.id === desktop.activeWindowId, minimized: tab.isMinimized }"
+            class="lc-dock__tab"
+            :class="{ 'lc-dock__tab--active': tab.id === desktop.activeWindowId, 'lc-dock__tab--min': tab.isMinimized }"
             role="tab"
             :aria-selected="tab.id === desktop.activeWindowId"
             :aria-label="tab.title"
@@ -116,61 +92,28 @@
             @keydown.enter.prevent="activateTab(tab)"
             @contextmenu.prevent="showTabContextMenu($event, tab)"
           >
-            <q-icon
-              :name="tab.icon"
-              :size="isMobile ? '16px' : '14px'"
-              :color="tab.id === desktop.activeWindowId ? undefined : tab.iconColor"
-            />
-            <span class="dock-tab-title" :title="tab.title">{{ tab.title }}</span>
+            <q-icon :name="tab.icon" :size="isMobile ? '14px' : '13px'" />
+            <span class="lc-dock__tab-title" :title="tab.title">{{ tab.title }}</span>
             <q-btn
               v-show="!isMobile"
-              class="dock-tab-minimize"
-              round flat dense size="xs"
-              icon="mdi-minus"
-              @click.stop="desktop.toggleMinimize(tab.id)"
-              :aria-label="t('common.minimize')"
-            />
-            <q-btn
-              class="dock-tab-close"
+              class="lc-dock__tab-close"
               round flat dense size="xs"
               icon="mdi-close"
               @click.stop="desktop.closeWindow(tab.id)"
               :aria-label="t('common.close')"
             />
           </div>
-        </TransitionGroup>
-      </div>
-
-      <!-- Scroll right button -->
-      <button
-        v-if="canScrollRight"
-        class="dock-scroll-btn dock-scroll-right"
-        @click="scrollTabs(1)"
-        :aria-label="t('common.scrollRight')"
-      >
-        <q-icon name="mdi-chevron-right" size="16px" />
-      </button>
-
-      <!-- Window count + minimize all -->
-      <div v-if="windowTabs.length > 0" class="dock-window-actions">
-        <span class="dock-window-count">{{ windowTabs.length }}</span>
-        <q-btn
-          v-show="!isMobile"
-          class="dock-minimize-all"
-          round flat dense size="xs"
-          icon="mdi-minus-box-outline"
-          @click="minimizeAll"
-          :title="t('common.minimizeAll')"
-        />
-      </div>
+        </div>
+        <div class="lc-dock__win-count">{{ windowTabs.length }}</div>
+      </template>
     </div>
 
     <!-- Context Menu -->
     <Teleport to="body">
-      <Transition name="context-menu">
+      <Transition name="ctx">
         <div
           v-if="contextMenu.show"
-          class="dock-context-menu"
+          class="lc-dock__ctx"
           :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
           @click.stop
           @contextmenu.prevent
@@ -178,8 +121,8 @@
           <div
             v-for="item in contextMenu.items"
             :key="item.label"
-            class="context-menu-item"
-            :class="{ destructive: item.destructive }"
+            class="lc-dock__ctx-item"
+            :class="{ 'lc-dock__ctx-item--danger': item.destructive }"
             @click="item.action(); contextMenu.show = false"
           >
             <q-icon :name="item.icon" size="16px" />
@@ -205,22 +148,12 @@ const dockRef = ref<HTMLElement | null>(null)
 const groupsRef = ref<HTMLElement | null>(null)
 const windowsRef = ref<HTMLElement | null>(null)
 
-// Responsive state
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1200)
 const isMobile = computed(() => windowWidth.value < 600)
 const isTablet = computed(() => windowWidth.value >= 600 && windowWidth.value < 1024)
-const isCompact = computed(() => windowWidth.value < 768)
 
-// Scroll state (windows)
-const canScrollLeft = ref(false)
-const canScrollRight = ref(false)
-
-// Scroll state (groups)
-const groupsCanScrollLeft = ref(false)
-const groupsCanScrollRight = ref(false)
 const groupsOverflow = ref(false)
 
-// Context menu state
 const contextMenu = reactive({
   show: false,
   x: 0,
@@ -228,7 +161,6 @@ const contextMenu = reactive({
   items: [] as Array<{ label: string; icon: string; action: () => void; destructive?: boolean }>,
 })
 
-// Long-press state
 let longPressTimer: ReturnType<typeof setTimeout> | null = null
 const LONG_PRESS_DURATION = 500
 
@@ -242,9 +174,9 @@ const customGroups = computed(() => {
   return all.filter(g => g.id !== SYSTEM_GROUP_ID && g.id !== FAVORITES_GROUP_ID)
 })
 
-const windowTabs = computed(() => {
-  return desktop.sortedWindows.filter(w => !w.groupId)
-})
+const allGroups = computed(() => [...fixedGroups.value, ...customGroups.value])
+
+const windowTabs = computed(() => desktop.sortedWindows.filter(w => !w.groupId))
 
 function translatedName(groupId: string): string {
   if (groupId === SYSTEM_GROUP_ID) return t('common.system')
@@ -257,17 +189,14 @@ function translatedName(groupId: string): string {
 function openGroupWorkspace(groupId: string, name: string, icon: string) {
   const screenType = '_group-' + groupId
   const brought = desktop.bringToFrontIfOpen(screenType)
-  if (!brought) {
-    desktop.openWindow(screenType, name, icon)
-  }
+  if (!brought) desktop.openWindow(screenType, name, icon)
   groupsStore.setActiveGroup(groupId)
   hapticFeedback()
 }
 
 function isGroupActive(groupId: string): boolean {
   const screenType = '_group-' + groupId
-  const wins = desktop.getWindowsByType(screenType)
-  return wins.some(w => w.id === desktop.activeWindowId)
+  return desktop.getWindowsByType(screenType).some(w => w.id === desktop.activeWindowId)
 }
 
 function openWindowCount(groupId: string): number {
@@ -275,170 +204,76 @@ function openWindowCount(groupId: string): number {
 }
 
 function activateTab(tab: WindowInfo) {
-  if (tab.isMinimized) {
-    desktop.toggleMinimize(tab.id)
-  } else {
-    desktop.bringToFront(tab.id)
-  }
+  if (tab.isMinimized) desktop.toggleMinimize(tab.id)
+  else desktop.bringToFront(tab.id)
   hapticFeedback()
 }
 
-function minimizeAll() {
-  for (const w of windowTabs.value) {
-    if (!w.isMinimized) desktop.toggleMinimize(w.id)
-  }
-}
-
-// Haptic feedback (vibration API)
 function hapticFeedback() {
-  if (isMobile.value && navigator.vibrate) {
-    navigator.vibrate(10)
-  }
+  if (isMobile.value && navigator.vibrate) navigator.vibrate(10)
 }
 
-// Touch handlers for long-press
 function onTouchStart(e: TouchEvent, group: { id: string; name: string; icon: string }) {
   longPressTimer = setTimeout(() => {
     const touch = e.touches[0]
-    if (touch) {
-      showContextMenuAt(touch.clientX, touch.clientY, group)
-      hapticFeedback()
-    }
+    if (touch) { showContextMenuAt(touch.clientX, touch.clientY, group); hapticFeedback() }
   }, LONG_PRESS_DURATION)
 }
 
-function onTouchEnd(_e: TouchEvent, _group: unknown) {
-  if (longPressTimer) {
-    clearTimeout(longPressTimer)
-    longPressTimer = null
-  }
+function onTouchEnd() {
+  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
 }
 
-// Context menu
 function showContextMenu(e: MouseEvent, group: { id: string; name: string; icon: string }) {
   showContextMenuAt(e.clientX, e.clientY, group)
 }
 
 function showContextMenuAt(x: number, y: number, group: { id: string; name: string; icon: string }) {
-  const screenType = '_group-' + group.id
-  const wins = desktop.getWindowsByType(screenType)
-  const items: Array<{ label: string; icon: string; action: () => void; destructive?: boolean }> = []
-
-  items.push({
-    label: t('common.open'),
-    icon: 'mdi-open-in-app',
-    action: () => openGroupWorkspace(group.id, translatedName(group.id), group.icon),
-  })
-
+  const wins = desktop.getWindowsByType('_group-' + group.id)
+  const items: Array<{ label: string; icon: string; action: () => void; destructive?: boolean }> = [
+    { label: t('common.open'), icon: 'mdi-open-in-app', action: () => openGroupWorkspace(group.id, translatedName(group.id), group.icon) },
+  ]
   if (wins.length > 0) {
-    items.push({
-      label: t('common.closeAll'),
-      icon: 'mdi-close-box-multiple',
-      action: () => {
-        for (const w of wins) desktop.closeWindow(w.id)
-      },
-      destructive: true,
-    })
+    items.push({ label: t('common.closeAll'), icon: 'mdi-close-box-multiple', action: () => { for (const w of wins) desktop.closeWindow(w.id) }, destructive: true })
   }
-
-  // Position: keep within viewport
-  const menuWidth = 180
-  const menuHeight = items.length * 40 + 16
-  const adjustedX = Math.min(x, window.innerWidth - menuWidth - 8)
-  const adjustedY = Math.min(y, window.innerHeight - menuHeight - 8)
-
-  contextMenu.x = adjustedX
-  contextMenu.y = adjustedY
+  const mw = 180, mh = items.length * 40 + 16
+  contextMenu.x = Math.min(x, window.innerWidth - mw - 8)
+  contextMenu.y = Math.min(y, window.innerHeight - mh - 8)
   contextMenu.items = items
   contextMenu.show = true
 }
 
 function showTabContextMenu(e: MouseEvent, tab: WindowInfo) {
   const items = [
-    {
-      label: t('common.minimize'),
-      icon: 'mdi-window-minimize',
-      action: () => desktop.toggleMinimize(tab.id),
-    },
-    {
-      label: t('common.maximize'),
-      icon: 'mdi-window-maximize',
-      action: () => desktop.toggleMaximize(tab.id),
-    },
-    {
-      label: t('common.close'),
-      icon: 'mdi-close',
-      action: () => desktop.closeWindow(tab.id),
-      destructive: true,
-    },
+    { label: t('common.minimize'), icon: 'mdi-window-minimize', action: () => desktop.toggleMinimize(tab.id) },
+    { label: t('common.maximize'), icon: 'mdi-window-maximize', action: () => desktop.toggleMaximize(tab.id) },
+    { label: t('common.close'), icon: 'mdi-close', action: () => desktop.closeWindow(tab.id), destructive: true },
   ]
-
-  const menuWidth = 180
-  const menuHeight = items.length * 40 + 16
-  const adjustedX = Math.min(e.clientX, window.innerWidth - menuWidth - 8)
-  const adjustedY = Math.min(e.clientY, window.innerHeight - menuHeight - 8)
-
-  contextMenu.x = adjustedX
-  contextMenu.y = adjustedY
+  const mw = 180, mh = items.length * 40 + 16
+  contextMenu.x = Math.min(e.clientX, window.innerWidth - mw - 8)
+  contextMenu.y = Math.min(e.clientY, window.innerHeight - mh - 8)
   contextMenu.items = items
   contextMenu.show = true
-}
-
-// Scroll tabs
-function scrollTabs(direction: number) {
-  if (windowsRef.value) {
-    windowsRef.value.scrollBy({ left: direction * 150, behavior: 'smooth' })
-  }
-}
-
-function updateScrollState() {
-  if (windowsRef.value) {
-    canScrollLeft.value = windowsRef.value.scrollLeft > 5
-    canScrollRight.value = windowsRef.value.scrollLeft < windowsRef.value.scrollWidth - windowsRef.value.clientWidth - 5
-  }
 }
 
 function updateGroupsScrollState() {
   if (groupsRef.value) {
     const el = groupsRef.value
-    const hasOverflow = el.scrollWidth > el.clientWidth + 2
-    groupsOverflow.value = hasOverflow
-    groupsCanScrollLeft.value = el.scrollLeft > 2
-    groupsCanScrollRight.value = el.scrollLeft < el.scrollWidth - el.clientWidth - 2
+    groupsOverflow.value = el.scrollWidth > el.clientWidth + 2
   }
 }
 
-// Close context menu on outside click
-function closeContextMenu() {
-  contextMenu.show = false
-}
+function closeContextMenu() { contextMenu.show = false }
 
-// Resize observer
 let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
   window.addEventListener('resize', onResize)
   document.addEventListener('click', closeContextMenu)
   document.addEventListener('touchstart', closeContextMenu)
-
-  nextTick(() => {
-    if (windowsRef.value) {
-      windowsRef.value.addEventListener('scroll', updateScrollState)
-      updateScrollState()
-    }
-    if (groupsRef.value) {
-      groupsRef.value.addEventListener('scroll', updateGroupsScrollState)
-      updateGroupsScrollState()
-    }
-  })
-
-  resizeObserver = new ResizeObserver(() => {
-    updateScrollState()
-    updateGroupsScrollState()
-  })
-  if (dockRef.value) {
-    resizeObserver.observe(dockRef.value)
-  }
+  nextTick(updateGroupsScrollState)
+  resizeObserver = new ResizeObserver(updateGroupsScrollState)
+  if (dockRef.value) resizeObserver.observe(dockRef.value)
 })
 
 onUnmounted(() => {
@@ -451,149 +286,112 @@ onUnmounted(() => {
 
 function onResize() {
   windowWidth.value = window.innerWidth
-  nextTick(updateScrollState)
+  nextTick(updateGroupsScrollState)
 }
 </script>
 
 <style lang="scss" scoped>
-.desktop-dock {
+// ── Dock container ──
+.lc-dock {
   position: fixed;
-  bottom: 12px;
-  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  bottom: 10px;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   z-index: 8000;
 
-  &.is-mobile {
-    bottom: 8px;
-    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-    left: 8px;
-    right: 8px;
+  &--mobile {
+    bottom: 6px;
+    bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    left: 6px;
+    right: 6px;
     transform: none;
   }
 }
 
-.glass-dock {
+// ── Glass bar ──
+.lc-dock__bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  gap: 6px;
+  padding: 5px 10px;
   max-width: 95vw;
-  background: var(--lc-dock-bg, color-mix(in srgb, var(--lc-surface, #ffffff) 92%, transparent));
-  backdrop-filter: blur(24px) saturate(1.2);
-  -webkit-backdrop-filter: blur(24px) saturate(1.2);
-  border: 1px solid var(--lc-dock-border, var(--lc-border, rgba(0, 0, 0, 0.12)));
-  border-radius: 16px;
+  background: var(--lc-dock-bg, color-mix(in srgb, var(--lc-surface, #ffffff) 88%, transparent));
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid var(--lc-dock-border, var(--lc-border, rgba(0, 0, 0, 0.1)));
+  border-radius: 14px;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    0 0 0 1px color-mix(in srgb, var(--lc-on-surface) 8%, transparent) inset;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+    0 4px 24px rgba(0, 0, 0, 0.1),
+    0 1px 4px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: box-shadow 0.3s ease;
 
-  .is-mobile & {
-    padding: 6px 8px;
-    gap: 4px;
-    border-radius: 20px;
+  .lc-dock--mobile & {
+    padding: 4px 6px;
+    gap: 2px;
+    border-radius: 16px;
     max-width: 100%;
-    overflow: hidden;
-  }
-
-  .is-tablet & {
-    max-width: 98vw;
   }
 }
 
-// Scroll buttons
-.dock-scroll-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: none;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--lc-on-surface, #333) 8%, transparent);
-  color: var(--lc-on-surface-variant, #666);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.15s ease;
-  padding: 0;
-
-  &:hover {
-    background: color-mix(in srgb, var(--lc-primary, #1565C0) 12%, transparent);
-    color: var(--lc-primary, #1565C0);
-  }
-
-  .is-mobile & {
-    display: none;
-  }
-}
-
-.dock-groups {
+// ── Groups section ──
+.lc-dock__groups {
   display: flex;
   align-items: center;
   gap: 2px;
-  flex-shrink: 1;
-  min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
   position: relative;
+  flex: 1;
+  min-width: 0;
 
   &::-webkit-scrollbar { display: none; }
 
-  // Scroll fade indicators (mask-image)
-  &.dock-groups--scrollable {
-    &::before,
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 24px;
-      z-index: 2;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
+  .lc-dock--mobile & { gap: 1px; }
+}
 
-    &::before {
-      left: 0;
-      background: linear-gradient(to right, var(--lc-dock-bg, #fff) 0%, transparent 100%);
-      opacity: 1;
-    }
+// ── Scroll fade ──
+.lc-dock__fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  z-index: 2;
+  pointer-events: none;
 
-    &::after {
-      right: 0;
-      background: linear-gradient(to left, var(--lc-dock-bg, #fff) 0%, transparent 100%);
-      opacity: 1;
-    }
+  &--left {
+    left: 0;
+    background: linear-gradient(to right, var(--lc-dock-bg, rgba(255,255,255,0.95)) 0%, transparent 100%);
   }
-
-  .is-mobile & {
-    gap: 2px;
+  &--right {
+    right: 0;
+    background: linear-gradient(to left, var(--lc-dock-bg, rgba(255,255,255,0.95)) 0%, transparent 100%);
   }
 }
 
-.dock-item {
+// ── Dock item ──
+.lc-dock__item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  border-radius: 10px;
+  gap: 2px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  flex-shrink: 1;
-  color: var(--lc-on-surface-muted, #666);
-  min-height: 44px;
+  flex-shrink: 0;
+  color: var(--lc-on-surface-variant, #555);
   min-width: 0;
-  width: auto;
+  transition: background 0.15s ease, color 0.15s ease;
+  animation: lc-dock-in 0.3s ease both;
 
-  .is-mobile & {
-    padding: 6px 6px;
-    min-height: 48px;
-    flex-shrink: 1;
+  .lc-dock--mobile & {
+    padding: 4px 6px;
     min-width: 0;
   }
 
@@ -603,368 +401,229 @@ function onResize() {
   }
 
   &:hover {
-    background: color-mix(in srgb, var(--lc-primary, #1565C0) 8%, transparent);
+    background: color-mix(in srgb, var(--lc-primary, #1565C0) 10%, transparent);
     color: var(--lc-primary, #1565C0);
-
-    .dock-icon { transform: scale(1.1); }
-  }
-
-  .is-mobile &:hover {
-    transform: none;
-  }
-
-  .is-desktop &:hover {
-    transform: translateY(-3px);
   }
 
   &:active {
-    transform: translateY(-1px) scale(0.96);
-    transition-duration: 0.08s;
+    transform: scale(0.92);
+    transition-duration: 0.06s;
   }
 
-  .is-mobile &:active {
-    transform: scale(0.95);
-  }
-
-  &.active {
+  &--active {
     color: var(--lc-primary, #1565C0);
-    .dock-label { color: var(--lc-primary, #1565C0); font-weight: 600; }
+    background: color-mix(in srgb, var(--lc-primary, #1565C0) 8%, transparent);
+
+    .lc-dock__label { font-weight: 600; }
   }
 }
 
-.dock-item-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  min-width: 0;
-}
-
-.dock-icon {
+.lc-dock__icon {
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
 }
 
-.dock-active-pill {
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 16px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--lc-primary, #1565C0);
-
-  .is-mobile & {
-    width: 20px;
-    height: 4px;
-  }
+.lc-dock__item:hover .lc-dock__icon {
+  transform: scale(1.15);
 }
 
-.dock-label {
-  font-size: 11px;
-  color: var(--lc-on-surface-muted, #888);
+.lc-dock__label {
+  font-size: 10px;
+  font-weight: 500;
+  color: inherit;
   white-space: nowrap;
-  max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 56px;
   text-align: center;
   direction: auto;
+  line-height: 1.2;
 
-  .is-mobile & {
-    max-width: 64px;
-    font-size: 10px;
-    line-height: 1.2;
+  .lc-dock--mobile & {
+    font-size: 9px;
+    max-width: 48px;
   }
 }
 
-.dock-badge {
+// ── Active pill ──
+.lc-dock__pill {
   position: absolute;
-  top: 2px;
-  inset-inline-end: 2px;
+  bottom: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--lc-primary, #1565C0);
+  animation: lc-pill-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  .lc-dock--mobile & { width: 16px; height: 3px; }
+}
+
+// ── Badge ──
+.lc-dock__badge {
+  position: absolute;
+  top: 0;
+  inset-inline-end: 0;
   min-width: 14px;
   height: 14px;
   border-radius: 7px;
-  padding: 0 4px;
-  font-size: 9px;
+  padding: 0 3px;
+  font-size: 8px;
   font-weight: 700;
   line-height: 14px;
   text-align: center;
   background: var(--lc-negative, #C10015);
-  color: white;
-  z-index: 1;
+  color: #fff;
   pointer-events: none;
-
-  .is-mobile & {
-    min-width: 16px;
-    height: 16px;
-    border-radius: 8px;
-    font-size: 10px;
-    line-height: 16px;
-  }
+  animation: lc-badge-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.dock-divider {
+// ── Separator ──
+.lc-dock__sep {
   width: 1px;
-  height: 28px;
-  background: var(--lc-border, rgba(0, 0, 0, 0.12));
+  height: 24px;
+  background: var(--lc-border, rgba(0, 0, 0, 0.1));
   flex-shrink: 0;
-  margin: 0 4px;
+  margin: 0 2px;
 
-  .is-mobile & {
-    height: 24px;
-    margin: 0 2px;
-    flex-shrink: 0;
-  }
+  .lc-dock--mobile & { height: 20px; margin: 0 1px; }
 }
 
-.dock-windows-wrapper {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.dock-windows {
+// ── Window tabs ──
+.lc-dock__windows {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   overflow-x: auto;
   scrollbar-width: none;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  min-width: 0;
   &::-webkit-scrollbar { display: none; }
-
-  .is-mobile & {
-    gap: 2px;
-  }
 }
 
-.dock-tab {
+.lc-dock__tab {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 3px 7px;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--lc-on-surface-variant, #666);
   white-space: nowrap;
-  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
   flex-shrink: 0;
+  transition: background 0.15s ease;
 
-  .is-mobile & {
-    padding: 6px 10px;
-    font-size: 13px;
-    gap: 6px;
-  }
+  &:hover { background: color-mix(in srgb, var(--lc-on-surface, #333) 8%, transparent); }
 
-  &:hover {
-    background: color-mix(in srgb, var(--lc-on-surface, #333) 8%, transparent);
-    color: var(--lc-on-surface, #333);
-    transform: translateY(-1px);
-
-    .dock-tab-minimize, .dock-tab-close { opacity: 0.6; }
-  }
-
-  &:active {
-    transform: translateY(0) scale(0.97);
-    transition-duration: 0.06s;
-  }
-
-  &.active {
+  &--active {
     background: var(--lc-primary, #1565c0);
     color: var(--lc-on-primary, white);
     font-weight: 500;
-    box-shadow: 0 2px 8px color-mix(in srgb, var(--lc-primary, #1565c0) 25%, transparent);
-
     .q-icon { color: var(--lc-on-primary, white); }
-    .dock-tab-minimize, .dock-tab-close { color: rgba(255,255,255,0.7); }
-    .dock-tab-minimize:hover, .dock-tab-close:hover { opacity: 1 !important; color: white; }
   }
 
-  .q-icon { pointer-events: none; font-size: 1em; }
+  &--min { opacity: 0.5; font-style: italic; }
 }
 
-.dock-tab.minimized { opacity: .55; }
-.dock-tab.minimized .dock-tab-title { font-style: italic; }
-
-.dock-tab-title {
-  max-width: 100px;
+.lc-dock__tab-title {
+  max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
-
-  .is-mobile & {
-    max-width: 70px;
-  }
+  .lc-dock--mobile & { max-width: 50px; }
 }
 
-.dock-tab-minimize,
-.dock-tab-close {
+.lc-dock__tab-close {
   opacity: 0;
   transition: opacity 0.15s ease;
 }
+.lc-dock__tab:hover .lc-dock__tab-close { opacity: 0.5; }
 
-.dock-window-actions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin-inline-start: 4px;
-  flex-shrink: 0;
-}
-
-.dock-window-count {
-  font-size: 10px;
+.lc-dock__win-count {
+  font-size: 9px;
   font-weight: 600;
   color: var(--lc-on-surface-variant, #999);
   background: color-mix(in srgb, var(--lc-on-surface-variant, #999) 10%, transparent);
-  border-radius: 8px;
-  padding: 1px 6px;
-  min-width: 16px;
-  text-align: center;
-
-  .is-mobile & {
-    font-size: 11px;
-    padding: 2px 8px;
-  }
+  border-radius: 6px;
+  padding: 1px 5px;
+  flex-shrink: 0;
 }
 
-.dock-minimize-all {
-  opacity: 0.5;
-  &:hover { opacity: 1; }
-}
-
-// Context Menu
-.dock-context-menu {
+// ── Context menu ──
+.lc-dock__ctx {
   position: fixed;
   z-index: 10000;
-  min-width: 160px;
-  background: var(--lc-surface, #ffffff);
-  border: 1px solid var(--lc-border, rgba(0, 0, 0, 0.12));
-  border-radius: 12px;
-  padding: 6px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(20px);
+  min-width: 150px;
+  background: var(--lc-surface, #fff);
+  border: 1px solid var(--lc-border, rgba(0, 0, 0, 0.1));
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-.context-menu-item {
+.lc-dock__ctx-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: 8px;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--lc-on-surface, #333);
-  transition: background 0.12s ease;
-  min-height: 36px;
+  transition: background 0.1s ease;
 
-  &:hover {
-    background: color-mix(in srgb, var(--lc-primary, #1565C0) 8%, transparent);
-  }
+  &:hover { background: color-mix(in srgb, var(--lc-primary, #1565C0) 8%, transparent); }
 
-  &.destructive {
+  &--danger {
     color: var(--lc-negative, #C10015);
-    &:hover {
-      background: color-mix(in srgb, var(--lc-negative, #C10015) 8%, transparent);
-    }
+    &:hover { background: color-mix(in srgb, var(--lc-negative, #C10015) 8%, transparent); }
   }
 }
 
-// Transitions
-.active-pill-enter-active { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.active-pill-leave-active { transition: all 0.2s ease; }
-.active-pill-enter-from { opacity: 0; width: 0; transform: translateX(-50%); }
-.active-pill-leave-to { opacity: 0; width: 0; transform: translateX(-50%); }
-
-.badge-pop-enter-active { transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.badge-pop-leave-active { transition: all 0.15s ease; }
-.badge-pop-enter-from { opacity: 0; transform: scale(0.5); }
-.badge-pop-leave-to { opacity: 0; transform: scale(0.5); }
-
-.dock-tab-enter-active,
-.dock-tab-leave-active {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.dock-tab-enter-from {
-  opacity: 0;
-  transform: scale(0.85) translateX(-8px);
-}
-.dock-tab-leave-to {
-  opacity: 0;
-  transform: scale(0.85);
-}
-.dock-tab-move {
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+// ── Animations ──
+@keyframes lc-dock-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.context-menu-enter-active { transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
-.context-menu-leave-active { transition: all 0.1s ease; }
-.context-menu-enter-from { opacity: 0; transform: scale(0.95); }
-.context-menu-leave-to { opacity: 0; transform: scale(0.95); }
-
-// Responsive
-@media (max-width: 599px) {
-  .dock-tab-title { max-width: 60px; }
-  .dock-tab-minimize { display: none; }
+@keyframes lc-pill-in {
+  from { opacity: 0; width: 0; }
+  to   { opacity: 1; }
 }
 
+@keyframes lc-badge-pop {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.ctx-enter-active { transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1); }
+.ctx-leave-active { transition: all 0.08s ease; }
+.ctx-enter-from, .ctx-leave-to { opacity: 0; transform: scale(0.95); }
+
+// ── Responsive ──
 @media (hover: none) and (pointer: coarse) {
-  .dock-item {
-    padding: 8px 12px;
-    min-height: 48px;
-  }
-  .dock-tab {
-    padding: 8px 10px;
-    font-size: 13px;
-    gap: 6px;
-  }
-  .dock-tab-minimize { display: none; }
-  .dock-tab-close {
-    opacity: 0.5;
-    &:active { opacity: 1; }
-  }
+  .lc-dock__tab-close { opacity: 0.3; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dock-item, .glass-dock, .dock-icon, .dock-active-pill, .dock-tab,
-  .badge-pop-enter-active, .badge-pop-leave-active,
-  .active-pill-enter-active, .active-pill-leave-active,
-  .dock-tab-enter-active, .dock-tab-leave-active, .dock-tab-move,
-  .context-menu-enter-active, .context-menu-leave-active {
-    transition: none !important;
+  .lc-dock__item, .lc-dock__pill, .lc-dock__badge,
+  .ctx-enter-active, .ctx-leave-active {
     animation: none !important;
+    transition: none !important;
   }
 }
 
-// Performance: reduce glass effect on low-end devices
-@media (prefers-reduced-motion: reduce) {
-  .glass-dock {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-}
-
-// RTL support
+// ── RTL ──
 [dir="rtl"] {
-  .dock-label {
-    direction: rtl;
-    text-align: center;
+  .lc-dock__label { direction: rtl; }
+  .lc-dock__fade--left {
+    left: auto; right: 0;
+    background: linear-gradient(to left, var(--lc-dock-bg, rgba(255,255,255,0.95)) 0%, transparent 100%);
   }
-
-  .dock-groups {
-    &.dock-groups--scrollable {
-      &::before {
-        left: auto;
-        right: 0;
-        background: linear-gradient(to left, var(--lc-dock-bg, #fff) 0%, transparent 100%);
-      }
-      &::after {
-        right: auto;
-        left: 0;
-        background: linear-gradient(to right, var(--lc-dock-bg, #fff) 0%, transparent 100%);
-      }
-    }
+  .lc-dock__fade--right {
+    right: auto; left: 0;
+    background: linear-gradient(to right, var(--lc-dock-bg, rgba(255,255,255,0.95)) 0%, transparent 100%);
   }
 }
 </style>

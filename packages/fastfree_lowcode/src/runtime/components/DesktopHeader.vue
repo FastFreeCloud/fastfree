@@ -1,27 +1,26 @@
 <template>
-  <q-header class="lc-desktop-header" :style="headerStyle" @mouseenter="hovered = true" @mouseleave="hovered = false">
-    <q-toolbar class="lc-toolbar">
-      <!-- Logo / Icon with pulse animation -->
-      <div class="lc-header-logo" :class="{ 'lc-header-logo--hover': hovered }">
-        <q-icon :name="icon" size="24px" color="white" />
+  <q-header class="lc-hdr" :style="headerStyle" @mouseenter="hovered = true" @mouseleave="hovered = false">
+    <q-toolbar class="lc-hdr__bar">
+      <!-- Logo -->
+      <div class="lc-hdr__logo" :class="{ 'lc-hdr__logo--hover': hovered }">
+        <q-icon :name="icon" size="20px" color="white" />
       </div>
 
-      <!-- Title — adaptive: full text if space, else truncate -->
-      <div class="lc-header-title">
-        <transition name="lc-title-fade" mode="out-in">
-          <span :key="title" class="lc-header-title__text" :title="title">
-            {{ title }}
-          </span>
-        </transition>
+      <!-- Title -->
+      <div class="lc-hdr__title">
+        <span class="lc-hdr__title-text" :title="title">{{ title }}</span>
       </div>
 
-      <!-- Right actions slot -->
+      <!-- Actions -->
       <slot name="right" />
       <slot name="left" />
     </q-toolbar>
 
-    <!-- Animated bottom accent line -->
-    <div class="lc-header-accent" :class="{ 'lc-header-accent--active': hovered }" />
+    <!-- Bottom accent -->
+    <div class="lc-hdr__accent" :class="{ 'lc-hdr__accent--on': hovered }" />
+
+    <!-- Shimmer -->
+    <div class="lc-hdr__shimmer" />
   </q-header>
 </template>
 
@@ -42,91 +41,64 @@ const hovered = ref(false)
 
 const headerStyle = computed(() => ({
   background: `linear-gradient(135deg, ${props.gradient[0]}, ${props.gradient[1]})`,
-  '--lc-gradient-from': props.gradient[0],
-  '--lc-gradient-to': props.gradient[1],
 }))
 </script>
 
 <style lang="scss" scoped>
-.lc-desktop-header {
+.lc-hdr {
   z-index: 5000;
   position: relative;
   overflow: hidden;
-  transition: box-shadow 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  }
-
-  .q-toolbar {
-    min-height: 50px;
-  }
 }
 
-// --- Toolbar layout ---
-.lc-toolbar {
+.lc-hdr__bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 50px;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 10px;
 }
 
-// --- Logo icon with subtle animation ---
-.lc-header-logo {
+// ── Logo ──
+.lc-hdr__logo {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(4px);
   flex-shrink: 0;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   &--hover {
     background: rgba(255, 255, 255, 0.22);
     transform: scale(1.08);
-    box-shadow: 0 0 16px rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
   }
 }
 
-// --- Title adaptive ---
-.lc-header-title {
+// ── Title ──
+.lc-hdr__title {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
 }
 
-.lc-header-title__text {
+.lc-hdr__title-text {
   display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   color: #fff;
-  font-weight: 700;
-  font-size: 1.1rem;
-  letter-spacing: 0.3px;
-  line-height: 1.3;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+  animation: lc-hdr-title-in 0.4s ease both;
 }
 
-// --- Title transition ---
-.lc-title-fade-enter-active,
-.lc-title-fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-.lc-title-fade-enter-from {
-  opacity: 0;
-  transform: translateY(-6px);
-}
-.lc-title-fade-leave-to {
-  opacity: 0;
-  transform: translateY(6px);
-}
-
-// --- Bottom accent line ---
-.lc-header-accent {
+// ── Accent line ──
+.lc-hdr__accent {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -134,58 +106,59 @@ const headerStyle = computed(() => ({
   height: 2px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.4) 20%,
-    rgba(255, 255, 255, 0.8) 50%,
-    rgba(255, 255, 255, 0.4) 80%,
+    rgba(255, 255, 255, 0.5) 30%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(255, 255, 255, 0.5) 70%,
     transparent 100%
   );
-  transform: scaleX(0.3);
+  transform: scaleX(0);
   opacity: 0;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
 
-  &--active {
+  &--on {
     transform: scaleX(1);
     opacity: 1;
   }
 }
 
-// --- Shimmer animation on load ---
-@keyframes lc-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.lc-desktop-header::before {
-  content: '';
+// ── Shimmer ──
+.lc-hdr__shimmer {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.04) 25%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.04) 75%,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.03) 75%,
     transparent 100%
   );
   background-size: 200% 100%;
-  animation: lc-shimmer 8s ease-in-out infinite;
+  animation: lc-hdr-shimmer 6s ease-in-out infinite;
   pointer-events: none;
 }
 
-// --- Mobile ---
+@keyframes lc-hdr-title-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes lc-hdr-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+// ── Mobile ──
 @media (max-width: 599px) {
-  .lc-toolbar {
-    min-height: 44px;
-  }
+  .lc-hdr__bar { min-height: 40px; padding: 0 8px; gap: 6px; }
+  .lc-hdr__logo { width: 26px; height: 26px; border-radius: 6px; }
+  .lc-hdr__title-text { font-size: 0.85rem; }
+}
 
-  .lc-header-logo {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-  }
-
-  .lc-header-title__text {
-    font-size: 0.95rem;
+@media (prefers-reduced-motion: reduce) {
+  .lc-hdr__title-text, .lc-hdr__accent, .lc-hdr__shimmer {
+    animation: none !important;
+    transition: none !important;
   }
 }
 </style>
