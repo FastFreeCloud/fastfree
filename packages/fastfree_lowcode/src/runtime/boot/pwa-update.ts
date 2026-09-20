@@ -52,9 +52,17 @@ function generateIconAtSize(logoBase64: string, size: number): Promise<string> {
   })
 }
 
+function sanitizeAppName(raw?: string, fallback = 'FastFree'): string {
+  if (!raw) return fallback
+  const trimmed = raw.trim()
+  if (!trimmed) return fallback
+  if (/^com\./.test(trimmed) || trimmed.includes('.') && /^[a-z]/.test(trimmed)) return fallback
+  return trimmed
+}
+
 async function updatePWAFromSettings(apiBaseUrl: string, settings: { name?: string; logo?: string }) {
-  const appName = settings.name || 'FastFree'
-  const shortName = settings.name || 'FastFree'
+  const appName = sanitizeAppName(settings.name, 'FastFree')
+  const shortName = sanitizeAppName(settings.name, 'FastFree')
 
   document.title = appName
   updateMeta('application-name', appName)
