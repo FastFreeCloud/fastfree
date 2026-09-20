@@ -55,6 +55,18 @@
         class="q-mt-md"
         @click="openPrivacy"
       />
+
+      <q-btn
+        v-if="hasEruda"
+        flat
+        dense
+        color="orange"
+        icon="mdi-console"
+        label="Debug Console"
+        aria-label="Open Debug Console"
+        class="q-mt-sm"
+        @click="openEruda"
+      />
     </div>
   </div>
 </template>
@@ -63,6 +75,12 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useLcI18n } from '../i18n'
 import { useDesktopStore } from '../composables/useDesktopStore'
+
+declare global {
+  interface Window {
+    __eruda?: { show: (tool?: string) => void; hide: () => void }
+  }
+}
 
 interface Props {
   title?: string
@@ -83,6 +101,11 @@ const desktopStore = useDesktopStore()
 const devMode = import.meta.env.DEV
 const isOnline = ref(typeof navigator !== 'undefined' ? navigator.onLine : true)
 const buildTime = new Date().toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' })
+const hasEruda = ref(false)
+
+function openEruda() {
+  window.__eruda?.show('console')
+}
 
 const systemInfo = reactive({ browser: '', os: '', screen: '', date: '' })
 
@@ -134,6 +157,7 @@ onMounted(() => {
   window.addEventListener('online', updateOnline)
   window.addEventListener('offline', updateOnline)
   updateSystemInfo()
+  hasEruda.value = typeof window.__eruda !== 'undefined'
 })
 
 onUnmounted(() => {

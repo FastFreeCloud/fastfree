@@ -7,15 +7,18 @@ function isBrowser(): boolean {
 export default boot(() => {
   if (!isBrowser()) return;
 
-  // Only load Eruda on native platforms (Capacitor)
-  if (window.location.protocol === 'capacitor:') {
+  void import('@capacitor/core').then(({ Capacitor }) => {
+    if (!Capacitor.isNativePlatform()) return;
+
     void import('eruda').then((m) => {
       m.default.init({
         tool: ['console', 'elements', 'network', 'resources', 'info'],
         useShadowDom: true,
         autoScale: true,
       });
-      console.warn('[eruda] initialized — tap the floating button to open console');
+      m.default.get('entryBtn').hide();
+      (window as Record<string, unknown>).__eruda = m.default;
+      console.warn('[eruda] initialized — use window.__eruda.show() to open console');
     });
-  }
+  });
 });
