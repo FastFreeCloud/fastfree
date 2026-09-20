@@ -102,7 +102,6 @@ export function registerBuiltinScreens(): void {
   const LcSettingsScreen = defineAsyncComponent(() => import('../components/LcSettingsScreen.vue'))
   const LcTranslationEditorScreen = defineAsyncComponent(() => import('../components/LcTranslationEditorScreen.vue'))
   const LcThemeScreen = defineAsyncComponent(() => import('../components/LcThemeScreen.vue'))
-  const LcPwaUpdateScreen = defineAsyncComponent(() => import('../components/LcPwaUpdateScreen.vue'))
   const LcShortcutsScreen = defineAsyncComponent(() => import('../components/LcShortcutsScreen.vue'))
   const LcPrivacyScreen = defineAsyncComponent(() => import('../components/LcPrivacyScreen.vue'))
   const LcStructureInspector = defineAsyncComponent(() => import('../components/LcStructureInspector.vue'))
@@ -116,7 +115,6 @@ export function registerBuiltinScreens(): void {
     'settings': { component: LcSettingsScreen, icon: 'mdi-cog-outline', groupId: 'system' },
     'translation-editor': { component: LcTranslationEditorScreen, icon: 'mdi-translate', groupId: 'system' },
     'theme': { component: LcThemeScreen, icon: 'mdi-palette-outline', groupId: 'system' },
-    'pwa-update': { component: LcPwaUpdateScreen, icon: 'mdi-cellphone-arrow-down', groupId: 'system' },
     'shortcuts': { component: LcShortcutsScreen, icon: 'mdi-keyboard-outline', groupId: 'system' },
     'privacy': { component: LcPrivacyScreen, icon: 'mdi-shield-lock-outline', groupId: 'system' },
     'structure-inspector': { component: LcStructureInspector, icon: 'mdi-file-tree-outline', groupId: 'system' },

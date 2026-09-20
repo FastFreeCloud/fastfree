@@ -5,7 +5,7 @@ export {
   DesktopShell, DesktopHeader, DesktopDock, WindowPanel, GroupWorkspace,
   LcSmartPagination, LcSmartFilter, LcPageHeader, LcSplashScreen,
   LcHeaderActions, LcConnectionScreen, LcErrorLogScreen, LcAboutScreen,
-  LcSettingsScreen, LcThemeScreen, LcTranslationEditorScreen, LcPwaUpdateScreen,
+  LcSettingsScreen, LcThemeScreen, LcTranslationEditorScreen,
   LcShortcutsScreen, LcPrivacyScreen, LcErrorBoundary,
   DynamicTable, DynamicForm, FilterToolbar, PaginationBar,
   EmptyState, AddRowButton,

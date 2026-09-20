@@ -46,7 +46,6 @@ const DEFAULT_SYSTEM_PAGES: GroupPage[] = [
   { id: 'about', screenType: 'about', label: 'screens.about', icon: 'mdi-information-outline' },
   { id: 'translation-editor', screenType: 'translation-editor', label: 'screens.translationEditor', icon: 'mdi-translate' },
   { id: 'theme', screenType: 'theme', label: 'screens.theme', icon: 'mdi-palette-outline' },
-  { id: 'pwa-update', screenType: 'pwa-update', label: 'screens.pwaUpdate', icon: 'mdi-cellphone-arrow-down' },
   { id: 'shortcuts', screenType: 'shortcuts', label: 'screens.shortcuts', icon: 'mdi-keyboard-outline' },
   { id: 'structure-inspector', screenType: 'structure-inspector', label: 'screens.structureInspector', icon: 'mdi-file-tree-outline' },
   { id: 'pinia-debugger', screenType: 'pinia-debugger', label: 'screens.piniaDebugger', icon: 'mdi-database-outline' },

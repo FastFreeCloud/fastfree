@@ -15,7 +15,6 @@ export const DEFAULT_DOCK_ITEMS: DockItem[] = [
   { id: 'settings', icon: 'mdi-cog-outline', label: 'Settings' },
   { id: 'translation-editor', icon: 'mdi-translate', label: 'Translation Editor' },
   { id: 'theme', icon: 'mdi-palette-outline', label: 'Theme' },
-  { id: 'pwa-update', icon: 'mdi-cellphone-arrow-down', label: 'PWA Update' },
   { id: 'shortcuts', icon: 'mdi-keyboard-outline', label: 'Shortcuts' },
   { id: 'pinia-debugger', icon: 'mdi-database-search', label: 'Pinia Debugger' },
 ]
@@ -67,12 +66,6 @@ export const LC_DEFAULT_DESKTOP: LcDesktopConfig = {
       maxInstances: 1,
       defaultWidth: 700,
       defaultHeight: 500,
-      maximizeOnOpen: false,
-    },
-    "pwa-update": {
-      maxInstances: 1,
-      defaultWidth: 500,
-      defaultHeight: 400,
       maximizeOnOpen: false,
     },
     shortcuts: {
