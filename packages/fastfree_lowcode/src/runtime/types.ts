@@ -41,6 +41,11 @@ export interface LcMessages {
   "common.lightMode": string;
   "common.pin": string;
   "common.view": string;
+  "common.logout": string;
+  "common.language": string;
+  "common.profile": string;
+  "common.english": string;
+  "common.arabic": string;
   "app.serverUrl": string;
   "app.enterServerUrl": string;
   "app.serverUrlHint": string;

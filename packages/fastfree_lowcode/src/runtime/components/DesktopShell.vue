@@ -10,7 +10,11 @@
         <slot :name="name" v-bind="slotData ?? {}" />
       </template>
       <template #right v-if="!$slots.right">
-        <LcHeaderActions>
+        <LcHeaderActions
+          :user-name="userName"
+          :user-email="userEmail"
+          :avatar-url="avatarUrl"
+        >
           <template #after>
             <slot name="header-right" />
           </template>
@@ -79,12 +83,18 @@ const props = withDefaults(
     gradient?: [string, string];
     autoOpenFirst?: boolean;
     screenFilter?: (screenId: string) => boolean;
+    userName?: string;
+    userEmail?: string;
+    avatarUrl?: string;
   }>(),
   {
     title: "Desktop",
     icon: "dashboard",
     gradient: () => ["#0D47A1", "#1565C0"],
     autoOpenFirst: true,
+    userName: "User",
+    userEmail: "",
+    avatarUrl: "",
   },
 );
 

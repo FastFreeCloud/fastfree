@@ -135,6 +135,11 @@ const LC_DEFAULT_MESSAGES_AR: LcMessages = {
 
   "common.darkMode": "الوضع الداكن",
   "common.lightMode": "الوضع الفاتح",
+  "common.logout": "خروج",
+  "common.language": "اللغة",
+  "common.profile": "الملف الشخصي",
+  "common.english": "الإنجليزية",
+  "common.arabic": "العربية",
   "common.preview": "معاينة",
   "common.system": "النظام",
   "common.favorites": "المفضلة",

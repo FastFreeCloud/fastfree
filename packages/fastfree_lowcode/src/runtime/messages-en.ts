@@ -135,6 +135,11 @@ const LC_DEFAULT_MESSAGES: LcMessages = {
 
   "common.darkMode": "Dark Mode",
   "common.lightMode": "Light Mode",
+  "common.logout": "Logout",
+  "common.language": "Language",
+  "common.profile": "Profile",
+  "common.english": "English",
+  "common.arabic": "Arabic",
   "common.preview": "Preview",
   "common.system": "System",
   "common.favorites": "Favorites",
