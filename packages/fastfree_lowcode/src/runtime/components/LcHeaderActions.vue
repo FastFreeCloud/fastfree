@@ -1,6 +1,39 @@
 <template>
   <div class="lc-header-actions">
-    <!-- Profile button (date/time live inside the profile menu) -->
+    <!-- Theme toggle — visible top-bar button -->
+    <q-btn
+      round
+      flat
+      dense
+      color="white"
+      class="lc-hdr-action"
+      :icon="themeStore.isDark ? icons.lightMode : icons.darkMode"
+      :aria-label="themeStore.isDark ? t('common.lightMode') : t('common.darkMode')"
+      @click="toggleTheme"
+    >
+      <q-tooltip>
+        {{ themeStore.isDark ? t('common.lightMode') : t('common.darkMode') }}
+      </q-tooltip>
+    </q-btn>
+
+    <!-- Language toggle — visible top-bar button -->
+    <q-btn
+      round
+      flat
+      dense
+      color="white"
+      class="lc-hdr-action"
+      :aria-label="t('common.language')"
+      @click="toggleLanguage"
+    >
+      <q-icon :name="icons.translate" />
+      <span class="lc-lang-badge">{{ currentLocale === 'ar' ? 'ع' : 'EN' }}</span>
+      <q-tooltip transition-show="scale" transition-hide="scale">
+        {{ t('common.language') }}: {{ currentLocale === 'ar' ? t('common.english') : t('common.arabic') }}
+      </q-tooltip>
+    </q-btn>
+
+    <!-- Profile button -->
     <q-btn
       flat
       round
@@ -14,7 +47,6 @@
         <img v-if="avatarUrl" :src="avatarUrl" :alt="userName" />
         <span v-else class="text-weight-bold">{{ userInitial }}</span>
       </q-avatar>
-      <q-tooltip>{{ t('common.profile') }}</q-tooltip>
 
       <!-- Profile menu -->
       <q-menu
@@ -25,85 +57,31 @@
         transition-hide="jump-up"
         :transition-duration="200"
       >
-        <q-list role="menu" style="min-width: 230px" class="lc-profile-menu">
-          <!-- User info + live date/time -->
-          <q-item class="lc-profile-user">
-            <q-item-section avatar>
-              <q-avatar size="42px" color="primary" text-color="white">
-                <img v-if="avatarUrl" :src="avatarUrl" :alt="userName" />
-                <span v-else class="text-weight-bold">{{ userInitial }}</span>
-              </q-avatar>
-            </q-item-section>
-            <q-item-section>
-              <q-item-label class="text-weight-medium">{{ userName }}</q-item-label>
-              <q-item-label v-if="userEmail" caption>{{ userEmail }}</q-item-label>
-              <div class="lc-profile-row lc-profile-row--time">
-                <q-icon :name="icons.clock" size="13px" />
-                <span>{{ dateTime.time }}</span>
-              </div>
-              <div class="lc-profile-row lc-profile-row--date">
-                <q-icon :name="icons.calendar" size="12px" />
-                <span>{{ dateTime.gregorianDate }}</span>
-                <q-icon :name="icons.hijri" size="12px" />
-                <span>{{ dateTime.hijriDate }}</span>
-              </div>
-            </q-item-section>
-          </q-item>
+        <!-- User card -->
+        <div class="lc-profile-card">
+          <q-avatar size="52px" color="primary" text-color="white" class="lc-profile-card__avatar">
+            <img v-if="avatarUrl" :src="avatarUrl" :alt="userName" />
+            <span v-else class="text-h6 text-weight-bold">{{ userInitial }}</span>
+          </q-avatar>
+          <div class="lc-profile-card__meta">
+            <div class="lc-profile-card__name">{{ userName }}</div>
+            <div v-if="userEmail" class="lc-profile-card__email">{{ userEmail }}</div>
+            <div class="lc-profile-card__row">
+              <q-icon :name="icons.clock" size="13px" />
+              <span>{{ dateTime.time }}</span>
+            </div>
+            <div class="lc-profile-card__row">
+              <q-icon :name="icons.calendar" size="12px" />
+              <span>{{ dateTime.gregorianDate }}</span>
+              <q-icon :name="icons.hijri" size="12px" />
+              <span>{{ dateTime.hijriDate }}</span>
+            </div>
+          </div>
+        </div>
 
-          <q-separator />
+        <q-separator />
 
-          <!-- Dark mode toggle (persisted via theme store → IndexedDB + localStorage mirror) -->
-          <q-item clickable v-close-popup @click="toggleTheme">
-            <q-item-section avatar>
-              <q-icon :name="themeStore.isDark ? icons.lightMode : icons.darkMode" />
-            </q-item-section>
-            <q-item-section>
-              {{ themeStore.isDark ? t('common.lightMode') : t('common.darkMode') }}
-            </q-item-section>
-            <q-item-section side>
-              <q-toggle
-                :model-value="themeStore.isDark"
-                @update:model-value="toggleTheme"
-                @click.stop
-                color="primary"
-                dense
-              />
-            </q-item-section>
-          </q-item>
-
-          <!-- Language submenu (persisted via i18n store → lc-locale) open inward to avoid edge clamps -->
-          <q-item clickable>
-            <q-item-section avatar>
-              <q-icon name="mdi-translate" />
-            </q-item-section>
-            <q-item-section>{{ t('common.language') }}</q-item-section>
-            <q-item-section side>
-              <q-icon :name="isRtl ? 'mdi-chevron-left' : 'mdi-chevron-right'" size="16px" />
-            </q-item-section>
-            <q-menu
-              :anchor="isRtl ? 'center right' : 'center left'"
-              :self="isRtl ? 'center left' : 'center right'"
-              transition-show="jump-down"
-              transition-hide="jump-up"
-              :transition-duration="150"
-            >
-              <q-list role="menu" dense style="min-width: 140px">
-                <q-item clickable v-close-popup @click="setLanguage('en')">
-                  <q-item-section>{{ t('common.english') }}</q-item-section>
-                  <q-item-section v-if="currentLocale === 'en'" side>
-                    <q-icon name="check" color="primary" size="16px" />
-                  </q-item-section>
-                </q-item>
-                <q-item clickable v-close-popup @click="setLanguage('ar')">
-                  <q-item-section>{{ t('common.arabic') }}</q-item-section>
-                  <q-item-section v-if="currentLocale === 'ar'" side>
-                    <q-icon name="check" color="primary" size="16px" />
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
-          </q-item>
-
+        <q-list role="menu" class="lc-profile-menu" style="min-width: 230px">
           <!-- Settings -->
           <q-item clickable v-close-popup @click="openSettings">
             <q-item-section avatar>
@@ -112,15 +90,7 @@
             <q-item-section>{{ t('screens.settings') }}</q-item-section>
           </q-item>
 
-          <!-- Theme -->
-          <q-item clickable v-close-popup @click="openTheme">
-            <q-item-section avatar>
-              <q-icon name="mdi-palette-outline" />
-            </q-item-section>
-            <q-item-section>{{ t('screens.theme') }}</q-item-section>
-          </q-item>
-
-          <q-separator />
+          <q-separator inset />
 
           <!-- Logout -->
           <q-item clickable v-close-popup @click="handleLogout">
@@ -166,6 +136,7 @@ const { t } = useLcI18n()
 const icons = computed(() => {
   const useMdi = props.mdi
   return {
+    translate: useMdi ? 'mdi-translate' : 'translate',
     clock: useMdi ? 'mdi-clock-outline' : 'schedule',
     calendar: useMdi ? 'mdi-calendar' : 'event',
     hijri: useMdi ? 'mdi-star-half-full' : 'star_half',
@@ -182,18 +153,13 @@ function toggleTheme() {
   themeStore.setMode(themeStore.isDark ? 'light' : 'dark')
 }
 
-function setLanguage(lang: 'en' | 'ar') {
-  if (i18nStore.locale.value !== lang) i18nStore.setLocale(lang)
+function toggleLanguage() {
+  i18nStore.setLocale(currentLocale.value === 'en' ? 'ar' : 'en')
 }
 
 function openSettings() {
   const brought = desktop.bringToFrontIfOpen('settings')
   if (!brought) desktop.openWindow('settings', t('screens.settings'), 'mdi-cog-outline')
-}
-
-function openTheme() {
-  const brought = desktop.bringToFrontIfOpen('theme')
-  if (!brought) desktop.openWindow('theme', t('screens.theme'), 'mdi-palette-outline')
 }
 
 function handleLogout() {
@@ -209,35 +175,58 @@ function handleLogout() {
   user-select: none;
 }
 
-.lc-datetime-column {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
+// ── Visible action buttons (theme / language) ──
+.lc-hdr-action {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: background 0.2s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.24);
+    transform: scale(1.06);
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
+
+  & + & {
+    margin-inline-start: 2px;
+  }
 }
 
-.lc-date-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
+// ── Language badge (current UI language) ──
+.lc-lang-badge {
+  position: absolute;
+  bottom: -1px;
+  inset-inline-end: -1px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: var(--lc-primary, #1565c0);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 15px;
+  text-align: center;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+  pointer-events: none;
 }
 
-.lc-time-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-}
-
-// --- Profile button ---
+// ── Profile button ──
 .lc-profile-btn {
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s ease;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: background 0.2s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
   animation: lc-fade-slide 0.4s ease 0.2s forwards;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: scale(1.08);
+    background: rgba(255, 255, 255, 0.24);
+    transform: scale(1.06);
   }
 
   &:active {
@@ -245,40 +234,63 @@ function handleLogout() {
   }
 }
 
-// --- Profile menu ---
-.lc-profile-menu {
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.lc-profile-user {
+// ── Profile menu ──
+.lc-profile-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
   background: color-mix(in srgb, var(--q-primary, #1565C0) 6%, transparent);
 }
 
-.lc-profile-row {
+.lc-profile-card__avatar {
+  flex-shrink: 0;
+}
+
+.lc-profile-card__meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.lc-profile-card__name {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lc-profile-card__email {
+  font-size: 12px;
+  color: var(--lc-on-surface-variant, #666);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 6px;
+}
+
+.lc-profile-card__row {
   display: flex;
   align-items: center;
   gap: 5px;
-  color: var(--lc-on-surface-variant, #555);
-  line-height: 1.2;
-
-  &--time {
-    margin-top: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--lc-primary, #1565C0);
-  }
-
-  &--date {
-    margin-top: 2px;
-    font-size: 10px;
-  }
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--lc-primary, #1565c0);
+  line-height: 1.4;
 }
 
-// --- Mobile ---
+.lc-profile-menu {
+  border-radius: 0 0 12px 12px;
+}
+
+// ── Mobile ──
 @media (max-width: 599px) {
   .lc-header-actions { gap: 4px; }
   .lc-profile-btn { animation-delay: 0.15s; }
+  .lc-hdr-action, .lc-profile-btn {
+    background: rgba(255, 255, 255, 0.1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -286,5 +298,6 @@ function handleLogout() {
     animation: none !important;
     opacity: 1 !important;
   }
+  .lc-hdr-action { transition: none !important; }
 }
 </style>
