@@ -26,6 +26,8 @@ import { getLcI18nStore } from './composables/useLcI18nStore'
 import { getThemeStore } from './composables/useThemeStore'
 import errorHandler from './boot/error-handler'
 import { getSplashCoordinator } from './composables/useSplashCoordinator'
+import arLang from 'quasar/lang/ar'
+import enLang from 'quasar/lang/en-US'
 
 export { createDesktopStore }
 
@@ -42,19 +44,23 @@ export default function ({ app }: { app: { provide: (key: string | symbol, value
   splash.show()
   app.config.globalProperties.$lcConfig = config
 
-  // Initialize i18n store and apply saved locale
+  // Initialize i18n store and apply saved locale.
+  // IMPORTANT: apply the Quasar lang pack SYNCHRONOUSLY (static import) so that
+  // $q.lang.rtl matches document dir from the very first render — otherwise
+  // q-menu logical anchors (start/end) misplace popups in RTL during the
+  // async dynamic-import window.
   const i18nStore = getLcI18nStore()
   const savedLang = i18nStore.locale.value
   const langInfo = getLanguageInfo(savedLang)
-  if (langInfo?.direction === 'rtl') {
-    const $q = app.config.globalProperties.$q as { direction?: string; lang?: { set: (m: unknown) => void } } | undefined
-    if ($q) $q.direction = 'rtl'
-    document.documentElement.dir = 'rtl'
-    if (savedLang === 'ar') {
-      import('quasar/lang/ar').then((mod) => {
-        $q?.lang?.set(mod.default)
-      }).catch(() => {})
+  const $q = app.config.globalProperties.$q as { direction?: string; lang?: { set: (m: unknown) => void } } | undefined
+  if ($q) {
+    $q.direction = langInfo?.direction ?? 'ltr'
+    if ($q.lang) {
+      $q.lang.set(savedLang === 'ar' ? arLang : enLang)
+    } else {
+      console.warn('[fastfree-lowcode] $q.lang not available at boot')
     }
+    document.documentElement.dir = ($q.direction === 'rtl') ? 'rtl' : 'ltr'
   }
 
   // Initialize theme store — loads saved config and applies CSS vars + dark mode

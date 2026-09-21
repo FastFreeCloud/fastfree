@@ -41,15 +41,17 @@
         <template v-for="win in desktop.sortedWindows" :key="win.id">
           <window-panel :info="win">
             <slot :name="`window-${win.screenType}`">
-              <GroupWorkspace
-                v-if="win.screenType.startsWith('_group-')"
-                :group-id="win.screenType.replace('_group-', '')"
-              />
-              <component
-                v-else-if="getScreenComponent(win.screenType)"
-                :is="getScreenComponent(win.screenType)"
-                v-bind="getScreenProps(win.screenType)"
-              />
+              <LcErrorBoundary compact>
+                <GroupWorkspace
+                  v-if="win.screenType.startsWith('_group-')"
+                  :group-id="win.screenType.replace('_group-', '')"
+                />
+                <component
+                  v-else-if="getScreenComponent(win.screenType)"
+                  :is="getScreenComponent(win.screenType)"
+                  v-bind="getScreenProps(win.screenType)"
+                />
+              </LcErrorBoundary>
             </slot>
           </window-panel>
         </template>
@@ -70,6 +72,7 @@ import DesktopHeader from "./DesktopHeader.vue";
 import DesktopDock from "./DesktopDock.vue";
 import WindowPanel from "./WindowPanel.vue";
 import LcHeaderActions from "./LcHeaderActions.vue";
+import LcErrorBoundary from "./LcErrorBoundary.vue";
 import GroupWorkspace from "./GroupWorkspace.vue";
 
 import { getSplashCoordinator } from "../composables/useSplashCoordinator";

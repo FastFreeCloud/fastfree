@@ -2,7 +2,7 @@
   <div
     class="lc-dock"
     v-if="fixedGroups.length > 0"
-    :class="{ 'lc-dock--mobile': isMobile, 'lc-dock--tablet': isTablet }"
+    :class="{ 'lc-dock--mobile': isMobile, 'lc-dock--tablet': isTablet, 'lc-dock--icons-only': iconsOnly }"
     role="toolbar"
     :aria-label="t('common.dock')"
   >
@@ -20,6 +20,7 @@
           :style="{ animationDelay: `${idx * 40}ms` }"
           :aria-label="translatedName(group.id)"
           :aria-selected="isGroupActive(group.id)"
+          :title="translatedName(group.id)"
           role="tab"
           tabindex="0"
           @click="openGroupWorkspace(group.id, translatedName(group.id), group.icon)"
@@ -87,6 +88,7 @@
           class="lc-dock__ctx"
           :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
           @click.stop
+          @touchstart.stop
           @contextmenu.prevent
         >
           <div
@@ -124,6 +126,10 @@ const isMobile = computed(() => windowWidth.value < 600)
 const isTablet = computed(() => windowWidth.value >= 600 && windowWidth.value < 1024)
 
 const groupsOverflow = ref(false)
+const iconsOnly = ref(false)
+
+// Approximate width per dock item when a label is shown (mobile/desktop differ).
+const ITEM_WITH_LABEL_WIDTH = 96
 
 const contextMenu = reactive({
   show: false,
@@ -231,6 +237,11 @@ function updateGroupsScrollState() {
   if (groupsRef.value) {
     const el = groupsRef.value
     groupsOverflow.value = el.scrollWidth > el.clientWidth + 2
+    // Adaptive density: if all 9 groups cannot fit with labels, go icons-only
+    // so nothing is clipped and every group stays reachable.
+    const count = allGroups.value.length
+    const needed = count * ITEM_WITH_LABEL_WIDTH + (count - 1) * 2
+    iconsOnly.value = count > 0 && needed > el.clientWidth
   }
 }
 
@@ -241,7 +252,6 @@ let resizeObserver: ResizeObserver | null = null
 onMounted(() => {
   window.addEventListener('resize', onResize)
   document.addEventListener('click', closeContextMenu)
-  document.addEventListener('touchstart', closeContextMenu)
   nextTick(updateGroupsScrollState)
   resizeObserver = new ResizeObserver(updateGroupsScrollState)
   if (dockRef.value) resizeObserver.observe(dockRef.value)
@@ -250,7 +260,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', onResize)
   document.removeEventListener('click', closeContextMenu)
-  document.removeEventListener('touchstart', closeContextMenu)
   if (longPressTimer) clearTimeout(longPressTimer)
   resizeObserver?.disconnect()
 })
@@ -396,6 +405,14 @@ function onResize() {
 
 .lc-dock__item:hover .lc-dock__icon {
   transform: scale(1.15);
+}
+
+// ── Icons-only mode ──
+// Hide labels and enlarge the icons so every group fits without clipping.
+.lc-dock--icons-only {
+  .lc-dock__label { display: none; }
+  .lc-dock__item { padding-inline: 10px; }
+  .lc-dock__icon { font-size: 22px !important; }
 }
 
 .lc-dock__label {
@@ -568,6 +585,17 @@ function onResize() {
   to   { opacity: 1; transform: scale(1); }
 }
 
+// Subtle "breathing" pulse on the active / hovered icon so the grey resting
+// state still reads as interactive.
+@keyframes lc-icon-pulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(21, 101, 192, 0)); }
+  50%      { transform: scale(1.18); filter: drop-shadow(0 0 6px var(--lc-primary, #1565C0)); }
+}
+.lc-dock__item--active .lc-dock__icon,
+.lc-dock__item:hover .lc-dock__icon {
+  animation: lc-icon-pulse 1.6s ease-in-out infinite;
+}
+
 .ctx-enter-active { transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1); }
 .ctx-leave-active { transition: all 0.08s ease; }
 .ctx-enter-from, .ctx-leave-to { opacity: 0; transform: scale(0.95); }
@@ -579,6 +607,7 @@ function onResize() {
 
 @media (prefers-reduced-motion: reduce) {
   .lc-dock__item, .lc-dock__pill, .lc-dock__badge,
+  .lc-dock__item .lc-dock__icon,
   .ctx-enter-active, .ctx-leave-active {
     animation: none !important;
     transition: none !important;

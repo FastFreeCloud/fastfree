@@ -25,12 +25,13 @@ const updateVersionInfo = ref('')
 watch(
   () => appUpdate?.status.value.available,
   (available) => {
-    if (available) {
-      updateAvailable.value = true
-      updateVersionInfo.value = appUpdate?.status.value.versionCode
+    // Mirror the live status both ways so a later "not available" result
+    // (or a dismissed flexible update) does not leave a stale dialog.
+    updateAvailable.value = available === true
+    updateVersionInfo.value =
+      available && appUpdate?.status.value.versionCode
         ? `v${appUpdate.status.value.versionCode}`
         : ''
-    }
   },
   { immediate: true }
 )

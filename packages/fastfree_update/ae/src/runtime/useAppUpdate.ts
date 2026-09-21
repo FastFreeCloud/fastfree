@@ -311,9 +311,7 @@ async function checkNative(): Promise<UpdateStatus> {
       console.warn('[fastfree-update] native plugin unavailable');
       return { available: false };
     }
-    console.warn('[fastfree-update] calling getAppUpdateInfo()');
     const raw: unknown = await plugin.getAppUpdateInfo();
-    console.warn('[fastfree-update] getAppUpdateInfo result:', JSON.stringify(raw));
     const info = asRecord(raw) ?? {};
     const current =
       typeof info.currentVersionCode === 'number'
@@ -323,13 +321,14 @@ async function checkNative(): Promise<UpdateStatus> {
       typeof info.availableVersionCode === 'number'
         ? info.availableVersionCode
         : null;
-    // A newer versionCode is the primary signal; the Play availability enum
-    // (UPDATE_AVAILABLE === 2) is the fallback. Unknown shapes → unavailable.
+    // Primary signal = Play availability enum:
+    //   2 = UPDATE_AVAILABLE, 3 = DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS (resume)
+    // A newer versionCode is the secondary guard.
+    const availability = info.updateAvailability;
     const available =
-      (current !== null &&
-        availableCode !== null &&
-        availableCode > current) ||
-      info.updateAvailability === 2;
+      availability === 2 ||
+      availability === 3 ||
+      (current !== null && availableCode !== null && availableCode > current);
     const next: UpdateStatus = { available };
     if (availableCode !== null) {
       next.versionCode = availableCode;

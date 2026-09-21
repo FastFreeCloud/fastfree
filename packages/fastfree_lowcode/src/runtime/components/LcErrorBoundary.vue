@@ -1,5 +1,9 @@
 <template>
-  <div v-if="error" class="lc-error-boundary">
+  <div
+    v-if="error"
+    class="lc-error-boundary"
+    :class="{ 'lc-error-boundary--compact': compact }"
+  >
     <div class="lc-error-boundary__card">
       <div class="lc-error-boundary__icon">
         <q-icon name="mdi-alert-circle" color="negative" size="64px" />
@@ -56,6 +60,8 @@ import { useLcI18n } from '../i18n'
 
 const { t } = useLcI18n()
 
+withDefaults(defineProps<{ compact?: boolean }>(), { compact: false })
+
 const error = ref<Error | null>(null)
 const errorInfo = ref('')
 const appVersion = ref('0.0.1')
@@ -103,6 +109,26 @@ function goHome() {
   padding: 24px;
   background: var(--lc-bg, #f5f5f5);
   font-family: 'Cairo', sans-serif;
+}
+
+.lc-error-boundary--compact {
+  min-height: 100%;
+  height: 100%;
+  padding: 16px;
+
+  .lc-error-boundary__card {
+    padding: 24px 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .lc-error-boundary__icon {
+    margin-bottom: 8px;
+    .q-icon { font-size: 40px; }
+  }
+
+  .lc-error-boundary__title { font-size: 18px; }
+  .lc-error-boundary__message { margin-bottom: 16px; }
+  .lc-error-boundary__actions { flex-wrap: wrap; }
 }
 
 .lc-error-boundary__card {

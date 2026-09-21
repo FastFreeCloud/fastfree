@@ -1,28 +1,6 @@
 <template>
   <div class="lc-header-actions">
-    <!-- DateTime column with staggered fade-in -->
-    <div class="lc-datetime-column">
-      <div class="lc-date-row">
-        <q-icon :name="icons.calendar" size="14px" color="white" class="lc-icon-animate lc-icon-animate--1" />
-        <span class="text-white text-caption text-weight-medium gt-xs lc-text-animate lc-text-animate--2">
-          {{ dateTime.gregorianDate }}
-        </span>
-        <q-icon :name="icons.hijri" size="14px" color="white" class="gt-xs lc-icon-animate lc-icon-animate--3" />
-        <span class="text-white text-caption text-weight-medium gt-xs lc-text-animate lc-text-animate--4">
-          {{ dateTime.hijriDate }}
-        </span>
-      </div>
-      <div class="lc-time-row">
-        <q-icon :name="icons.clock" size="14px" color="white" class="lc-icon-animate lc-icon-animate--5" />
-        <span class="text-white text-caption text-weight-medium lc-text-animate lc-text-animate--6">
-          {{ dateTime.time }}
-        </span>
-      </div>
-    </div>
-
-    <q-separator vertical color="white" class="q-mx-xs lc-separator-animate" />
-
-    <!-- Profile button -->
+    <!-- Profile button (date/time live inside the profile menu) -->
     <q-btn
       flat
       round
@@ -40,15 +18,15 @@
 
       <!-- Profile menu -->
       <q-menu
-        anchor="bottom end"
-        self="top end"
+        :anchor="isRtl ? 'bottom left' : 'bottom right'"
+        :self="isRtl ? 'top left' : 'top right'"
         :offset="[0, 8]"
         transition-show="jump-down"
         transition-hide="jump-up"
         :transition-duration="200"
       >
         <q-list role="menu" style="min-width: 230px" class="lc-profile-menu">
-          <!-- User info -->
+          <!-- User info + live date/time -->
           <q-item class="lc-profile-user">
             <q-item-section avatar>
               <q-avatar size="42px" color="primary" text-color="white">
@@ -59,12 +37,22 @@
             <q-item-section>
               <q-item-label class="text-weight-medium">{{ userName }}</q-item-label>
               <q-item-label v-if="userEmail" caption>{{ userEmail }}</q-item-label>
+              <div class="lc-profile-row lc-profile-row--time">
+                <q-icon :name="icons.clock" size="13px" />
+                <span>{{ dateTime.time }}</span>
+              </div>
+              <div class="lc-profile-row lc-profile-row--date">
+                <q-icon :name="icons.calendar" size="12px" />
+                <span>{{ dateTime.gregorianDate }}</span>
+                <q-icon :name="icons.hijri" size="12px" />
+                <span>{{ dateTime.hijriDate }}</span>
+              </div>
             </q-item-section>
           </q-item>
 
           <q-separator />
 
-          <!-- Dark mode toggle (persisted via theme store → IndexedDB) -->
+          <!-- Dark mode toggle (persisted via theme store → IndexedDB + localStorage mirror) -->
           <q-item clickable v-close-popup @click="toggleTheme">
             <q-item-section avatar>
               <q-icon :name="themeStore.isDark ? icons.lightMode : icons.darkMode" />
@@ -83,9 +71,7 @@
             </q-item-section>
           </q-item>
 
-          <q-separator />
-
-          <!-- Language submenu (persisted via i18n store → lc-locale) -->
+          <!-- Language submenu (persisted via i18n store → lc-locale) open inward to avoid edge clamps -->
           <q-item clickable>
             <q-item-section avatar>
               <q-icon name="mdi-translate" />
@@ -95,8 +81,8 @@
               <q-icon :name="isRtl ? 'mdi-chevron-left' : 'mdi-chevron-right'" size="16px" />
             </q-item-section>
             <q-menu
-              :anchor="isRtl ? 'center left' : 'center right'"
-              :self="isRtl ? 'center right' : 'center left'"
+              :anchor="isRtl ? 'center right' : 'center left'"
+              :self="isRtl ? 'center left' : 'center right'"
               transition-show="jump-down"
               transition-hide="jump-up"
               :transition-duration="150"
@@ -117,8 +103,6 @@
               </q-list>
             </q-menu>
           </q-item>
-
-          <q-separator />
 
           <!-- Settings -->
           <q-item clickable v-close-popup @click="openSettings">
@@ -245,34 +229,11 @@ function handleLogout() {
   gap: 3px;
 }
 
-// --- Staggered fade-in animations ---
-@keyframes lc-fade-slide {
-  from { opacity: 0; transform: translateX(-6px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-.lc-icon-animate,
-.lc-text-animate {
-  opacity: 0;
-  animation: lc-fade-slide 0.4s ease forwards;
-}
-.lc-icon-animate--1 { animation-delay: 0.1s; }
-.lc-text-animate--2 { animation-delay: 0.15s; }
-.lc-icon-animate--3 { animation-delay: 0.2s; }
-.lc-text-animate--4 { animation-delay: 0.25s; }
-.lc-icon-animate--5 { animation-delay: 0.3s; }
-.lc-text-animate--6 { animation-delay: 0.35s; }
-
-.lc-separator-animate {
-  opacity: 0;
-  animation: lc-fade-slide 0.3s ease 0.4s forwards;
-}
-
 // --- Profile button ---
 .lc-profile-btn {
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s ease;
   opacity: 0;
-  animation: lc-fade-slide 0.4s ease 0.45s forwards;
+  animation: lc-fade-slide 0.4s ease 0.2s forwards;
 
   &:hover {
     background: rgba(255, 255, 255, 0.15);
@@ -294,14 +255,34 @@ function handleLogout() {
   background: color-mix(in srgb, var(--q-primary, #1565C0) 6%, transparent);
 }
 
+.lc-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--lc-on-surface-variant, #555);
+  line-height: 1.2;
+
+  &--time {
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--lc-primary, #1565C0);
+  }
+
+  &--date {
+    margin-top: 2px;
+    font-size: 10px;
+  }
+}
+
 // --- Mobile ---
 @media (max-width: 599px) {
   .lc-header-actions { gap: 4px; }
-  .lc-profile-btn { animation-delay: 0.3s; }
+  .lc-profile-btn { animation-delay: 0.15s; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lc-icon-animate, .lc-text-animate, .lc-separator-animate, .lc-profile-btn {
+  .lc-profile-btn {
     animation: none !important;
     opacity: 1 !important;
   }

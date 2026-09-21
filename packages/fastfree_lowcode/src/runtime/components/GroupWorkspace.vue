@@ -304,12 +304,16 @@ onMounted(() => {
   width: 100%;
   max-width: 800px;
   margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
 }
 
 .cosmic-search {
   flex: 1;
+  min-width: 0;
 
   .search-input {
+    min-width: 0;
     :deep(.q-field__control) {
       border-radius: 24px;
       background: color-mix(

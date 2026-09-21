@@ -1,6 +1,8 @@
 import { reactive, type UnwrapNestedRefs } from 'vue'
 import { defineStore } from 'pinia'
 import { useQuasar } from 'quasar'
+import arLang from 'quasar/lang/ar'
+import enLang from 'quasar/lang/en-US'
 import { LC_DEFAULT_MESSAGES, LC_DEFAULT_MESSAGES_AR, type LcMessages } from '../config'
 import { getSharedConfig } from '../shared-config'
 
@@ -171,12 +173,11 @@ export const useLcI18nStore = defineStore('lc-i18n', () => {
     locale.value = lang
     saveLocale(lang)
 
+    // Apply the Quasar lang pack synchronously (static import) so $q.lang.rtl
+    // flips together with the locale — avoids RTL popup misplacement.
     try {
       const $q = useQuasar()
-      const packPromise = lang === 'ar'
-        ? import('quasar/lang/ar')
-        : import('quasar/lang/en-US')
-      packPromise.then((mod) => { $q.lang.set(mod.default) }).catch(() => {})
+      $q.lang.set(lang === 'ar' ? arLang : enLang)
     } catch { /* Quasar lang pack not available */ }
   }
 
