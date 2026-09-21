@@ -1,5 +1,4 @@
 import { boot } from 'quasar/wrappers';
-import { Notify } from 'quasar';
 import type { App } from 'vue';
 import UpdateDialog from 'quasar-app-extension-fastfree_update/src/runtime/UpdateDialog.vue';
 import { useAppUpdate } from 'quasar-app-extension-fastfree_update/src/runtime/useAppUpdate';
@@ -33,32 +32,22 @@ export default boot(({ app }: { app: App }) => {
             if (document.visibilityState !== 'visible') return;
             if (appUpdate.isSnoozed()) return;
             void appUpdate.checkForUpdate();
-          } catch (e) { console.warn('[fastfree-update] recheck failed:', e); }
+          } catch { /* silent */ }
         }, FOREGROUND_DEBOUNCE_MS);
-      } catch (e) { console.warn('[fastfree-update] scheduleRecheck failed:', e); }
+      } catch { /* silent */ }
     };
 
     document.addEventListener('visibilitychange', scheduleRecheck);
     window.addEventListener('online', scheduleRecheck);
 
-    // Initial check on cold start (after a short delay to let the app settle)
+    // Initial check on cold start (after a short delay to let the app settle).
+    // Silent: the professional UpdateDialog in App.vue appears only when an
+    // update is actually available (status.available === true).
     setTimeout(() => {
       try {
-        if (appUpdate.isSnoozed()) {
-          console.warn('[fastfree-update] snoozed, skipping check');
-          return;
-        }
-        console.warn('[fastfree-update] running initial checkForUpdate()');
-        void appUpdate.checkForUpdate().then((result) => {
-          console.warn('[fastfree-update] checkForUpdate result:', JSON.stringify(result));
-          try {
-            const msg = result.available
-              ? `Update available: v${result.versionCode ?? '?'}`
-              : 'No update available (current version is latest)';
-            Notify.create({ message: msg, color: result.available ? 'positive' : 'grey', position: 'top', timeout: 4000 });
-          } catch { /* ignore */ }
-        });
-      } catch (e) { console.warn('[fastfree-update] initial check failed:', e); }
+        if (appUpdate.isSnoozed()) return;
+        void appUpdate.checkForUpdate();
+      } catch { /* silent */ }
     }, 3000);
-  } catch (e) { console.warn('[fastfree-update] boot failed:', e); }
+  } catch { /* boot must never crash */ }
 });

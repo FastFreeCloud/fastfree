@@ -40,35 +40,6 @@
             {{ openWindowCount(group.id) > 99 ? '99+' : openWindowCount(group.id) }}
           </span>
         </button>
-
-        <div v-if="customGroups.length > 0" class="lc-dock__sep" />
-
-        <button
-          v-for="(group, idx) in customGroups"
-          :key="group.id"
-          class="lc-dock__item"
-          :class="{ 'lc-dock__item--active': isGroupActive(group.id) }"
-          :style="{ animationDelay: `${(fixedGroups.length + idx) * 40}ms` }"
-          :aria-label="translatedName(group.id)"
-          role="tab"
-          tabindex="0"
-          @click="openGroupWorkspace(group.id, translatedName(group.id), group.icon)"
-          @keydown.enter.prevent="openGroupWorkspace(group.id, translatedName(group.id), group.icon)"
-          @touchstart.passive="onTouchStart($event, group)"
-          @touchend="onTouchEnd"
-          @contextmenu.prevent="showContextMenu($event, group)"
-        >
-          <q-icon :name="group.icon" :size="isMobile ? '20px' : '18px'" class="lc-dock__icon" />
-          <span class="lc-dock__label">{{ translatedName(group.id) }}</span>
-          <span v-if="isGroupActive(group.id)" class="lc-dock__pill" />
-          <span
-            v-if="openWindowCount(group.id) > 0"
-            class="lc-dock__badge"
-            :key="openWindowCount(group.id)"
-          >
-            {{ openWindowCount(group.id) > 99 ? '99+' : openWindowCount(group.id) }}
-          </span>
-        </button>
       </div>
 
       <!-- Scroll fade -->
