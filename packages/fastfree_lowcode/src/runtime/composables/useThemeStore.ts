@@ -480,19 +480,51 @@ export const useThemeStore = defineStore('lc-theme', () => {
     }
   }
 
+  const MODE_MIRROR_KEY = 'lc-theme-mode'
+  const LEGACY_MODE_KEY = 'lc-theme-manager'
+  const VALID_MODES = ['light', 'dark', 'system'] as const
+
+  function readMirroredMode(): 'light' | 'dark' | 'system' | null {
+    if (isServer) return null
+    // 1. Our own mirror (plain string, written on every change)
+    try {
+      const raw = localStorage.getItem(MODE_MIRROR_KEY)
+      if (raw === 'light' || raw === 'dark' || raw === 'system') return raw
+    } catch { /* ignore */ }
+    // 2. Legacy localStorage value from older builds (string or { mode })
+    try {
+      const legacy = localStorage.getItem(LEGACY_MODE_KEY)
+      if (legacy === 'light' || legacy === 'dark' || legacy === 'system') return legacy
+      if (legacy) {
+        const parsed: unknown = JSON.parse(legacy)
+        if (parsed && typeof parsed === 'object') {
+          const m = (parsed as Record<string, unknown>).mode
+          if (m === 'light' || m === 'dark' || m === 'system') return m
+        }
+      }
+    } catch { /* ignore */ }
+    return null
+  }
+
   async function loadConfig() {
     if (isServer) return
     try {
       const saved = await getThemeConfig<ThemeConfig>(STORAGE_KEY)
       if (saved) {
-        const validModes = ['light', 'dark', 'system']
-        mode.value = validModes.includes(saved.mode) ? saved.mode : 'system'
+        mode.value = (VALID_MODES as readonly string[]).includes(saved.mode) ? saved.mode : 'system'
         presetName.value = typeof saved.preset === 'string' ? saved.preset : 'ocean'
         customLight.value = typeof saved.customLight === 'object' ? saved.customLight : {}
         customDark.value = typeof saved.customDark === 'object' ? saved.customDark : {}
         apply()
+        return
       }
     } catch { /* ignore */ }
+    // IndexedDB empty or blocked → fall back to localStorage mirror/legacy
+    const mirrored = readMirroredMode()
+    if (mirrored) {
+      mode.value = mirrored
+      apply()
+    }
   }
 
   watch(
@@ -506,6 +538,10 @@ export const useThemeStore = defineStore('lc-theme', () => {
           customLight: customLight.value,
           customDark: customDark.value,
         })
+      } catch { /* ignore */ }
+      // Synchronous mirror: survives even when IndexedDB is blocked
+      try {
+        localStorage.setItem(MODE_MIRROR_KEY, mode.value)
       } catch { /* ignore */ }
     },
   )
