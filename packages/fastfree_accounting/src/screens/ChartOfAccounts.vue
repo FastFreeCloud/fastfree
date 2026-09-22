@@ -140,7 +140,7 @@ watch(filteredTree, (tree) => {
 
 function filterTree(nodes: (Account & { children?: Account[] })[], query: string): (Account & { children?: Account[] })[] {
   return nodes.filter(node => {
-    const match = node.accountName.toLowerCase().includes(query)
+    const match = (node.accountName || '').toLowerCase().includes(query)
     const childMatch = node.children && filterTree(node.children, query).length > 0
     return match || childMatch
   }).map(node => ({

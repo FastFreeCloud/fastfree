@@ -165,8 +165,8 @@ const accountColumns = computed(() => [
   { name: 'credit', label: t('accounting.credit'), field: 'credit', format: (v: number) => formatNumber(v) },
 ])
 
-function translateStatus(status: string): string {
-  const key = `accounting.${status.toLowerCase()}`
+function translateStatus(status: string | undefined): string {
+  const key = `accounting.${(status || '').toLowerCase()}`
   return t(key)
 }
 

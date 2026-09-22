@@ -177,8 +177,8 @@ const columns = computed(() => [
   { name: 'actions', label: t('common.actions'), field: 'actions' },
 ])
 
-function translateStatus(status: string): string {
-  const key = `accounting.${status.toLowerCase()}`
+function translateStatus(status: string | undefined): string {
+  const key = `accounting.${(status || '').toLowerCase()}`
   return t(key)
 }
 

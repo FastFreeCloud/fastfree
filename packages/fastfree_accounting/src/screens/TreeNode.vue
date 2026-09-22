@@ -114,7 +114,8 @@ const typeColor = computed(() => {
   return map[props.node.accountType] ?? '#757575'
 })
 
-function translateType(type: AccountType): string {
+function translateType(type: AccountType | undefined): string {
+  if (!type) return ''
   return t(`accounting.${type.toLowerCase()}`)
 }
 

@@ -68,7 +68,7 @@ const $q = useQuasar()
 const store = useAccountingStore()
 
 function translateStatus(status: string): string {
-  const key = `accounting.${status.toLowerCase()}`
+  const key = `accounting.${(status ?? '').toLowerCase()}`
   return t(key)
 }
 
