@@ -71,6 +71,7 @@ export {
   createUser,
   updateUserRole,
   deleteUser,
+  resetPassword,
 } from './user.service'
 
 export {

@@ -157,36 +157,28 @@ export async function listUsers(): Promise<ApiResponse<UserProfile[]>> {
     return { success: false, error: res.error ?? { code: 'FETCH_FAILED', message: 'Failed to fetch users' } }
   }
 
-  const allRolesRes = await getDocList<{ parent: string; role: string }>(
-    'Has Role',
-    undefined,
-    ['parent', 'role'],
-  )
+  // Direct REST on 'Has Role' is forbidden on Frappe v15 — read roles from each User doc instead.
   const rolesByUser = new Map<string, string[]>()
-  if (allRolesRes.success && allRolesRes.data) {
-    for (const r of allRolesRes.data) {
-      const existing = rolesByUser.get(r.parent)
-      if (existing) {
-        existing.push(r.role)
-      } else {
-        rolesByUser.set(r.parent, [r.role])
+  const roleResults = await Promise.all(
+    res.data.map(async (u) => {
+      const docRes = await getDoc<{ roles?: Array<{ role: string }> }>('User', u.name)
+      if (docRes.success && docRes.data) {
+        return { name: u.name, roles: (docRes.data.roles ?? []).map((r) => r.role) }
       }
-    }
+      return { name: u.name, roles: [] as string[] }
+    }),
+  )
+  for (const r of roleResults) {
+    rolesByUser.set(r.name, r.roles)
   }
 
   const usersWithRoles = res.data.map((u: { name: string; full_name: string; email: string; enabled: number }) => {
     const roles = rolesByUser.get(u.name) || []
-    let role: string = 'USER'
-    if (roles.includes('System Manager') || roles.includes('Administrator')) {
-      role = 'SWIFT'
-    } else if (roles.includes('Operator')) {
-      role = 'OPERATOR'
-    }
     return {
       id: u.name,
       name: u.full_name || u.name,
       email: u.email,
-      role,
+      role: mapFrappeRolesToUserRole(roles),
     } as UserProfile
   })
 
@@ -195,14 +187,40 @@ export async function listUsers(): Promise<ApiResponse<UserProfile[]>> {
 
 /**
  * Create a new user (admin only).
+ * Frappe User docname == email; display name lives in first_name/full_name.
  */
+const FRAPPE_ROLE_MAP: Record<string, string> = {
+  SWIFT: 'System Manager',
+  OPERATOR: 'Desk User',
+  USER: 'Employee',
+}
+// Roles managed by the app tiers (legacy 'Operator'/'User' kept so orphans get cleaned on update).
+const MANAGED_ROLES = ['System Manager', 'Administrator', 'Operator', 'User', 'Desk User', 'Employee']
+const NON_OPERATOR_ROLES = ['Guest', 'All', 'Customer', 'Supplier', 'Employee']
+
+export function mapFrappeRolesToUserRole(frappeRoles: string[]): string {
+  if (frappeRoles.some(r => r === 'System Manager' || r === 'Administrator')) return 'SWIFT'
+  if (frappeRoles.some(r => r === 'Desk User' || (/(Manager|User)$/i.test(r) && !NON_OPERATOR_ROLES.includes(r)))) return 'OPERATOR'
+  return 'USER'
+}
+
 export async function createUser(userData: {
   email: string
   name: string
   role: string
   password?: string
 }): Promise<ApiResponse<UserProfile>> {
-  return createDoc<UserProfile>('User', userData as Record<string, unknown>)
+  const frappeRole = FRAPPE_ROLE_MAP[userData.role] || 'User'
+  const payload: Record<string, unknown> = {
+    email: userData.email,
+    first_name: userData.name,
+    enabled: 1,
+    roles: [{ doctype: 'Has Role', parentfield: 'roles', role: frappeRole }],
+  }
+  if (userData.password) {
+    payload.new_password = userData.password
+  }
+  return createDoc<UserProfile>('User', payload)
 }
 
 /**
@@ -212,35 +230,31 @@ export async function updateUserRole(
   userId: string,
   role: string,
 ): Promise<ApiResponse<void>> {
-  const ROLE_MAP: Record<string, string> = {
-    SWIFT: 'System Manager',
-    OPERATOR: 'Operator',
-    USER: 'User',
-  }
-  const frappeRole = ROLE_MAP[role] || 'User'
+  const frappeRole = FRAPPE_ROLE_MAP[role] || 'Employee'
 
   try {
-    const existingRes = await getDocList<{ name: string; role: string }>(
-      'Has Role',
-      { parent: userId } as Record<string, unknown>,
-      ['name', 'role'],
-    )
+    const existingRes = await getDoc<{ roles?: Array<{ role: string }> }>('User', userId)
 
-    if (existingRes.success && existingRes.data) {
-      for (const r of existingRes.data) {
-        if (r.role !== frappeRole) {
-          await deleteDoc('Has Role', r.name)
-        }
+    if (!existingRes.success) {
+      return {
+        success: false,
+        error: existingRes.error || { code: 'UPDATE_ROLE_FAILED', message: 'Failed to fetch user roles' },
       }
     }
 
-    if (existingRes.success && existingRes.data) {
-      const hasTarget = existingRes.data.some(r => r.role === frappeRole)
-      if (!hasTarget) {
-        await createDoc('Has Role', { parent: userId, role: frappeRole } as Record<string, unknown>)
+    const managedRoles = MANAGED_ROLES
+    const existingRoles = (existingRes.data?.roles ?? []).map((r) => r.role)
+    // PUT on User replaces the roles child table (omitted rows are deleted), so preserve unmapped roles.
+    const keep = existingRoles.filter((r) => !managedRoles.includes(r))
+    const roles = [...keep.map((r) => ({ role: r })), { role: frappeRole }]
+
+    const updateRes = await updateDoc('User', userId, { roles })
+
+    if (!updateRes.success) {
+      return {
+        success: false,
+        error: updateRes.error || { code: 'UPDATE_ROLE_FAILED', message: 'Failed to assign role' },
       }
-    } else {
-      await createDoc('Has Role', { parent: userId, role: frappeRole } as Record<string, unknown>)
     }
 
     return { success: true }
@@ -268,16 +282,24 @@ export async function deleteUser(userId: string): Promise<ApiResponse<void>> {
 
 /**
  * Reset a user's password (admin only).
+ * Mirrors changePassword conventions: callPost RPC + ApiResponse normalization.
  */
 export async function resetPassword(
-  userName: string,
+  userEmail: string,
   newPassword: string,
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    await updateDoc('User', userName, { new_password: newPassword })
+): Promise<ApiResponse<void>> {
+  const res = await callPost('frappe.core.doctype.user.user.update_password', {
+    user: userEmail,
+    new_password: newPassword,
+    logout_all_sessions: 1,
+  })
+
+  if (res.success) {
     return { success: true }
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e)
-    return { success: false, error: msg }
+  }
+
+  return {
+    success: false,
+    error: res.error || { code: 'PASSWORD_RESET_FAILED', message: 'Failed to reset password' },
   }
 }

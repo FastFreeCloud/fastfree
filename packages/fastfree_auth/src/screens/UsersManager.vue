@@ -168,16 +168,23 @@ function getRoleLabel(role: string) {
 
 async function fetchUsers() {
   loading.value = true
-  const res = await listUsers()
-  if (res.success && res.data) {
-    users.value = res.data.map(u => ({
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      role: u.role,
-    }))
+  try {
+    const res = await listUsers()
+    if (res.success && res.data) {
+      users.value = res.data.map(u => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+      }))
+    } else {
+      $q.notify({ type: 'negative', message: res.error?.message || t('auth.users.editError') })
+    }
+  } catch {
+    $q.notify({ type: 'negative', message: t('auth.users.editError') })
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 
 function editUser(user: User) {
@@ -291,18 +298,22 @@ async function resetPassword() {
   resettingPassword.value = true
 
   try {
-    const res = await resetPasswordApi(resetPasswordUser.value!.name, newPassword.value)
+    if (!resetPasswordUser.value) {
+      $q.notify({ type: 'warning', message: t('auth.users.passwordResetError') })
+      return
+    }
+    const res = await resetPasswordApi(resetPasswordUser.value.id, newPassword.value)
     if (res.success) {
       $q.notify({ type: 'positive', message: t('auth.users.passwordResetSuccess') })
       closeResetPasswordDialog()
     } else {
-      $q.notify({ type: 'negative', message: res.error || t('auth.users.passwordResetError') })
+      $q.notify({ type: 'negative', message: res.error?.message || t('auth.users.passwordResetError') })
     }
   } catch {
     $q.notify({ type: 'negative', message: t('auth.users.passwordResetError') })
+  } finally {
+    resettingPassword.value = false
   }
-
-  resettingPassword.value = false
 }
 
 function closeDialog() {

@@ -24,7 +24,7 @@
           </div>
 
           <div class="q-mt-md">
-            <q-btn type="submit" color="primary" :label="t('auth.profile.saveChanges')" :loading="saving" />
+            <q-btn type="submit" color="primary" :label="t('auth.profile.saveChanges')" :loading="saving" :disable="loading || saving" />
           </div>
         </q-form>
       </q-card-section>
@@ -56,7 +56,7 @@
             class="q-mb-md"
             :rules="[val => val === passwordData.newPassword || t('auth.profile.passwordMismatch')]"
           />
-          <q-btn type="submit" color="warning" :label="t('auth.profile.changePassword')" :loading="changingPassword" />
+          <q-btn type="submit" color="warning" :label="t('auth.profile.changePassword')" :loading="changingPassword" :disable="changingPassword" />
         </q-form>
       </q-card-section>
     </q-card>
@@ -97,16 +97,41 @@ const languageOptions = computed(() => [
   { label: t('auth.common.english'), value: 'en' },
 ])
 
+// Raw Frappe User doc shape: display name lives in `full_name` (not `name`,
+// which is the docname/email) and the avatar in `user_image`.
+interface FrappeUserDoc {
+  full_name?: string
+  name?: string
+  email?: string
+  phone?: string
+}
+
+function redirectToLogin(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('fastfree:goto-login'))
+  }
+}
+
+function handleNoSession(message: string): void {
+  $q.notify({ type: 'negative', message })
+  redirectToLogin()
+}
+
 async function fetchProfile() {
   loading.value = true
   try {
     const res = await getCurrentUserProfile()
     if (res.success && res.data) {
+      const raw = res.data as unknown as FrappeUserDoc
       formData.value = {
-        name: res.data.name,
-        email: res.data.email,
-        phone: res.data.phone || '',
+        name: raw.full_name || raw.name || '',
+        email: raw.email || '',
+        phone: raw.phone || '',
       }
+    } else if (res.error?.code === 'NO_SESSION') {
+      handleNoSession(res.error?.message || t('common.error'))
+    } else {
+      $q.notify({ type: 'negative', message: res.error?.message || t('common.error') })
     }
   } catch {
     $q.notify({ type: 'negative', message: t('common.error') })
@@ -118,17 +143,28 @@ async function fetchProfile() {
 async function saveProfile() {
   saving.value = true
 
-  const res = await updateProfile({
-    name: formData.value.name,
-    phone: formData.value.phone,
-  })
+  try {
+    // user.service updateProfile() forwards its payload raw to updateDoc, but
+    // its Param type still says `name`. Frappe expects `full_name`, so adapt
+    // on the caller side (email is the docname and is never sent).
+    const payload = {
+      full_name: formData.value.name,
+      phone: formData.value.phone,
+    } as unknown as Parameters<typeof updateProfile>[0]
 
-  saving.value = false
+    const res = await updateProfile(payload)
 
-  if (res.success) {
-    $q.notify({ type: 'positive', message: t('auth.profile.saveSuccess') })
-  } else {
-    $q.notify({ type: 'negative', message: res.error?.message || t('auth.profile.saveError') })
+    if (res.success) {
+      $q.notify({ type: 'positive', message: t('auth.profile.saveSuccess') })
+    } else if (res.error?.code === 'NO_SESSION') {
+      handleNoSession(res.error?.message || t('auth.profile.saveError'))
+    } else {
+      $q.notify({ type: 'negative', message: res.error?.message || t('auth.profile.saveError') })
+    }
+  } catch {
+    $q.notify({ type: 'negative', message: t('auth.profile.saveError') })
+  } finally {
+    saving.value = false
   }
 }
 
@@ -140,18 +176,24 @@ async function changePassword() {
 
   changingPassword.value = true
 
-  const res = await apiChangePassword(
-    passwordData.value.current,
-    passwordData.value.newPassword,
-  )
+  try {
+    // NOTE: changePassword() in user.service.ts calls an admin-only method and
+    // cannot be fixed from here — surface its failure honestly, never mask it.
+    const res = await apiChangePassword(
+      passwordData.value.current,
+      passwordData.value.newPassword,
+    )
 
-  changingPassword.value = false
-
-  if (res.success) {
-    $q.notify({ type: 'positive', message: t('auth.profile.passwordChangeSuccess') })
-    passwordData.value = { current: '', newPassword: '', confirm: '' }
-  } else {
-    $q.notify({ type: 'negative', message: res.error?.message || t('auth.profile.passwordChangeError') })
+    if (res.success) {
+      $q.notify({ type: 'positive', message: t('auth.profile.passwordChangeSuccess') })
+      passwordData.value = { current: '', newPassword: '', confirm: '' }
+    } else {
+      $q.notify({ type: 'negative', message: res.error?.message || t('auth.profile.passwordChangeError') })
+    }
+  } catch {
+    $q.notify({ type: 'negative', message: t('auth.profile.passwordChangeError') })
+  } finally {
+    changingPassword.value = false
   }
 }
 

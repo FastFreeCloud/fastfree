@@ -7,6 +7,7 @@ import { ref, computed } from 'vue'
 import type { UserRole, ScreenPermission } from '../types'
 import {
   initPermissions,
+  isPermissionsInitialized,
   canAccessScreen as serviceCanAccessScreen,
   can as serviceCan,
   getAllScreens,
@@ -29,6 +30,7 @@ export const usePermissionStore = defineStore('fastfree-permissions', () => {
   // ------------------------------------------------------------
 
   const effectiveScreens = computed(() => screens.value)
+  const initialized = computed(() => isPermissionsInitialized())
   const isSwift = computed(() => role.value === 'SWIFT')
   const isOperator = computed(() => role.value === 'OPERATOR')
   const isUser = computed(() => role.value === 'USER')
@@ -71,6 +73,7 @@ export const usePermissionStore = defineStore('fastfree-permissions', () => {
     allScreens,
     // Getters
     effectiveScreens,
+    initialized,
     isSwift,
     isOperator,
     isUser,

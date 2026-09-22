@@ -4,7 +4,8 @@
 // ============================================================
 
 import type { AuthUser, SessionData, ApiResponse, UserRole } from '../types'
-import { login as apiLogin, getCurrentUser, logout as apiLogout, getDocList } from './api.service'
+import { login as apiLogin, getCurrentUser, logout as apiLogout, getDoc } from './api.service'
+import { initPermissions, resetPermissions } from './permission.service'
 
 // ------------------------------------------------------------
 // State
@@ -18,11 +19,13 @@ let _sessionCheckInterval: ReturnType<typeof setInterval> | null = null
 // ------------------------------------------------------------
 
 const SWIFT_ROLES = ['System Manager', 'Administrator']
-const OPERATOR_ROLES = ['Operator']
+// Stock ERPNext has no 'Operator'/'User' roles (verified against live backend).
+// OPERATOR = Desk User or any functional *-Manager/*-User role; Employee/portal roles stay USER.
+const NON_OPERATOR_ROLES = ['Guest', 'All', 'Customer', 'Supplier', 'Employee']
 
 function mapFrappeRolesToUserRole(frappeRoles: string[]): UserRole {
   if (frappeRoles.some(r => SWIFT_ROLES.includes(r))) return 'SWIFT'
-  if (frappeRoles.some(r => OPERATOR_ROLES.includes(r))) return 'OPERATOR'
+  if (frappeRoles.some(r => r === 'Desk User' || (/(Manager|User)$/i.test(r) && !NON_OPERATOR_ROLES.includes(r)))) return 'OPERATOR'
   return 'USER'
 }
 
@@ -30,9 +33,10 @@ function mapFrappeRolesToUserRole(frappeRoles: string[]): UserRole {
  * Fetch the Frappe roles for a user and map to our UserRole.
  */
 async function fetchUserRole(userName: string): Promise<UserRole> {
-  const res = await getDocList<{ role: string }>('Has Role', { parent: userName }, ['role'])
+  // Direct REST on 'Has Role' is forbidden on Frappe v15 (403 check_parent_permission) — read roles from the User doc instead.
+  const res = await getDoc<{ roles?: Array<{ role: string }> }>('User', userName)
   if (res.success && res.data) {
-    return mapFrappeRolesToUserRole(res.data.map(r => r.role))
+    return mapFrappeRolesToUserRole((res.data.roles ?? []).map((r) => r.role))
   }
   return 'USER'
 }
@@ -81,6 +85,8 @@ export async function login(
     expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
   }
 
+  initPermissions(role)
+
   startSessionCheck()
 
   return { success: true, data: _currentSession }
@@ -113,6 +119,8 @@ export async function getSession(): Promise<ApiResponse<SessionData>> {
     expiresAt: Date.now() + 24 * 60 * 60 * 1000,
   }
 
+  initPermissions(user.role)
+
   startSessionCheck()
 
   return { success: true, data: _currentSession }
@@ -126,6 +134,7 @@ export async function logout(): Promise<ApiResponse<void>> {
 
   _currentSession = null
   stopSessionCheck()
+  resetPermissions()
 
   if (res.success) {
     return { success: true }

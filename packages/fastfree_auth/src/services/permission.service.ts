@@ -7,7 +7,12 @@ import type { UserRole, ScreenPermission } from '../types'
 import { getCurrentSession } from './auth.service'
 
 // ------------------------------------------------------------
-// Role defaults
+// Role defaults — Phase-1 source of truth.
+//
+// There is intentionally NO backend permissions table yet: the role's
+// screen lists below are the authoritative mapping until a server-side
+// model lands. initPermissions() (wired into auth.service login/getSession)
+// stores the active role so canAccessScreen/can reflect it.
 // ------------------------------------------------------------
 
 const DEFAULT_SCREENS: ScreenPermission[] = [
@@ -33,6 +38,7 @@ const ROLE_DEFAULT_SCREEN_IDS: Record<UserRole, string[]> = {
 
 let _userScreens: string[] | null = null
 let _userRole: UserRole = 'USER'
+let _initialized = false
 
 // ------------------------------------------------------------
 // Public API
@@ -40,18 +46,33 @@ let _userRole: UserRole = 'USER'
 
 /**
  * Initialize permissions for the current user.
+ * Stores the role and clears any custom override unless one is provided.
  */
 export function initPermissions(role: UserRole, customScreens?: string[]): void {
   _userRole = role
   _userScreens = customScreens || null
+  _initialized = true
+}
+
+/**
+ * Whether initPermissions() has been called in this session.
+ */
+export function isPermissionsInitialized(): boolean {
+  return _initialized
 }
 
 /**
  * Get the current user's role.
+ * The live session (set by auth.service login/getSession) wins; the stored
+ * initialized role covers pre-session contexts. Defaults to USER only when
+ * neither is available.
  */
 export function getUserRole(): UserRole {
   const session = getCurrentSession()
-  return session?.user.role || _userRole
+  if (session?.user.role) {
+    return session.user.role
+  }
+  return _userRole
 }
 
 /**
@@ -128,4 +149,5 @@ export function setUserScreens(screens: string[] | null): void {
 export function resetPermissions(): void {
   _userScreens = null
   _userRole = 'USER'
+  _initialized = false
 }
