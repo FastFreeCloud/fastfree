@@ -18,7 +18,7 @@ interface FrappeAuth {
 
 interface FrappeDB {
   getDoc: (doctype: string, name: string) => Promise<Record<string, unknown>>
-  getDocList: (doctype: string, options: { filters?: Record<string, unknown>; fields?: string[]; orderBy?: string; limit?: number }) => Promise<Record<string, unknown>[]>
+  getDocList: (doctype: string, options: { filters?: Record<string, unknown>; fields?: string[]; orderBy?: { field: string; order?: 'asc' | 'desc' }; limit?: number }) => Promise<Record<string, unknown>[]>
   createDoc: (doctype: string, data: Record<string, unknown>) => Promise<Record<string, unknown>>
   updateDoc: (doctype: string, name: string, data: Record<string, unknown>) => Promise<Record<string, unknown>>
   deleteDoc: (doctype: string, name: string) => Promise<void>
@@ -221,6 +221,21 @@ export async function getDoc<T>(doctype: string, name: string): Promise<ApiRespo
 }
 
 /**
+ * Convert our "field [asc|desc]" ordering string to the SDK's { field, order }
+ * shape. The SDK builds `${orderBy.field} ${orderBy.order ?? 'asc'}` verbatim,
+ * so passing a raw string yields "undefined asc" and Frappe answers 500.
+ * Compound orderings ("a desc, b desc") are reduced to their first segment —
+ * the SDK shape supports a single field only.
+ */
+function toSdkOrderBy(orderBy?: string): { field: string; order: 'asc' | 'desc' } | undefined {
+  if (!orderBy?.trim()) return undefined
+  const first = orderBy.split(',')[0]?.trim() ?? ''
+  const [field, dir] = first.split(/\s+/)
+  if (!field) return undefined
+  return { field, order: dir?.toLowerCase() === 'desc' ? 'desc' : 'asc' }
+}
+
+/**
  * Get a list of documents.
  */
 export async function getDocList<T>(
@@ -232,10 +247,11 @@ export async function getDocList<T>(
 ): Promise<ApiResponse<T[]>> {
   try {
     const db = getDb()
+    const sdkOrderBy = toSdkOrderBy(orderBy)
     const res = await db.getDocList(doctype, {
       ...(filters ? { filters } : {}),
       ...(fields ? { fields } : {}),
-      orderBy: orderBy || `${doctype} desc`,
+      ...(sdkOrderBy ? { orderBy: sdkOrderBy } : {}),
       ...(limit !== undefined ? { limit } : {}),
     })
     return { success: true, data: res as T[] }
