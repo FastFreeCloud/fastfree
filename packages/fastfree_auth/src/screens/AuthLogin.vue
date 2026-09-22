@@ -10,15 +10,16 @@
       <q-card-section>
         <q-form @submit="handleLogin" class="auth-login__form">
           <q-input
-            v-model="email"
-            :label="t('auth.login.email')"
-            type="email"
+            v-model="username"
+            :label="t('auth.login.usernameOrEmail')"
+            type="text"
+            autocomplete="username"
             outlined
-            :rules="[val => !!val || t('auth.login.emailRequired')]"
+            :rules="[val => !!val || t('auth.login.usernameOrEmailRequired')]"
             class="q-mb-md"
           >
             <template #prepend>
-              <q-icon name="mdi-email-outline" />
+              <q-icon name="mdi-account-outline" />
             </template>
           </q-input>
 
@@ -132,7 +133,7 @@ const emit = defineEmits<{
 
 const authStore = useAuthStore()
 
-const email = ref('')
+const username = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const loading = ref(false)
@@ -143,7 +144,7 @@ const connectionUrl = ref(localStorage.getItem('fastfree_base_url') || window.lo
 async function handleLogin() {
   loading.value = true
   try {
-    const success = await authStore.login(email.value, password.value)
+      const success = await authStore.login(username.value, password.value)
 
     if (success) {
       emit('success')

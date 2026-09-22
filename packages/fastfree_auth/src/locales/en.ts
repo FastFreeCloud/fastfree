@@ -36,6 +36,8 @@ const AUTH_MESSAGES_EN: Record<string, string> = {
   'login.subtitle': 'Enter your account credentials to continue',
   'login.email': 'Email',
   'login.emailRequired': 'Email is required',
+  'login.usernameOrEmail': 'Username or email',
+  'login.usernameOrEmailRequired': 'Username or email is required',
   'login.password': 'Password',
   'login.passwordRequired': 'Password is required',
   'login.submit': 'Login',

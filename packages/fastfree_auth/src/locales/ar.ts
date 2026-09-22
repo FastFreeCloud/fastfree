@@ -36,6 +36,8 @@ const AUTH_MESSAGES_AR: Record<string, string> = {
   'login.subtitle': 'أدخل بيانات حسابك للمتابعة',
   'login.email': 'البريد الإلكتروني',
   'login.emailRequired': 'البريد الإلكتروني مطلوب',
+  'login.usernameOrEmail': 'اسم المستخدم أو البريد الإلكتروني',
+  'login.usernameOrEmailRequired': 'اسم المستخدم أو البريد الإلكتروني مطلوب',
   'login.password': 'كلمة المرور',
   'login.passwordRequired': 'كلمة المرور مطلوبة',
   'login.submit': 'دخول',
