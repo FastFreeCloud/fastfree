@@ -1,20 +1,14 @@
-export type CustomerType = 'Individual' | 'Company'
-
+export type CustomerType = 'Company' | 'Individual'
 export interface Customer {
-  name: string;
-  customer_name: string;
-  customer_type: 'Individual' | 'Company';
-  email?: string;
-  phone?: string;
-  address?: string;
-  city?: string;
-  country?: string;
-  tax_id?: string;
-  default_currency?: string;
-  is_active: boolean;
-  creation: string;
-  modified: string;
-  owner: string;
+  name: string
+  customer_name: string
+  customer_type: CustomerType
+  customer_group: string
+  territory: string
+  email_id?: string
+  mobile_no?: string
+  default_currency?: string
+  disabled?: boolean
 }
 
 export interface QuotationItem {

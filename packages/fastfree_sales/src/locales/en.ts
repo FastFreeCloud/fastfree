@@ -23,6 +23,12 @@ export const SALES_MESSAGES_EN: Record<string, string> = {
   'address': 'Address',
   'deleteCustomerConfirm': 'Are you sure you want to delete this customer?',
   'customerDeleted': 'Customer deleted successfully',
+  'customers.group': 'Customer Group',
+  'customers.territory': 'Territory',
+  'customers.mobile': 'Mobile No',
+  'customers.currency': 'Default Currency',
+  'customers.active': 'Active',
+  'customers.disabled': 'Disabled',
 
   // Quotation
   'quotations': 'Quotations',

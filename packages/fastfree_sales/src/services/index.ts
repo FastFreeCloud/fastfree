@@ -4,6 +4,8 @@ export {
   createCustomer,
   updateCustomer,
   deleteCustomer,
+  getCustomerGroups,
+  getTerritories,
 } from './customer.service'
 
 export {

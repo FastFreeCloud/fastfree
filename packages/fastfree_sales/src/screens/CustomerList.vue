@@ -24,7 +24,12 @@
           </template>
           <template #body-cell-customer_type="props">
             <q-td :props="props">
-              <q-badge :color="props.row.customer_type === 'Company' ? 'blue' : 'grey'" :label="translateCustomerType(props.row.customer_type)" />
+              <q-badge :color="props.row?.customer_type === 'Company' ? 'blue' : 'grey'" :label="translateCustomerType(props.row?.customer_type)" />
+            </q-td>
+          </template>
+          <template #body-cell-status="props">
+            <q-td :props="props">
+              <q-badge :color="isCustomerDisabled(props.row) ? 'negative' : 'positive'" :label="translateCustomerStatus(props.row)" />
             </q-td>
           </template>
           <template #body-cell-actions="props">
@@ -62,7 +67,19 @@ import { useLcI18n } from 'quasar-app-extension-fastfree-lowcode/src/runtime/i18
 import { useSalesStore } from '../stores/useSalesStore'
 import { deleteCustomer as apiDeleteCustomer } from '../services/customer.service'
 import CustomerForm from './CustomerForm.vue'
-import type { Customer } from '../types'
+
+// Frappe v15 Customer shape (mirrors the customer.service contract).
+interface CustomerModel {
+  name: string
+  customer_name: string
+  customer_type: 'Company' | 'Individual'
+  customer_group: string
+  territory: string
+  email_id?: string
+  mobile_no?: string
+  default_currency?: string
+  disabled?: boolean
+}
 
 const { t } = useLcI18n()
 const store = useSalesStore()
@@ -70,19 +87,21 @@ const $q = useQuasar()
 
 const search = ref('')
 const showForm = ref(false)
-const editingCustomer = ref<Customer | null>(null)
+const editingCustomer = ref<CustomerModel | null>(null)
 const confirmDelete = ref(false)
 const deleteTarget = ref('')
 
 const columns = computed(() => [
-  { name: 'customer_name', label: t('sales.customerName'), field: 'customer_name', sortable: true },
-  { name: 'customer_type', label: t('sales.customerType'), field: 'customer_type' },
-  { name: 'email', label: t('sales.email'), field: 'email' },
-  { name: 'phone', label: t('sales.phone'), field: 'phone' },
-  { name: 'actions', label: t('common.actions'), field: 'actions' },
+  { name: 'customer_name', label: t('sales.customerName'), field: 'customer_name', sortable: true, align: 'left' as const },
+  { name: 'customer_type', label: t('sales.customerType'), field: 'customer_type', align: 'left' as const },
+  { name: 'mobile_no', label: t('sales.phone'), field: 'mobile_no', align: 'left' as const },
+  { name: 'email_id', label: t('sales.email'), field: 'email_id', align: 'left' as const },
+  { name: 'status', label: t('sales.status'), field: 'disabled', align: 'left' as const },
+  { name: 'actions', label: t('common.actions'), field: 'actions', align: 'right' as const },
 ])
 
-function translateCustomerType(type: string): string {
+function translateCustomerType(type: string | null | undefined): string {
+  if (type == null || type === '') return ''
   const map: Record<string, string> = {
     Individual: t('sales.individual'),
     Company: t('sales.company'),
@@ -90,38 +109,74 @@ function translateCustomerType(type: string): string {
   return map[type] ?? type
 }
 
+function isCustomerDisabled(row: { disabled?: unknown } | null | undefined): boolean {
+  const disabled = row?.disabled
+  return disabled === true || disabled === 1 || disabled === '1'
+}
+
+function translateCustomerStatus(row: { disabled?: unknown } | null | undefined): string {
+  return isCustomerDisabled(row) ? t('sales.customers.disabled') : t('sales.customers.active')
+}
+
 function openAdd() {
   editingCustomer.value = null
   showForm.value = true
 }
 
-function editCustomer(customer: Customer) {
+function editCustomer(customer: CustomerModel) {
   editingCustomer.value = customer
   showForm.value = true
 }
 
-function deleteCustomer(customer: Customer) {
-  deleteTarget.value = customer.name
+function deleteCustomer(customer: CustomerModel | null | undefined) {
+  const name = customer?.name ?? ''
+  if (name === '') {
+    $q.notify({ type: 'negative', message: t('common.error') })
+    return
+  }
+  deleteTarget.value = name
   confirmDelete.value = true
 }
 
 async function confirmDeleteCustomer() {
   const name = deleteTarget.value
   confirmDelete.value = false
+  deleteTarget.value = ''
+  if (name === '') {
+    $q.notify({ type: 'negative', message: t('common.error') })
+    return
+  }
   try {
     await apiDeleteCustomer(name)
-    $q.notify({ type: 'positive', message: t('sales.customerDeleted') })
     await store.fetchCustomers()
+    if (store.error) {
+      $q.notify({ type: 'negative', message: t('common.error') })
+      return
+    }
+    $q.notify({ type: 'positive', message: t('sales.customerDeleted') })
   } catch {
     $q.notify({ type: 'negative', message: t('common.error') })
   }
 }
 
-function onSaved() {
+async function onSaved() {
   showForm.value = false
   editingCustomer.value = null
-  store.fetchCustomers()
+  await loadCustomers()
 }
 
-onMounted(() => store.fetchCustomers())
+async function loadCustomers() {
+  try {
+    await store.fetchCustomers()
+    if (store.error) {
+      $q.notify({ type: 'negative', message: t('common.error') })
+    }
+  } catch {
+    $q.notify({ type: 'negative', message: t('common.error') })
+  }
+}
+
+onMounted(() => {
+  void loadCustomers()
+})
 </script>

@@ -23,6 +23,12 @@ export const SALES_MESSAGES_AR: Record<string, string> = {
   'address': 'العنوان',
   'deleteCustomerConfirm': 'هل أنت متأكد من حذف هذا العميل؟',
   'customerDeleted': 'تم حذف العميل بنجاح',
+  'customers.group': 'مجموعة العميل',
+  'customers.territory': 'المنطقة',
+  'customers.mobile': 'رقم الجوال',
+  'customers.currency': 'العملة الافتراضية',
+  'customers.active': 'نشط',
+  'customers.disabled': 'معطل',
 
   // Quotation
   'quotations': 'عروض الأسعار',
