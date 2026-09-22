@@ -19,6 +19,7 @@ export { default as LcThemeScreen } from './LcThemeScreen.vue'
 export { default as LcTranslationEditorScreen } from './LcTranslationEditorScreen.vue'
 export { default as LcShortcutsScreen } from './LcShortcutsScreen.vue'
 export { default as LcPrivacyScreen } from './LcPrivacyScreen.vue'
+export { default as LcPrivacyContent } from './LcPrivacyContent.vue'
 export { default as LcErrorBoundary } from './LcErrorBoundary.vue'
 
 // Base Components

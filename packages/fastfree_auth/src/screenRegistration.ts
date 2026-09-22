@@ -1,4 +1,4 @@
-import type { Component } from 'vue'
+import { defineAsyncComponent, type Component } from 'vue'
 
 interface ScreenConfig {
   component: Component
@@ -23,7 +23,12 @@ export function registerAuthScreens(
   const AUTH_GROUP_NAME = 'groups.authentication'
   registerGroup(AUTH_GROUP_NAME, 'mdi-shield-lock')
 
-  const screens = [
+  const screens: Array<{
+    type: string
+    loader: () => Promise<{ default: Component }>
+    label: string
+    icon: string
+  }> = [
     { type: 'auth-login', loader: () => import('./screens/AuthLogin.vue'), label: 'screens.login', icon: 'mdi-login' },
     { type: 'auth-users', loader: () => import('./screens/UsersManager.vue'), label: 'screens.users', icon: 'mdi-account-group' },
     { type: 'auth-roles', loader: () => import('./screens/RolesManager.vue'), label: 'screens.roles', icon: 'mdi-shield-account' },
@@ -32,7 +37,7 @@ export function registerAuthScreens(
   ]
 
   for (const screen of screens) {
-    const component = screen.loader() as unknown as Component
+    const component = defineAsyncComponent(screen.loader)
     registerScreen(screen.type, {
       component,
       label: screen.label,

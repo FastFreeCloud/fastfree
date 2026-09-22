@@ -106,6 +106,11 @@ export default defineConfig((ctx) => {
         ];
 
         viteConf.resolve = viteConf.resolve || {};
+        // Single-copy pinia: every workspace package ships its own
+        // node_modules/pinia (same pinned version) — without dedupe the
+        // bundler emits two pinia instances and stores created from the
+        // second copy crash with "reading '_s'" (no active pinia).
+        viteConf.resolve.dedupe = [...(viteConf.resolve.dedupe || []), 'pinia'];
         viteConf.resolve.alias = viteConf.resolve.alias || {};
         viteConf.resolve.alias['quasar-app-extension-fastfree_update'] = path.join(
           monorepoRoot, 'packages', 'fastfree_update', 'ae'

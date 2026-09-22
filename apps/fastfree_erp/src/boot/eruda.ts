@@ -9,7 +9,12 @@ export default boot(async () => {
 
   try {
     const { Capacitor } = await import('@capacitor/core');
-    if (!Capacitor.isNativePlatform()) return;
+    const isNative = Capacitor.isNativePlatform();
+    // Native builds always get the console. Web builds get it in dev
+    // or when explicitly requested with ?eruda=1 (for testing).
+    const params = new URLSearchParams(window.location.search);
+    const wantEruda = isNative || import.meta.env.DEV || params.get('eruda') === '1';
+    if (!wantEruda) return;
 
     const eruda = await import('eruda');
     // Try init without shadowDom first — Capacitor WebView often clips shadow DOM
@@ -23,11 +28,17 @@ export default boot(async () => {
       // Fallback: minimal init
       eruda.default.init();
     }
-    eruda.default.get('entryBtn').hide();
+    // Hide the floating entry button (console opens from the About screen).
+    // Guarded separately so a failure here can never block window.__eruda.
+    try {
+      eruda.default.get('entryBtn')?.hide();
+    } catch {
+      // optional — console still works via window.__eruda.show()
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).__eruda = eruda.default;
-    console.warn('[eruda] initialized — use window.__eruda.show() to open console');
-  } catch {
-    // eruda is optional — silently ignore on SPA/web builds
+    console.warn('[eruda] initialized — open it from About → Debug Console');
+  } catch (e) {
+    console.warn('[eruda] unavailable:', e);
   }
 });

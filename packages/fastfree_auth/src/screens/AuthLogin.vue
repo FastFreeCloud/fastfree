@@ -98,13 +98,28 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <!-- Privacy Policy Dialog (in-app, never leaves the app) -->
+    <q-dialog v-model="showPrivacy">
+      <q-card style="min-width: min(560px, 90vw); max-height: 85vh;" class="column">
+        <q-card-section class="row items-center justify-between q-py-sm">
+          <div class="text-h6">{{ t('auth.login.privacyPolicy') }}</div>
+          <q-btn round flat dense icon="mdi-close" v-close-popup :aria-label="t('auth.common.cancel')" />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="col scroll">
+          <LcPrivacyContent />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { useLcI18n, getLcI18nStore, getPrivacyPolicyUrl, openExternalUrl } from 'quasar-app-extension-fastfree-lowcode/runtime'
+import { useLcI18n, LcPrivacyContent } from 'quasar-app-extension-fastfree-lowcode/runtime'
 import { useAuthStore } from '../stores/useAuthStore'
 
 const { t } = useLcI18n()
@@ -122,6 +137,7 @@ const password = ref('')
 const showPassword = ref(false)
 const loading = ref(false)
 const showConnectionSettings = ref(false)
+const showPrivacy = ref(false)
 const connectionUrl = ref(localStorage.getItem('fastfree_base_url') || window.location.origin)
 
 async function handleLogin() {
@@ -147,13 +163,7 @@ function saveConnection() {
 }
 
 function openPrivacy() {
-  let lang = ''
-  try {
-    lang = getLcI18nStore().locale.value || ''
-  } catch {
-    lang = ''
-  }
-  void openExternalUrl(getPrivacyPolicyUrl(lang || undefined))
+  showPrivacy.value = true
 }
 </script>
 

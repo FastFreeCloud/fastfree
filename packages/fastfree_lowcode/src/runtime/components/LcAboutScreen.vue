@@ -107,7 +107,12 @@ const hasEruda = ref(false)
 function openEruda() {
   try {
     if (window.__eruda) {
-      window.__eruda.show('console')
+      // show() with no argument displays the panel (show('console')
+      // only selects the tab). Eruda 3.x + useShadowDom:false quirk:
+      // show() leaves the __chobitsu-hide__ class on the container,
+      // so remove it manually — verified to reveal the panel.
+      window.__eruda.show()
+      document.querySelector('.eruda-container')?.classList.remove('__chobitsu-hide__')
       Notify.create({ message: 'Debug Console opened', color: 'orange', position: 'top' })
     } else {
       Notify.create({ message: 'Eruda not loaded — check console for errors', color: 'negative', position: 'top' })
@@ -168,13 +173,18 @@ onMounted(() => {
   window.addEventListener('online', updateOnline)
   window.addEventListener('offline', updateOnline)
   updateSystemInfo()
-  // Check immediately and also after a delay (eruda loads asynchronously)
+  // Eruda boot loads asynchronously — poll until it appears (max ~10s).
   hasEruda.value = typeof window.__eruda !== 'undefined'
   if (!hasEruda.value) {
-    const timer = setTimeout(() => {
-      hasEruda.value = typeof window.__eruda !== 'undefined'
-    }, 2000)
-    onUnmounted(() => clearTimeout(timer))
+    let attempts = 0
+    const timer = setInterval(() => {
+      attempts += 1
+      if (typeof window.__eruda !== 'undefined' || attempts >= 20) {
+        hasEruda.value = typeof window.__eruda !== 'undefined'
+        clearInterval(timer)
+      }
+    }, 500)
+    onUnmounted(() => clearInterval(timer))
   }
 })
 
