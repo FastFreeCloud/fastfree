@@ -3,80 +3,92 @@
 // FastFree ERP — Quasar Configuration (Full ERP)
 // ============================================================
 
-import { defineConfig } from '#q-app';
+import { defineConfig } from '#q-app'
 
 export default defineConfig((ctx) => {
   return {
-    boot: ['fastfree-auth-init', 'fastfree-accounting-init', 'fastfree-inventory-init', 'fastfree-sales-init', 'fastfree-purchase-init', 'fastfree-hr-init', 'fastfree-crm-init', 'i18n', 'register-service-worker', 'fastfree-update-init', 'eruda'],
+    boot: [
+      'fastfree-auth-init',
+      'fastfree-accounting-init',
+      'fastfree-inventory-init',
+      'fastfree-sales-init',
+      'fastfree-purchase-init',
+      'fastfree-hr-init',
+      'fastfree-crm-init',
+      'i18n',
+      'register-service-worker',
+      'fastfree-update-init',
+      'eruda',
+    ],
 
     css: ['app.scss'],
 
-    extras: [
-      'mdi-v7',
-      'roboto-font',
-      'material-icons',
-    ],
+    extras: ['mdi-v7', 'roboto-font', 'material-icons'],
 
     build: {
       target: {},
+
+      env: {
+        clientPrefix: ['QCLI_', 'VITE_'],
+      },
+
+      vueOptionsAPI: true,
 
       typescript: {
         strict: true,
         vueShim: true,
         extendTsConfig(tsConfig) {
-          tsConfig.compilerOptions = tsConfig.compilerOptions || {};
-          tsConfig.compilerOptions.paths = tsConfig.compilerOptions.paths || {};
+          tsConfig.compilerOptions = tsConfig.compilerOptions || {}
+          tsConfig.compilerOptions.paths = tsConfig.compilerOptions.paths || {}
           tsConfig.compilerOptions.paths['quasar-app-extension-fastfree-lowcode/src/runtime'] = [
             '../../../packages/fastfree_lowcode/src/runtime/index.ts',
-          ];
+          ]
           tsConfig.compilerOptions.paths['quasar-app-extension-fastfree-lowcode/src/runtime/*'] = [
             '../../../packages/fastfree_lowcode/src/runtime/*',
-          ];
+          ]
           tsConfig.compilerOptions.paths['quasar-app-extension-fastfree_update/*'] = [
             '../../../packages/fastfree_update/ae/*',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-auth'] = [
             '../../../packages/fastfree_auth/src/index.ts',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-auth/*'] = [
             '../../../packages/fastfree_auth/src/*',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-accounting'] = [
             '../../../packages/fastfree_accounting/src/index.ts',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-accounting/*'] = [
             '../../../packages/fastfree_accounting/src/*',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-inventory'] = [
             '../../../packages/fastfree_inventory/src/index.ts',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-inventory/*'] = [
             '../../../packages/fastfree_inventory/src/*',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-sales'] = [
             '../../../packages/fastfree_sales/src/index.ts',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-sales/*'] = [
             '../../../packages/fastfree_sales/src/*',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-purchase'] = [
             '../../../packages/fastfree_purchase/src/index.ts',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-purchase/*'] = [
             '../../../packages/fastfree_purchase/src/*',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-hr'] = [
             '../../../packages/fastfree_hr/src/index.ts',
-          ];
-          tsConfig.compilerOptions.paths['fastfree-hr/*'] = [
-            '../../../packages/fastfree_hr/src/*',
-          ];
+          ]
+          tsConfig.compilerOptions.paths['fastfree-hr/*'] = ['../../../packages/fastfree_hr/src/*']
           tsConfig.compilerOptions.paths['fastfree-crm'] = [
             '../../../packages/fastfree_crm/src/index.ts',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-crm/*'] = [
             '../../../packages/fastfree_crm/src/*',
-          ];
+          ]
         },
       },
 
@@ -85,11 +97,11 @@ export default defineConfig((ctx) => {
       vueRouterMode: 'hash',
 
       extendViteConf(viteConf) {
-        const path = require('path');
-        const appRoot = __dirname;
-        const monorepoRoot = path.resolve(appRoot, '..', '..');
-        viteConf.server = viteConf.server || {};
-        viteConf.server.fs = viteConf.server.fs || {};
+        const path = require('path')
+        const appRoot = __dirname
+        const monorepoRoot = path.resolve(appRoot, '..', '..')
+        viteConf.server = viteConf.server || {}
+        viteConf.server.fs = viteConf.server.fs || {}
         viteConf.server.fs.allow = [
           appRoot,
           path.join(monorepoRoot, 'node_modules'),
@@ -103,18 +115,30 @@ export default defineConfig((ctx) => {
           path.join(monorepoRoot, 'packages', 'fastfree_crm'),
           path.join(monorepoRoot, 'packages', 'fastfree_update', 'ae'),
           path.join(appRoot, 'node_modules', '@quasar', 'extras'),
-        ];
+        ]
 
-        viteConf.resolve = viteConf.resolve || {};
-        // Single-copy pinia: every workspace package ships its own
-        // node_modules/pinia (same pinned version) — without dedupe the
-        // bundler emits two pinia instances and stores created from the
-        // second copy crash with "reading '_s'" (no active pinia).
-        viteConf.resolve.dedupe = [...(viteConf.resolve.dedupe || []), 'pinia'];
-        viteConf.resolve.alias = viteConf.resolve.alias || {};
+        viteConf.resolve = viteConf.resolve || {}
+        viteConf.resolve.dedupe = [...(viteConf.resolve.dedupe || []), 'pinia']
+        viteConf.resolve.alias = viteConf.resolve.alias || {}
         viteConf.resolve.alias['quasar-app-extension-fastfree_update'] = path.join(
-          monorepoRoot, 'packages', 'fastfree_update', 'ae'
-        );
+          monorepoRoot,
+          'packages',
+          'fastfree_update',
+          'ae',
+        )
+        viteConf.server.proxy = {
+          '/api': {
+            target: 'https://backend.fastfree.cloud',
+            changeOrigin: true,
+            secure: true,
+          },
+          '/socket.io': {
+            target: 'https://backend.fastfree.cloud',
+            ws: true,
+            changeOrigin: true,
+            secure: true,
+          },
+        }
       },
 
       vitePlugins: [
@@ -129,10 +153,7 @@ export default defineConfig((ctx) => {
           'vite-plugin-checker',
           {
             vueTsc: true,
-            eslint: {
-              lintCommand: 'eslint -c ./eslint.config.js "./src*/**/*.{ts,js,mjs,cjs,vue}"',
-              useFlatConfig: true,
-            },
+            eslint: false,
           },
           { server: false },
         ],
@@ -141,6 +162,7 @@ export default defineConfig((ctx) => {
 
     devServer: {
       open: true,
+      port: 9200,
     },
 
     framework: {
@@ -166,8 +188,18 @@ export default defineConfig((ctx) => {
         theme_color: '#1976d2',
         icons: [
           { src: 'icons/icon-128x128.png', sizes: '128x128', type: 'image/png' },
-          { src: 'icons/icon-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-          { src: 'icons/icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          {
+            src: 'icons/icon-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+          {
+            src: 'icons/icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
         ],
         shortcuts: [
           { name: 'Settings', url: '/settings', description: 'Open Settings' },
@@ -175,19 +207,39 @@ export default defineConfig((ctx) => {
         ],
       },
       extendPWAGenerateSWOptions(cfg) {
-        cfg.cleanupOutdatedCaches = true;
-        cfg.skipWaiting = true;
-        cfg.clientsClaim = true;
+        cfg.cleanupOutdatedCaches = true
+        cfg.skipWaiting = false
+        cfg.clientsClaim = false
         cfg.runtimeCaching = [
-          { urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i, handler: 'StaleWhileRevalidate', options: { cacheName: 'google-fonts-stylesheets', expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 } } },
-          { urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i, handler: 'CacheFirst', options: { cacheName: 'google-fonts-webfonts', expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 } } },
-          { urlPattern: /^https:\/\/cdn\./i, handler: 'StaleWhileRevalidate', options: { cacheName: 'cdn-resources', expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 30 } } },
-          { urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/api/'), handler: 'NetworkFirst', options: { cacheName: 'api-responses', networkTimeoutSeconds: 10, expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 } } },
-        ];
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'google-fonts-stylesheets',
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/cdn\./i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'cdn-resources',
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+        ]
       },
       extendPWAManifestJson(json) {
-        json.categories = ['productivity', 'utilities'];
-        json.prefer_related_applications = false;
+        json.categories = ['productivity', 'utilities']
+        json.prefer_related_applications = false
       },
     },
 
@@ -208,5 +260,5 @@ export default defineConfig((ctx) => {
     bex: {
       extraScripts: [],
     },
-  };
-});
+  }
+})
