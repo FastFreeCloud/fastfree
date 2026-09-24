@@ -1,4 +1,5 @@
 import { exportFile } from 'quasar'
+import type { Cell, Workbook } from 'exceljs'
 import { useNotify } from './useNotify'
 import { useLcI18n } from '../i18n'
 import { useLcI18nStore } from './useLcI18nStore'
@@ -9,14 +10,16 @@ export interface ExcelCompany {
   phone?: string
   commercialRegister?: string
   address?: string
+  logo?: string
 }
 
 export interface ExcelColumn {
   name: string
   label: string
   field: string | ((row: Record<string, unknown>) => unknown)
-  format?: (val: unknown, row: Record<string, unknown>) => string
+  format?: (value: unknown, row: Record<string, unknown>) => string
   width?: number
+  type?: 'string' | 'number' | 'date'
 }
 
 export interface ExcelExportOptions {
@@ -26,33 +29,7 @@ export interface ExcelExportOptions {
   columns: ExcelColumn[]
   rows: Record<string, unknown>[]
   total?: { label: string; value: number | string }
-}
-
-interface ExcelJSWorkbook {
-  creator: string
-  created: Date
-  addWorksheet: (name: string, options?: Record<string, unknown>) => ExcelJSWorksheet
-  xlsx: { writeBuffer: () => Promise<ArrayBuffer> }
-}
-
-interface ExcelJSWorksheet {
-  columns: Array<{ width?: number }>
-  mergeCells: (startRow: number, startCol: number, endRow: number, endCol: number) => void
-  getCell: (row: number, col: number) => ExcelJSCell
-  getRow: (rowNumber: number) => ExcelJSRow
-}
-
-interface ExcelJSCell {
-  value: string | number
-  font?: Record<string, unknown>
-  alignment?: Record<string, unknown>
-  fill?: Record<string, unknown>
-  border?: Record<string, unknown>
-}
-
-interface ExcelJSRow {
-  getCell: (col: number) => ExcelJSCell
-  eachCell: (callback: (cell: ExcelJSCell, colNumber: number) => void) => void
+  totalColumn?: string
 }
 
 const thinBorder = {
@@ -62,11 +39,13 @@ const thinBorder = {
   right: { style: 'thin' as const },
 }
 
-function getCellValue(row: Record<string, unknown>, col: ExcelColumn): string | number {
-  const val = typeof col.field === 'function' ? col.field(row) : row[col.field]
-  if (val === null || val === undefined) return ''
-  if (col.format) return col.format(val, row)
-  return String(val)
+function getCellValue(row: Record<string, unknown>, column: ExcelColumn): string | number {
+  const value = typeof column.field === 'function' ? column.field(row) : row[column.field]
+  if (value === null || value === undefined) return ''
+  if (column.format) return column.format(value, row)
+  if (typeof value === 'number') return value
+  if (typeof value === 'string' || typeof value === 'boolean') return String(value)
+  return ''
 }
 
 export function useExcelExport() {
@@ -76,7 +55,7 @@ export function useExcelExport() {
   const locale = i18nStore.locale.value === 'ar' ? 'ar-EG' : 'en-US'
 
   async function exportTable(options: ExcelExportOptions) {
-    const { filename, title, company, columns, rows, total } = options
+    const { filename, title, company, columns, rows, total, totalColumn } = options
 
     if (!rows.length) {
       notify.warning(t('export.noDataToExport'))
@@ -84,113 +63,172 @@ export function useExcelExport() {
     }
 
     try {
-      const exceljsMod = 'exceljs'
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const ExcelJS = await import(/* @vite-ignore */ exceljsMod)
+      const ExcelJS = await import('exceljs')
       const workbook = new ExcelJS.Workbook()
       workbook.creator = 'FastFree'
       workbook.created = new Date()
 
-      const ws = workbook.addWorksheet(title, {
-        views: [{ state: 'frozen', ySplit: 3 }],
+      const worksheetName =
+        title
+          .replace(/[\\/*?:[\]]/g, ' ')
+          .trim()
+          .slice(0, 31) || 'Report'
+      const ws = workbook.addWorksheet(worksheetName, {
         pageSetup: { paperSize: 9, orientation: 'landscape' },
       })
 
       const numCols = columns.length + 1
-      ws.columns = [
-        { width: 6 },
-        ...columns.map(c => ({ width: c.width || 20 })),
+      ws.columns = [{ width: 6 }, ...columns.map((column) => ({ width: column.width || 20 }))]
+
+      const mergeAndStyle = (
+        row: number,
+        value: string,
+        size: number,
+        bold: boolean,
+        color: string,
+      ) => {
+        ws.mergeCells(row, 1, row, numCols)
+        const cell = ws.getCell(row, 1)
+        cell.value = value
+        cell.font = { name: 'Arial', size, bold, color: { argb: color } }
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }
+      }
+
+      mergeAndStyle(1, company?.name || title, 16, true, 'FF0D47A1')
+      mergeAndStyle(2, title, 12, true, 'FF333333')
+
+      let infoRow = 3
+      const metaInfo = [
+        company?.taxNumber ? `${t('print.taxNumber')}: ${company.taxNumber}` : '',
+        company?.phone ? `${t('print.phone')}: ${company.phone}` : '',
+        company?.commercialRegister
+          ? `${t('print.commercialRegister')}: ${company.commercialRegister}`
+          : '',
+        company?.address || '',
       ]
+        .filter(Boolean)
+        .join(' | ')
+      if (metaInfo) {
+        mergeAndStyle(infoRow, metaInfo, 10, false, 'FF666666')
+        infoRow += 1
+      }
 
-      // Title row
-      ws.mergeCells(1, 1, 1, numCols)
-      const titleCell = ws.getCell(1, 1)
-      titleCell.value = company?.name || title
-      titleCell.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FF0D47A1' } }
-      titleCell.alignment = { horizontal: 'center', vertical: 'middle' }
-
-      // Info row
       const now = new Date()
-      const printDate = now.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric', numberingSystem: 'latn' })
-      ws.mergeCells(2, 1, 2, numCols)
-      const infoCell = ws.getCell(2, 1)
-      infoCell.value = `${t('export.printDate')}: ${printDate} | ${t('export.recordCount')}: ${rows.length}`
-      infoCell.font = { name: 'Arial', size: 10, color: { argb: 'FF666666' } }
-      infoCell.alignment = { horizontal: 'center', vertical: 'middle' }
+      const printDate = now.toLocaleDateString(locale, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        numberingSystem: 'latn',
+      })
+      mergeAndStyle(
+        infoRow,
+        `${t('export.printDate')}: ${printDate} | ${t('export.recordCount')}: ${rows.length}`,
+        10,
+        false,
+        'FF666666',
+      )
+      infoRow += 1
 
-      // Header row
-      const headerRow = ws.getRow(3)
-      const headers = [t('export.serialNo'), ...columns.map(c => c.label)]
-      headers.forEach((h, i) => {
-        const cell = headerRow.getCell(i + 1)
-        cell.value = h
+      const headerRowIndex = infoRow + 1
+      ws.views = [{ state: 'frozen', ySplit: headerRowIndex }]
+      const headerRow = ws.getRow(headerRowIndex)
+      const headers = [t('export.serialNo'), ...columns.map((column) => column.label)]
+      headers.forEach((header, index) => {
+        const cell = headerRow.getCell(index + 1)
+        cell.value = header
         cell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } }
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D47A1' } }
         cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }
         cell.border = thinBorder
       })
 
-      // Data rows
-      rows.forEach((row, index) => {
-        const r = ws.getRow(4 + index)
-        const rowData: (string | number)[] = [index + 1, ...columns.map(c => getCellValue(row, c))]
-        rowData.forEach((val, j) => {
-          const cell = r.getCell(j + 1)
-          cell.value = val
-          cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }
+      rows.forEach((row, rowIndex) => {
+        const excelRow = ws.getRow(headerRowIndex + 1 + rowIndex)
+        const rowData: Array<string | number> = [
+          rowIndex + 1,
+          ...columns.map((column) => getCellValue(row, column)),
+        ]
+        rowData.forEach((value, columnIndex) => {
+          const cell = excelRow.getCell(columnIndex + 1)
+          const sourceColumn = columnIndex === 0 ? undefined : columns[columnIndex - 1]
+          cell.value = value
+          cell.alignment = {
+            horizontal:
+              sourceColumn?.type === 'number' ? 'center' : columnIndex === 0 ? 'center' : 'right',
+            vertical: 'middle',
+            wrapText: true,
+          }
           cell.border = thinBorder
           cell.font = { name: 'Arial', size: 10 }
-          if (index % 2 === 0) {
+          if (sourceColumn?.type === 'number') cell.numFmt = '#,##0.00'
+          if (rowIndex % 2 === 0) {
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F9FA' } }
           }
         })
       })
 
-      // Total row
       if (total) {
-        const totalRowIndex = 4 + rows.length + 1
+        const totalRowIndex = headerRowIndex + rows.length + 2
         const totalRow = ws.getRow(totalRowIndex)
-        ws.mergeCells(totalRowIndex, 1, totalRowIndex, numCols - 1)
-        const totalLabelCell = totalRow.getCell(1)
-        totalLabelCell.value = total.label
-        totalLabelCell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FF0D47A1' } }
-        totalLabelCell.alignment = { horizontal: 'center', vertical: 'middle' }
-        totalLabelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE3F2FD' } }
-        totalLabelCell.border = thinBorder
-        const totalValueCell = totalRow.getCell(numCols)
-        totalValueCell.value = total.value
-        totalValueCell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FF0D47A1' } }
-        totalValueCell.alignment = { horizontal: 'center', vertical: 'middle' }
-        totalValueCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE3F2FD' } }
-        totalValueCell.border = thinBorder
+        const totalColumnIndex = totalColumn
+          ? columns.findIndex((column) => column.name === totalColumn)
+          : -1
+        const styleTotalCell = (cell: Cell, value: string | number, numeric = false) => {
+          cell.value = value
+          cell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FF0D47A1' } }
+          cell.alignment = { horizontal: 'center', vertical: 'middle' }
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE3F2FD' } }
+          cell.border = thinBorder
+          if (numeric) cell.numFmt = '#,##0.00'
+        }
+        if (totalColumnIndex >= 0) {
+          for (let columnIndex = 1; columnIndex <= numCols; columnIndex += 1) {
+            const cell = totalRow.getCell(columnIndex)
+            const isValueCell = columnIndex === totalColumnIndex + 2
+            const isLabelCell = totalColumnIndex > 0 && columnIndex === totalColumnIndex + 1
+            styleTotalCell(
+              cell,
+              isValueCell ? total.value : isLabelCell ? total.label : '',
+              isValueCell,
+            )
+          }
+        } else {
+          ws.mergeCells(totalRowIndex, 1, totalRowIndex, numCols - 1)
+          styleTotalCell(totalRow.getCell(1), total.label)
+          styleTotalCell(totalRow.getCell(numCols), total.value, typeof total.value === 'number')
+        }
       }
 
       const buffer = await workbook.xlsx.writeBuffer()
       const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-      const status = exportFile(`${filename}_${dateStr}.xlsx`, buffer, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-      if (status !== true) {
-        throw new Error(t('export.downloadRejected'))
-      }
+      const status = exportFile(
+        `${filename}_${dateStr}.xlsx`,
+        buffer,
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      )
+      if (status !== true) throw new Error(t('export.downloadRejected'))
       notify.saved(t('export.exportSuccess', { count: rows.length }))
-    } catch (err) {
-      notify.error(err instanceof Error ? err.message : t('export.exportError'))
+    } catch (error) {
+      notify.error(error instanceof Error ? error.message : t('export.exportError'))
     }
   }
 
-  async function exportCustom(fn: (workbook: ExcelJSWorkbook) => Promise<void>) {
+  async function exportCustom(fn: (workbook: Workbook) => Promise<void>) {
     try {
-      const exceljsMod = 'exceljs'
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const ExcelJS = await import(/* @vite-ignore */ exceljsMod)
+      const ExcelJS = await import('exceljs')
       const workbook = new ExcelJS.Workbook()
       await fn(workbook)
       const buffer = await workbook.xlsx.writeBuffer()
       const now = new Date()
       const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-      exportFile(`export_${dateStr}.xlsx`, buffer, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      exportFile(
+        `export_${dateStr}.xlsx`,
+        buffer,
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      )
       notify.saved(t('export.exportSuccess', { count: '' }))
-    } catch (err) {
-      notify.error(err instanceof Error ? err.message : t('export.exportError'))
+    } catch (error) {
+      notify.error(error instanceof Error ? error.message : t('export.exportError'))
     }
   }
 

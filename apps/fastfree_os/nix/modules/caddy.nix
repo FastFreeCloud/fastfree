@@ -14,10 +14,19 @@ let
     ${name}.${domain} {
       ${tlsBlock}
       header -Server
+      header Access-Control-Allow-Origin "*"
+      header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+      header Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+      header Access-Control-Allow-Credentials "true"
+      header Access-Control-Max-Age "86400"
       root * ${spaDir}
       @api path /api/*
       handle @api {
         reverse_proxy 127.0.0.1:8080
+      }
+      @apiOptions method OPTIONS path /api/*
+      handle @apiOptions {
+        respond "OK" 204
       }
       @socketio path /socket.io/*
       handle @socketio {
@@ -48,7 +57,19 @@ let
     backend.${domain} {
       ${tlsBlock}
       header -Server
-      reverse_proxy 127.0.0.1:8080
+      header Access-Control-Allow-Origin "*"
+      header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+      header Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+      header Access-Control-Allow-Credentials "true"
+      header Access-Control-Max-Age "86400"
+      @api path /api/*
+      handle @api {
+        reverse_proxy 127.0.0.1:8080
+      }
+      @apiOptions method OPTIONS path /api/*
+      handle @apiOptions {
+        respond "OK" 204
+      }
     }
 
     ${lib.optionalString config.fastfree.apps.fastfree_erp (spaServer "erp" "/srv/fastfree-erp")}
