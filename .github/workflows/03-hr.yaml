@@ -181,7 +181,7 @@ jobs:
         uses: flox/activate-action@v1
         with:
           dir: .
-          command: cd apps/fastfree_hr && VITE_API_BASE_URL=https://backend.fastfree.cloud pnpm exec quasar build -m capacitor
+          command: cd apps/fastfree_hr && VITE_API_BASE_URL=https://backend.fastfree.cloud pnpm exec quasar build -m capacitor -T android
 
       - name: "10. Add Android Platform"
         uses: flox/activate-action@v1
