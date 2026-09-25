@@ -183,19 +183,13 @@ jobs:
           dir: .
           command: cd apps/fastfree_erp && VITE_API_BASE_URL=https://backend.fastfree.cloud pnpm exec quasar build -m capacitor -T android
 
-      - name: "10. Add Android Platform"
-        uses: flox/activate-action@v1
-        with:
-          dir: .
-          command: cd apps/fastfree_erp/src-capacitor && npx cap add android
-
-      - name: "11. Sync Capacitor"
+      - name: "10. Sync Capacitor"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_erp/src-capacitor && npx cap sync android
 
-      - name: "12. Patch AndroidManifest for In-App Updates"
+      - name: "11. Patch AndroidManifest for In-App Updates"
         run: |
           MANIFEST="apps/fastfree_erp/src-capacitor/android/app/src/main/AndroidManifest.xml"
           if [ -f "$MANIFEST" ] && ! grep -q "com.android.vending" "$MANIFEST"; then
@@ -212,7 +206,7 @@ jobs:
             echo "manifest already patched or missing"
           fi
 
-      - name: "13. Generate Keystore"
+      - name: "12. Generate Keystore"
         uses: flox/activate-action@v1
         with:
           dir: .
@@ -250,7 +244,7 @@ jobs:
             PROPS_EOF
             echo "keystore.properties created"
 
-      - name: "14. Wire release signing into Gradle"
+      - name: "13. Wire release signing into Gradle"
         run: |
           python3 - <<'PYEOF'
           import re
@@ -293,10 +287,10 @@ jobs:
           print("pinned targetSdkVersion = 36")
           PYEOF
 
-      - name: "15. Setup Gradle"
+      - name: "14. Setup Gradle"
         uses: gradle/actions/setup-gradle@v6
 
-      - name: "16. Bump versionCode and versionName"
+      - name: "15. Bump versionCode and versionName"
         run: |
           BUILD_GRADLE="apps/${{ env.APP_DIR }}/src-capacitor/android/app/build.gradle"
           DATE_CODE=$(date +%Y%m%d)
@@ -315,13 +309,13 @@ jobs:
             echo "build.gradle not found at $BUILD_GRADLE (skipping patch)"
           fi
 
-      - name: "17. Build unsigned release APK"
+      - name: "16. Build unsigned release APK"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_erp/src-capacitor/android && gradle assembleRelease
 
-      - name: "18. Sign APK"
+      - name: "17. Sign APK"
         run: |
           STOREPASS="${{ secrets.KEYSTORE_PASSWORD }}"
           if [ -z "$STOREPASS" ]; then echo "WARNING: KEYSTORE_PASSWORD secret is not set - using bundled-keystore default password" >&2; STOREPASS="FastFree@87171393"; fi
@@ -355,13 +349,13 @@ jobs:
             exit 1
           fi
 
-      - name: "19. Build AAB for Google Play"
+      - name: "18. Build AAB for Google Play"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_erp/src-capacitor/android && gradle bundleRelease
 
-      - name: "20. Collect APK"
+      - name: "19. Collect APK"
         run: |
           mkdir -p apps/${{ env.APP_DIR }}/dist-apk
           if [ -f "apps/${{ env.APP_DIR }}/dist-apk/signed-release.apk" ]; then
@@ -370,14 +364,14 @@ jobs:
             cp apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/apk/release/app-release-unsigned.apk apps/${{ env.APP_DIR }}/dist-apk/fastfree-erp.apk
           fi
 
-      - name: "21. Upload APK"
+      - name: "20. Upload APK"
         uses: actions/upload-artifact@v7
         with:
           name: fastfree-erp-apk
           path: apps/${{ env.APP_DIR }}/dist-apk/signed-release.apk
           retention-days: 30
 
-      - name: "22. Upload AAB"
+      - name: "21. Upload AAB"
         uses: actions/upload-artifact@v7
         with:
           name: ${{ env.APP_ID }}-aab
