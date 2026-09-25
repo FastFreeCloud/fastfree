@@ -15,11 +15,11 @@ description: Validate, build, provision, and SSH-deploy NixOS clients (dev, clie
 | 4. Provision VM | `.\scripts\05_setup_vm.ps1 -ClientName client1 -VMName FastFree-Client1` (admin) | minutes | VM boots |
 | 5. Check VM | `.\scripts\03_check_vm.ps1` (ports 22,3306,443,51820,8081,8082 + podman) | ~1min | all green |
 | 6. Deploy VM | `.\scripts\04_deploy.ps1` (`nixos-rebuild switch`) | minutes | switch ok |
-| 7. CI validate | `13-validate-os.yaml` (`nix parse/eval/check`, `flake show`) | minutes | green |
-| 8. CI clients | `14-build-client1.yaml`, `15-build-client2.yaml` | long | green |
-| 9. Deploy server | `gh workflow run 16-deploy-client3.yaml --ref master` | long | green |
+| 7. CI validate | `08-client1.yaml`, `09-client2.yaml`, `10-client3.yaml` (validate job: `nix parse` + `eval`) | minutes | green |
+| 8. CI clients | `08-client1.yaml`, `09-client2.yaml` | long | green |
+| 9. Deploy server | `gh workflow run 10-client3.yaml --ref master` | long | green |
 
-`16-deploy-client3` flow: `scp flake.nix/nix/` → `podman pull` SPA images → extract
+`10-client3` flow: `scp flake.nix/nix/` → `podman pull` SPA images → extract
 `/srv/fastfree-*` → `nixos-rebuild switch --flake .#client3` → MySQL Frappe-user fix
 (parses `site_config.json` db_name/db_password) → restart → embedded diagnose job.
 

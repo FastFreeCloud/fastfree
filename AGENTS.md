@@ -243,7 +243,7 @@ cd apps/fastfree_ledger && npm run dev
 git add -A; git commit -m "msg"; git push origin master
 
 # نشر على السيرفر + متابعة
-gh workflow run 16-deploy-client3.yaml --ref master
+gh workflow run 10-client3.yaml --ref master
 
 # تنظيف الـ runs الفاشلة (تجربة أولاً بدون حذف)
 gh run list --status failure --limit 100 --json databaseId

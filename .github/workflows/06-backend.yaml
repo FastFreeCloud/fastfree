@@ -1,10 +1,10 @@
-name: 07-build-backend
+name: 06-backend
 
 # ═══════════════════════════════════════════════════════════
 #   بناء صورة Docker + إنشاء Tag + Release تلقائي
 #   ─────────────────────────────────────────
 #   • يشتغل تلقائي مع كل push على main
-#   • ينشئ Tag جديد (v1.0.x) تلقائي
+#   • ينشئ Tag جديد (backend-v1.0.x) تلقائي
 #   • يبني Docker Image ويرفعها على GHCR
 #   • ينشئ GitHub Release
 # ═══════════════════════════════════════════════════════════
@@ -41,7 +41,7 @@ permissions: {}
 
 jobs:
   build:
-    name: "🐳 بناء ورفع الصورة"
+    name: "1. 🐳 بناء ورفع الصورة"
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -53,7 +53,7 @@ jobs:
       # ║  المرحلة 1: التحضير                    ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣ تحميل كود التطبيق"
+      - name: "1. 1️⃣ تحميل كود التطبيق"
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -62,7 +62,7 @@ jobs:
       # ║  المرحلة 1.5: فحص الأخطاء والتحذيرات  ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣5️⃣ فحص GitHub Actions workflow"
+      - name: "2. 1️⃣5️⃣ فحص GitHub Actions workflow"
         continue-on-error: true
         uses: reviewdog/action-Actionlint@v1
         with:
@@ -74,7 +74,7 @@ jobs:
       # ║  المرحلة 2: توليد Tag تلقائي           ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "2️⃣ توليد Tag تلقائي"
+      - name: "3. 2️⃣ توليد Tag تلقائي"
         id: auto_tag
         run: |
           echo "🔍 جاري البحث عن آخر Tag..."
@@ -83,25 +83,26 @@ jobs:
           LATEST=""
           if TAGS_RAW=$(git ls-remote --tags origin 2>/dev/null); then
             LATEST=$(echo "$TAGS_RAW" | \
-              grep -o 'refs/tags/v[0-9]*\.[0-9]*\.[0-9]*$' | \
+              grep -o 'refs/tags/backend-v[0-9]*\.[0-9]*\.[0-9]*$' | \
               sed 's|refs/tags/||' | \
               sort -V | tail -1) || true
           else
-            echo "⚠️ تعذر جلب الـ Tags — سيبدأ من v1.0.0"
+            echo "⚠️ تعذر جلب الـ Tags — سيبدأ من backend-v1.0.0"
           fi
 
           echo "📌 آخر Tag موجود: ${LATEST:-لا يوجد}"
 
           # ── إذا ما فيه Tags → نبدأ من v1.0.0 ──
           if [ -z "$LATEST" ]; then
-            NEW_TAG="v1.0.0"
+            NEW_TAG="backend-v1.0.0"
           else
             # ── ترقية الرقم الأخير (patch) ──
-            MAJOR=$(echo "$LATEST" | cut -d. -f1)
-            MINOR=$(echo "$LATEST" | cut -d. -f2)
-            PATCH=$(echo "$LATEST" | cut -d. -f3)
+            VER=${LATEST#backend-v}
+            MAJOR=$(echo "$VER" | cut -d. -f1)
+            MINOR=$(echo "$VER" | cut -d. -f2)
+            PATCH=$(echo "$VER" | cut -d. -f3)
             NEW_PATCH=$((PATCH + 1))
-            NEW_TAG="${MAJOR}.${MINOR}.${NEW_PATCH}"
+            NEW_TAG="backend-v${MAJOR}.${MINOR}.${NEW_PATCH}"
           fi
 
           echo ""
@@ -113,7 +114,7 @@ jobs:
       # ║  المرحلة 3: إنشاء Tag على GitHub       ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "3️⃣ إنشاء Tag على GitHub"
+      - name: "4. 3️⃣ إنشاء Tag على GitHub"
         run: |
           TAG="${{ steps.auto_tag.outputs.TAG }}"
           echo "📌 فحص Tag: $TAG"
@@ -134,7 +135,7 @@ jobs:
       # ║  المرحلة 4: كشف اسم التطبيق            ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "4️⃣ استخراج اسم التطبيق من المستودع"
+      - name: "5. 4️⃣ استخراج اسم التطبيق من المستودع"
         id: detect_app
         run: |
           APP_NAME="${{ github.event.repository.name }}"
@@ -149,7 +150,7 @@ jobs:
       # ║  المرحلة 5: تحميل frappe_docker        ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "5️⃣ تحميل frappe_docker"
+      - name: "6. 5️⃣ تحميل frappe_docker"
         timeout-minutes: 3
         run: |
           echo "🔧 نسخة Frappe: ${{ env.FRAPPE_VERSION }}"
@@ -164,20 +165,20 @@ jobs:
       # ║  المرحلة 6: إعداد Docker               ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "6️⃣ إعداد Docker Buildx"
+      - name: "7. 6️⃣ إعداد Docker Buildx"
         uses: docker/setup-buildx-action@v4
 
-      - name: "6️⃣5️⃣ تثبيت skopeo"
+      - name: "8. 6️⃣5️⃣ تثبيت skopeo"
         run: sudo apt-get update && sudo apt-get install -y skopeo
 
-      - name: "7️⃣ تسجيل الدخول في GHCR"
+      - name: "9. 7️⃣ تسجيل الدخول في GHCR"
         uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: "7️⃣5️⃣ التأكد من وجود Package على GHCR"
+      - name: "10. 7️⃣5️⃣ التأكد من وجود Package على GHCR"
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -205,7 +206,7 @@ jobs:
       # ║  المرحلة 7: تحديد Tags للصورة           ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "8️⃣ توليد Tags و Metadata"
+      - name: "11. 8️⃣ توليد Tags و Metadata"
         id: meta
         uses: docker/metadata-action@v6
         with:
@@ -219,7 +220,7 @@ jobs:
       # ║  المرحلة 8: تجهيز apps.json            ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "9️⃣ توليد apps.json (jq)"
+      - name: "12. 9️⃣ توليد apps.json (jq)"
         run: |
           # ── بناء apps.json بـ jq ──
           # ملاحظة: fastfree_backend app غير موجود في المستودع بعد
@@ -240,7 +241,7 @@ jobs:
       # ║  المرحلة 8.5: فحص apps.json            ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "🔟 فحص apps.json (jq)"
+      - name: "13. 🔟 فحص apps.json (jq)"
         run: |
           echo "🔍 فحص apps.json..."
           if jq empty /tmp/apps.json; then
@@ -254,7 +255,7 @@ jobs:
       # ║  المرحلة 9: بناء الصورة                ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣1️⃣ بناء Docker Image (Layered)"
+      - name: "14. 1️⃣1️⃣ بناء Docker Image (Layered)"
         timeout-minutes: 45
         run: |
           cd /tmp/frappe_docker
@@ -324,7 +325,7 @@ jobs:
       # ║  المرحلة 10: التحقق من الصورة          ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣2️⃣ التحقق من صحة الصورة"
+      - name: "15. 1️⃣2️⃣ التحقق من صحة الصورة"
         run: |
           echo "🔍 فحص الصورة المبنية..."
           echo ""
@@ -351,7 +352,7 @@ jobs:
       # ║  المرحلة 11: تسمية ورفع الصورة         ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣3️⃣ تسمية الصورة (Tags)"
+      - name: "16. 1️⃣3️⃣ تسمية الصورة (Tags)"
         run: |
           echo "🏷️ Tags:"
           echo "${{ steps.meta.outputs.tags }}" | while read -r tag; do
@@ -361,12 +362,12 @@ jobs:
             fi
           done
 
-      - name: "1️⃣4️⃣ حفظ الصورة كـ tarball"
+      - name: "17. 1️⃣4️⃣ حفظ الصورة كـ tarball"
         run: |
           docker save build-temp:latest -o /tmp/backend-image.tar
           echo "✅ تم حفظ الصورة كـ tarball"
 
-      - name: "1️⃣4️⃣5️⃣ رفع الصورة على GHCR (skopeo)"
+      - name: "18. 1️⃣4️⃣5️⃣ رفع الصورة على GHCR (skopeo)"
         env:
           SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -386,7 +387,7 @@ jobs:
       # ║  المرحلة 12: إنشاء GitHub Release      ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣5️⃣ إنشاء GitHub Release"
+      - name: "19. 1️⃣5️⃣ إنشاء GitHub Release"
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.auto_tag.outputs.TAG }}
@@ -427,7 +428,7 @@ jobs:
       # ║  المرحلة 13: التنظيف                   ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣6️⃣ تنظيف Docker"
+      - name: "20. 1️⃣6️⃣ تنظيف Docker"
         if: always()
         run: |
           docker image rm build-temp:latest 2>/dev/null || true
@@ -439,7 +440,7 @@ jobs:
       # ║  المرحلة 14: ملخص النتائج              ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "📋 ملخص النتائج"
+      - name: "21. 📋 ملخص النتائج"
         if: always()
         run: |
           {

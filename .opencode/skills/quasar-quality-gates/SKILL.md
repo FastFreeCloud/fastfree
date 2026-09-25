@@ -40,7 +40,7 @@ npm run dev          # :9000/9001/9002
 
 ## CI equivalent
 
-`.github/workflows/00-validate-all.yaml` (`workflow_dispatch`) runs the same matrix.
+`01-pos.yaml`–`04-ledger.yaml` (validate job in each) run the same checks.
 Monitor runs: `gh run list --limit 10`, `gh run watch <id>`.
 
 ## Rules

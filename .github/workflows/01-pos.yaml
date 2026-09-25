@@ -1,4 +1,4 @@
-name: 20-pos-pipeline
+name: 01-pos-pipeline
 
 # Unified POS pipeline: validate -> web -> android -> screenshots/publish -> release
 # Replaces: 02-build-pos.yaml + 09-build-pos-android.yaml (+ pos leg of 18-capture-screenshots.yaml)
@@ -24,21 +24,6 @@ on:
         required: false
         type: boolean
         default: true
-  workflow_call:
-    inputs:
-      admin_user:
-        required: false
-        type: string
-        default: "Administrator"
-      admin_pass:
-        required: false
-        type: string
-        default: ""
-      with_screenshots:
-        required: false
-        type: boolean
-        default: true
-
 concurrency:
   group: pos-pipeline-${{ github.ref }}
   cancel-in-progress: true
@@ -53,45 +38,47 @@ env:
 
 jobs:
   validate:
+    name: "1. Validate"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
       contents: read
     steps:
-      - name: Checkout
+      - name: "1. Checkout"
         uses: actions/checkout@v6
 
-      - name: Safe directory
+      - name: "2. Safe directory"
         run: git config --global safe.directory '*'
 
-      - name: Install Flox
+      - name: "3. Install Flox"
         uses: flox/install-flox-action@v2
 
-      - name: Install dependencies
+      - name: "4. Install dependencies"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: pnpm install --no-frozen-lockfile --ignore-scripts
 
-      - name: Prepare Quasar
+      - name: "5. Prepare Quasar"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos && mkdir -p .quasar && echo '{"compilerOptions":{}}' > .quasar/tsconfig.json && pnpm exec quasar prepare --silent
 
-      - name: TypeScript check
+      - name: "6. TypeScript check"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos && pnpm exec vue-tsc --noEmit
 
-      - name: Lint check
+      - name: "7. Lint check"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos && pnpm run lint:check
 
   web:
+    name: "2. Web Image"
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -99,32 +86,32 @@ jobs:
       contents: read
       packages: write
     steps:
-      - name: Safe directory
+      - name: "1. Safe directory"
         run: git config --global safe.directory '*'
 
-      - name: Checkout
+      - name: "2. Checkout"
         uses: actions/checkout@v6
 
-      - name: Install Nix
+      - name: "3. Install Nix"
         uses: cachix/install-nix-action@v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install skopeo
+      - name: "4. Install skopeo"
         run: sudo rm -f /etc/apt/sources.list.d/google-chrome.list; sudo apt-get update && sudo apt-get install -y skopeo
 
-      - name: Build frontend image
+      - name: "5. Build frontend image"
         working-directory: apps/${{ env.APP_DIR }}
         run: nix build .#frontendImage -o frontend-image --print-build-logs
 
-      - name: Login to GHCR
+      - name: "6. Login to GHCR"
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Ensure GHCR package exists
+      - name: "7. Ensure GHCR package exists"
         continue-on-error: true
         run: |
           PKG="fastfree_pos"
@@ -132,23 +119,24 @@ jobs:
           CODE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/users/$OWNER_LOWER/packages/container/$PKG")
           echo "Package check HTTP code: $CODE"
 
-      - name: Save frontend image to tarball
+      - name: "8. Save frontend image to tarball"
         working-directory: apps/${{ env.APP_DIR }}
         run: ./frontend-image > frontend-image.tar
 
-      - name: Push frontend image (latest)
+      - name: "9. Push frontend image (latest)"
         working-directory: apps/${{ env.APP_DIR }}
         env:
           SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
         run: skopeo copy docker-archive:frontend-image.tar docker://${{ env.IMAGE_PREFIX }}:latest
 
-      - name: Push frontend image (sha)
+      - name: "10. Push frontend image (sha)"
         working-directory: apps/${{ env.APP_DIR }}
         env:
           SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
         run: skopeo copy docker-archive:frontend-image.tar docker://${{ env.IMAGE_PREFIX }}:${{ github.sha }}
 
   android:
+    name: "3. Android Build"
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -156,58 +144,58 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - name: Checkout
+      - name: "1. Checkout"
         uses: actions/checkout@v6
 
-      - name: Safe directory
+      - name: "2. Safe directory"
         run: git config --global safe.directory '*'
 
-      - name: Install Flox
+      - name: "3. Install Flox"
         uses: flox/install-flox-action@v2
 
-      - name: Setup Android SDK
+      - name: "4. Setup Android SDK"
         uses: android-actions/setup-android@v4
 
-      - name: Setup uv
+      - name: "5. Setup uv"
         uses: astral-sh/setup-uv@v5
 
-      - name: Install dependencies
+      - name: "6. Install dependencies"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: pnpm install --no-frozen-lockfile --ignore-scripts
 
-      - name: Install Capacitor dependencies
+      - name: "7. Install Capacitor dependencies"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos/src-capacitor && npm install
 
-      - name: Prepare Quasar
+      - name: "8. Prepare Quasar"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos && mkdir -p .quasar && echo '{"compilerOptions":{}}' > .quasar/tsconfig.json && pnpm exec quasar prepare --silent
 
-      - name: Build web assets
+      - name: "9. Build web assets"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos && VITE_API_BASE_URL=https://backend.fastfree.cloud pnpm exec quasar build -m capacitor
 
-      - name: Add Android Platform
+      - name: "10. Add Android Platform"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos/src-capacitor && npx cap add android
 
-      - name: Sync Capacitor
+      - name: "11. Sync Capacitor"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos/src-capacitor && npx cap sync android
 
-      - name: Generate Keystore
+      - name: "12. Generate Keystore"
         uses: flox/activate-action@v1
         with:
           dir: .
@@ -215,7 +203,7 @@ jobs:
             KEYSTORE_DIR="apps/fastfree_pos/signing"
             KEYSTORE="$KEYSTORE_DIR/release.jks"
             STOREPASS="${{ secrets.KEYSTORE_PASSWORD }}"
-            STOREPASS="${STOREPASS:-FastFree@87171393}"
+            if [ -z "$STOREPASS" ]; then echo "WARNING: KEYSTORE_PASSWORD secret is not set - using bundled-keystore default password" >&2; STOREPASS="FastFree@87171393"; fi
             mkdir -p "$KEYSTORE_DIR"
             REPO_KEYSTORE="scripts/fastfree-android/keystore/release.jks"
             if [ -f "$REPO_KEYSTORE" ]; then
@@ -227,16 +215,8 @@ jobs:
             elif [ -f "$KEYSTORE" ]; then
               echo "Keystore exists"
             else
-              keytool -genkeypair \
-                -alias fastfree \
-                -keyalg RSA \
-                -keysize 2048 \
-                -validity 20000 \
-                -keystore "$KEYSTORE" \
-                -storepass "$STOREPASS" \
-                -keypass "$STOREPASS" \
-                -dname "CN=FastFree, OU=IT, O=FastFree, L=Riyadh, ST=Riyadh, C=SA"
-              echo "Keystore created (ephemeral fallback)"
+              echo "ERROR: no keystore found (repo copy, ANDROID_KEYSTORE_BASE64 secret, or existing file) - refusing to generate an ephemeral signing identity" >&2
+              exit 1
             fi
             mkdir -p "apps/fastfree_pos/src-capacitor/android"
             cat > "$KEYSTORE_DIR/keystore.properties" <<PROPS_EOF
@@ -253,7 +233,7 @@ jobs:
             PROPS_EOF
             echo "keystore.properties created"
 
-      - name: Wire release signing into Gradle
+      - name: "13. Wire release signing into Gradle"
         run: |
           python3 - <<'PYEOF'
           import re
@@ -296,10 +276,10 @@ jobs:
           print("pinned targetSdkVersion = 36")
           PYEOF
 
-      - name: Setup Gradle
+      - name: "14. Setup Gradle"
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Bump versionCode and versionName
+      - name: "15. Bump versionCode and versionName"
         run: |
           BUILD_GRADLE="apps/${{ env.APP_DIR }}/src-capacitor/android/app/build.gradle"
           DATE_CODE=$(date +%Y%m%d)
@@ -318,16 +298,16 @@ jobs:
             echo "build.gradle not found at $BUILD_GRADLE (skipping patch)"
           fi
 
-      - name: Build unsigned release APK
+      - name: "16. Build unsigned release APK"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos/src-capacitor/android && gradle assembleRelease
 
-      - name: Sign APK
+      - name: "17. Sign APK"
         run: |
           STOREPASS="${{ secrets.KEYSTORE_PASSWORD }}"
-          STOREPASS="${STOREPASS:-FastFree@87171393}"
+          if [ -z "$STOREPASS" ]; then echo "WARNING: KEYSTORE_PASSWORD secret is not set - using bundled-keystore default password" >&2; STOREPASS="FastFree@87171393"; fi
           KEYSTORE="apps/${{ env.APP_DIR }}/signing/release.jks"
           UNSIGNED_APK=$(find "apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/apk/release" -name "*.apk" | head -1)
           if [ -n "$UNSIGNED_APK" ]; then
@@ -358,13 +338,13 @@ jobs:
             exit 1
           fi
 
-      - name: Build AAB for Google Play
+      - name: "18. Build AAB for Google Play"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos/src-capacitor/android && gradle bundleRelease
 
-      - name: Collect APK
+      - name: "19. Collect APK"
         run: |
           mkdir -p apps/${{ env.APP_DIR }}/dist-apk
           if [ -f "apps/${{ env.APP_DIR }}/dist-apk/signed-release.apk" ]; then
@@ -373,14 +353,14 @@ jobs:
             cp apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/apk/release/app-release-unsigned.apk apps/${{ env.APP_DIR }}/dist-apk/fastfree-pos.apk
           fi
 
-      - name: Upload APK
+      - name: "20. Upload APK"
         uses: actions/upload-artifact@v7
         with:
           name: fastfree-pos-apk
           path: apps/${{ env.APP_DIR }}/dist-apk/signed-release.apk
           retention-days: 30
 
-      - name: Upload AAB
+      - name: "21. Upload AAB"
         uses: actions/upload-artifact@v7
         with:
           name: ${{ env.APP_ID }}-aab
@@ -388,6 +368,7 @@ jobs:
           if-no-files-found: error
 
   screenshots:
+    name: "4. Screenshots"
     needs: android
     if: ${{ inputs.with_screenshots }}
     runs-on: ubuntu-latest
@@ -395,70 +376,70 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout
+      - name: "1. Checkout"
         uses: actions/checkout@v6
 
-      - name: Safe directory
+      - name: "2. Safe directory"
         run: git config --global safe.directory '*'
 
-      - name: Install Flox
+      - name: "3. Install Flox"
         uses: flox/install-flox-action@v2
 
-      - name: Setup Android SDK
+      - name: "4. Setup Android SDK"
         uses: android-actions/setup-android@v4
 
-      - name: Install dependencies
+      - name: "5. Install dependencies"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: pnpm install --no-frozen-lockfile --ignore-scripts
 
-      - name: Install Capacitor dependencies
+      - name: "6. Install Capacitor dependencies"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos/src-capacitor && npm install
 
-      - name: Prepare Quasar
+      - name: "7. Prepare Quasar"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos && mkdir -p .quasar && echo '{"compilerOptions":{}}' > .quasar/tsconfig.json && pnpm exec quasar prepare --silent
 
-      - name: Build web assets
+      - name: "8. Build web assets"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos && VITE_API_BASE_URL=https://backend.fastfree.cloud pnpm exec quasar build
 
-      - name: Add Android Platform
+      - name: "9. Add Android Platform"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos/src-capacitor && npx cap add android
 
-      - name: Sync Capacitor
+      - name: "10. Sync Capacitor"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos/src-capacitor && npx cap sync android
 
-      - name: Build debug APK for emulator
+      - name: "11. Build debug APK for emulator"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos/src-capacitor/android && ./gradlew assembleDebug
 
-      - name: Enable KVM for emulator
+      - name: "12. Enable KVM for emulator"
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Mask password input
+      - name: "13. Mask password input"
         run: echo "::add-mask::${{ inputs.admin_pass }}"
 
-      - name: Run Maestro on emulator
+      - name: "14. Run Maestro on emulator"
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -525,10 +506,10 @@ jobs:
             ls -la "$EN_DIR" || true
             cp ar-report.xml en-report.xml . 2>/dev/null || true
 
-      - name: Setup uv
+      - name: "15. Setup uv"
         uses: astral-sh/setup-uv@v5
 
-      - name: Crop screenshots to Play Store spec
+      - name: "16. Crop screenshots to Play Store spec"
         run: |
           uv sync --locked --project scripts/fastfree-android
           if [ -d "apps/${{ env.APP_DIR }}/fastlane/metadata/android/ar/images/phone-screenshots" ]; then
@@ -538,7 +519,7 @@ jobs:
             uv run --project scripts/fastfree-android scripts/fastfree-android/fastfree_store_screenshots.py ${{ env.APP_KEY }} en-US || true
           fi
 
-      - name: Commit screenshots
+      - name: "17. Commit screenshots"
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -550,7 +531,7 @@ jobs:
             git push HEAD:master
           fi
 
-      - name: Upload Maestro artifacts
+      - name: "18. Upload Maestro artifacts"
         if: always()
         uses: actions/upload-artifact@v7
         with:
@@ -563,6 +544,7 @@ jobs:
           retention-days: 30
 
   publish:
+    name: "5. Play Publish"
     needs: android
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -570,29 +552,29 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - name: Checkout
+      - name: "1. Checkout"
         uses: actions/checkout@v6
 
-      - name: Safe directory
+      - name: "2. Safe directory"
         run: git config --global safe.directory '*'
 
-      - name: Setup uv
+      - name: "3. Setup uv"
         uses: astral-sh/setup-uv@v5
 
-      - name: Download AAB
+      - name: "4. Download AAB"
         uses: actions/download-artifact@v7
         with:
           name: ${{ env.APP_ID }}-aab
           path: aab
 
-      - name: Authenticate to Google Cloud (WIF)
+      - name: "5. Authenticate to Google Cloud (WIF)"
         id: auth
         uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: projects/639480735306/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider
           service_account: fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.com
 
-      - name: Publish to Play Store (Listing + AAB)
+      - name: "6. Publish to Play Store (Listing + AAB)"
         run: |
           if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
             echo "WIF authentication failed - skipping Play upload"
@@ -624,34 +606,35 @@ jobs:
           echo "=== Play Store publish complete ==="
 
   release:
+    name: "6. Release"
     needs: [web, publish]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
     steps:
-      - name: Checkout
+      - name: "1. Checkout"
         uses: actions/checkout@v6
 
-      - name: Safe directory
+      - name: "2. Safe directory"
         run: git config --global safe.directory '*'
 
-      - name: Download APK
+      - name: "3. Download APK"
         uses: actions/download-artifact@v7
         with:
           name: fastfree-pos-apk
           path: release
 
-      - name: Rename APK for release
+      - name: "4. Rename APK for release"
         run: mv release/signed-release.apk release/fastfree-pos.apk
 
-      - name: Get version
+      - name: "5. Get version"
         id: version
         run: |
           VERSION=$(date +%Y.%m.%d)-$(echo ${{ github.sha }} | cut -c1-7)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Create release
+      - name: "6. Create release"
         uses: softprops/action-gh-release@v3
         with:
           tag_name: pos-v${{ steps.version.outputs.version }}

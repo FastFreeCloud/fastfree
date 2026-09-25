@@ -1,4 +1,4 @@
-name: 08-create-frappe-app
+name: 07-scaffold
 
 # ═══════════════════════════════════════════════════════════
 #   المرحلة 1: إنشاء تطبيق Frappe من الصفر
@@ -6,7 +6,7 @@ name: 08-create-frappe-app
 #   • يشتغل تلقائي أول مرة لما الـ Repo ما فيه كود تطبيق
 #   • يشتغل يدوي مع قيم مخصصة
 #   • يستخدم bench new-app الحقيقي
-#   • يعمل Tag v1.0.1 + GitHub Release أوتوماتيك
+#   • يعمل Tag app-v1.0.1 + GitHub Release أوتوماتيك
 # ═══════════════════════════════════════════════════════════
 
 on:
@@ -52,7 +52,7 @@ on:
         type: string
         default: "version-15"
       create_release:
-        description: "إنشاء Tag و GitHub Release (v1.0.1)؟"
+        description: "إنشاء Tag و GitHub Release (app-v1.0.1)؟"
         required: false
         type: boolean
         default: true
@@ -69,7 +69,7 @@ permissions: {}
 
 jobs:
   create-app:
-    name: "🏗️ إنشاء التطبيق بـ bench"
+    name: "1. 🏗️ إنشاء التطبيق بـ bench"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -80,19 +80,19 @@ jobs:
       # ║  المرحلة 1: التحقق من جاهزية الـ Repo  ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣ تحميل الـ Repo"
+      - name: "1. 1️⃣ تحميل الـ Repo"
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Safe directory
+      - name: "2. Safe directory"
         run: git config --global safe.directory '*'
 
       # ╔═══════════════════════════════════════╗
       # ║  المرحلة 0.4: تعيين القيم الافتراضية  ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣4️⃣ تعيين القيم (تلقائي أو يدوي)"
+      - name: "3. 1️⃣4️⃣ تعيين القيم (تلقائي أو يدوي)"
         id: set_values
         run: |
           REPO_NAME="${{ github.event.repository.name }}"
@@ -147,7 +147,7 @@ jobs:
       # ║  المرحلة 0.5: التحقق من المدخلات       ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣5️⃣ التحقق من صحة المدخلات"
+      - name: "4. 1️⃣5️⃣ التحقق من صحة المدخلات"
         run: |
           echo "🔍 فحص المدخلات..."
 
@@ -189,7 +189,7 @@ jobs:
           echo "  • البريد: $APP_EMAIL"
           echo "  • المستودع: $REPO_NAME"
 
-      - name: "2️⃣ التحقق من حالة الـ Repo"
+      - name: "5. 2️⃣ التحقق من حالة الـ Repo"
         id: check
         run: |
           echo "🔍 فحص محتويات الـ Repo..."
@@ -222,19 +222,19 @@ jobs:
       # ║  المرحلة 2: إعداد البيئة               ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "3️⃣ إعداد Python"
+      - name: "6. 3️⃣ إعداد Python"
         if: steps.check.outputs.should_create == 'true'
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
-      - name: "4️⃣ إعداد Node.js"
+      - name: "7. 4️⃣ إعداد Node.js"
         if: steps.check.outputs.should_create == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: 22
 
-      - name: "5️⃣ تخزين مؤقت لـ pip"
+      - name: "8. 5️⃣ تخزين مؤقت لـ pip"
         if: steps.check.outputs.should_create == 'true'
         uses: actions/cache@v5
         with:
@@ -243,7 +243,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: "6️⃣ تثبيت Frappe Bench CLI"
+      - name: "9. 6️⃣ تثبيت Frappe Bench CLI"
         if: steps.check.outputs.should_create == 'true'
         timeout-minutes: 5
         run: |
@@ -254,7 +254,7 @@ jobs:
       # ║  المرحلة 3: إنشاء التطبيق بـ bench     ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "7️⃣ تهيئة بيئة Bench"
+      - name: "10. 7️⃣ تهيئة بيئة Bench"
         if: steps.check.outputs.should_create == 'true'
         timeout-minutes: 15
         run: |
@@ -283,7 +283,7 @@ jobs:
             echo "✅ تم تهيئة Bench (المحاولة الثانية)"
           fi
 
-      - name: "8️⃣ إنشاء التطبيق بـ bench new-app"
+      - name: "11. 8️⃣ إنشاء التطبيق بـ bench new-app"
         if: steps.check.outputs.should_create == 'true'
         id: create_app
         timeout-minutes: 5
@@ -355,7 +355,7 @@ jobs:
       # ║  المرحلة 4: التحقق من الملفات          ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "9️⃣ التحقق من الملفات المولّدة"
+      - name: "12. 9️⃣ التحقق من الملفات المولّدة"
         if: steps.check.outputs.should_create == 'true'
         run: |
           APP_DIR="/tmp/frappe-bench/apps/$APP_NAME"
@@ -410,7 +410,7 @@ jobs:
       # ║  المرحلة 5: نسخ + Commit + Push       ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "🔟 نسخ الملفات للـ Repo"
+      - name: "13. 🔟 نسخ الملفات للـ Repo"
         if: steps.check.outputs.should_create == 'true'
         run: |
           APP_DIR="/tmp/frappe-bench/apps/$APP_NAME"
@@ -458,7 +458,7 @@ jobs:
           echo "📂 محتويات الـ Repo:"
           find . -not -path './.git/*' -not -path './.github/*' -type f | sort
 
-      - name: "1️⃣1️⃣ حفظ ورفع الملفات"
+      - name: "14. 1️⃣1️⃣ حفظ ورفع الملفات"
         if: steps.check.outputs.should_create == 'true'
         run: |
           cd "$GITHUB_WORKSPACE"
@@ -482,21 +482,21 @@ jobs:
       # ║  المرحلة 6: Tag + Release              ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1️⃣2️⃣ إنشاء Tag + Release"
+      - name: "15. 1️⃣2️⃣ إنشاء Tag + Release"
         if: steps.check.outputs.should_create == 'true' && env.CREATE_RELEASE == 'true'
         id: tag_version
         run: |
           cd "$GITHUB_WORKSPACE"
 
           # حساب الإصدار التالي
-          LATEST_TAG=$(git tag -l "v1.0.*" --sort=-v:refname | head -n1)
+          LATEST_TAG=$(git tag -l "app-v1.0.*" --sort=-v:refname | head -n1)
           if [ -z "$LATEST_TAG" ]; then
             NEXT=1
           else
-            CURR=${LATEST_TAG#v1.0.}
+            CURR=${LATEST_TAG#app-v1.0.}
             NEXT=$((CURR + 1))
           fi
-          TAG="v1.0.$NEXT"
+          TAG="app-v1.0.$NEXT"
 
           # التحقق من وجود الـ tag
           if git rev-parse "$TAG" >/dev/null 2>&1; then
@@ -510,12 +510,12 @@ jobs:
           echo "next=$NEXT" >> "$GITHUB_OUTPUT"
           echo "✅ تم إنشاء Tag $TAG"
 
-      - name: "1️⃣3️⃣ إنشاء GitHub Release"
+      - name: "16. 1️⃣3️⃣ إنشاء GitHub Release"
         if: steps.check.outputs.should_create == 'true' && env.CREATE_RELEASE == 'true'
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: v1.0.${{ steps.tag_version.outputs.next }}
-          name: "v1.0.${{ steps.tag_version.outputs.next }}"
+          tag_name: app-v1.0.${{ steps.tag_version.outputs.next }}
+          name: "app-v1.0.${{ steps.tag_version.outputs.next }}"
           body: |
             ## 🎉 الإصدار الأول
 
@@ -546,7 +546,7 @@ jobs:
       # ║  المرحلة 7: ملخص النتائج               ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "📋 ملخص النتائج"
+      - name: "17. 📋 ملخص النتائج"
         if: always()
         run: |
           echo "## 🆕 نتائج إنشاء التطبيق" >> "$GITHUB_STEP_SUMMARY"
@@ -568,7 +568,7 @@ jobs:
               echo "| **الناشر** | ${{ env.APP_PUBLISHER }} |"
               echo "| **الرخصة** | ${{ env.APP_LICENSE }} |"
               echo "| **Frappe** | \`${{ env.FRAPPE_BRANCH }}\` |"
-              echo "| **Tag** | \`v1.0.1\` |"
+              echo "| **Tag** | \`app-v1.0.1\` |"
               echo "| **Release** | ${{ env.CREATE_RELEASE }} |"
               echo ""
               echo "### 📌 الخطوات القادمة"

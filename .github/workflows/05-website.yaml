@@ -1,8 +1,7 @@
-name: 06-build-website
+name: 05-website
 
 on:
   workflow_dispatch:
-  workflow_call:
 
 concurrency:
   group: build-website-${{ github.ref }}
@@ -15,55 +14,63 @@ env:
 
 jobs:
   lint-and-build:
+    name: "1. Lint and Build"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
       contents: read
       packages: write
     steps:
-      - name: Safe directory
+      - name: "1. Safe directory"
         run: git config --global safe.directory '*'
 
-      - uses: actions/checkout@v6
+      - name: "2. Checkout"
+        uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v6
+      - name: "3. Install Flox"
+        uses: flox/install-flox-action@v2
+
+      - name: "4. Install dependencies"
+        uses: flox/activate-action@v1
         with:
-          node-version: 22
+          dir: .
+          command: cd apps/fastfree_website && npm install --legacy-peer-deps --ignore-scripts
 
-      - name: Install dependencies
-        working-directory: apps/fastfree_website
-        run: npm install --legacy-peer-deps --ignore-scripts
+      - name: "5. TypeScript check"
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_website && npx tsc --noEmit
 
-      - name: TypeScript check
-        working-directory: apps/fastfree_website
-        run: npx tsc --noEmit
+      - name: "6. Lint check"
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_website && npm run lint
 
-      - name: Lint check
-        working-directory: apps/fastfree_website
-        run: npm run lint
-
-      - uses: cachix/install-nix-action@v31
+      - name: "7. Install Nix"
+        uses: cachix/install-nix-action@v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install skopeo
+      - name: "8. Install skopeo"
         run: |
           sudo rm -f /etc/apt/sources.list.d/google-chrome.list || true
           sudo apt-get update || true
           sudo apt-get install -y skopeo
 
-      - name: Build frontend image
+      - name: "9. Build frontend image"
         working-directory: apps/fastfree_website
         run: nix build .#frontendImage -o frontend-image --print-build-logs
 
-      - name: Login to GHCR
+      - name: "10. Login to GHCR"
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Ensure GHCR package exists
+      - name: "11. Ensure GHCR package exists"
         continue-on-error: true
         run: |
           PKG="fastfree_website"
@@ -84,11 +91,11 @@ jobs:
             echo "Unexpected response: $HTTP_CODE"
           fi
 
-      - name: Save frontend image to tarball
+      - name: "12. Save frontend image to tarball"
         working-directory: apps/fastfree_website
         run: ./frontend-image > frontend-image.tar
 
-      - name: Push frontend image (latest)
+      - name: "13. Push frontend image (latest)"
         working-directory: apps/fastfree_website
         env:
           SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
@@ -98,7 +105,7 @@ jobs:
             docker-archive:frontend-image.tar \
             docker://${{ env.IMAGE_PREFIX }}:latest
 
-      - name: Push frontend image (sha)
+      - name: "14. Push frontend image (sha)"
         working-directory: apps/fastfree_website
         env:
           SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
@@ -109,20 +116,22 @@ jobs:
             docker://${{ env.IMAGE_PREFIX }}:${{ github.sha }}
 
   release:
+    name: "2. Release"
     needs: [lint-and-build]
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Safe directory
+      - name: "1. Safe directory"
         run: git config --global safe.directory '*'
 
-      - uses: actions/checkout@v6
+      - name: "2. Checkout"
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Compute next version
+      - name: "3. Compute next version"
         id: version
         run: |
           LATEST_TAG=$(git tag -l "website-v1.0.*" --sort=-v:refname | head -n1)
@@ -135,7 +144,7 @@ jobs:
           echo "tag=website-v1.0.$NEXT" >> "$GITHUB_OUTPUT"
           echo "Version: website-v1.0.$NEXT"
 
-      - name: Create tag and push
+      - name: "4. Create tag and push"
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           if git rev-parse "$TAG" >/dev/null 2>&1; then
@@ -148,7 +157,7 @@ jobs:
           git push origin "$TAG"
           echo "Tag $TAG created and pushed"
 
-      - name: Create GitHub Release
+      - name: "5. Create GitHub Release"
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag }}

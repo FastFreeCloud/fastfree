@@ -9,10 +9,10 @@ description: Build signed APK/AAB for a FastFree Android app locally or via tag-
 
 | App | Dir | Package | Tag | Workflow |
 |-----|-----|---------|-----|----------|
-| POS | `apps/fastfree_pos` | `com.fastfree.pos` | `pos-v*` | `09-build-pos-android.yaml` |
-| ERP | `apps/fastfree_erp` | `com.fastfree.erp` | `erp-v*` | `10-build-erp-android.yaml` |
-| HR | `apps/fastfree_hr` | `com.fastfree.hr` | `hr-v*` | `11-build-hr-android.yaml` |
-| Ledger | `apps/fastfree_ledger` | `com.fastfree.ledger` | `ledger-v*` | `12-build-ledger-android.yaml` |
+| POS | `apps/fastfree_pos` | `com.fastfree.pos` | `pos-v*` | `01-pos.yaml` |
+| ERP | `apps/fastfree_erp` | `com.fastfree.erp` | `erp-v*` | `02-erp.yaml` |
+| HR | `apps/fastfree_hr` | `com.fastfree.hr` | `hr-v*` | `03-hr.yaml` |
+| Ledger | `apps/fastfree_ledger` | `com.fastfree.ledger` | `ledger-v*` | `04-ledger.yaml` |
 
 Versioning: `versionCode = YYYYMMDD × 100 + github.run_number`, `versionName = YYYY.MM.DD`.
 Every upload burns its versionCode — even a discarded Console draft (see skill
@@ -46,7 +46,7 @@ Outputs: `app/build/outputs/apk/release/` (APK), `app/build/outputs/bundle/relea
 git tag pos-v1.0.0; git push origin pos-v1.0.0
 gh run list --repo FastFreeCloud/fastfree --limit 5
 gh run watch <RUN_ID> --repo FastFreeCloud/fastfree
-gh workflow run 09-build-pos-android.yaml --repo FastFreeCloud/fastfree  # manual, no tag
+gh workflow run 01-pos.yaml --repo FastFreeCloud/fastfree  # manual, no tag
 ```
 
 ## Signing (stable key, never ephemeral for Play)

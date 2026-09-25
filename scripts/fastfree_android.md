@@ -41,11 +41,10 @@ FastFree Monorepo
 │   │   └── fastfree_android_keystore.py ← المفتاح الثابت + ربط Gradle
 │   └── fastfree_android.md      ← هذا الدليل
 └── .github/workflows/
-    ├── 09-build-pos-android.yaml
-    ├── 10-build-erp-android.yaml
-    ├── 11-build-hr-android.yaml
-    ├── 12-build-ledger-android.yaml
-    └── 18-capture-screenshots.yaml
+    ├── 01-pos.yaml
+    ├── 02-erp.yaml
+    ├── 03-hr.yaml
+    ├── 04-ledger.yaml
 ```
 
 ### التقنيات
@@ -522,10 +521,10 @@ gh run watch RUN_ID --repo FastFreeCloud/fastfree
 ### تشغيل يدوي (بدون tag)
 
 ```powershell
-gh workflow run 09-build-pos-android.yaml --repo FastFreeCloud/fastfree
-gh workflow run 10-build-erp-android.yaml --repo FastFreeCloud/fastfree
-gh workflow run 11-build-hr-android.yaml --repo FastFreeCloud/fastfree
-gh workflow run 12-build-ledger-android.yaml --repo FastFreeCloud/fastfree
+gh workflow run 01-pos.yaml --repo FastFreeCloud/fastfree
+gh workflow run 02-erp.yaml --repo FastFreeCloud/fastfree
+gh workflow run 03-hr.yaml --repo FastFreeCloud/fastfree
+gh workflow run 04-ledger.yaml --repo FastFreeCloud/fastfree
 ```
 
 ---
@@ -590,7 +589,7 @@ git add -A; git commit -m "msg"; git push origin master
 ### رفع + نشر
 
 ```powershell
-gh workflow run 16-deploy-client3.yaml --ref master
+gh workflow run 10-client3.yaml --ref master
 ```
 
 ### عرض حالة الـ workflows

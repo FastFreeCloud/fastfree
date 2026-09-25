@@ -55,7 +55,7 @@ versionCode back from the upload response and uses that for the track release.
 - First app record, SA invite, first AAB, legal questionnaires → skill `play-console-setup`
   (browser, human checkpoints). This skill starts where that one ends.
 - Building the AAB itself → skill `android-build-release`.
-- Screenshots capture (emulator + Maestro) → workflow `18-capture-screenshots.yaml`
+- Screenshots capture (emulator + Maestro) → screenshots job in `01-pos.yaml`–`04-ledger.yaml`
   (ephemeral `admin_pass` input, never stored).
 - Browser rollout (skill `play-console-setup` §5.7) is separate from API publish here: API `--status draft` uploads never activate the track or mint the opt-in link.
 - Draft → Active + opt-in link happens ONLY via the browser rollout flow (testers/edit/preview/proceed-anyway/publish/verify) — never via a `--status` flag or re-upload.

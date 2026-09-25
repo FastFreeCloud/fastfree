@@ -1,28 +1,87 @@
-name: 16-deploy-client3
+###############################################################################
+# Client3 pipeline — validate + deploy via SSH + diagnose + guarded fresh install
+# Replaces: 13-validate-os.yaml (client3 leg) + 16-deploy-client3.yaml + 17-install-client3.yaml
+###############################################################################
+
+name: 10-client3
 
 on:
   workflow_dispatch:
+    inputs:
+      action:
+        description: "What to do"
+        required: true
+        type: choice
+        default: deploy
+        options:
+          - deploy
+          - install
+      confirm:
+        description: "Type INSTALL to wipe and install the VPS (install only)"
+        required: false
+        default: ""
 
 concurrency:
-  group: deploy-client3-${{ github.ref }}
+  group: client3-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  validate:
+    name: "1. Validate client3 config"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: "1. Safe directory"
+        run: git config --global safe.directory '*'
+
+      - name: "2. Checkout"
+        uses: actions/checkout@v6
+
+      - name: "3. Install Nix"
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+
+      - name: "4. Parse Nix files"
+        working-directory: apps/fastfree_os
+        run: |
+          FAILED=0
+          while IFS= read -r -d '' file; do
+            if ! nix-instantiate --parse "$file" >/dev/null 2>&1; then
+              echo "SYNTAX ERROR: $file"
+              FAILED=1
+            fi
+          done < <(find . -name "*.nix" -not -path "./.git/*" -print0 | sort -z)
+          [ "$FAILED" -eq 0 ] && echo "All Nix files parse OK" || exit 1
+        shell: bash
+
+      - name: "5. Evaluate client3 toplevel"
+        working-directory: apps/fastfree_os
+        run: nix eval ".#nixosConfigurations.client3.config.system.build.toplevel" --no-update-lock-file --print-build-logs >/dev/null && echo "client3 evaluates OK"
+        shell: bash
+
   deploy:
-    name: "Deploy client3 via SSH"
+    name: "2. Deploy client3 via SSH"
+    needs: validate
+    if: ${{ inputs.action == 'deploy' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read
       packages: read
     steps:
-      - name: Checkout
+      - name: "1. Checkout"
         uses: actions/checkout@v6
 
-      - name: Install dependencies
+      - name: "2. Install dependencies"
         run: sudo apt-get update && sudo apt-get install -y sshpass
 
-      - name: Copy config to VPS
+      - name: "3. Copy config to VPS"
         env:
           SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
         run: |
@@ -32,7 +91,7 @@ jobs:
             apps/fastfree_os/nix/ \
             root@${{ secrets.CLIENT3_IP }}:/tmp/fastfree_os/
 
-      - name: Cleanup old SPA containers
+      - name: "4. Cleanup old SPA containers"
         env:
           SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
         run: |
@@ -48,7 +107,7 @@ jobs:
             echo 'Cleanup done'
           RESET
 
-      - name: Pull SPA images
+      - name: "5. Pull SPA images"
         env:
           SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
         run: |
@@ -62,7 +121,7 @@ jobs:
             echo 'All images pulled'
           PULL
 
-      - name: Extract SPA files to host
+      - name: "6. Extract SPA files to host"
         env:
           SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
         run: |
@@ -93,15 +152,15 @@ jobs:
             done
           EXTRACT
 
-      - name: Run nixos-rebuild
+      - name: "7. Run nixos-rebuild"
         env:
           SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
         run: |
           sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT3_IP }} \
-            "cd /tmp/fastfree_os && nixos-rebuild switch --flake .#client3 || true"
+            "cd /tmp/fastfree_os && nixos-rebuild switch --flake .#client3"
 
-      - name: Fix MySQL Frappe user (after rebuild)
+      - name: "8. Fix MySQL Frappe user (after rebuild)"
         env:
           SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
         run: |
@@ -110,14 +169,14 @@ jobs:
           SITE_CFG="/var/lib/containers/storage/volumes/fastfree-backend-sites/_data/backend.fastfree.cloud/site_config.json"
           DB_NAME=$(sed -n 's/.*"db_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$SITE_CFG")
           DB_PASS=$(sed -n 's/.*"db_password"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$SITE_CFG")
-          echo "db_name=$DB_NAME db_password=$DB_PASS"
+          echo "db_name=$DB_NAME (password masked)"
           MYSQL_BIN=$(ls /nix/store/*/bin/mysql 2>/dev/null | head -1)
           echo "mysql=$MYSQL_BIN"
           "$MYSQL_BIN" --user=root --password='Fastfree@2026' -e "DROP USER IF EXISTS '${DB_NAME}'@'%'; DROP USER IF EXISTS '${DB_NAME}'@'localhost'; CREATE USER '${DB_NAME}'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('${DB_PASS}'); CREATE USER '${DB_NAME}'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('${DB_PASS}'); GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_NAME}'@'%'; GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_NAME}'@'localhost'; FLUSH PRIVILEGES;" 2>&1
           echo "DONE"
           REMOTESCRIPT
 
-      - name: Restart ALL backend services
+      - name: "9. Restart ALL backend services"
         env:
           SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
         run: |
@@ -137,15 +196,16 @@ jobs:
           RESTART
 
   diagnose:
-    name: "Diagnostic — client3"
+    name: "3. Diagnostic — client3"
     needs: [deploy]
+    if: ${{ inputs.action == 'deploy' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Install dependencies
+      - name: "1. Install dependencies"
         run: sudo apt-get update && sudo apt-get install -y sshpass
 
-      - name: Run full diagnostic
+      - name: "2. Run full diagnostic"
         env:
           SSH_PASSWORD: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
         run: |
@@ -155,65 +215,65 @@ jobs:
 
           SSH_CMD="sshpass -p '$SSH_PASSWORD' ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 $USER@$IP"
 
-          echo "════════════════════════════════════════════════════════"
+          echo "================================================================"
           echo "  FastFree OS — Diagnostic Report"
           echo "  $(date)"
-          echo "════════════════════════════════════════════════════════"
+          echo "================================================================"
           echo ""
 
-          echo "═══ 1. SYSTEM INFO ═══"
+          echo "=== 1. SYSTEM INFO ==="
           eval "$SSH_CMD" "hostname; echo '---'; uname -a; echo '---'; uptime; echo '---'; cat /etc/os-release | head -5"
           echo ""
 
-          echo "═══ 2. NETWORK ═══"
+          echo "=== 2. NETWORK ==="
           eval "$SSH_CMD" "ip addr show ens18 | grep 'inet '; echo '---'; ip route show default; echo '---'; ping -c 2 -W 3 8.8.8.8 || echo 'PING FAILED'"
           echo ""
 
-          echo "═══ 3. LISTENING PORTS ═══"
+          echo "=== 3. LISTENING PORTS ==="
           eval "$SSH_CMD" "ss -tlnp | grep -E '(22|80|443|3306|51820|8080|8082|9000|9001|9002|9003|9004|9090)' || echo 'No services listening'"
           echo ""
 
-          echo "═══ 4. PODMAN CONTAINERS ═══"
+          echo "=== 4. PODMAN CONTAINERS ==="
           eval "$SSH_CMD" "podman ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' || echo 'podman not available'"
           echo ""
 
-          echo "═══ 5. PODMAN IMAGES ═══"
+          echo "=== 5. PODMAN IMAGES ==="
           eval "$SSH_CMD" "podman images --format 'table {{.Repository}}\t{{.Tag}}\t{{.Size}}' || echo 'No images'"
           echo ""
 
-          echo "═══ 6. SYSTEMD SERVICES ═══"
+          echo "=== 6. SYSTEMD SERVICES ==="
           eval "$SSH_CMD" "systemctl list-units --type=service --state=running | grep -E '(podman|caddy|mysql|wireguard|avahi|fastfree|cockpit)' || echo 'No FastFree services'"
           echo ""
 
-          echo "═══ 7. FAILED SERVICES ═══"
+          echo "=== 7. FAILED SERVICES ==="
           eval "$SSH_CMD" "systemctl list-units --type=service --state=failed || echo 'No failed services'"
           echo ""
 
-          echo "═══ 8. CADDY STATUS ═══"
+          echo "=== 8. CADDY STATUS ==="
           eval "$SSH_CMD" "systemctl status caddy --no-pager -l | head -15 || echo 'Caddy not running'"
           echo ""
 
-          echo "═══ 9. CADDY ERRORS (last 10) ═══"
+          echo "=== 9. CADDY ERRORS (last 10) ==="
           eval "$SSH_CMD" "journalctl -u caddy --no-pager -n 10 --since '2 min ago' 2>&1 || true"
           echo ""
 
-          echo "═══ 10. MARIADB STATUS ═══"
+          echo "=== 10. MARIADB STATUS ==="
           eval "$SSH_CMD" "mysqladmin ping -h localhost 2>&1 || echo 'MySQL not reachable'"
           echo ""
 
-          echo "═══ 11. WIREGUARD STATUS ═══"
+          echo "=== 11. WIREGUARD STATUS ==="
           eval "$SSH_CMD" "wg show || echo 'WireGuard not running'"
           echo ""
 
-          echo "═══ 12. NIXOS GENERATION ═══"
+          echo "=== 12. NIXOS GENERATION ==="
           eval "$SSH_CMD" "nixos-rebuild --version 2>/dev/null || echo 'NixOS not available'"
           echo ""
 
-          echo "═══ 13. DISK USAGE ═══"
+          echo "=== 13. DISK USAGE ==="
           eval "$SSH_CMD" "df -h / /var /tmp 2>/dev/null || df -h"
           echo ""
 
-          echo "═══ 14. HTTP ENDPOINTS (localhost) ═══"
+          echo "=== 14. HTTP ENDPOINTS (localhost) ==="
           eval "$SSH_CMD" "
             for port in 80 443 8080 8082 9000 9001 9002 9003 9004 9090; do
               HTTP_CODE=\$(curl -s -o /dev/null -w '%{http_code}' --connect-timeout 3 http://localhost:\$port/ 2>/dev/null || echo '000')
@@ -222,14 +282,14 @@ jobs:
           "
           echo ""
 
-          echo "═══ 15. EXTERNAL CURL TESTS ═══"
+          echo "=== 15. EXTERNAL CURL TESTS ==="
           for domain in hr.fastfree.cloud erp.fastfree.cloud ledger.fastfree.cloud pos.fastfree.cloud backend.fastfree.cloud fastfree.cloud db.fastfree.cloud panel.fastfree.cloud www.fastfree.cloud; do
             CODE=$(curl -m 5 -sI "https://$domain/" 2>&1 | head -1 || echo "TIMEOUT")
             echo "  $domain: $CODE"
           done
           echo ""
 
-          echo "═══ 16. COCKPIT STATUS ═══"
+          echo "=== 16. COCKPIT STATUS ==="
           eval "$SSH_CMD" "
             systemctl status cockpit.socket --no-pager -l 2>/dev/null | head -10 || echo 'cockpit.socket not found'
             echo '---'
@@ -237,11 +297,11 @@ jobs:
           "
           echo ""
 
-          echo "═══ 17. RECENT JOURNAL ERRORS ═══"
+          echo "=== 17. RECENT JOURNAL ERRORS ==="
           eval "$SSH_CMD" "journalctl -p err --no-pager -n 15 2>/dev/null || echo 'journalctl not available'"
           echo ""
 
-          echo "═══ 18. SPA FILES ON HOST ═══"
+          echo "=== 18. SPA FILES ON HOST ==="
           eval "$SSH_CMD" "
             for app in hr erp ledger pos; do
               dir=\"/srv/fastfree-\${app}\"
@@ -254,6 +314,35 @@ jobs:
           "
           echo ""
 
-          echo "════════════════════════════════════════════════════════"
+          echo "================================================================"
           echo "  Diagnostic Complete"
-          echo "════════════════════════════════════════════════════════"
+          echo "================================================================"
+
+  install:
+    name: "4. Wipe & install client3 via nixos-anywhere"
+    needs: validate
+    if: ${{ inputs.action == 'install' && inputs.confirm == 'INSTALL' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "1. Checkout"
+        uses: actions/checkout@v6
+
+      - name: "2. Install Nix"
+        uses: DeterminateSystems/determinate-nix-action@v3
+
+      - name: "3. nixos-anywhere install"
+        env:
+          SSHPASS: ${{ secrets.CLIENT3_ROOT_PASSWORD }}
+        run: |
+          nix run github:nix-community/nixos-anywhere -- \
+            --flake ./apps/fastfree_os#client3 \
+            --target-host root@${{ secrets.CLIENT3_IP }} \
+            --env-password
+
+      - name: "4. Verify (SSH key)"
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.CLIENT3_DEPLOY_KEY }}" > ~/.ssh/client3
+          chmod 600 ~/.ssh/client3
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/client3 \
+            root@${{ secrets.CLIENT3_IP }} "nixos-version && hostname && echo DEPLOY_OK"
