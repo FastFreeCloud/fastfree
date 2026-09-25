@@ -199,15 +199,15 @@ jobs:
         run: |
           MANIFEST="apps/fastfree_erp/src-capacitor/android/app/src/main/AndroidManifest.xml"
           if [ -f "$MANIFEST" ] && ! grep -q "com.android.vending" "$MANIFEST"; then
-            python3 - "$MANIFEST" <<'PYEOF'
-            import sys
-            p = sys.argv[1]
-            t = open(p).read()
-            assert "<application" in t, "application anchor missing"
-            t = t.replace("<application", '<queries><package android:name="com.android.vending" /></queries>\n    <application', 1)
-            open(p, "w").write(t)
-            print("patched AndroidManifest queries")
-            PYEOF
+          python3 - "$MANIFEST" <<'PYEOF'
+          import sys
+          p = sys.argv[1]
+          t = open(p).read()
+          assert "<application" in t, "application anchor missing"
+          t = t.replace("<application", '<queries><package android:name="com.android.vending" /></queries>\n    <application', 1)
+          open(p, "w").write(t)
+          print("patched AndroidManifest queries")
+          PYEOF
           else
             echo "manifest already patched or missing"
           fi
