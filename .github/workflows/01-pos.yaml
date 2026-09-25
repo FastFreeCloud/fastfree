@@ -59,19 +59,25 @@ jobs:
           dir: .
           command: pnpm install --no-frozen-lockfile --ignore-scripts
 
-      - name: "5. Prepare Quasar"
+      - name: "5. Install Capacitor dependencies"
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos/src-capacitor && npm install
+
+      - name: "6. Prepare Quasar"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos && mkdir -p .quasar && echo '{"compilerOptions":{}}' > .quasar/tsconfig.json && pnpm exec quasar prepare --silent
 
-      - name: "6. TypeScript check"
+      - name: "7. TypeScript check"
         uses: flox/activate-action@v1
         with:
           dir: .
           command: cd apps/fastfree_pos && pnpm exec vue-tsc --noEmit
 
-      - name: "7. Lint check"
+      - name: "8. Lint check"
         uses: flox/activate-action@v1
         with:
           dir: .
