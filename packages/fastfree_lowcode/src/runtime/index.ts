@@ -8,7 +8,7 @@ export {
   LcSettingsScreen, LcThemeScreen, LcTranslationEditorScreen,
   LcShortcutsScreen, LcPrivacyScreen, LcPrivacyContent, LcErrorBoundary,
   DynamicTable, DynamicForm, FilterToolbar, PaginationBar,
-  EmptyState, AddRowButton,
+  EmptyState, AddRowButton, DataTableBottom,
 } from './components'
 
 // ============================================================

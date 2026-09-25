@@ -42,7 +42,8 @@
   "dependencies": {
     "@clack/prompts": "^1.4.0",
     "@umalqura/core": "^0.0.7",
-    "dexie": "^4.4.4"
+    "dexie": "^4.4.4",
+    "exceljs": "^4.4.0"
   },
   "devDependencies": {
     "@quasar/app-vite": "^3.2.0",

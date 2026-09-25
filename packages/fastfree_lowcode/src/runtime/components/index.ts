@@ -25,10 +25,18 @@ export { default as LcErrorBoundary } from './LcErrorBoundary.vue'
 // Base Components
 export { default as DynamicTable } from './DynamicTable.vue'
 export { default as DynamicForm } from './DynamicForm.vue'
+export { default as BaseFormPage } from './BaseFormPage.vue'
+export { default as BaseFormFields } from './BaseFormFields.vue'
+export { default as BaseFormTotals } from './BaseFormTotals.vue'
+// export { default as BaseList } from './BaseList.vue' // Temporarily disabled due to build issues
 export { default as FilterToolbar } from './FilterToolbar.vue'
 export { default as PaginationBar } from './PaginationBar.vue'
 export { default as EmptyState } from './EmptyState.vue'
 export { default as AddRowButton } from './AddRowButton.vue'
+export { default as DataTableBottom } from './DataTableBottom.vue'
 
 // Types
 export type { DockItem } from '../types'
+export type { FieldSchema, TableRow, TablePagination } from './BaseFormFields.vue'
+export type { ColumnDef, RowAction, BaseListOptions, BaseListReturn } from '../composables/useBaseList'
+export type { FormField, BaseFormOptions, BaseFormReturn } from '../composables/useBaseForm'
