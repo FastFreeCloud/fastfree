@@ -1,0 +1,660 @@
+name: 20-pos-pipeline
+
+# Unified POS pipeline: validate -> web -> android -> screenshots/publish -> release
+# Replaces: 02-build-pos.yaml + 09-build-pos-android.yaml (+ pos leg of 18-capture-screenshots.yaml)
+# Trigger: manual only (no tag trigger on purpose — the release job creates pos-v* tags,
+# a tag trigger here would self-trigger). Toolchain (node/pnpm/jdk) comes from Flox;
+# Android SDK + Gradle + uv still come from runner actions.
+
+on:
+  workflow_dispatch:
+    inputs:
+      admin_user:
+        description: "Backend admin username for screenshots (ephemeral, never stored)"
+        required: false
+        type: string
+        default: "Administrator"
+      admin_pass:
+        description: "Backend admin password for screenshots (ephemeral, never stored)"
+        required: false
+        type: string
+        default: ""
+      with_screenshots:
+        description: "Run emulator screenshots job"
+        required: false
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      admin_user:
+        required: false
+        type: string
+        default: "Administrator"
+      admin_pass:
+        required: false
+        type: string
+        default: ""
+      with_screenshots:
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: pos-pipeline-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_OPTIONS: "--no-deprecation"
+  APP_DIR: fastfree_pos
+  APP_NAME: "FastFree POS"
+  APP_ID: com.fastfree.pos
+  APP_KEY: pos
+  IMAGE_PREFIX: ghcr.io/fastfreecloud/fastfree_pos
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Safe directory
+        run: git config --global safe.directory '*'
+
+      - name: Install Flox
+        uses: flox/install-flox-action@v2
+
+      - name: Install dependencies
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: pnpm install --no-frozen-lockfile --ignore-scripts
+
+      - name: Prepare Quasar
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos && mkdir -p .quasar && echo '{"compilerOptions":{}}' > .quasar/tsconfig.json && pnpm exec quasar prepare --silent
+
+      - name: TypeScript check
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos && pnpm exec vue-tsc --noEmit
+
+      - name: Lint check
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos && pnpm run lint:check
+
+  web:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Safe directory
+        run: git config --global safe.directory '*'
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install skopeo
+        run: sudo rm -f /etc/apt/sources.list.d/google-chrome.list; sudo apt-get update && sudo apt-get install -y skopeo
+
+      - name: Build frontend image
+        working-directory: apps/${{ env.APP_DIR }}
+        run: nix build .#frontendImage -o frontend-image --print-build-logs
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Ensure GHCR package exists
+        continue-on-error: true
+        run: |
+          PKG="fastfree_pos"
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/users/$OWNER_LOWER/packages/container/$PKG")
+          echo "Package check HTTP code: $CODE"
+
+      - name: Save frontend image to tarball
+        working-directory: apps/${{ env.APP_DIR }}
+        run: ./frontend-image > frontend-image.tar
+
+      - name: Push frontend image (latest)
+        working-directory: apps/${{ env.APP_DIR }}
+        env:
+          SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+        run: skopeo copy docker-archive:frontend-image.tar docker://${{ env.IMAGE_PREFIX }}:latest
+
+      - name: Push frontend image (sha)
+        working-directory: apps/${{ env.APP_DIR }}
+        env:
+          SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+        run: skopeo copy docker-archive:frontend-image.tar docker://${{ env.IMAGE_PREFIX }}:${{ github.sha }}
+
+  android:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Safe directory
+        run: git config --global safe.directory '*'
+
+      - name: Install Flox
+        uses: flox/install-flox-action@v2
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: pnpm install --no-frozen-lockfile --ignore-scripts
+
+      - name: Install Capacitor dependencies
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos/src-capacitor && npm install
+
+      - name: Prepare Quasar
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos && mkdir -p .quasar && echo '{"compilerOptions":{}}' > .quasar/tsconfig.json && pnpm exec quasar prepare --silent
+
+      - name: Build web assets
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos && VITE_API_BASE_URL=https://backend.fastfree.cloud pnpm exec quasar build -m capacitor
+
+      - name: Add Android Platform
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos/src-capacitor && npx cap add android
+
+      - name: Sync Capacitor
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos/src-capacitor && npx cap sync android
+
+      - name: Generate Keystore
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: |
+            KEYSTORE_DIR="apps/fastfree_pos/signing"
+            KEYSTORE="$KEYSTORE_DIR/release.jks"
+            STOREPASS="${{ secrets.KEYSTORE_PASSWORD }}"
+            STOREPASS="${STOREPASS:-FastFree@87171393}"
+            mkdir -p "$KEYSTORE_DIR"
+            REPO_KEYSTORE="scripts/fastfree-android/keystore/release.jks"
+            if [ -f "$REPO_KEYSTORE" ]; then
+              cp "$REPO_KEYSTORE" "$KEYSTORE"
+              echo "Keystore copied from repo at $KEYSTORE"
+            elif [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+              echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > "$KEYSTORE"
+              echo "Keystore decoded from secret at $KEYSTORE"
+            elif [ -f "$KEYSTORE" ]; then
+              echo "Keystore exists"
+            else
+              keytool -genkeypair \
+                -alias fastfree \
+                -keyalg RSA \
+                -keysize 2048 \
+                -validity 20000 \
+                -keystore "$KEYSTORE" \
+                -storepass "$STOREPASS" \
+                -keypass "$STOREPASS" \
+                -dname "CN=FastFree, OU=IT, O=FastFree, L=Riyadh, ST=Riyadh, C=SA"
+              echo "Keystore created (ephemeral fallback)"
+            fi
+            mkdir -p "apps/fastfree_pos/src-capacitor/android"
+            cat > "$KEYSTORE_DIR/keystore.properties" <<PROPS_EOF
+            storeFile=release.jks
+            storePassword=$STOREPASS
+            keyAlias=fastfree
+            keyPassword=$STOREPASS
+            PROPS_EOF
+            cat > "apps/fastfree_pos/src-capacitor/android/keystore.properties" <<PROPS_EOF
+            storeFile=../../signing/release.jks
+            storePassword=$STOREPASS
+            keyAlias=fastfree
+            keyPassword=$STOREPASS
+            PROPS_EOF
+            echo "keystore.properties created"
+
+      - name: Wire release signing into Gradle
+        run: |
+          python3 - <<'PYEOF'
+          import re
+          from pathlib import Path
+          app_dir = Path("apps/${{ env.APP_DIR }}")
+          bg = app_dir / "src-capacitor/android/app/build.gradle"
+          vg = app_dir / "src-capacitor/android/variables.gradle"
+          MARKER = "// fastfree-signing (managed by fastfree_android_keystore.py --wire)"
+          text = bg.read_text()
+          if MARKER not in text:
+              block = ("android {\n"
+                       "    " + MARKER + "\n"
+                       "    def keystorePropertiesFile = rootProject.file(\"keystore.properties\")\n"
+                       "    def keystoreProperties = new Properties()\n"
+                       "    if (keystorePropertiesFile.exists()) {\n"
+                       "        keystoreProperties.load(new FileInputStream(keystorePropertiesFile))\n"
+                       "    }\n"
+                       "    signingConfigs {\n"
+                       "        release {\n"
+                       "            storeFile rootProject.file(keystoreProperties['storeFile'] ?: 'release.jks')\n"
+                       "            storePassword keystoreProperties['storePassword']\n"
+                       "            keyAlias keystoreProperties['keyAlias']\n"
+                       "            keyPassword keystoreProperties['keyPassword']\n"
+                       "        }\n"
+                       "    }\n")
+              assert "android {" in text, "android block anchor missing"
+              text = text.replace("android {", block, 1)
+              m = re.search(r"buildTypes\s*\{\s*release\s*\{([^}]*)\}", text, re.S)
+              assert m and "signingConfig" not in m.group(1), "release block not patchable"
+              text = text.replace(m.group(0), m.group(0).replace(
+                  "release {", "release {\n            signingConfig signingConfigs.release", 1))
+              bg.write_text(text)
+              print("wired release signing")
+          else:
+              print("already wired")
+          t = vg.read_text()
+          t2, n = re.subn(r"targetSdkVersion\s*=\s*\d+", "targetSdkVersion = 36", t)
+          assert n > 0, "targetSdkVersion anchor missing"
+          vg.write_text(t2)
+          print("pinned targetSdkVersion = 36")
+          PYEOF
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Bump versionCode and versionName
+        run: |
+          BUILD_GRADLE="apps/${{ env.APP_DIR }}/src-capacitor/android/app/build.gradle"
+          DATE_CODE=$(date +%Y%m%d)
+          DATE_NAME=$(date +%Y.%m.%d)
+          RUN_NUM=${{ github.run_number }}
+          VERSION_CODE=$((DATE_CODE * 100 + RUN_NUM))
+          VERSION_NAME="$DATE_NAME"
+          echo "Bumping to versionCode=$VERSION_CODE versionName=$VERSION_NAME"
+          if [ -f "$BUILD_GRADLE" ]; then
+            sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/" "$BUILD_GRADLE"
+            sed -i "s/versionName \".*\"/versionName \"$VERSION_NAME\"/" "$BUILD_GRADLE"
+            sed -i "s/versionName '.*'/versionName \"$VERSION_NAME\"/" "$BUILD_GRADLE"
+            echo "Patched $BUILD_GRADLE"
+            grep -E "versionCode|versionName" "$BUILD_GRADLE" || true
+          else
+            echo "build.gradle not found at $BUILD_GRADLE (skipping patch)"
+          fi
+
+      - name: Build unsigned release APK
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos/src-capacitor/android && gradle assembleRelease
+
+      - name: Sign APK
+        run: |
+          STOREPASS="${{ secrets.KEYSTORE_PASSWORD }}"
+          STOREPASS="${STOREPASS:-FastFree@87171393}"
+          KEYSTORE="apps/${{ env.APP_DIR }}/signing/release.jks"
+          UNSIGNED_APK=$(find "apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/apk/release" -name "*.apk" | head -1)
+          if [ -n "$UNSIGNED_APK" ]; then
+            SIGNED_APK="apps/${{ env.APP_DIR }}/dist-apk/signed-release.apk"
+            mkdir -p "apps/${{ env.APP_DIR }}/dist-apk"
+            APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name "apksigner" -type f | head -1)
+            if [ -n "$APKSIGNER" ]; then
+              "$APKSIGNER" sign \
+                --ks "$KEYSTORE" \
+                --ks-pass "pass:$STOREPASS" \
+                --ks-key-alias fastfree \
+                --key-pass "pass:$STOREPASS" \
+                "$UNSIGNED_APK"
+              cp "$UNSIGNED_APK" "$SIGNED_APK"
+              echo "APK signed with apksigner: $SIGNED_APK"
+            else
+              echo "apksigner not found, using jarsigner"
+              jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+                -keystore "$KEYSTORE" \
+                -storepass "$STOREPASS" \
+                -keypass "$STOREPASS" \
+                "$UNSIGNED_APK" fastfree
+              cp "$UNSIGNED_APK" "$SIGNED_APK"
+              echo "APK signed with jarsigner: $SIGNED_APK"
+            fi
+          else
+            echo "No APK found to sign"
+            exit 1
+          fi
+
+      - name: Build AAB for Google Play
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos/src-capacitor/android && gradle bundleRelease
+
+      - name: Collect APK
+        run: |
+          mkdir -p apps/${{ env.APP_DIR }}/dist-apk
+          if [ -f "apps/${{ env.APP_DIR }}/dist-apk/signed-release.apk" ]; then
+            echo "Signed APK ready"
+          elif [ -f "apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/apk/release/app-release-unsigned.apk" ]; then
+            cp apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/apk/release/app-release-unsigned.apk apps/${{ env.APP_DIR }}/dist-apk/fastfree-pos.apk
+          fi
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: fastfree-pos-apk
+          path: apps/${{ env.APP_DIR }}/dist-apk/signed-release.apk
+          retention-days: 30
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.APP_ID }}-aab
+          path: apps/${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+
+  screenshots:
+    needs: android
+    if: ${{ inputs.with_screenshots }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Safe directory
+        run: git config --global safe.directory '*'
+
+      - name: Install Flox
+        uses: flox/install-flox-action@v2
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install dependencies
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: pnpm install --no-frozen-lockfile --ignore-scripts
+
+      - name: Install Capacitor dependencies
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos/src-capacitor && npm install
+
+      - name: Prepare Quasar
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos && mkdir -p .quasar && echo '{"compilerOptions":{}}' > .quasar/tsconfig.json && pnpm exec quasar prepare --silent
+
+      - name: Build web assets
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos && VITE_API_BASE_URL=https://backend.fastfree.cloud pnpm exec quasar build
+
+      - name: Add Android Platform
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos/src-capacitor && npx cap add android
+
+      - name: Sync Capacitor
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos/src-capacitor && npx cap sync android
+
+      - name: Build debug APK for emulator
+        uses: flox/activate-action@v1
+        with:
+          dir: .
+          command: cd apps/fastfree_pos/src-capacitor/android && ./gradlew assembleDebug
+
+      - name: Enable KVM for emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Mask password input
+        run: echo "::add-mask::${{ inputs.admin_pass }}"
+
+      - name: Run Maestro on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_8
+          avd-name: fastfree-pos
+          force-avd-creation: true
+          emulator-options: '-no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -camera-front none'
+          cores: 2
+          ram-size: 4096M
+          emulator-boot-timeout: 600
+          disable-animations: true
+          script: |
+            set -euxo pipefail
+            APK=$(find apps/fastfree_pos/src-capacitor/android/app/build/outputs/apk/debug -name "*.apk" | head -1)
+            adb install -r "$APK"
+            echo "Installed APK: $APK"
+            curl -fsSL https://get.maestro.mobile.dev | bash
+            export PATH="$HOME/.maestro/bin:$PATH"
+            maestro --version
+            if [ -z "${{ inputs.admin_pass }}" ]; then
+              echo "ERROR: admin_pass input is empty. Re-run with screenshots disabled or provide admin_pass."
+              exit 1
+            fi
+            export FF_ADMIN_USR="${{ inputs.admin_user }}"
+            export FF_ADMIN_PWD="${{ inputs.admin_pass }}"
+            echo "=== Setting locale to Arabic ==="
+            adb shell settings put system system_locales ar-EG
+            adb shell setprop persist.sys.locale ar-EG
+            adb shell am force-stop com.fastfree.pos
+            sleep 3
+            touch /tmp/.ar_start
+            echo "=== Running Maestro: Arabic ==="
+            maestro test \
+              --format junit \
+              --output ar-report.xml \
+              .maestro/pos/ar.yaml || true
+            AR_DIR="apps/fastfree_pos/fastlane/metadata/android/ar/images/phone-screenshots"
+            mkdir -p "$AR_DIR"
+            find "$HOME/.maestro" -name "0*.png" -newer /tmp/.ar_start 2>/dev/null | sort | while read -r f; do
+              cp "$f" "$AR_DIR/$(basename "$f")"
+              echo "AR: $(basename "$f")"
+            done || true
+            echo "=== Setting locale to English ==="
+            adb shell settings put system system_locales en-US
+            adb shell setprop persist.sys.locale en-US
+            adb shell am force-stop com.fastfree.pos
+            sleep 3
+            touch /tmp/.en_start
+            echo "=== Running Maestro: English ==="
+            maestro test \
+              --format junit \
+              --output en-report.xml \
+              .maestro/pos/en.yaml || true
+            EN_DIR="apps/fastfree_pos/fastlane/metadata/android/en-US/images/phone-screenshots"
+            mkdir -p "$EN_DIR"
+            find "$HOME/.maestro" -name "0*.png" -newer /tmp/.en_start 2>/dev/null | sort | while read -r f; do
+              cp "$f" "$EN_DIR/$(basename "$f")"
+              echo "EN: $(basename "$f")"
+            done || true
+            echo "=== Screenshot collection complete ==="
+            ls -la "$AR_DIR" || true
+            ls -la "$EN_DIR" || true
+            cp ar-report.xml en-report.xml . 2>/dev/null || true
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Crop screenshots to Play Store spec
+        run: |
+          uv sync --locked --project scripts/fastfree-android
+          if [ -d "apps/${{ env.APP_DIR }}/fastlane/metadata/android/ar/images/phone-screenshots" ]; then
+            uv run --project scripts/fastfree-android scripts/fastfree-android/fastfree_store_screenshots.py ${{ env.APP_KEY }} ar || true
+          fi
+          if [ -d "apps/${{ env.APP_DIR }}/fastlane/metadata/android/en-US/images/phone-screenshots" ]; then
+            uv run --project scripts/fastfree-android scripts/fastfree-android/fastfree_store_screenshots.py ${{ env.APP_KEY }} en-US || true
+          fi
+
+      - name: Commit screenshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "apps/${{ env.APP_DIR }}/fastlane/metadata/android/*/images/phone-screenshots/*.png"
+          if git diff --cached --quiet; then
+            echo "No screenshot changes to commit"
+          else
+            git commit -m "screenshots(${{ env.APP_KEY }}): refresh Play store captures"
+            git push HEAD:master
+          fi
+
+      - name: Upload Maestro artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestro-pos
+          path: |
+            ar-report.xml
+            en-report.xml
+            apps/${{ env.APP_DIR }}/fastlane/metadata/android/ar/images/phone-screenshots/
+            apps/${{ env.APP_DIR }}/fastlane/metadata/android/en-US/images/phone-screenshots/
+          retention-days: 30
+
+  publish:
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Safe directory
+        run: git config --global safe.directory '*'
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Download AAB
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ env.APP_ID }}-aab
+          path: aab
+
+      - name: Authenticate to Google Cloud (WIF)
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/639480735306/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider
+          service_account: fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.com
+
+      - name: Publish to Play Store (Listing + AAB)
+        run: |
+          if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+            echo "WIF authentication failed - skipping Play upload"
+            exit 0
+          fi
+          uv sync --locked --project scripts/fastfree-android
+          VERSION_CODE=$(($(date +%Y%m%d) * 100 + ${{ github.run_number }}))
+          export VERSION_CODE
+          echo "Using versionCode=$VERSION_CODE"
+          echo "Generating metadata from products.ts..."
+          uv run --project scripts/fastfree-android scripts/fastfree-android/fastfree_store_metadata.py --app fastfree_pos
+          echo "Generating feature graphics..."
+          uv run --project scripts/fastfree-android scripts/fastfree-android/fastfree_store_graphics.py --app pos
+          AAB_PATH=$(find aab -name "*.aab" | head -1)
+          if [ -z "$AAB_PATH" ]; then
+            echo "No AAB found - skipping Play upload"
+            exit 0
+          fi
+          META_DIR="apps/${{ env.APP_DIR }}/fastlane/metadata/android"
+          echo "=== Publishing to Play (ar, en-US) ==="
+          uv run --project scripts/fastfree-android scripts/fastfree-android/fastfree_store_publish.py \
+            --package "${{ env.APP_ID }}" \
+            --locales ar,en-US \
+            --metadata-dir "$META_DIR" \
+            --track internal \
+            --aab "$AAB_PATH" \
+            --status completed \
+            --version-code "$VERSION_CODE"
+          echo "=== Play Store publish complete ==="
+
+  release:
+    needs: [web, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Safe directory
+        run: git config --global safe.directory '*'
+
+      - name: Download APK
+        uses: actions/download-artifact@v7
+        with:
+          name: fastfree-pos-apk
+          path: release
+
+      - name: Rename APK for release
+        run: mv release/signed-release.apk release/fastfree-pos.apk
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(date +%Y.%m.%d)-$(echo ${{ github.sha }} | cut -c1-7)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: pos-v${{ steps.version.outputs.version }}
+          name: "FastFree POS v${{ steps.version.outputs.version }}"
+          files: release/fastfree-pos.apk
+          generate_release_notes: true
