@@ -163,7 +163,7 @@ jobs:
         uses: android-actions/setup-android@v4
 
       - name: "5. Setup uv"
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10
 
       - name: "6. Install dependencies"
         uses: flox/activate-action@v1
@@ -507,7 +507,7 @@ jobs:
             cp ar-report.xml en-report.xml . 2>/dev/null || true
 
       - name: "15. Setup uv"
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10
 
       - name: "16. Crop screenshots to Play Store spec"
         run: |
@@ -559,7 +559,7 @@ jobs:
         run: git config --global safe.directory '*'
 
       - name: "3. Setup uv"
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10
 
       - name: "4. Download AAB"
         uses: actions/download-artifact@v7
