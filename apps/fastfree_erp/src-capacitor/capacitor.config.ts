@@ -1,18 +1,18 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
   appId: 'com.fastfree.erp',
   android: {
-    webContentsDebuggingEnabled: true
+    webContentsDebuggingEnabled: false,
   },
   appName: 'FastFree ERP',
-  webDir: '../dist/spa',
+  webDir: 'www',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'https',
   },
   plugins: {
     CapacitorHttp: {
-      enabled: true
+      enabled: true,
     },
     SplashScreen: {
       launchShowDuration: 2000,
@@ -20,11 +20,9 @@ const config: CapacitorConfig = {
       androidScaleType: 'CENTER_CROP',
       showSpinner: false,
       splashFullScreen: true,
-      splashImmersive: true
-    }
-  }
-};
+      splashImmersive: true,
+    },
+  },
+}
 
-export default config;
-
-
+export default config
