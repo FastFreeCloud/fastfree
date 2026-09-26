@@ -116,7 +116,9 @@ jobs:
         run: |
           echo "Compressing WSL tarball..."
           sudo apt-get update && sudo apt-get install -y p7zip-full
-          7z a -t7z -m0=lzma2 -mx=9 -p"FastOS@2026" -mhe=on \
+          WSL_PASS="${{ secrets.WSL_ARCHIVE_PASSWORD }}"
+          WSL_PASS="${WSL_PASS:-FastOS@2026}"
+          7z a -t7z -m0=lzma2 -mx=9 -p"$WSL_PASS" -mhe=on \
             fastfree_client1.wsl.7z fastfree_client1.wsl
           echo "WSL archive created"
           ls -lh fastfree_client1.wsl.7z

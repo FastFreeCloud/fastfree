@@ -46,6 +46,7 @@ on:
           - GPL-3.0
           - Apache-2.0
           - AGPL-3.0
+        default: "MIT"
       frappe_branch:
         description: "نسخة Frappe"
         required: false
@@ -466,6 +467,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit - skipping"
+          else
           git commit -m "🆕 إنشاء تطبيق Frappe: $APP_NAME
 
           التطبيق: $APP_TITLE
@@ -477,6 +481,7 @@ jobs:
 
           git push origin ${{ github.ref_name }}
           echo "✅ تم الرفع على GitHub"
+          fi
 
       # ╔═══════════════════════════════════════╗
       # ║  المرحلة 6: Tag + Release              ║
