@@ -163,6 +163,10 @@ export default defineConfig((ctx) => {
     devServer: {
       open: true,
       port: 9200,
+      // Official remote Vue Devtools (quasar.dev: devServer.vueDevtools).
+      // Enabled only on interactive terminals: headless/background launches
+      // (CI, nohup) have no TTY and quasar's devtools spawn requires one.
+      vueDevtools: process.stdout.isTTY === true,
     },
 
     framework: {
