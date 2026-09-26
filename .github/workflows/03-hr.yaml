@@ -111,7 +111,7 @@ jobs:
 
       - name: "5. Build frontend image"
         working-directory: apps/${{ env.APP_DIR }}
-        run: nix build .#frontendImage -o frontend-image --print-build-logs
+        run: nix build .#frontendImage -o frontend-image --print-build-logs --extra-experimental-features 'nix-command flakes'
 
       - name: "6. Login to GHCR"
         uses: docker/login-action@v4

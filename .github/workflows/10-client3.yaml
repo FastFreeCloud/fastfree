@@ -62,7 +62,7 @@ jobs:
 
       - name: "5. Evaluate client3 toplevel"
         working-directory: apps/fastfree_os
-        run: nix eval ".#nixosConfigurations.client3.config.system.build.toplevel" --no-update-lock-file --print-build-logs >/dev/null && echo "client3 evaluates OK"
+        run: nix eval --extra-experimental-features 'nix-command flakes' ".#nixosConfigurations.client3.config.system.build.toplevel" --no-update-lock-file --print-build-logs >/dev/null && echo "client3 evaluates OK"
         shell: bash
 
   deploy:

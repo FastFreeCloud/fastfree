@@ -49,7 +49,7 @@ jobs:
 
       - name: "5. Evaluate client1 toplevel"
         working-directory: apps/fastfree_os
-        run: nix eval ".#nixosConfigurations.client1.config.system.build.toplevel" --no-update-lock-file --print-build-logs >/dev/null && echo "client1 evaluates OK"
+        run: nix eval --extra-experimental-features 'nix-command flakes' ".#nixosConfigurations.client1.config.system.build.toplevel" --no-update-lock-file --print-build-logs >/dev/null && echo "client1 evaluates OK"
         shell: bash
 
   build-wsl:
@@ -90,7 +90,7 @@ jobs:
           echo "Building WSL tarball for client1..."
           nix build .#packages.x86_64-linux.client1 \
             --out-link ./result-builder \
-            --print-build-logs --no-update-lock-file
+            --print-build-logs --no-update-lock-file --extra-experimental-features 'nix-command flakes'
           echo "WSL tarball builder built"
 
       - name: "7. Pre-build NixOS system closure"
@@ -98,7 +98,7 @@ jobs:
         run: |
           echo "Building NixOS system closure for client1..."
           nix build .#nixosConfigurations.client1.config.system.build.toplevel \
-            --print-build-logs --no-update-lock-file
+            --print-build-logs --no-update-lock-file --extra-experimental-features 'nix-command flakes'
           echo "System closure built"
 
       - name: "8. Create WSL tarball"

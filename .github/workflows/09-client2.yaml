@@ -49,7 +49,7 @@ jobs:
 
       - name: "5. Evaluate client2 toplevel"
         working-directory: apps/fastfree_os
-        run: nix eval ".#nixosConfigurations.client2.config.system.build.toplevel" --no-update-lock-file --print-build-logs >/dev/null && echo "client2 evaluates OK"
+        run: nix eval --extra-experimental-features 'nix-command flakes' ".#nixosConfigurations.client2.config.system.build.toplevel" --no-update-lock-file --print-build-logs >/dev/null && echo "client2 evaluates OK"
         shell: bash
 
   build-hyperv:
@@ -89,7 +89,7 @@ jobs:
         run: |
           echo "Building Hyper-V VHDX for client2..."
           nix build .#packages.x86_64-linux.client2 \
-            --print-build-logs --no-update-lock-file
+            --print-build-logs --no-update-lock-file --extra-experimental-features 'nix-command flakes'
           echo "Hyper-V VHDX built"
           ls -lh result/
 
