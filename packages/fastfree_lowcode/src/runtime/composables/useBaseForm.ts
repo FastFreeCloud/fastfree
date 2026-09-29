@@ -106,11 +106,19 @@ const DEFAULT_PERMISSIONS = {
   cancel: true,
 }
 
+export function resolveFieldDefault(field: { default?: unknown }): unknown {
+  let value: unknown = field.default
+  if (typeof value !== 'function') return value
+  value = (value as () => unknown)()
+  if (typeof value === 'function') value = (value as () => unknown)()
+  return typeof value === 'function' ? undefined : value
+}
+
 function buildDefaultForm<T extends Record<string, unknown>>(fields: FormField[]): Partial<T> {
   const defaults: Record<string, unknown> = {}
   for (const field of fields) {
     if (field.default !== undefined) {
-      defaults[field.name] = field.default
+      defaults[field.name] = resolveFieldDefault(field)
     } else {
       switch (field.type) {
         case 'number':

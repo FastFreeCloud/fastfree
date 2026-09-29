@@ -1,6 +1,9 @@
 <template>
   <div class="base-form-fields">
-    <q-form
+    <!-- A consumer that owns submission passes :standalone-form="false" so its own
+         q-form is the only form and validate() sees every registered input -->
+    <component
+      :is="standaloneForm ? QForm : 'div'"
       v-if="fields.length > 0"
       class="q-gutter-md"
     >
@@ -54,7 +57,7 @@
           :disable="field.readonly || readonly"
           :rules="getRules(field)"
           :lazy-rules="true"
-          :loading="loadingOptions"
+          :loading="loadingOptions || selectLoading[field.name] || false"
           option-value="value"
           option-label="label"
         />
@@ -141,6 +144,16 @@
               :aria-label="t(field.tableAddLabel || 'common.addRow')"
             />
           </div>
+          <!-- The row set itself is not an input, so register its rules with the
+               surrounding form through a hidden field to keep required live -->
+          <q-field
+            v-if="field.required"
+            :model-value="modelValue[field.name]"
+            :rules="getRules(field)"
+            :lazy-rules="true"
+            class="hidden"
+            aria-hidden="true"
+          />
           <q-table
             :rows="getTableRows(field)"
             :columns="getTableColumns(field)"
@@ -173,7 +186,7 @@
             </template>
             <template v-for="col in field.tableFields" :key="col.name" #[`body-cell-${col.name}`]="cellProps">
               <q-td :props="cellProps" :class="getTableCellAlign(col)">
-                {{ formatTableCellValue(cellProps.row[col.name], col) }}
+                {{ formatTableCellValue(cellProps.row[col.name], col, cellProps.row, field) }}
 <q-popup-edit
                   v-if="!col.readonly && !field.readonly && !isReadonly && col.type !== 'computed'"
                   :model-value="cellProps.row[col.name]"
@@ -190,9 +203,11 @@
                     @keyup.enter="scope.set"
                     :label="t(col.label)"
                     :type="getInputType(col.type)"
+                    :rules="getTableCellRules(col)"
+                    :lazy-rules="true"
                     outlined
                     dense
-                    :options="getSelectOptions(col)"
+                    :options="getSelectOptions(col, field)"
                     emit-value
                     map-options
                     option-value="value"
@@ -215,7 +230,7 @@
           </q-table>
         </div>
       </div>
-    </q-form>
+    </component>
     <div v-else class="text-center text-grey q-pa-lg">
       <q-icon name="inbox" size="40px" class="q-mb-sm" />
       <p>{{ t('common.noData') }}</p>
@@ -224,10 +239,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, type PropType } from 'vue'
-import { useQuasar, QInput, QSelect, QDate } from 'quasar'
+import { ref, computed, watch, onMounted, onUpdated, type PropType } from 'vue'
+import { useQuasar, QForm, QInput, QSelect, QDate } from 'quasar'
 import { useLcI18n } from '../i18n'
 import { useFormatNumber } from '../composables/useFormatNumber'
+import { resolveFieldDefault } from '../composables/useBaseForm'
 
 // Type augmentation for QPopupEdit slots
 declare module 'quasar' {
@@ -239,13 +255,18 @@ declare module 'quasar' {
 
 // ============ Types ============
 
+export interface SelectOption {
+  label: string
+  value: unknown
+}
+
 export interface FieldSchema {
   name: string
   label: string
   type: 'text' | 'textarea' | 'number' | 'date' | 'datetime' | 'select' | 'autocomplete' | 'checkbox' | 'toggle' | 'table' | 'computed'
   required?: boolean
   default?: unknown
-  options?: { label: string; value: unknown }[] | (() => Promise<{ label: string; value: unknown }[]>)
+  options?: SelectOption[] | (() => SelectOption[] | Promise<SelectOption[]>)
   getLabel?: (item: { label: string; value: unknown }) => string
   getValue?: (item: { label: string; value: unknown }) => unknown
   debounce?: number
@@ -280,11 +301,13 @@ const props = withDefaults(defineProps<{
   modelValue: Record<string, unknown>
   loadingOptions?: boolean
   readonly?: boolean
+  standaloneForm?: boolean
 }>(), {
   fields: () => [] as FieldSchema[],
   modelValue: () => ({}) as Record<string, unknown>,
   loadingOptions: false,
   readonly: false,
+  standaloneForm: true,
 })
 
 const emit = defineEmits<{
@@ -301,9 +324,18 @@ const { formatNumber } = useFormatNumber()
 // ============ Reactive State ============
 
 const autocompleteLoading = ref<Record<string, boolean>>({})
-const autocompleteCache = ref<Record<string, { label: string; value: unknown }[]>>({})
+const autocompleteCache = ref<Record<string, SelectOption[]>>({})
+const selectCache = ref<Record<string, SelectOption[]>>({})
+const selectLoading = ref<Record<string, boolean>>({})
 const tableRowCounters = ref<Record<string, number>>({})
 const tablePaginationState = ref<Record<string, TablePagination>>({})
+
+const MAX_SELECT_UPDATE_RETRIES = 3
+
+const pendingSelectKeys = new Set<string>()
+const settledSelectKeys = new Set<string>()
+const selectUpdateRetries: Record<string, number> = {}
+const rowIdRegistry = new WeakMap<TableRow, string>()
 
 // ============ Computed ============
 
@@ -317,7 +349,7 @@ function getFieldSchema(fieldName: string): FieldSchema | undefined {
 
 function getDefaultValue(field?: FieldSchema): unknown {
   if (!field) return undefined
-  if (field.default !== undefined) return field.default
+  if (field.default !== undefined) return resolveFieldDefault(field)
   switch (field.type) {
     case 'number': return 0
     case 'checkbox':
@@ -329,23 +361,57 @@ function getDefaultValue(field?: FieldSchema): unknown {
   }
 }
 
-function getSelectOptions(field: FieldSchema): { label: string; value: unknown }[] {
-  if (!field.options) return []
-  if (typeof field.options === 'function') {
-    const cached = autocompleteCache.value[field.name]
-    if (cached && cached.length > 0) return cached
-    // Fall back to a live call for synchronous option providers so lists that
-    // load after mount (e.g. from a Pinia store) still render. Async providers
-    // resolve through the onMounted preload / @filter handler into the cache.
-    try {
-      const result = (field.options as () => unknown)()
-      if (Array.isArray(result)) return result as { label: string; value: unknown }[]
-    } catch {
-      // ignore and fall through to cache below
-    }
-    return cached || []
+function selectCacheKey(field: FieldSchema, parent?: FieldSchema): string {
+  return parent ? `${parent.name}.${field.name}` : field.name
+}
+
+function resolveSelectOptions(field: FieldSchema, parent?: FieldSchema, force = false): void {
+  if (typeof field.options !== 'function') return
+  const key = selectCacheKey(field, parent)
+  if (pendingSelectKeys.has(key)) return
+  if (!force && settledSelectKeys.has(key)) return
+  if (!force && (selectCache.value[key]?.length ?? 0) > 0) return
+
+  let provided: SelectOption[] | Promise<SelectOption[]>
+  try {
+    provided = field.options()
+  } catch {
+    settledSelectKeys.add(key)
+    return
   }
-  return field.options
+
+  pendingSelectKeys.add(key)
+  selectLoading.value[key] = true
+  Promise.resolve(provided)
+    .then((options) => {
+      if (Array.isArray(options) && options.length > 0) {
+        selectCache.value[key] = options
+        return
+      }
+      if ((selectCache.value[key]?.length ?? 0) > 0) selectCache.value[key] = []
+    })
+    .catch(() => undefined)
+    .finally(() => {
+      selectLoading.value[key] = false
+      pendingSelectKeys.delete(key)
+      settledSelectKeys.add(key)
+    })
+}
+
+function preloadSelectOptions(force = false): void {
+  for (const field of props.fields) {
+    if (field.type !== 'select') continue
+    resolveSelectOptions(field, undefined, force)
+  }
+}
+
+function getSelectOptions(field: FieldSchema, parent?: FieldSchema): SelectOption[] {
+  if (!field.options) return []
+  if (typeof field.options !== 'function') return field.options
+  const key = selectCacheKey(field, parent)
+  const cached = selectCache.value[key]
+  if (!cached) resolveSelectOptions(field, parent)
+  return cached ?? []
 }
 
 function getAutocompleteOptions(field: FieldSchema): { label: string; value: unknown }[] {
@@ -353,11 +419,20 @@ function getAutocompleteOptions(field: FieldSchema): { label: string; value: unk
   return autocompleteCache.value[field.name] || []
 }
 
+function getRowId(field: FieldSchema, row: TableRow, index: number): string {
+  if (row.__rowId) return row.__rowId
+  const registered = rowIdRegistry.get(row)
+  if (registered) return registered
+  const rowId = `${field.name}-${index}-${Date.now()}`
+  rowIdRegistry.set(row, rowId)
+  return rowId
+}
+
 function getTableRows(field: FieldSchema): TableRow[] {
   const rows = (props.modelValue?.[field.name] as TableRow[]) || []
   return rows.map((row, index): TableRow => ({
     ...row,
-    __rowId: row.__rowId ?? `${field.name}-${index}-${Date.now()}`,
+    __rowId: getRowId(field, row, index),
   }))
 }
 
@@ -366,7 +441,7 @@ function getTableColumns(field: FieldSchema) {
     name: f.name,
     label: t(f.label),
     field: f.name,
-    align: (f.type === 'number' ? 'right' : 'left') as 'left' | 'center' | 'right',
+    align: (f.type === 'number' || f.type === 'computed' ? 'right' : 'left') as 'left' | 'center' | 'right',
     sortable: false,
   })) || []
   if (!field.readonly && !props.readonly) {
@@ -413,21 +488,21 @@ function getTableEditorComponent(type: FieldSchema['type']): typeof QInput | typ
 }
 
 function getTableCellAlign(field: FieldSchema): string {
-  return field.type === 'number' ? 'text-right' : ''
+  return field.type === 'number' || field.type === 'computed' ? 'text-right' : ''
 }
 
 const isReadonly = computed(() => props.readonly)
 
-function computeValue(field: FieldSchema): string | number {
+function formatComputedResult(result: number | string): string {
+  if (typeof result === 'number' && !Number.isNaN(result)) return formatNumber(result, 2)
+  return String(result ?? '')
+}
+
+function computeValue(field: FieldSchema): string {
   if (!field.computedFormula) return ''
   try {
     const model = props.modelValue || {}
-    const formula = field.computedFormula
-    const result = evaluateFormula(formula, model)
-    if (typeof result === 'number') {
-      return formatNumber(result, 2)
-    }
-    return result
+    return formatComputedResult(evaluateFormula(field.computedFormula, model))
   } catch {
     return ''
   }
@@ -448,7 +523,14 @@ function evaluateFormula(formula: string, model: Record<string, unknown>): numbe
   }
 }
 
-function formatTableCellValue(value: unknown, field: FieldSchema): string {
+function formatTableCellValue(value: unknown, field: FieldSchema, row?: Record<string, unknown>, parent?: FieldSchema): string {
+  if (field.type === 'computed') {
+    if (!field.computedFormula || !row) {
+      return value === null || value === undefined || value === '' ? '—' : String(value)
+    }
+    const result = evaluateFormula(field.computedFormula, row)
+    return result === '' ? '—' : formatComputedResult(result)
+  }
   if (value === null || value === undefined || value === '') return '—'
   if (field.type === 'number' && typeof value === 'number') {
     return formatNumber(value, 2)
@@ -460,7 +542,7 @@ function formatTableCellValue(value: unknown, field: FieldSchema): string {
     return value.replace('T', ' ').substring(0, 16)
   }
   if (field.type === 'select' || field.type === 'autocomplete') {
-    const options = getSelectOptions(field)
+    const options = getSelectOptions(field, parent)
     const opt = options.find(o => o.value === value)
     return opt?.label ?? String(value)
   }
@@ -473,6 +555,9 @@ function getRules(field: FieldSchema): ((val: unknown) => true | string)[] {
   const rules: ((val: unknown) => true | string)[] = []
   if (field.required) {
     rules.push((val) => {
+      if (field.type === 'table') {
+        return (Array.isArray(val) && val.length > 0) || t('validation.required')
+      }
       const isEmpty = val === null || val === undefined || val === '' || (Array.isArray(val) && val.length === 0)
       return !isEmpty || t('validation.required')
     })
@@ -487,6 +572,22 @@ function getRules(field: FieldSchema): ((val: unknown) => true | string)[] {
     })
   }
   return rules
+}
+
+function getTableCellRules(col: FieldSchema): ((val: unknown) => true | string)[] {
+  return col.type === 'computed' ? [] : getRules(col)
+}
+
+function applyComputedColumns(field: FieldSchema, row: TableRow): TableRow {
+  let result = row
+  for (const col of field.tableFields || []) {
+    if (col.type !== 'computed' || !col.computedFormula) continue
+    const value = evaluateFormula(col.computedFormula, result)
+    if (result[col.name] === value) continue
+    if (result === row) result = { ...row }
+    result[col.name] = value
+  }
+  return result
 }
 
 function updateField(field: FieldSchema, value: unknown): void {
@@ -541,7 +642,7 @@ function addTableRow(field: FieldSchema): void {
 
   const newModel = { ...props.modelValue }
   const rows = (newModel[field.name] as TableRow[]) || []
-  newModel[field.name] = [...rows, newRow]
+  newModel[field.name] = [...rows, applyComputedColumns(field, newRow)]
   emit('update:modelValue', newModel)
   emit('field-change', field.name, newModel[field.name])
 }
@@ -568,7 +669,7 @@ function updateTableCell(field: FieldSchema, rowId: string, cellName: string, va
     const updatedRows = [...rows] as TableRow[]
     const currentRow = updatedRows[rowIndex]
     if (currentRow) {
-      updatedRows[rowIndex] = { ...currentRow, [cellName]: coerced }
+      updatedRows[rowIndex] = applyComputedColumns(field, { ...currentRow, [cellName]: coerced })
       newModel[field.name] = updatedRows
       emit('update:modelValue', newModel)
       emit('field-change', field.name, newModel[field.name])
@@ -576,16 +677,67 @@ function updateTableCell(field: FieldSchema, rowId: string, cellName: string, va
   }
 }
 
-// Watch for external modelValue changes to update table rows
-watch(() => props.modelValue, (newModel) => {
-  // Table rows are derived from modelValue, no additional sync needed
+function syncTableRows(): void {
+  const newModel: Record<string, unknown> = { ...props.modelValue }
+  let changed = false
+  for (const field of props.fields) {
+    if (field.type !== 'table') continue
+    const rows = newModel[field.name]
+    if (!Array.isArray(rows)) continue
+    const source = rows as TableRow[]
+    const synced = source.map((row, index): TableRow => {
+      const identified: TableRow = row.__rowId
+        ? row
+        : { ...row, __rowId: getRowId(field, row, index) }
+      return applyComputedColumns(field, identified)
+    })
+    if (synced.some((row, index) => row !== source[index])) {
+      newModel[field.name] = synced
+      changed = true
+    }
+  }
+  if (changed) emit('update:modelValue', newModel)
+}
+
+// Table rows arrive from the model, so re-attach ids and computed values whenever
+// it changes, and let any select that is still empty resolve its options again
+watch(() => props.modelValue, () => {
+  syncTableRows()
+  preloadSelectOptions()
 }, { deep: true })
+
+watch(() => props.fields, () => {
+  syncTableRows()
+  preloadSelectOptions(true)
+}, { deep: true })
+
+// Consumers signal that their option sources finished loading through this flag
+watch(() => props.loadingOptions, (loading) => {
+  if (!loading) preloadSelectOptions(true)
+})
+
+// Providers that resolved before the data existed leave the cache empty, so retry
+// a bounded number of times across the next updates of the component
+function retryPendingSelectOptions(): void {
+  for (const field of props.fields) {
+    if (field.type !== 'select' || typeof field.options !== 'function') continue
+    if (pendingSelectKeys.has(field.name)) continue
+    if ((selectCache.value[field.name]?.length ?? 0) > 0) continue
+    const retries = selectUpdateRetries[field.name] || 0
+    if (retries >= MAX_SELECT_UPDATE_RETRIES) continue
+    selectUpdateRetries[field.name] = retries + 1
+    resolveSelectOptions(field, undefined, true)
+  }
+}
+
+onUpdated(retryPendingSelectOptions)
 
 // Warm up async option lists on mount so dropdowns open instantly
 // (QSelect only renders its menu when options exist or a no-option slot is present)
 onMounted(async () => {
+  preloadSelectOptions()
   for (const field of props.fields) {
-    if ((field.type === 'autocomplete' || field.type === 'select') && typeof field.options === 'function') {
+    if (field.type === 'autocomplete' && typeof field.options === 'function') {
       try {
         autocompleteCache.value[field.name] = await field.options()
       } catch {
@@ -600,6 +752,8 @@ onMounted(async () => {
 defineExpose({
   getModelValue,
   getRules,
+  getTableCellRules,
   computeValue,
+  syncTableRows,
 })
 </script>

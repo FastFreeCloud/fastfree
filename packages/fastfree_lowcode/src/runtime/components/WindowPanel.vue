@@ -324,7 +324,7 @@ onUnmounted(() => {
 
 .resize-handle {
   position: absolute;
-  z-index: 1;
+  z-index: 3;
   user-select: none;
 
   &.top, &.bottom {
@@ -368,6 +368,9 @@ onUnmounted(() => {
 }
 
 .window-titlebar {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -440,7 +443,10 @@ body.body--dark .window-titlebar {
 }
 
 .window-content {
+  position: relative;
+  z-index: 1;
   flex: 1;
+  min-height: 0;
   overflow: auto;
   display: flex;
   flex-direction: column;

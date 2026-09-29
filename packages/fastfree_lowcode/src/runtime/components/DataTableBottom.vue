@@ -1,45 +1,24 @@
 <template>
   <div ref="barRef" class="bottom-bar" :class="sizeClass" :aria-busy="loading ? 'true' : 'false'">
     <div class="bottom-bar__side bottom-bar__side--start">
-      <div v-if="displayWidth >= 480" class="bottom-bar__rows-per-page">
-        <q-btn-dropdown
-          dense
-          no-caps
-          outline
-          color="primary"
-          :label="rowsPerPageLabel"
-          :class="{ 'rows-per-page-trigger--wide': displayWidth >= 800 }"
-          icon="mdi-table-row"
-          dropdown-icon="mdi-chevron-up"
-          menu-anchor="top start"
-          menu-self="bottom start"
-          :menu-offset="[0, 8]"
-          :disable="loading"
-          :toggle-aria-label="t('pagination.rowsPerPage')"
-          aria-haspopup="menu"
-          class="rows-per-page-trigger"
-          :aria-label="`${t('pagination.rowsPerPage')}: ${rowsPerPage}`"
-          :title="t('pagination.rowsPerPage')"
-        >
-          <q-list dense class="rows-per-page-menu" role="menu">
-            <q-item
-              v-for="option in rowsPerPageOptions"
-              :key="option"
-              clickable
-              v-close-popup
-              role="menuitemradio"
-              :active="option === rowsPerPage"
-              :aria-checked="option === rowsPerPage ? 'true' : 'false'"
-              @click="onRowsPerPageChange(option)"
-            >
-              <q-item-section avatar>
-                <q-icon v-if="option === rowsPerPage" name="mdi-check" size="18px" />
-              </q-item-section>
-              <q-item-section>{{ option }}</q-item-section>
-            </q-item>
-          </q-list>
-        </q-btn-dropdown>
-      </div>
+      <q-btn-toggle
+        :model-value="rowsPerPage"
+        :options="rowsPerPageToggleOptions"
+        dense
+        unelevated
+        rounded
+        no-caps
+        color="grey-3"
+        text-color="grey-8"
+        toggle-color="primary"
+        toggle-text-color="white"
+        :disable="loading"
+        class="bottom-bar__rows-per-page"
+        :class="{ 'bottom-bar__rows-per-page--rtl': isRtl }"
+        :aria-label="t('pagination.rowsPerPage')"
+        :title="t('pagination.rowsPerPage')"
+        @update:model-value="onRowsPerPageChange(Number($event))"
+      />
       <slot name="left" />
     </div>
     <div class="bottom-bar__center">
@@ -66,6 +45,9 @@
           :aria-label="t('pagination.next')"
           @click="emit('next-page')"
         />
+        <template v-if="!showSummary && displayWidth >= 320">
+          <span class="bottom-bar__range">{{ rangeLabel }}</span>
+        </template>
         <template v-if="showSummary && displayWidth >= 700">
           <q-separator vertical class="q-mx-sm" />
           <span class="bottom-bar__summary">
@@ -91,6 +73,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useQuasar } from 'quasar'
 import { useLcI18n } from '../i18n'
 import { useContainerWidth } from '../composables/useContainerWidth'
 
@@ -125,16 +108,24 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useLcI18n()
+const $q = useQuasar()
 const { containerRef: barRef, containerWidth } = useContainerWidth()
 const displayWidth = computed(() => containerWidth.value || props.width || 0)
-const rowsPerPageLabel = computed(() =>
-  displayWidth.value >= 800
-    ? `${props.rowsPerPage} / ${t('pagination.rowsPerPage')}`
-    : String(props.rowsPerPage),
+const rowsPerPageToggleOptions = computed(() =>
+  props.rowsPerPageOptions.map((option) => ({ label: String(option), value: option })),
 )
 const pagesNumber = computed(() => {
   if (props.rowsPerPage <= 0) return 1
   return Math.max(1, Math.ceil((props.rowsNumber ?? 0) / props.rowsPerPage))
+})
+const rangeLabel = computed(() => {
+  const total = props.rowsNumber ?? 0
+  const formatter = $q.lang.table.pagination
+  if (total <= 0) return formatter(0, 0, 0)
+  if (props.rowsPerPage <= 0) return formatter(1, total, total)
+  const first = (props.page - 1) * props.rowsPerPage + 1
+  const last = Math.min(props.page * props.rowsPerPage, total)
+  return formatter(first, last, total)
 })
 const isRtl = computed(
   () => typeof document !== 'undefined' && document.documentElement.dir === 'rtl',
@@ -179,9 +170,19 @@ function onRowsPerPageChange(value: number) {
 }
 
 .bottom-bar__rows-per-page {
-  display: flex;
   flex: 0 0 auto;
   min-width: 0;
+  direction: ltr;
+}
+
+.bottom-bar__rows-per-page--rtl {
+  direction: rtl;
+}
+
+.bottom-bar__rows-per-page :deep(.q-btn) {
+  min-width: 38px;
+  padding-inline: 10px;
+  font-weight: 600;
 }
 
 .bottom-bar__side--end {
@@ -221,6 +222,7 @@ function onRowsPerPageChange(value: number) {
 
 .bottom-bar__page,
 .bottom-bar__summary,
+.bottom-bar__range,
 .bottom-bar__total {
   color: var(--lc-on-surface, #263238);
   font-size: 0.78rem;
@@ -228,6 +230,7 @@ function onRowsPerPageChange(value: number) {
 }
 
 .bottom-bar__summary,
+.bottom-bar__range,
 .bottom-bar__total {
   display: inline-flex;
   align-items: center;
@@ -237,27 +240,6 @@ function onRowsPerPageChange(value: number) {
 .bottom-bar__total strong {
   color: var(--lc-primary, #1565c0);
   font-size: 0.84rem;
-}
-.rows-per-page-trigger {
-  width: 82px;
-  min-width: 82px;
-  height: 36px;
-  border: 1px solid currentColor;
-  border-radius: 10px;
-  font-weight: 600;
-}
-
-.rows-per-page-trigger--wide {
-  width: 132px;
-  min-width: 132px;
-}
-
-.rows-per-page-trigger :deep(.q-btn__content) {
-  gap: 4px;
-}
-
-.rows-per-page-menu {
-  min-width: 112px;
 }
 
 .bottom-bar--sm .bottom-bar__center {
