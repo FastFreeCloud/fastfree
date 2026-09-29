@@ -5,7 +5,7 @@ import type { SalesOrder } from '../types'
 const DOCTYPE = 'Sales Order'
 
 export async function getSalesOrders(): Promise<ApiResponse<SalesOrder[]>> {
-  const result = await getDocList<SalesOrder>(DOCTYPE, undefined, ['name', 'customer', 'transaction_date', 'grand_total', 'status'], 'transaction_date', 500)
+  const result = await getDocList<SalesOrder>(DOCTYPE, undefined, ['name', 'customer', 'customer_name', 'transaction_date', 'delivery_date', 'status', 'grand_total', 'docstatus'], 'transaction_date desc', 500)
   if (!result.success) return { success: false, error: result.error ?? { code: 'FETCH_FAILED', message: 'Failed to fetch sales orders' } }
   return { success: true, data: result.data ?? [] }
 }
@@ -27,7 +27,7 @@ export async function deleteSalesOrder(name: string): Promise<ApiResponse<void>>
 }
 
 export async function submitSalesOrder(name: string): Promise<ApiResponse<void>> {
-  return callPost('frappe.client.submit_single', { doctype: DOCTYPE, docname: name })
+  return callPost('frappe.client.submit', { doctype: DOCTYPE, docname: name })
 }
 
 export async function cancelSalesOrder(name: string): Promise<ApiResponse<void>> {

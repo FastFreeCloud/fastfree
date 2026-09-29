@@ -15,6 +15,7 @@ export interface WindowInfo {
   left: number;
   top: number;
   groupId?: string;
+  props?: Record<string, unknown>;
 }
 
 export interface DesktopStoreOptions {
@@ -24,7 +25,7 @@ export interface DesktopStoreOptions {
 }
 
 const DEFAULT_STORAGE_KEY = "lc-open-windows";
-const STORAGE_VERSION = 1;
+const STORAGE_VERSION = 2;
 
 let windowIdCounter = 0;
 
@@ -65,17 +66,17 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
 
     let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
+    function handlePageHide() {
+      flushSessionSave();
+    }
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("pagehide", handlePageHide);
+    }
+
     const hasMaximizedWindow = computed(() =>
       sortedWindows.value.some((w) => w.isMaximized && !w.isMinimized),
     );
-
-    if (typeof window !== "undefined") {
-      window.addEventListener("storage", (e) => {
-        if (e.key === storedWindowsKey) {
-          location.reload();
-        }
-      });
-    }
 
     function isWindowOpen(id: string) {
       return !!windows.value[id];
@@ -109,11 +110,16 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
           height: w.height,
           left: w.left,
           top: w.top,
+          ...(w.props !== undefined ? { props: w.props } : {}),
         }));
       try {
         localStorage.setItem(
           storedWindowsKey,
-          JSON.stringify({ version: STORAGE_VERSION, windows: arr }),
+          JSON.stringify({
+            version: STORAGE_VERSION,
+            windows: arr,
+            boundsCache: lastBoundsCache.value,
+          }),
         );
       } catch (e) {
         console.warn("[useDesktopStore]", e);
@@ -128,6 +134,7 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
       unmaximizeOthers?: boolean,
       groupId?: string,
       iconColor?: string,
+      props?: Record<string, unknown>,
     ): string | undefined {
       const screenCfg = cfg.desktop.screens?.[screenType];
       if (screenCfg?.maxInstances) {
@@ -169,21 +176,24 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
       let left: number;
       let top: number;
       if (cached) {
-        clampedW = Math.min(cached.width, usableW - 20);
-        clampedH = Math.min(cached.height, usableH - 20);
-        left = Math.max(0, Math.min(Math.round(cached.left), usableW - clampedW));
+        clampedW = Math.max(1, Math.min(cached.width, usableW - 20));
+        clampedH = Math.max(1, Math.min(cached.height, usableH - 20));
+        left = Math.max(
+          0,
+          Math.min(Math.round(cached.left), Math.max(0, usableW - clampedW)),
+        );
         top = Math.max(
           headerH,
-          Math.min(Math.round(cached.top), usableH - clampedH),
+          Math.min(
+            Math.round(cached.top),
+            Math.max(headerH, usableH - clampedH),
+          ),
         );
       } else {
-        clampedW = Math.min(w, usableW - 20);
-        clampedH = Math.min(h, usableH - 20);
+        clampedW = Math.max(1, Math.min(w, usableW - 20));
+        clampedH = Math.max(1, Math.min(h, usableH - 20));
         left = Math.max(0, Math.round((usableW - clampedW) / 2));
-        top = Math.max(
-          headerH,
-          Math.round(headerH + (usableH - clampedH) / 2),
-        );
+        top = Math.max(headerH, Math.round(headerH + (usableH - clampedH) / 2));
       }
 
       windows.value[id] = {
@@ -199,6 +209,7 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
         left,
         top,
         ...(groupId !== undefined ? { groupId } : {}),
+        ...(props !== undefined ? { props } : {}),
       };
 
       openedOrder.value.push(id);
@@ -224,10 +235,8 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
       openedOrder.value = openedOrder.value.filter((w) => w !== id);
 
       if (activeWindowId.value === id) {
-        activeWindowId.value =
-          openedOrder.value.length > 0
-            ? openedOrder.value[openedOrder.value.length - 1]!
-            : null;
+        const lastOpenedId = openedOrder.value[openedOrder.value.length - 1];
+        activeWindowId.value = lastOpenedId ?? null;
       }
       saveSessionState();
     }
@@ -320,10 +329,22 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
     ) {
       const win = windows.value[id];
       if (!win) return;
-      if (bounds.width !== undefined && Number.isFinite(bounds.width) && bounds.width > 0) win.width = bounds.width;
-      if (bounds.height !== undefined && Number.isFinite(bounds.height) && bounds.height > 0) win.height = bounds.height;
-      if (bounds.left !== undefined && Number.isFinite(bounds.left)) win.left = bounds.left;
-      if (bounds.top !== undefined && Number.isFinite(bounds.top)) win.top = bounds.top;
+      if (
+        bounds.width !== undefined &&
+        Number.isFinite(bounds.width) &&
+        bounds.width > 0
+      )
+        win.width = bounds.width;
+      if (
+        bounds.height !== undefined &&
+        Number.isFinite(bounds.height) &&
+        bounds.height > 0
+      )
+        win.height = bounds.height;
+      if (bounds.left !== undefined && Number.isFinite(bounds.left))
+        win.left = bounds.left;
+      if (bounds.top !== undefined && Number.isFinite(bounds.top))
+        win.top = bounds.top;
       lastBoundsCache.value[win.screenType] = {
         width: win.width,
         height: win.height,
@@ -347,13 +368,49 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
       const dockH = cfg.desktop.dockHeight ?? 77;
       const vw = window.innerWidth;
       const vh = window.innerHeight - headerH - dockH;
+      let changed = false;
       for (const id of Object.keys(windows.value)) {
         const win = windows.value[id];
         if (!win || win.isMaximized) continue;
-        win.width = Math.min(win.width, vw - 20);
-        win.height = Math.min(win.height, vh - 20);
-        win.left = Math.max(0, Math.min(win.left, vw - win.width));
-        win.top = Math.max(headerH, Math.min(win.top, vh - win.height));
+        const nextWidth = Math.max(1, Math.min(win.width, vw - 20));
+        const nextHeight = Math.max(1, Math.min(win.height, vh - 20));
+        const nextLeft = Math.max(
+          0,
+          Math.min(win.left, Math.max(0, vw - nextWidth)),
+        );
+        const nextTop = Math.max(
+          headerH,
+          Math.min(win.top, Math.max(headerH, vh - nextHeight)),
+        );
+        if (win.width !== nextWidth) {
+          win.width = nextWidth;
+          changed = true;
+        }
+        if (win.height !== nextHeight) {
+          win.height = nextHeight;
+          changed = true;
+        }
+        if (win.left !== nextLeft) {
+          win.left = nextLeft;
+          changed = true;
+        }
+        if (win.top !== nextTop) {
+          win.top = nextTop;
+          changed = true;
+        }
+      }
+      if (changed) {
+        for (const id of Object.keys(windows.value)) {
+          const win = windows.value[id];
+          if (!win || win.isMaximized) continue;
+          lastBoundsCache.value[win.screenType] = {
+            width: win.width,
+            height: win.height,
+            left: win.left,
+            top: win.top,
+          };
+        }
+        flushSessionSave();
       }
     }
     if (typeof window !== "undefined") {
@@ -406,6 +463,31 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
           localStorage.removeItem(storedWindowsKey);
           return false;
         }
+        const cachedBounds = payload.boundsCache;
+        if (cachedBounds && typeof cachedBounds === "object") {
+          Object.entries(cachedBounds).forEach(([screenType, bounds]) => {
+            if (!bounds || typeof bounds !== "object") return;
+            const candidate = bounds as Record<string, unknown>;
+            const values = [
+              candidate.width,
+              candidate.height,
+              candidate.left,
+              candidate.top,
+            ];
+            if (
+              values.every(
+                (value) => typeof value === "number" && Number.isFinite(value),
+              )
+            ) {
+              lastBoundsCache.value[screenType] = {
+                width: candidate.width as number,
+                height: candidate.height as number,
+                left: candidate.left as number,
+                top: candidate.top as number,
+              };
+            }
+          });
+        }
         const saved: {
           screenType: string;
           title: string;
@@ -418,6 +500,7 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
           height?: number;
           left?: number;
           top?: number;
+          props?: Record<string, unknown>;
         }[] = payload.windows;
         if (saved.length === 0) return false;
         const restoredIds: string[] = [];
@@ -425,7 +508,16 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
           const screenCfg = cfg.desktop.screens?.[w.screenType];
           const maxI = screenCfg?.maxInstances;
           if (maxI && getOpenCount(w.screenType) >= maxI) return;
-          const id = openWindow(w.screenType, w.title, w.icon, false, false, w.groupId, w.iconColor);
+          const id = openWindow(
+            w.screenType,
+            w.title,
+            w.icon,
+            false,
+            false,
+            w.groupId,
+            w.iconColor,
+            w.props,
+          );
           if (id) {
             restoredIds.push(id);
             if (windows.value[id]) {
@@ -439,21 +531,23 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
               // saved on desktop would otherwise land off-screen on a phone.
               const rHeaderH = cfg.desktop.headerHeight ?? 56;
               const rDockH = cfg.desktop.dockHeight ?? 77;
-              const rVw = typeof window !== "undefined" ? window.innerWidth : 1024;
-              const rVh = (typeof window !== "undefined" ? window.innerHeight : 768) - rHeaderH - rDockH;
+              const rVw =
+                typeof window !== "undefined" ? window.innerWidth : 1024;
+              const rVh =
+                (typeof window !== "undefined" ? window.innerHeight : 768) -
+                rHeaderH -
+                rDockH;
               const rw = windows.value[id];
               if (rw) {
-                rw.width = Math.min(rw.width, rVw - 20);
-                rw.height = Math.min(rw.height, rVh - 20);
+                rw.width = Math.max(1, Math.min(rw.width, rVw - 20));
+                rw.height = Math.max(1, Math.min(rw.height, rVh - 20));
                 rw.left = Math.max(0, Math.min(rw.left, rVw - rw.width));
                 rw.top = Math.max(rHeaderH, Math.min(rw.top, rVh - rw.height));
-              }
-              if (w.width !== undefined && w.height !== undefined && w.left !== undefined && w.top !== undefined) {
                 lastBoundsCache.value[w.screenType] = {
-                  width: w.width,
-                  height: w.height,
-                  left: w.left,
-                  top: w.top,
+                  width: rw.width,
+                  height: rw.height,
+                  left: rw.left,
+                  top: rw.top,
                 };
               }
             }

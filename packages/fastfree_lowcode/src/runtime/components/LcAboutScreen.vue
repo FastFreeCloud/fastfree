@@ -101,7 +101,7 @@ const { t } = useLcI18n()
 const desktopStore = useDesktopStore()
 const devMode = import.meta.env.DEV
 const isOnline = ref(typeof navigator !== 'undefined' ? navigator.onLine : true)
-const buildTime = new Date().toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' })
+const buildTime = new Date().toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short', numberingSystem: 'latn' })
 const hasEruda = ref(false)
 
 function openEruda() {

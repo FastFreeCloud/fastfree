@@ -77,11 +77,13 @@ export {
 export {
   getSystemSettings,
   updateSystemSettings,
+  getPrintSettings,
+  savePrintSettings,
   getSetting,
   setSetting,
 } from './settings.service'
 
-export type { SystemSettings } from './settings.service'
+export type { SystemSettings, PrintCompanySettings } from './settings.service'
 
 export {
   uploadFile,

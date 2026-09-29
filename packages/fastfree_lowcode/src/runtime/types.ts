@@ -41,6 +41,10 @@ export interface LcMessages {
   "common.lightMode": string;
   "common.pin": string;
   "common.view": string;
+  "pagination.prev": string;
+  "pagination.next": string;
+  "pagination.rowsPerPage": string;
+  "pagination.total": string;
   "common.logout": string;
   "common.language": string;
   "common.profile": string;
@@ -63,6 +67,19 @@ export interface LcMessages {
   "common.submit": string;
   "common.info": string;
   "common.details": string;
+  "common.back": string;
+  "common.save": string;
+  "common.new": string;
+  "common.yes": string;
+  "common.no": string;
+  "common.noResults": string;
+  "common.cancelDocument": string;
+  "common.confirmCancelDocument": string;
+  "common.subtotal": string;
+  "common.discount": string;
+  "common.taxable": string;
+  "common.tax": string;
+  "common.grandTotal": string;
 
   "validation.required": string;
   "validation.invalidPhone": string;
@@ -224,6 +241,7 @@ export interface LcMessages {
   "screens.roles": string;
   "screens.license": string;
   "screens.profile": string;
+  "screens.printSettings": string;
 
   "inspector.appInfo": string;
   "inspector.configuration": string;

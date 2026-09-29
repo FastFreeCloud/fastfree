@@ -57,6 +57,15 @@
           flat
           dense
           round
+          icon="mdi-information-outline"
+          :aria-label="t('about.title')"
+          :title="t('about.title')"
+          @click="showAbout = true"
+        />
+        <q-btn
+          flat
+          dense
+          round
           icon="mdi-logout"
           :aria-label="t('common.logout')"
           :title="t('common.logout')"
@@ -64,6 +73,11 @@
         />
       </template>
     </DesktopShell>
+    <AboutDialog
+      v-model="showAbout"
+      :server-url="envUrl || appStore.serverUrl"
+      :connected="isServerUp"
+    />
   </div>
 </template>
 
@@ -75,12 +89,14 @@ import { useLcI18n } from 'quasar-app-extension-fastfree-lowcode'
 import { AuthLogin, useAuthStore } from 'fastfree-auth'
 import { useAppStore } from '../stores/useAppStore'
 import ServerUrlScreen from '../components/ServerUrlScreen.vue'
+import AboutDialog from '../components/AboutDialog.vue'
 
 const { t } = useLcI18n()
 const $q = useQuasar()
 const appStore = useAppStore()
 const authStore = useAuthStore()
 const showSplash = ref(true)
+const showAbout = ref(false)
 const needsServerUrl = ref(false)
 const isServerUp = ref(false)
 
@@ -88,10 +104,9 @@ type AuthPhase = 'idle' | 'checking' | 'login' | 'authenticated'
 const authPhase = ref<AuthPhase>('idle')
 
 const SPLASH_DURATION = 800
+const envUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 
 onMounted(() => {
-  const envUrl = import.meta.env.VITE_API_BASE_URL
-
   if (!envUrl && !appStore.hasServerUrl) {
     needsServerUrl.value = true
     showSplash.value = false

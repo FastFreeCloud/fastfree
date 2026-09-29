@@ -23,4 +23,18 @@ export default {
     logout: 'Logout',
     logoutConfirm: 'Are you sure you want to logout?',
   },
+  about: {
+    title: 'About FastFree ERP',
+    description: 'Enterprise resource planning app built with Quasar.',
+    quasarVersion: 'Quasar version',
+    vueVersion: 'Vue version',
+    mode: 'Mode',
+    backendUrl: 'Backend URL',
+    notSet: 'Not set',
+    debugTitle: 'Debug',
+    openConsole: 'Open Debug Console',
+    consoleHint: 'On-device console (dev builds or ?eruda=1).',
+    erudaUnavailable: 'Debug console is not available in this build.',
+    close: 'Close',
+  },
 };

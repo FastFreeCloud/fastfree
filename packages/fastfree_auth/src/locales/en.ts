@@ -145,6 +145,21 @@ const AUTH_MESSAGES_EN: Record<string, string> = {
   'profile.saveError': 'Save error',
   'profile.passwordChangeSuccess': 'Password changed successfully',
   'profile.passwordChangeError': 'Password change error',
+  'printSettings.title': 'Print & Export Settings',
+  'printSettings.subtitle': 'Basic information shown in printed reports and Excel files',
+  'printSettings.companyName': 'Company name',
+  'printSettings.companyHint': 'Name shown at the top of reports and Excel files',
+  'printSettings.logo': 'Company logo',
+  'printSettings.logoHint': 'PNG, JPG, WebP or SVG, up to 5 MB',
+  'printSettings.taxNumber': 'Tax number',
+  'printSettings.commercialRegister': 'Commercial register',
+  'printSettings.phone': 'Phone',
+  'printSettings.address': 'Address',
+  'printSettings.preview': 'Report preview',
+  'printSettings.save': 'Save print settings',
+  'printSettings.saved': 'Print and export settings saved',
+  'printSettings.saveError': 'Could not save print settings',
+  'printSettings.logoError': 'Logo exceeds 5 MB',
 }
 
 export default AUTH_MESSAGES_EN

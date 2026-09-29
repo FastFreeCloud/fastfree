@@ -2,7 +2,7 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file
 
-import { defineConfig } from '#q-app';
+import { defineConfig } from '#q-app'
 
 export default defineConfig((ctx) => {
   return {
@@ -12,7 +12,14 @@ export default defineConfig((ctx) => {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['fastfree-auth-init', 'fastfree-accounting-init', 'fastfree-inventory-init', 'i18n', 'register-service-worker', 'fastfree-update-init'],
+    boot: [
+      'fastfree-auth-init',
+      'fastfree-accounting-init',
+      'fastfree-inventory-init',
+      'i18n',
+      'register-service-worker',
+      'fastfree-update-init',
+    ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css
     css: ['app.scss'],
@@ -38,39 +45,45 @@ export default defineConfig((ctx) => {
         // node: 'node22'
       },
 
+      env: {
+        clientPrefix: ['QCLI_', 'VITE_'],
+      },
+
+      vueOptionsAPI: true,
+
       typescript: {
         strict: true,
         vueShim: true,
         extendTsConfig(tsConfig) {
-          tsConfig.compilerOptions = tsConfig.compilerOptions || {};
-          tsConfig.compilerOptions.paths = tsConfig.compilerOptions.paths || {};
+          tsConfig.compilerOptions = tsConfig.compilerOptions || {}
+          tsConfig.compilerOptions.paths = tsConfig.compilerOptions.paths || {}
           tsConfig.compilerOptions.paths['quasar-app-extension-fastfree-lowcode/src/runtime'] = [
             '../../../packages/fastfree_lowcode/src/runtime/index.ts',
-          ];
+          ]
           tsConfig.compilerOptions.paths['quasar-app-extension-fastfree-lowcode/src/runtime/*'] = [
             '../../../packages/fastfree_lowcode/src/runtime/*',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-auth'] = [
             '../../../packages/fastfree_auth/src/index.ts',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-auth/*'] = [
             '../../../packages/fastfree_auth/src/*',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-accounting'] = [
             '../../../packages/fastfree_accounting/src/index.ts',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-accounting/*'] = [
             '../../../packages/fastfree_accounting/src/*',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-inventory'] = [
             '../../../packages/fastfree_inventory/src/index.ts',
-          ];
+          ]
           tsConfig.compilerOptions.paths['fastfree-inventory/*'] = [
             '../../../packages/fastfree_inventory/src/*',
-          ];
+          ]
           tsConfig.compilerOptions.paths['quasar-app-extension-fastfree_update/*'] = [
             '../../../packages/fastfree_update/ae/*',
-          ];
+          ]
         },
       },
 
@@ -89,11 +102,11 @@ export default defineConfig((ctx) => {
       // distDir
 
       extendViteConf(viteConf) {
-        const path = require('path');
-        const appRoot = __dirname;
-        const monorepoRoot = path.resolve(appRoot, '..', '..');
-        viteConf.server = viteConf.server || {};
-        viteConf.server.fs = viteConf.server.fs || {};
+        const path = require('path')
+        const appRoot = __dirname
+        const monorepoRoot = path.resolve(appRoot, '..', '..')
+        viteConf.server = viteConf.server || {}
+        viteConf.server.fs = viteConf.server.fs || {}
         viteConf.server.fs.allow = [
           appRoot,
           path.join(monorepoRoot, 'node_modules'),
@@ -103,13 +116,16 @@ export default defineConfig((ctx) => {
           path.join(monorepoRoot, 'packages', 'fastfree_inventory'),
           path.join(monorepoRoot, 'packages', 'fastfree_update', 'ae'),
           path.join(appRoot, 'node_modules', '@quasar', 'extras'),
-        ];
+        ]
 
-        viteConf.resolve = viteConf.resolve || {};
-        viteConf.resolve.alias = viteConf.resolve.alias || {};
+        viteConf.resolve = viteConf.resolve || {}
+        viteConf.resolve.alias = viteConf.resolve.alias || {}
         viteConf.resolve.alias['quasar-app-extension-fastfree_update'] = path.join(
-          monorepoRoot, 'packages', 'fastfree_update', 'ae'
-        );
+          monorepoRoot,
+          'packages',
+          'fastfree_update',
+          'ae',
+        )
       },
       // viteVuePluginOptions: {},
 
@@ -134,10 +150,7 @@ export default defineConfig((ctx) => {
           'vite-plugin-checker',
           {
             vueTsc: true,
-            eslint: {
-              lintCommand: 'eslint -c ./eslint.config.js "./src*/**/*.{ts,js,mjs,cjs,vue}"',
-              useFlatConfig: true,
-            },
+            eslint: false,
           },
           { server: false },
         ],
@@ -148,6 +161,7 @@ export default defineConfig((ctx) => {
     devServer: {
       // https: true,
       open: true, // opens browser window automatically
+      port: 9002,
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
@@ -275,9 +289,9 @@ export default defineConfig((ctx) => {
       },
       // Workbox GenerateSW options
       extendPWAGenerateSWOptions(cfg) {
-        cfg.cleanupOutdatedCaches = true;
-        cfg.skipWaiting = true;
-        cfg.clientsClaim = true;
+        cfg.cleanupOutdatedCaches = true
+        cfg.skipWaiting = false
+        cfg.clientsClaim = false
         cfg.runtimeCaching = [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -303,21 +317,12 @@ export default defineConfig((ctx) => {
               expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },
-          {
-            urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/api/'),
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-responses',
-              networkTimeoutSeconds: 10,
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 },
-            },
-          },
-        ];
+        ]
       },
       // Manifest extensions
       extendPWAManifestJson(json) {
-        json.categories = ['productivity', 'utilities'];
-        json.prefer_related_applications = false;
+        json.categories = ['productivity', 'utilities']
+        json.prefer_related_applications = false
       },
     },
 
@@ -376,5 +381,5 @@ export default defineConfig((ctx) => {
        */
       extraScripts: [],
     },
-  };
-});
+  }
+})

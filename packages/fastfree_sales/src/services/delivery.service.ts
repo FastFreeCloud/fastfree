@@ -5,7 +5,7 @@ import type { DeliveryNote } from '../types'
 const DOCTYPE = 'Delivery Note'
 
 export async function getDeliveryNotes(): Promise<ApiResponse<DeliveryNote[]>> {
-  const result = await getDocList<DeliveryNote>(DOCTYPE, undefined, ['name', 'customer', 'posting_date', 'status'], 'posting_date', 500)
+  const result = await getDocList<DeliveryNote>(DOCTYPE, undefined, ['name', 'customer', 'customer_name', 'posting_date', 'status', 'grand_total', 'total', 'docstatus'], 'posting_date desc', 500)
   if (!result.success) return { success: false, error: result.error ?? { code: 'FETCH_FAILED', message: 'Failed to fetch delivery notes' } }
   return { success: true, data: result.data ?? [] }
 }
@@ -27,7 +27,7 @@ export async function deleteDeliveryNote(name: string): Promise<ApiResponse<void
 }
 
 export async function submitDeliveryNote(name: string): Promise<ApiResponse<void>> {
-  return callPost('frappe.client.submit_single', { doctype: DOCTYPE, docname: name })
+  return callPost('frappe.client.submit', { doctype: DOCTYPE, docname: name })
 }
 
 export async function cancelDeliveryNote(name: string): Promise<ApiResponse<void>> {

@@ -23,4 +23,18 @@ export default {
     logout: 'تسجيل خروج',
     logoutConfirm: 'هل أنت متأكد من تسجيل الخروج؟',
   },
+  about: {
+    title: 'حول FastFree ERP',
+    description: 'تطبيق تخطيط موارد المؤسسات مبني بـ Quasar.',
+    quasarVersion: 'إصدار Quasar',
+    vueVersion: 'إصدار Vue',
+    mode: 'الوضع',
+    backendUrl: 'رابط السيرفر',
+    notSet: 'غير محدد',
+    debugTitle: 'تصحيح الأخطاء',
+    openConsole: 'فتح وحدة التحكم',
+    consoleHint: 'وحدة تحكم داخل التطبيق (نسخ التطوير أو ?eruda=1).',
+    erudaUnavailable: 'وحدة التحكم غير متاحة في هذه النسخة.',
+    close: 'إغلاق',
+  },
 };

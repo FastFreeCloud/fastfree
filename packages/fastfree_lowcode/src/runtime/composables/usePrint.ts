@@ -25,6 +25,7 @@ export interface PrintTableOptions {
   columns: PrintColumn[]
   rows: Record<string, unknown>[]
   total?: { label: string; value: number | string }
+  totalColumn?: string
   orientation?: 'portrait' | 'landscape'
 }
 
@@ -46,7 +47,7 @@ export function usePrint() {
   const locale = i18nStore.locale.value === 'ar' ? 'ar-EG' : 'en-US'
 
   function printHtml(html: string) {
-    const printWindow = window.open('', '_blank', 'noopener')
+    const printWindow = window.open('', '_blank')
     if (!printWindow) {
       notify.error(t('print.printWindowFailed'))
       return
@@ -58,7 +59,7 @@ export function usePrint() {
   }
 
   function printTable(options: PrintTableOptions) {
-    const { title, company, columns, rows, total, orientation = 'landscape' } = options
+    const { title, company, columns, rows, total, totalColumn, orientation = 'landscape' } = options
     const now = new Date()
     const printDate = now.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric', numberingSystem: 'latn' })
     const printTime = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: true, numberingSystem: 'latn' })
@@ -79,11 +80,22 @@ export function usePrint() {
       return `<tr><td>${i + 1}</td>${cells}</tr>`
     }).join('')
 
-    const totalRow = total ? `
-      <tr style="background-color:#e3f2fd !important;font-weight:700;font-size:14px;">
-        <td colspan="${columns.length}" style="border-top:3px solid #0D47A1;text-align:center;">${escapeHtml(total.label)}</td>
-        <td style="border-top:3px solid #0D47A1;text-align:center;font-weight:700;color:#0D47A1;">${total.value}</td>
-      </tr>` : ''
+    const totalRow = total ? (() => {
+      const totalColumnIndex = totalColumn ? columns.findIndex(column => column.name === totalColumn) : -1
+      if (totalColumnIndex === -1) {
+        return `<tr style="background-color:#e3f2fd !important;font-weight:700;font-size:14px;">
+          <td colspan="${columns.length}" style="border-top:3px solid #0D47A1;text-align:center;">${escapeHtml(total.label)}</td>
+          <td style="border-top:3px solid #0D47A1;text-align:center;font-weight:700;color:#0D47A1;">${escapeHtml(String(total.value))}</td>
+        </tr>`
+      }
+      const cells = columns.map((column, index) => {
+        const isValueCell = index === totalColumnIndex
+        const isLabelCell = totalColumnIndex > 0 && index === totalColumnIndex - 1
+        const content = isValueCell ? String(total?.value ?? '') : isLabelCell ? total?.label ?? '' : ''
+        return `<td style="border-top:3px solid #0D47A1;text-align:center;font-weight:700;color:#0D47A1;">${escapeHtml(content)}</td>`
+      }).join('')
+      return `<tr style="background-color:#e3f2fd !important;font-weight:700;font-size:14px;">${cells}</tr>`
+    })() : ''
 
     const html = `<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
     <style>

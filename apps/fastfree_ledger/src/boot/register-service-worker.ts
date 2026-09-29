@@ -1,91 +1,86 @@
 // Service Worker Registration - Simplified without virtual module dependency
 // Works with Quasar's built-in PWA support
 
-function registerServiceWorker(): void {
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
-
-  // Register service worker
-  void navigator.serviceWorker.ready
-    .then((registration: ServiceWorkerRegistration) => {
-
-
-      // Check for updates periodically
-      setInterval(
-        () => {
-          void registration.update();
-        },
-        1000 * 60 * 60,
-      );
-
-      // Listen for controller change (new SW activated)
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (refreshing) return;
-        refreshing = true;
-        window.location.reload();
-      });
-
-      // Check for waiting SW (update available)
-      if (registration.waiting) {
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      }
-    })
-    .catch((error: Error) => {
-      console.error('[PWA] Service Worker registration failed:', error);
-    });
-}
-
-// Force SW update and reload
-export function forceSWUpdate(): void {
-  if ('serviceWorker' in navigator) {
-    void navigator.serviceWorker
-      .getRegistrations()
-      .then((registrations: ReadonlyArray<ServiceWorkerRegistration>) => {
-        for (const reg of registrations) {
-          reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
-          void reg.update();
-        }
-        window.location.reload();
-      });
+async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | undefined> {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return undefined
+  try {
+    return await navigator.serviceWorker.getRegistration()
+  } catch {
+    return undefined
   }
 }
 
-// Check for updates manually
+function registerServiceWorker(): void {
+  void getServiceWorkerRegistration().then((registration) => {
+    if (!registration) return
+
+    const refreshRegistration = () => {
+      void registration.update().catch(() => undefined)
+    }
+    refreshRegistration()
+    window.setInterval(refreshRegistration, 1000 * 60 * 60)
+
+    let refreshing = false
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return
+      refreshing = true
+      window.location.reload()
+    })
+
+    if (registration.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+    }
+  })
+}
+
+export function forceSWUpdate(): void {
+  if (!('serviceWorker' in navigator)) return
+  const reload = () => {
+    window.location.reload()
+  }
+  void navigator.serviceWorker
+    .getRegistrations()
+    .then((registrations) =>
+      Promise.allSettled(
+        registrations.map((registration) => {
+          registration.waiting?.postMessage({ type: 'SKIP_WAITING' })
+          return registration.update()
+        }),
+      ),
+    )
+    .then(reload, reload)
+}
+
 export async function checkForUpdate(): Promise<boolean> {
-  if (!('serviceWorker' in navigator)) return false;
+  const registration = await getServiceWorkerRegistration()
+  if (!registration) return false
 
   try {
-    const registration = await navigator.serviceWorker.ready;
-    await registration.update();
-    return registration.waiting !== null;
+    await registration.update()
+    return registration.waiting !== null
   } catch {
-    return false;
+    return false
   }
 }
 
-// Nuclear clear: clear all caches + unregister SWs + reload
 export async function nuclearClear(): Promise<void> {
   try {
-    // 1. Delete all CacheStorage entries
-    const cacheNames = await caches.keys();
-    await Promise.all(cacheNames.map((name) => caches.delete(name)));
-
-
-    // 2. Unregister all Service Workers
-    if ('serviceWorker' in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(registrations.map((reg) => reg.unregister()));
-
+    if (typeof caches !== 'undefined') {
+      const cacheNames = await caches.keys()
+      await Promise.all(cacheNames.map((name) => caches.delete(name)))
     }
 
-    // 3. Force reload to get fresh SW
-    window.location.href = window.location.origin + '?pwa-cleared=1';
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(registrations.map((registration) => registration.unregister()))
+    }
+
+    window.location.href = `${window.location.origin}?pwa-cleared=1`
   } catch {
-    window.location.reload();
+    window.location.reload()
   }
 }
 
-// Auto-register on module load
 if (typeof window !== 'undefined') {
-  void registerServiceWorker();
+  void registerServiceWorker()
 }

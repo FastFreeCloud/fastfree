@@ -145,6 +145,21 @@ const AUTH_MESSAGES_AR: Record<string, string> = {
   'profile.saveError': 'خطأ في الحفظ',
   'profile.passwordChangeSuccess': 'تم تغيير كلمة المرور بنجاح',
   'profile.passwordChangeError': 'خطأ في تغيير كلمة المرور',
+  'printSettings.title': 'إعدادات الطباعة والتصدير',
+  'printSettings.subtitle': 'البيانات الأساسية التي تظهر في الطباعة وملفات Excel',
+  'printSettings.companyName': 'اسم الشركة',
+  'printSettings.companyHint': 'الاسم الذي يظهر أعلى التقارير وملفات Excel',
+  'printSettings.logo': 'شعار الشركة',
+  'printSettings.logoHint': 'PNG أو JPG أو WebP أو SVG، بحد أقصى 5 MB',
+  'printSettings.taxNumber': 'الرقم الضريبي',
+  'printSettings.commercialRegister': 'السجل التجاري',
+  'printSettings.phone': 'الهاتف',
+  'printSettings.address': 'العنوان',
+  'printSettings.preview': 'معاينة التقرير',
+  'printSettings.save': 'حفظ إعدادات الطباعة',
+  'printSettings.saved': 'تم حفظ إعدادات الطباعة والتصدير',
+  'printSettings.saveError': 'تعذر حفظ إعدادات الطباعة',
+  'printSettings.logoError': 'حجم الشعار أكبر من 5 MB',
 }
 
 export default AUTH_MESSAGES_AR

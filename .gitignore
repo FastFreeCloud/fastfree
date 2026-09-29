@@ -84,3 +84,12 @@ coverage/
 apps/fastfree_backend/*.pyc
 apps/fastfree_backend/__pycache__/
 apps/fastfree_backend/.git/
+
+# local tooling output
+.playwright-mcp/
+.firecrawl/
+apps/*/lint-err.txt
+apps/*/lint-output.txt
+# verification screenshots
+/check-*.png
+/erp-*.png

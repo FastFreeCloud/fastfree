@@ -1,0 +1,52 @@
+{
+  "url": "https://manfalout.docuin.com",
+  "hospital": "manfalout",
+  "username": "",
+  "password": "",
+  "departments": {
+    "ICU": true,
+    "CCU": true,
+    "NICU": true,
+    "NEO": true,
+    "Stroke": true
+  },
+  "responsible": {
+    "ICU": "محمود محمد / محمد ابو النصر",
+    "CCU": "محمود محمد / محمد ابو النصر",
+    "NICU": "ادهم محمد / مريم ميلاد",
+    "NEO": "ادهم محمد / مريم ميلاد",
+    "Stroke": "محمود محمد / محمد ابو النصر"
+  },
+  "messages": {
+    "doctors": {
+      "title": "السادة الأطباء",
+      "intro": "برجاء من طاقم الأطباء إدخال الحالات الجديدة واستكمال الآتي لكل حالة:",
+      "responsible_prefix": "",
+      "footer": "عدم الإدخال على مسؤولية الطبيب المعالج."
+    },
+    "nurses": {
+      "title": "هيئة التمريض",
+      "intro": "برجاء من طاقم التمريض استكمال الآتي لكل حالة:",
+      "responsible_prefix": "",
+      "footer": "عدم الإدخال على مسؤولية التمريض."
+    },
+    "header": {
+      "title": "مستشفى منفلوط — رسائل استكمال البيانات",
+      "subtitle": "تاريخ التحديث: "
+    },
+    "stats": {
+      "total_label": "إجمالي الأسرّة المحجوزة",
+      "missing_label": "أسرّة بها نواقص"
+    },
+    "sections": {
+      "separator": "======≈=================",
+      "bed_prefix": "سرير ",
+      "missing_label": "البيانات الغير مكتمله:",
+      "no_missing": "لا توجد بيانات غير مكتمله — جميع الحالات مستكملة."
+    },
+    "responsible": {
+      "doctors_default": "",
+      "nurses_default": ""
+    }
+  }
+}

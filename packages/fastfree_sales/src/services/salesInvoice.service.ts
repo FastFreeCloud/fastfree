@@ -5,7 +5,7 @@ import type { SalesInvoice } from '../types'
 const DOCTYPE = 'Sales Invoice'
 
 export async function getSalesInvoices(): Promise<ApiResponse<SalesInvoice[]>> {
-  const result = await getDocList<SalesInvoice>(DOCTYPE, undefined, ['name', 'customer', 'posting_date', 'grand_total', 'outstanding_amount', 'status'], 'posting_date', 500)
+  const result = await getDocList<SalesInvoice>(DOCTYPE, undefined, ['name', 'customer', 'customer_name', 'posting_date', 'due_date', 'status', 'grand_total', 'outstanding_amount', 'docstatus'], 'posting_date desc', 500)
   if (!result.success) return { success: false, error: result.error ?? { code: 'FETCH_FAILED', message: 'Failed to fetch sales invoices' } }
   return { success: true, data: result.data ?? [] }
 }
@@ -27,7 +27,7 @@ export async function deleteSalesInvoice(name: string): Promise<ApiResponse<void
 }
 
 export async function submitSalesInvoice(name: string): Promise<ApiResponse<void>> {
-  return callPost('frappe.client.submit_single', { doctype: DOCTYPE, docname: name })
+  return callPost('frappe.client.submit', { doctype: DOCTYPE, docname: name })
 }
 
 export async function cancelSalesInvoice(name: string): Promise<ApiResponse<void>> {

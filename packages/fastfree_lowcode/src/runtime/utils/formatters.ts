@@ -4,15 +4,17 @@ export interface FormatterOptions {
 }
 
 function getLocale(options?: FormatterOptions): string {
-  return options?.locale ?? 'en'
+  const locale = options?.locale ?? 'en'
+  return locale.startsWith('ar') ? 'ar-SA-u-nu-latn' : locale
 }
 
 export const formatters = {
   number: (num: number, options?: FormatterOptions): string =>
-    new Intl.NumberFormat(getLocale(options)).format(num),
+    new Intl.NumberFormat(getLocale(options), { numberingSystem: 'latn' }).format(num),
 
   currency: (num: number, currency = 'USD', options?: FormatterOptions): string =>
     new Intl.NumberFormat(getLocale(options), {
+      numberingSystem: 'latn',
       style: 'currency',
       currency,
     }).format(num),
@@ -20,17 +22,18 @@ export const formatters = {
   date: (dateStr: string, options?: FormatterOptions): string => {
     const d = new Date(dateStr)
     if (isNaN(d.getTime())) return dateStr
-    return d.toLocaleDateString(getLocale(options))
+    return d.toLocaleDateString(getLocale(options), { numberingSystem: 'latn' })
   },
 
   dateTime: (dateStr: string, options?: FormatterOptions): string => {
     const d = new Date(dateStr)
     if (isNaN(d.getTime())) return dateStr
-    return d.toLocaleString(getLocale(options))
+    return d.toLocaleString(getLocale(options), { numberingSystem: 'latn' })
   },
 
   percent: (num: number, options?: FormatterOptions): string =>
     new Intl.NumberFormat(getLocale(options), {
+      numberingSystem: 'latn',
       style: 'percent',
       minimumFractionDigits: 1,
       maximumFractionDigits: 1,

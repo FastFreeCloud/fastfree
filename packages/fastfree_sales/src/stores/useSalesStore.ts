@@ -1,7 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import type { ApiResponse } from 'fastfree-auth'
 import type { Customer, Quotation, SalesOrder, SalesInvoice, DeliveryNote } from '../types'
-import { getCustomers, getQuotations, getSalesOrders, getSalesInvoices, getDeliveryNotes, getSalesSummary } from '../services'
+import {
+  getCustomers,
+  getQuotations,
+  getSalesOrders,
+  getSalesInvoices,
+  getDeliveryNotes,
+  getSalesSummary,
+} from '../services'
+import type { QuotationFilters } from '../services'
 
 export interface SalesSummary {
   totalCustomers: number
@@ -20,9 +29,32 @@ export const useSalesStore = defineStore('fastfree-sales', () => {
 
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const quotationLoading = ref(false)
+  const quotationError = ref<string | null>(null)
+  const quotationHasLoaded = ref(false)
+  let quotationRequestId = 0
 
-  function setLoading(val: boolean) { loading.value = val }
-  function setError(e: unknown) { error.value = e instanceof Error ? e.message : e != null ? String(e) : null }
+  function setLoading(val: boolean) {
+    loading.value = val
+  }
+  function setError(cause: unknown) {
+    if (cause instanceof Error) {
+      error.value = cause.message
+      return
+    }
+    if (typeof cause === 'string') {
+      error.value = cause
+      return
+    }
+    if (cause !== null && typeof cause === 'object' && 'message' in cause) {
+      const message = cause.message
+      if (typeof message === 'string') {
+        error.value = message
+        return
+      }
+    }
+    error.value = null
+  }
 
   async function fetchCustomers() {
     setLoading(true)
@@ -37,16 +69,49 @@ export const useSalesStore = defineStore('fastfree-sales', () => {
     }
   }
 
-  async function fetchQuotations() {
+  async function fetchQuotations(filters?: QuotationFilters): Promise<ApiResponse<Quotation[]>> {
+    const requestId = ++quotationRequestId
     setLoading(true)
     setError(null)
+    quotationLoading.value = true
+    quotationError.value = null
+
     try {
-      const res = await getQuotations()
+      const res = await getQuotations(filters)
+      if (requestId !== quotationRequestId) {
+        return {
+          success: false,
+          error: { code: 'STALE_REQUEST', message: 'Stale quotation request' },
+        }
+      }
+      if (!res.success) {
+        const message = res.error?.message ?? 'Failed to fetch quotations'
+        quotationError.value = message
+        setError(message)
+        return res
+      }
       quotations.value = res.data ?? []
-    } catch (e) {
-      setError(e)
+      return { success: true, data: quotations.value }
+    } catch (cause) {
+      if (requestId !== quotationRequestId) {
+        return {
+          success: false,
+          error: { code: 'STALE_REQUEST', message: 'Stale quotation request' },
+        }
+      }
+      const message = cause instanceof Error ? cause.message : 'Failed to fetch quotations'
+      quotationError.value = message
+      setError(cause)
+      return {
+        success: false,
+        error: { code: 'FETCH_FAILED', message },
+      }
     } finally {
-      setLoading(false)
+      if (requestId === quotationRequestId) {
+        quotationHasLoaded.value = true
+        quotationLoading.value = false
+        setLoading(false)
+      }
     }
   }
 
@@ -96,9 +161,10 @@ export const useSalesStore = defineStore('fastfree-sales', () => {
       const res = await getSalesSummary()
       summary.value = {
         totalCustomers: customers.value.length,
-        totalSales: (res.data as Record<string, unknown>)?.total_sales as number ?? 0,
-        totalInvoices: (res.data as Record<string, unknown>)?.total_invoices as number ?? 0,
-        outstandingAmount: (res.data as Record<string, unknown>)?.outstanding_amount as number ?? 0,
+        totalSales: ((res.data as Record<string, unknown>)?.total_sales as number) ?? 0,
+        totalInvoices: ((res.data as Record<string, unknown>)?.total_invoices as number) ?? 0,
+        outstandingAmount:
+          ((res.data as Record<string, unknown>)?.outstanding_amount as number) ?? 0,
       }
     } catch (e) {
       setError(e)
@@ -116,12 +182,30 @@ export const useSalesStore = defineStore('fastfree-sales', () => {
     summary.value = null
     loading.value = false
     error.value = null
+    quotationLoading.value = false
+    quotationError.value = null
+    quotationHasLoaded.value = false
+    quotationRequestId += 1
   }
 
   return {
-    customers, quotations, salesOrders, salesInvoices, deliveryNotes, summary,
-    loading, error,
-    fetchCustomers, fetchQuotations, fetchSalesOrders, fetchSalesInvoices,
-    fetchDeliveryNotes, fetchSalesSummary, $reset,
+    customers,
+    quotations,
+    salesOrders,
+    salesInvoices,
+    deliveryNotes,
+    summary,
+    loading,
+    error,
+    quotationLoading,
+    quotationError,
+    quotationHasLoaded,
+    fetchCustomers,
+    fetchQuotations,
+    fetchSalesOrders,
+    fetchSalesInvoices,
+    fetchDeliveryNotes,
+    fetchSalesSummary,
+    $reset,
   }
 })

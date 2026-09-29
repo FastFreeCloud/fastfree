@@ -16,31 +16,31 @@ export interface QuotationItem {
   item_code: string;
   item_name: string;
   description?: string;
-  quantity: number;
+  qty: number;
   rate: number;
   amount: number;
   discount_percentage?: number;
   discount_amount?: number;
-  net_amount: number;
 }
 
 export interface Quotation {
   name: string;
-  customer: string;
-  customer_name: string;
+  party_name: string;
+  customer_name?: string;
+  quotation_to?: string;
   transaction_date: string;
-  valid_till: string;
-  status: 'Draft' | 'Submitted' | 'Cancelled' | 'Expired' | 'Rejected';
+  valid_till?: string;
+  status: 'Draft' | 'Open' | 'Ordered' | 'Expired' | 'Lost' | 'Cancelled';
+  docstatus?: number;
   items: QuotationItem[];
-  total: number;
-  total_discount?: number;
   grand_total: number;
-  currency: string;
+  currency?: string;
   company?: string;
   terms?: string;
   creation: string;
   modified: string;
   owner: string;
+  [key: string]: unknown;
 }
 
 export interface SalesOrderItem {
@@ -48,28 +48,26 @@ export interface SalesOrderItem {
   item_code: string;
   item_name: string;
   description?: string;
-  quantity: number;
+  qty: number;
   rate: number;
   amount: number;
   discount_percentage?: number;
   discount_amount?: number;
-  net_amount: number;
-  delivered_qty?: number;
-  pending_qty?: number;
+  per_delivered?: number;
+  per_billed?: number;
 }
 
 export interface SalesOrder {
   name: string;
   customer: string;
-  customer_name: string;
+  customer_name?: string;
   transaction_date: string;
   delivery_date?: string;
-  status: 'Draft' | 'Submitted' | 'Cancelled' | 'Partially Delivered' | 'Delivered';
+  status: 'Draft' | 'To Deliver and Bill' | 'To Deliver' | 'To Bill' | 'Completed' | 'Cancelled';
+  docstatus?: number;
   items: SalesOrderItem[];
-  total: number;
-  total_discount?: number;
   grand_total: number;
-  currency: string;
+  currency?: string;
   company?: string;
   terms?: string;
   creation: string;
@@ -82,26 +80,25 @@ export interface SalesInvoiceItem {
   item_code: string;
   item_name: string;
   description?: string;
-  quantity: number;
+  qty: number;
   rate: number;
   amount: number;
   discount_percentage?: number;
   discount_amount?: number;
-  net_amount: number;
 }
 
 export interface SalesInvoice {
   name: string;
   customer: string;
-  customer_name: string;
+  customer_name?: string;
   posting_date: string;
   due_date?: string;
-  status: 'Draft' | 'Submitted' | 'Cancelled' | 'Paid' | 'Partially Paid';
+  status: 'Draft' | 'Unpaid' | 'Paid' | 'Partly Paid' | 'Overdue' | 'Cancelled';
+  docstatus?: number;
   items: SalesInvoiceItem[];
-  total: number;
-  total_discount?: number;
   grand_total: number;
-  currency: string;
+  outstanding_amount?: number;
+  currency?: string;
   company?: string;
   terms?: string;
   creation: string;
@@ -114,22 +111,23 @@ export interface DeliveryNoteItem {
   item_code: string;
   item_name: string;
   description?: string;
-  quantity: number;
-  delivered_qty: number;
+  qty: number;
   rate: number;
   amount: number;
+  against_sales_order?: string;
 }
 
 export interface DeliveryNote {
   name: string;
   customer: string;
-  customer_name: string;
+  customer_name?: string;
   posting_date: string;
-  sales_order?: string;
-  status: 'Draft' | 'Submitted' | 'Cancelled';
+  status: 'Draft' | 'To Bill' | 'Completed' | 'Cancelled';
+  docstatus?: number;
   items: DeliveryNoteItem[];
-  total: number;
-  currency: string;
+  grand_total?: number;
+  total?: number;
+  currency?: string;
   company?: string;
   creation: string;
   modified: string;

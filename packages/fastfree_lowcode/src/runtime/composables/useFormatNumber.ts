@@ -20,12 +20,13 @@ export function useFormatNumber() {
   const store = getLcI18nStore()
 
   function getLocale(): string {
-    return store.locale.value === 'ar' ? 'ar-SA' : 'en-US'
+    return store.locale.value === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US'
   }
 
   function formatNumber(value: number | undefined | null, decimals = 0): string {
     if (value == null || isNaN(value)) return '0'
     return new Intl.NumberFormat(getLocale(), {
+      numberingSystem: 'latn',
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     }).format(value)
@@ -34,6 +35,7 @@ export function useFormatNumber() {
   function formatCurrency(value: number | undefined | null, currency = 'SAR'): string {
     if (value == null || isNaN(value)) return '0.00'
     return new Intl.NumberFormat(getLocale(), {
+      numberingSystem: 'latn',
       style: 'currency',
       currency,
       minimumFractionDigits: 2,
@@ -44,6 +46,7 @@ export function useFormatNumber() {
   function formatPercent(value: number | undefined | null): string {
     if (value == null || isNaN(value)) return '0%'
     return new Intl.NumberFormat(getLocale(), {
+      numberingSystem: 'latn',
       style: 'percent',
       minimumFractionDigits: 1,
       maximumFractionDigits: 1,

@@ -42,6 +42,11 @@ const LC_DEFAULT_MESSAGES_AR: LcMessages = {
   "common.pin": "تثبيت",
   "common.view": "عرض",
 
+  "pagination.prev": "السابق",
+  "pagination.next": "التالي",
+  "pagination.rowsPerPage": "صفوف في الصفحة",
+  "pagination.total": "الإجمالي",
+
   // Groups
   "groups.search": "ابحث عن تطبيق...",
   "groups.noResults": "لا توجد نتائج للبحث",
@@ -73,6 +78,7 @@ const LC_DEFAULT_MESSAGES_AR: LcMessages = {
   "screens.roles": "الأدوار",
   "screens.license": "الرخصة",
   "screens.profile": "الملف الشخصي",
+  "screens.printSettings": "إعدادات الطباعة",
   "inspector.appInfo": "معلومات التطبيق",
   "inspector.configuration": "الإعدادات",
   "inspector.groupsPages": "المجموعات والصفحات",
@@ -152,6 +158,19 @@ const LC_DEFAULT_MESSAGES_AR: LcMessages = {
   "common.submit": "إرسال",
   "common.info": "معلومات",
   "common.details": "التفاصيل",
+  "common.back": "رجوع",
+  "common.save": "حفظ",
+  "common.new": "جديد",
+  "common.yes": "نعم",
+  "common.no": "لا",
+  "common.noResults": "لا توجد نتائج",
+  "common.cancelDocument": "إلغاء المستند",
+  "common.confirmCancelDocument": "هل أنت متأكد من إلغاء هذا المستند؟",
+  "common.subtotal": "المجموع الفرعي",
+  "common.discount": "الخصم",
+  "common.taxable": "المبلغ الخاضع للضريبة",
+  "common.tax": "الضريبة",
+  "common.grandTotal": "الإجمالي العام",
 
   // App (Server URL screen)
   "app.serverUrl": "عنوان الخادم",

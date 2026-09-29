@@ -40,6 +40,12 @@ export { useLcI18nStore, getLcI18nStore, MESSAGES_KEYS, getNamespace, getKeyName
 export { useSplashCoordinator, getSplashCoordinator } from './useSplashCoordinator'
 export type { SplashCoordinator } from './useSplashCoordinator'
 
+// Base CRUD Composables
+export { useBaseForm } from './useBaseForm'
+export type { FormField, BaseFormOptions, BaseFormReturn } from './useBaseForm'
+export { useBaseList } from './useBaseList'
+export type { ColumnDef, RowAction, BaseListOptions, BaseListReturn } from './useBaseList'
+
 // Shared Helpers
 export { useFormatNumber } from './useFormatNumber'
 export { useStatusHelpers } from './useStatusHelpers'

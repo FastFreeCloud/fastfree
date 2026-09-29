@@ -49,7 +49,7 @@
                 <component
                   v-else-if="getScreenComponent(win.screenType)"
                   :is="getScreenComponent(win.screenType)"
-                  v-bind="getScreenProps(win.screenType)"
+                  v-bind="getScreenProps(win)"
                 />
               </LcErrorBoundary>
             </slot>
@@ -64,7 +64,10 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
-import { useDesktopStore } from "../composables/useDesktopStore";
+import {
+  useDesktopStore,
+  type WindowInfo,
+} from "../composables/useDesktopStore";
 import { useKeyboardShortcuts } from "../composables/useKeyboardShortcuts";
 import { getScreenComponent } from "../composables/screen-registry";
 import { useLcI18n } from "../i18n";
@@ -105,11 +108,11 @@ const desktop = useDesktopStore();
 const keyboard = useKeyboardShortcuts();
 const { t } = useLcI18n();
 
-function getScreenProps(screenType: string): Record<string, unknown> {
-  if (screenType === "about") {
+function getScreenProps(win: WindowInfo): Record<string, unknown> {
+  if (win.screenType === "about") {
     return { title: props.title, icon: props.icon };
   }
-  return {};
+  return win.props ?? {};
 }
 
 onMounted(() => {

@@ -5,7 +5,6 @@
         <q-icon name="mdi-truck-delivery" size="2rem" color="primary" />
         <span class="text-h6">{{ t('sales.deliveryNotes') }}</span>
         <q-space />
-        <q-btn color="primary" icon="mdi-plus" :label="t('sales.addDeliveryNote')" no-caps @click="showForm = true" />
       </q-card-section>
 
       <q-card-section>
@@ -15,6 +14,7 @@
           row-key="name"
           :loading="store.loading"
           :filter="search"
+          :filter-method="filterDeliveries"
           flat
         >
           <template #top-right>
@@ -29,9 +29,9 @@
           </template>
           <template #body-cell-actions="props">
             <q-td :props="props">
-              <q-btn v-if="props.row.status === 'Draft'" flat round icon="mdi-check" size="sm" color="positive" :aria-label="t('common.submit')" @click="submitDelivery(props.row)" />
-              <q-btn v-if="props.row.status === 'Submitted'" flat round icon="mdi-close" size="sm" color="negative" :aria-label="t('common.cancel')" @click="cancelDelivery(props.row)" />
-              <q-btn v-if="props.row.status === 'Draft'" flat round icon="mdi-delete" size="sm" color="negative" :aria-label="t('common.delete')" @click="deleteDelivery(props.row)" />
+              <q-btn v-if="props.row.docstatus === 0" flat round icon="mdi-check" size="sm" color="positive" :aria-label="t('common.submit')" @click="submitDelivery(props.row)" />
+              <q-btn v-if="props.row.docstatus === 1" flat round icon="mdi-close" size="sm" color="negative" :aria-label="t('common.cancel')" @click="cancelDelivery(props.row)" />
+              <q-btn v-if="props.row.docstatus === 0" flat round icon="mdi-delete" size="sm" color="negative" :aria-label="t('common.delete')" @click="deleteDelivery(props.row)" />
             </q-td>
           </template>
         </q-table>
@@ -98,7 +98,6 @@ const { formatNumber } = useFormatNumber()
 const { translateStatus, statusColor } = useStatusHelpers('sales')
 
 const search = ref('')
-const showForm = ref(false)
 const confirmSubmit = ref(false)
 const submitTarget = ref('')
 const confirmCancel = ref(false)
@@ -110,10 +109,19 @@ const columns = computed(() => [
   { name: 'name', label: t('sales.deliveryNote'), field: 'name', sortable: true },
   { name: 'customer_name', label: t('sales.customerName'), field: 'customer_name', sortable: true },
   { name: 'posting_date', label: t('sales.deliveryDate'), field: 'posting_date', sortable: true },
-  { name: 'total', label: t('sales.total'), field: 'total', sortable: true, format: (v: number) => formatNumber(v) },
+  { name: 'total', label: t('sales.total'), field: 'total', sortable: true, format: (v: number | null | undefined) => formatNumber(v) },
   { name: 'status', label: t('common.status'), field: 'status' },
   { name: 'actions', label: t('common.actions'), field: 'actions' },
 ])
+
+function filterDeliveries(rows: readonly DeliveryNote[], terms: string): DeliveryNote[] {
+  const needle = (terms ?? '').toLowerCase()
+  if (!needle) return rows as DeliveryNote[]
+  return (rows as DeliveryNote[]).filter((row) => {
+    const haystack = `${row.name ?? ''} ${row.customer ?? ''} ${row.customer_name ?? ''} ${row.status ?? ''}`.toLowerCase()
+    return haystack.includes(needle)
+  })
+}
 
 function submitDelivery(delivery: DeliveryNote) {
   submitTarget.value = delivery.name
@@ -124,9 +132,14 @@ async function confirmSubmitDelivery() {
   const name = submitTarget.value
   confirmSubmit.value = false
   try {
-    await apiSubmitDeliveryNote(name)
+    const result = await apiSubmitDeliveryNote(name)
+    if (!result.success) {
+      $q.notify({ type: 'negative', message: result.error?.message ?? t('common.error') })
+      return
+    }
     $q.notify({ type: 'positive', message: t('sales.deliveryNoteSubmitted') })
     await store.fetchDeliveryNotes()
+    if (store.error) $q.notify({ type: 'negative', message: store.error })
   } catch {
     $q.notify({ type: 'negative', message: t('common.error') })
   }
@@ -141,9 +154,14 @@ async function confirmCancelDelivery() {
   const name = cancelTarget.value
   confirmCancel.value = false
   try {
-    await apiCancelDeliveryNote(name)
+    const result = await apiCancelDeliveryNote(name)
+    if (!result.success) {
+      $q.notify({ type: 'negative', message: result.error?.message ?? t('common.error') })
+      return
+    }
     $q.notify({ type: 'positive', message: t('sales.deliveryNoteCancelled') })
     await store.fetchDeliveryNotes()
+    if (store.error) $q.notify({ type: 'negative', message: store.error })
   } catch {
     $q.notify({ type: 'negative', message: t('common.error') })
   }
@@ -158,13 +176,25 @@ async function confirmDeleteDelivery() {
   const name = deleteTarget.value
   confirmDelete.value = false
   try {
-    await apiDeleteDeliveryNote(name)
+    const result = await apiDeleteDeliveryNote(name)
+    if (!result.success) {
+      $q.notify({ type: 'negative', message: result.error?.message ?? t('common.error') })
+      return
+    }
     $q.notify({ type: 'positive', message: t('sales.deliveryNoteDeleted') })
     await store.fetchDeliveryNotes()
+    if (store.error) $q.notify({ type: 'negative', message: store.error })
   } catch {
     $q.notify({ type: 'negative', message: t('common.error') })
   }
 }
 
-onMounted(() => store.fetchDeliveryNotes())
+onMounted(async () => {
+  try {
+    await store.fetchDeliveryNotes()
+    if (store.error) $q.notify({ type: 'negative', message: store.error })
+  } catch {
+    $q.notify({ type: 'negative', message: t('common.error') })
+  }
+})
 </script>

@@ -34,6 +34,7 @@ export function registerAuthScreens(
     { type: 'auth-roles', loader: () => import('./screens/RolesManager.vue'), label: 'screens.roles', icon: 'mdi-shield-account' },
     { type: 'auth-license', loader: () => import('./screens/LicenseInfo.vue'), label: 'screens.license', icon: 'mdi-license' },
     { type: 'auth-profile', loader: () => import('./screens/UserProfile.vue'), label: 'screens.profile', icon: 'mdi-account-circle' },
+    { type: 'print-settings', loader: () => import('./screens/PrintSettingsManager.vue'), label: 'screens.printSettings', icon: 'mdi-printer-cog' },
   ]
 
   for (const screen of screens) {

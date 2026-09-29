@@ -14,12 +14,15 @@ import type {
   ParamValueZeroOrMore,
   ParamValueZeroOrOne,
 } from 'vue-router'
-import type { _ExtractParamParserType } from 'vue-router/experimental';
+import type {
+  _ExtractParamParserType,
+} from 'vue-router/experimental'
 
 declare module 'vue-router' {
   interface TypesConfig {
-    ParamParsers: never;
-    RouteNamedMap: import('vue-router/auto-routes').RouteNamedMap;
+    _ParamParsers: {}
+    RouteNamedMap: import('vue-router/auto-routes').RouteNamedMap
+    _RouteFileInfoMap: import('vue-router/auto-routes')._RouteFileInfoMap
   }
 }
 
@@ -33,29 +36,8 @@ declare module 'vue-router/auto-routes' {
       '/',
       Record<never, never>,
       Record<never, never>,
-      '//(index)' | '//second'
-    >;
-    '//(index)': RouteRecordInfo<
-      '//(index)',
-      '/',
-      Record<never, never>,
-      Record<never, never>,
-      never
-    >;
-    '//second': RouteRecordInfo<
-      '//second',
-      '/second',
-      Record<never, never>,
-      Record<never, never>,
-      never
-    >;
-    '/[...path]': RouteRecordInfo<
-      '/[...path]',
-      '/:path(.*)',
-      { path: ParamValue<true> },
-      { path: ParamValue<false> },
-      never
-    >;
+      | never
+    >,
   }
 
   /**
@@ -70,21 +52,13 @@ declare module 'vue-router/auto-routes' {
    */
   export interface _RouteFileInfoMap {
     'src/pages/index.vue': {
-      routes: '/' | '//(index)' | '//second';
-      views: 'default';
-    };
-    'src/pages/index/(index).vue': {
-      routes: '//(index)';
-      views: never;
-    };
-    'src/pages/index/second.vue': {
-      routes: '//second';
-      views: never;
-    };
-    'src/pages/[...path].vue': {
-      routes: '/[...path]';
-      views: never;
-    };
+      routes:
+        | '/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
   }
 
   /**
@@ -94,7 +68,9 @@ declare module 'vue-router/auto-routes' {
    * @internal
    */
   export type _RouteNamesForFilePath<FilePath extends string> =
-    _RouteFileInfoMap extends Record<FilePath, infer Info> ? Info['routes'] : keyof RouteNamedMap;
+    _RouteFileInfoMap extends Record<FilePath, infer Info>
+      ? Info['routes']
+      : keyof RouteNamedMap
 }
 
-export {};
+export {}

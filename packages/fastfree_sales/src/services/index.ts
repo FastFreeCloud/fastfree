@@ -16,7 +16,9 @@ export {
   deleteQuotation,
   submitQuotation,
   cancelQuotation,
+  getCompanies,
 } from './quotation.service'
+export type { QuotationFilters } from './quotation.service'
 
 export {
   getSalesOrders,
@@ -48,8 +50,4 @@ export {
   cancelDeliveryNote,
 } from './delivery.service'
 
-export {
-  getSalesSummary,
-  getTopSellingItems,
-  getCustomerReceivables,
-} from './report.service'
+export { getSalesSummary, getTopSellingItems, getCustomerReceivables } from './report.service'

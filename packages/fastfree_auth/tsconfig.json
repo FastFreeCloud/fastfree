@@ -1,13 +1,42 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
     "paths": {
-      "fastfree-lowcode/*": ["../fastfree_lowcode/src/runtime/*"],
-      "fastfree-lowcode": ["../fastfree_lowcode/src/runtime/index.ts"],
-      "quasar-app-extension-fastfree-lowcode/*": ["../fastfree_lowcode/src/runtime/*"],
-      "quasar-app-extension-fastfree-lowcode": ["../fastfree_lowcode/src/runtime/index.ts"]
+      "fastfree-lowcode/*": [
+        "../fastfree_lowcode/src/runtime/*"
+      ],
+      "fastfree-lowcode": [
+        "../fastfree_lowcode/src/runtime/index.ts"
+      ],
+      "quasar-app-extension-fastfree-lowcode/*": [
+        "../fastfree_lowcode/src/runtime/*"
+      ],
+      "quasar-app-extension-fastfree-lowcode": [
+        "../fastfree_lowcode/src/runtime/index.ts"
+      ]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.vue"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

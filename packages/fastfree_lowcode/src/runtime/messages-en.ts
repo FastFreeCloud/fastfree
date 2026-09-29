@@ -42,6 +42,11 @@ const LC_DEFAULT_MESSAGES: LcMessages = {
   "common.pin": "Pin",
   "common.view": "View",
 
+  "pagination.prev": "Previous",
+  "pagination.next": "Next",
+  "pagination.rowsPerPage": "Rows per page",
+  "pagination.total": "Total",
+
   // Groups
   "groups.search": "Search applications...",
   "groups.noResults": "No matching results found",
@@ -73,6 +78,7 @@ const LC_DEFAULT_MESSAGES: LcMessages = {
   "screens.roles": "Roles",
   "screens.license": "License",
   "screens.profile": "Profile",
+  "screens.printSettings": "Print Settings",
   "inspector.appInfo": "App Information",
   "inspector.configuration": "Configuration",
   "inspector.groupsPages": "Groups & Pages",
@@ -153,6 +159,19 @@ const LC_DEFAULT_MESSAGES: LcMessages = {
   "common.submit": "Submit",
   "common.info": "Info",
   "common.details": "Details",
+  "common.back": "Back",
+  "common.save": "Save",
+  "common.new": "New",
+  "common.yes": "Yes",
+  "common.no": "No",
+  "common.noResults": "No results",
+  "common.cancelDocument": "Cancel document",
+  "common.confirmCancelDocument": "Are you sure you want to cancel this document?",
+  "common.subtotal": "Subtotal",
+  "common.discount": "Discount",
+  "common.taxable": "Taxable amount",
+  "common.tax": "Tax",
+  "common.grandTotal": "Grand total",
 
   // App (Server URL screen)
   "app.serverUrl": "Server URL",

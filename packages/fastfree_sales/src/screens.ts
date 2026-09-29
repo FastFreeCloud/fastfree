@@ -29,6 +29,7 @@ export function registerSalesScreens(
   const screens = [
     { type: 'sales-customers', loader: () => import('./screens/CustomerList.vue'), label: 'sales.customers', icon: 'mdi-account-group' },
     { type: 'sales-quotations', loader: () => import('./screens/QuotationList.vue'), label: 'sales.quotations', icon: 'mdi-file-document' },
+    { type: 'sales-quotation-form', loader: () => import('./screens/QuotationForm.vue'), label: 'sales.quotationForm', icon: 'mdi-file-document-edit' },
     { type: 'sales-orders', loader: () => import('./screens/SalesOrderList.vue'), label: 'sales.salesOrders', icon: 'mdi-cart-check' },
     { type: 'sales-invoices', loader: () => import('./screens/SalesInvoiceList.vue'), label: 'sales.salesInvoices', icon: 'mdi-receipt' },
     { type: 'sales-delivery', loader: () => import('./screens/DeliveryNoteList.vue'), label: 'sales.deliveryNotes', icon: 'mdi-truck-delivery' },
