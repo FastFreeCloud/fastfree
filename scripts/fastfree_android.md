@@ -589,7 +589,7 @@ git add -A; git commit -m "msg"; git push origin master
 ### رفع + نشر
 
 ```powershell
-gh workflow run 10-client3.yaml --ref master
+gh workflow run 10-client2.yaml --ref master
 ```
 
 ### عرض حالة الـ workflows

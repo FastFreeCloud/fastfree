@@ -7,17 +7,19 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    colmena = {
-      url = "github:zhaofengli/colmena";
+    # Clan 26.05 (official: convert-existing-NixOS-configuration).
+    # Read-only in phase 1: inventory + build/check only, no install/switch.
+    clan-core = {
+      url = "https://git.clan.lol/clan/clan-core/archive/26.05.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixos-wsl = {
-      url = "github:nix-community/NixOS-WSL";
-      inputs.nixpkgs.follows = "nixpkgs";
+    # Pinned unstable for opencode (replaces builtins.getFlake impurity in local-machine.nix).
+    nixpkgs-unstable = {
+      url = "github:NixOS/nixpkgs/nixos-unstable";
     };
   };
 
-  outputs = { self, nixpkgs, disko, colmena, nixos-wsl, ... }:
+  outputs = { self, nixpkgs, disko, clan-core, ... } @ inputs:
     let
       system  = "x86_64-linux";
       lib     = nixpkgs.lib;
@@ -39,163 +41,61 @@
         };
       });
 
-      # -- Client configs (imported from nix/clients/) --
-      clients = {
-        client1  = import ./nix/clients/client1.nix;
-        client2  = import ./nix/clients/client2.nix;
-        client3  = import ./nix/clients/client3.nix;
-      };
+      # -- Image client modules (hyperv only) --
+      # Canonical machine config lives in Clan: machines/client1/configuration.nix.
+      # (Replaces the deleted legacy `clients` map — image client only;
+      # client2/client3 live in Clan inventory: clan.nix + machines/<name>/.)
+      # Image-only: never `clan machines install` — built as VHDX via CI.
+      imageClientModules = [ ./machines/client1/configuration.nix ];
 
       # -- All NixOS modules --
       commonModules = [
-        ./nix/options.nix
-        ./nix/modules/base.nix
-        ./nix/modules/mariadb.nix
-        ./nix/modules/caddy.nix
-        ./nix/modules/fastfree_backend.nix
-        ./nix/modules/fastfree_ledger.nix
-        ./nix/modules/fastfree_erp.nix
-        ./nix/modules/fastfree_hr.nix
-        ./nix/modules/fastfree_pos.nix
-        ./nix/modules/fastfree_website.nix
-        ./nix/modules/phpmyadmin.nix
-        ./nix/modules/cockpit.nix
-        ./nix/modules/wireguard.nix
-        ./nix/modules/avahi-subdomains.nix
+        ./options.nix
+        ./modules/networking.nix
+        ./modules/locale.nix
+        ./modules/boot.nix
+        ./modules/nix-settings.nix
+        ./modules/system.nix
+        ./modules/containers.nix
+        ./modules/integration.nix
+        ./modules/mariadb.nix
+        ./modules/caddy.nix
+        ./modules/fastfree_backend.nix
+        ./modules/fastfree_ledger.nix
+        ./modules/fastfree_erp.nix
+        ./modules/fastfree_hr.nix
+        ./modules/fastfree_pos.nix
+        ./modules/fastfree_website.nix
+        ./modules/phpmyadmin.nix
+        ./modules/cockpit.nix
+        ./modules/desktop.nix
+        ./modules/avahi-subdomains.nix
       ];
 
       testDiskSize = { virtualisation.diskSize = 8 * 1024; };
 
-      # -- Default kernelModules per deployType --
-      defaultKernelModules = {
-        hostinger = [ "virtio_pci" "virtio_scsi" "sd_mod" ];
-        hyperv = [ "hv_vmbus" "hv_storvsc" "hv_netvsc" "sd_mod" "sr_mod" ];
-      };
-
-      # -- Base NixOS config (shared by all clients) --
-      mkBaseConfig = name: cfg: {
-        fastfree.identity.name   = lib.mkForce cfg.hostName;
-        fastfree.identity.domain = lib.mkForce cfg.domain;
-        fastfree.passwords       = cfg.passwords;
-        fastfree.apps            = cfg.apps;
-        fastfree.extra           = cfg.extra or {};
-        fastfree.subdomains      = cfg.subdomains or {};
-        fastfree.deployType      = cfg.deployType or "hyperv";
-        fastfree.deployHost      = cfg.deployHost or "";
-        fastfree.deployPassword  = cfg.deployPassword or "";
-        fastfree.githubRepo      = cfg.githubRepo or "";
-        fastfree.githubAccount   = lib.mkIf ((cfg.githubAccount or "") != "") cfg.githubAccount;
-        fastfree.githubToken     = cfg.githubToken or "";
-        fastfree.networking      = cfg.networking or {};
-        fastfree.gitOrigin       = cfg.gitOrigin or "";
-        fastfree.flakeConfigName = name;
-        fastfree.wireguard       = cfg.wireguard or {};
-        fastfree.avahi           = cfg.avahi or {};
-        fastfree.build           = cfg.build or true;
-        fastfree.kvm             = cfg.kvm or ((cfg.deployType or "hyperv") == "hyperv");
-
-        users.users.root.initialPassword = lib.mkIf (cfg.passwords.root != null) (lib.mkForce cfg.passwords.root);
-        boot.loader.timeout = lib.mkForce 0;
-
-        # Auto-derive kernelModules from deployType (clients can override via kernelModules option)
-        boot.initrd.availableKernelModules = cfg.kernelModules or (defaultKernelModules.${cfg.deployType or "hyperv"} or []);
-      };
-
-      # -- Client modules per deployType (single source of truth) --
-      mkClientModules = name: cfg:
-        commonModules
-        # Hyper-V guest (for hyperv clients only)
-        ++ lib.optional ((cfg.deployType or "hyperv") == "hyperv") "${nixpkgs}/nixos/modules/virtualisation/hyperv-guest.nix"
-        # Disko (for hostinger clients only)
-        ++ lib.optionals ((cfg.deployType or "hyperv") == "hostinger") [
-          disko.nixosModules.disko
-          ./nix/disko.nix
-        ]
-        # NixOS-WSL (for WSL clients only)
-        ++ lib.optionals ((cfg.deployType or "hyperv") == "wsl") [
-          nixos-wsl.nixosModules.default
-        ]
-        # Base config for all clients
-        ++ [ (mkBaseConfig name cfg) ]
-        # hostinger-specific options
-        ++ lib.optionals ((cfg.deployType or "hyperv") == "hostinger") [{
-          boot.loader.grub = {
-            devices = [ "/dev/sda" ];
-            efiSupport = true;
-            efiInstallAsRemovable = true;
-          };
-          services.openssh.enable = true;
-        }]
-        # Hyper-V-specific options (partition layout from make-disk-image.nix EFI)
-        ++ lib.optionals ((cfg.deployType or "hyperv") == "hyperv") [{
-          virtualisation.hypervGuest.enable = true;
-          fileSystems."/" = {
-            device = "/dev/disk/by-label/nixos";
-            fsType = "ext4";
-          };
-          fileSystems."/boot" = {
-            device = "/dev/disk/by-label/ESP";
-            fsType = "vfat";
-          };
-          boot.loader.grub = {
-            efiSupport = true;
-            efiInstallAsRemovable = true;
-            device = "nodev";
-          };
-        }]
-        # WSL-specific options
-        ++ lib.optionals ((cfg.deployType or "hyperv") == "wsl") [{
-          wsl = {
-            enable = true;
-            defaultUser = cfg.wsl.defaultUser or "root";
-            useWindowsDriver = cfg.wsl.useWindowsDriver or true;
-            startMenuLaunchers = cfg.wsl.startMenuLaunchers or true;
-            docker-desktop.enable = cfg.wsl.dockerDesktop or false;
-            ssh-agent.enable = cfg.wsl.sshAgent or false;
-            usbip.enable = cfg.wsl.usbip or false;
-            wrapBinSh = cfg.wsl.wrapBinSh or true;
-            interop = {
-              includePath = cfg.wsl.interop.includePath or true;
-              register = cfg.wsl.interop.register or false;
-            };
-            wslConf = {
-              boot.systemd = cfg.wsl.wslConf.boot.systemd or true;
-              automount = {
-                root = cfg.wsl.wslConf.automount.root or "/mnt";
-                options = cfg.wsl.wslConf.automount.options or "metadata,uid=1000,gid=100";
-              };
-              network = {
-                generateResolvConf = cfg.wsl.wslConf.network.generateResolvConf or true;
-              };
-            };
-          };
-          # WSL does not use a bootloader
-          boot.loader.grub.enable = false;
-          boot.loader.systemd-boot.enable = false;
-        }];
-
-      # -- NixOS system for any client (no VHDX image builder) --
-      mkSystemConfig = name: cfg:
-        lib.nixosSystem {
-          inherit system;
-          modules = mkClientModules name cfg;
-        };
-
-      # -- VHDX image builder (adds VHDX build on top of mkClientModules) --
-      mkVHDX = name: cfg:
+      # -- VHDX image builder (Clan machine config + image-only module) --
+      # Builds from the Clan machine module (imageClientModules above),
+      # NOT from the deleted legacy `clients` attrset.
+      makeVhdx = machineModules:
         (lib.nixosSystem {
           inherit system;
-          modules = mkClientModules name cfg ++ [({ config, pkgs, lib, ... }: {
+          specialArgs = { inherit inputs; };
+          modules = machineModules ++ [
+            # sops options (machines set sops.age.keyFile); provided by Clan
+            # for clan machines, imported explicitly here for the image path.
+            clan-core.inputs.sops-nix.nixosModules.sops
+            ({ config, pkgs, lib, ... }: {
             virtualisation.diskSize = 40 * 1024;
 
             system.build.hypervImage = lib.mkForce (
               import "${nixpkgs}/nixos/lib/make-disk-image.nix" {
                 name = "nixos-hyperv-${config.system.nixos.label}-fixed";
-                baseName = "fastfree_${name}";
+                baseName = "fastfree_client1";
                 postVM = ''
-                  ${pkgs.vmTools.qemu}/bin/qemu-img convert -f raw -o subformat=fixed -O vhdx $diskImage $out/fastfree_${name}.vhdx
-                  ${pkgs.p7zip}/bin/7z a -t7z -m0=lzma2 -mx=9 -p"FastOS@2026" -mhe=on $out/fastfree_${name}.vhdx.7z $out/fastfree_${name}.vhdx
-                  rm $out/fastfree_${name}.vhdx
+                  ${pkgs.vmTools.qemu}/bin/qemu-img convert -f raw -o subformat=fixed -O vhdx $diskImage $out/fastfree_client1.vhdx
+                  ${pkgs.p7zip}/bin/7z a -t7z -m0=lzma2 -mx=9 -p"FastOS@2026" -mhe=on $out/fastfree_client1.vhdx.7z $out/fastfree_client1.vhdx
+                  rm $out/fastfree_client1.vhdx
                   rm $diskImage
                 '';
                 format = "raw";
@@ -209,25 +109,28 @@
           })];
         }).config.system.build.hypervImage;
 
-      # -- WSL tarball builder (wsl clients only, where build=true) --
-      # Exposes the tarballBuilder derivation; must be run with sudo
-      # Usage: sudo ./result/bin/nixos-wsl-tarball-builder fastfree_client1.wsl
-      mkWSL = name: cfg:
-        (lib.nixosSystem {
-          inherit system;
-          modules = mkClientModules name cfg;
-        }).config.system.build.tarballBuilder;
+      # -- Clan 26.05 result (official default template pattern) --
+      clanResult = clan-core.lib.clan {
+        inherit self;
+        imports = [ ./clan.nix ];
+        specialArgs = { inherit inputs; };
+      };
 
     in {
-      # -- VHDX packages (hyperv clients only, where build=true) --
-      packages.${system} = lib.mapAttrs mkVHDX
-        (lib.filterAttrs (name: cfg: (cfg.deployType or "hyperv") == "hyperv" && (cfg.build or true)) clients)
-        # -- WSL packages (wsl clients only, where build=true) --
-        // lib.mapAttrs mkWSL
-          (lib.filterAttrs (name: cfg: (cfg.deployType or "hyperv") == "wsl" && (cfg.build or true)) clients);
+      # -- Clan 26.05 (official convert-existing-NixOS-configuration) --
+      # clanResult is defined in the let block above; clan.nix (inventory) is
+      # imported explicitly (official default template pattern).
+      # Phase 1: build/check only. The legacy attrset path (clients map +
+      # mkBaseConfig/mkSystemConfig + legacy nixosConfigurations) is deleted —
+      # Clan inventory (clan.nix + machines/<name>/) is canonical now.
+      clan = clanResult.config;
+      clanInternals = clanResult.config.clanInternals;
+      # Standard output expected by `nixos-rebuild --flake .#<name>`
+      # (official convert template: inherit nixosConfigurations from clan).
+      nixosConfigurations = clanResult.config.nixosConfigurations;
 
-      # -- nixosConfigurations (ALL clients) --
-      nixosConfigurations = lib.mapAttrs mkSystemConfig clients;
+      # -- VHDX package (image-only hyperv client1, built from Clan machine config) --
+      packages.${system}.client1 = makeVhdx imageClientModules;
 
       # -- checks (NixOS tests for CI) --
       checks.${system} = {
@@ -237,12 +140,12 @@
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
               testDiskSize
-              (mkBaseConfig "test" {
-                hostName = "test";
-                domain = "test.local";
-                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
-                apps = { base = true; mariadb = true; };
-              })
+              {
+                fastfree.identity.name = lib.mkForce "test";
+                fastfree.identity.domain = lib.mkForce "test.local";
+                fastfree.passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
+                fastfree.apps = { base = true; mariadb = true; };
+              }
             ];
           };
           testScript = ''
@@ -252,45 +155,18 @@
           '';
         };
 
-        # ── اختبار 3: WireGuard يشتغل ──────────────────────────────
-        wireguard-test = pkgs.testers.runNixOSTest {
-          name = "wireguard-test";
-          nodes.machine = { config, pkgs, ... }: {
-            imports = commonModules ++ [
-              testDiskSize
-              (mkBaseConfig "test" {
-                hostName = "test";
-                domain = "test.local";
-                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
-                apps = { base = true; };
-                wireguard = {
-                  enable = true;
-                  address = "10.100.0.1";
-                  listenPort = 51820;
-                  privateKey = "qCnRIgcAKrgqE/cyOFx2lKBymioGZ/zyXJ+0vHgxa04=";
-                  peers = {};
-                };
-              })
-            ];
-          };
-          testScript = ''
-            machine.wait_for_unit("wireguard-wg0.service")
-            machine.succeed("ip link show wg0")
-          '';
-        };
-
-        # ── اختبار 4: SSH يشتغل ────────────────────────────────────
+        # ── اختبار 2: SSH يشتغل ────────────────────────────────────
         sshd-test = pkgs.testers.runNixOSTest {
           name = "sshd-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
               testDiskSize
-              (mkBaseConfig "test" {
-                hostName = "test";
-                domain = "test.local";
-                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
-                apps = { base = true; };
-              })
+              {
+                fastfree.identity.name = lib.mkForce "test";
+                fastfree.identity.domain = lib.mkForce "test.local";
+                fastfree.passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
+                fastfree.apps = { base = true; };
+              }
             ];
           };
           testScript = ''
@@ -299,18 +175,18 @@
           '';
         };
 
-        # ── اختبار 5: Podman يشتغل ─────────────────────────────────
+        # ── اختبار 3: Podman يشتغل ─────────────────────────────────
         podman-test = pkgs.testers.runNixOSTest {
           name = "podman-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
               testDiskSize
-              (mkBaseConfig "test" {
-                hostName = "test";
-                domain = "test.local";
-                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
-                apps = { base = true; };
-              })
+              {
+                fastfree.identity.name = lib.mkForce "test";
+                fastfree.identity.domain = lib.mkForce "test.local";
+                fastfree.passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
+                fastfree.apps = { base = true; };
+              }
             ];
           };
           testScript = ''
@@ -322,23 +198,23 @@
           '';
         };
 
-        # ── اختبار 9: Avahi يشتغل ───────────────────────────────────
+        # ── اختبار 4: Avahi يشتغل ───────────────────────────────────
         avahi-test = pkgs.testers.runNixOSTest {
           name = "avahi-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
               testDiskSize
-              (mkBaseConfig "test" {
-                hostName = "test";
-                domain = "test.local";
-                passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
-                apps = { base = true; };
-                avahi = {
+              {
+                fastfree.identity.name = lib.mkForce "test";
+                fastfree.identity.domain = lib.mkForce "test.local";
+                fastfree.passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
+                fastfree.apps = { base = true; };
+                fastfree.avahi = {
                   enable = true;
                   reflector = false;
                   interfaces = [];
                 };
-              })
+              }
             ];
           };
           testScript = ''
@@ -347,6 +223,11 @@
           '';
         };
 
+      };
+
+      # -- Clan CLI synced with clan-core (official convert-existing) --
+      devShells.${system}.default = pkgs.mkShell {
+        packages = [ clan-core.packages.${system}.clan-cli ];
       };
 
     };

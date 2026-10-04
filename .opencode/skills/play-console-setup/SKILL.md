@@ -175,7 +175,7 @@ Fixed answer bank (identical all 4 apps): ads No · government No · financial N
 ("My app doesn't provide any financial features" opt-out checkbox) · health NONE
 ("My app does not have any health features") · privacy `https://fastfree.cloud/privacy-policy.html`
 · category **Business** · contact `mohamed.fastfree@gmail.com` / `+201091999937` ·
-sign-in `Administrator` + password runtime-read from `apps/fastfree_os/nix/clients/client3.nix`
+sign-in `Administrator` + password runtime-read from `apps/fastfree_os/nix/clients/client2.nix`
 (`passwords.admin`, verified live) · audience **18+ only** · rating **Everyone**
 (email + All-Other-Types + IARC terms, all-No bank) · data safety collects Name /
 Phone / Credentials, no sharing, encrypted in transit Yes, deletion via support email.

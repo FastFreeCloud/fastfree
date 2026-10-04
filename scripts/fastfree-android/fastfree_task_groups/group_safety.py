@@ -41,7 +41,7 @@ PRIVACY_URL = "https://fastfree.cloud/privacy-policy.html"
 SUPPORT_EMAIL = "mohamed.fastfree@gmail.com"
 BACKEND_URL = "https://backend.fastfree.cloud"
 DEMO_USERNAME = "Administrator"
-CLIENT3_NIX = REPO_ROOT / "apps" / "fastfree_os" / "nix" / "clients" / "client3.nix"
+CLIENT2_NIX = REPO_ROOT / "apps" / "fastfree_os" / "nix" / "clients" / "client3.nix"
 
 # Play store-listing hard limits (chars). Over-limit metadata fails loudly
 # so a human fixes the fastlane txt instead of us truncating store copy.
@@ -3069,16 +3069,16 @@ NOTE_TEXT = (
 
 def read_demo_password() -> str:
     """Read the demo password at RUNTIME from client3.nix (never hardcoded)."""
-    if not CLIENT3_NIX.is_file():
-        raise RuntimeError(f"demo-password source missing: {CLIENT3_NIX}")
-    text = CLIENT3_NIX.read_text(encoding="utf-8")
+    if not CLIENT2_NIX.is_file():
+        raise RuntimeError(f"demo-password source missing: {CLIENT2_NIX}")
+    text = CLIENT2_NIX.read_text(encoding="utf-8")
     block = re.search(r"passwords\s*=\s*\{([^}]*)\}", text, re.S)
     scope = block.group(1) if block else text
     found = re.search(r'admin\s*=\s*"([^"]+)"', scope)
     if not found:
         found = re.search(r'admin\s*=\s*"([^"]+)"', text)
     if not found:
-        raise RuntimeError(f"admin password not found in {CLIENT3_NIX} (regex admin\\s*=\\s*\"...\")")
+        raise RuntimeError(f"admin password not found in {CLIENT2_NIX} (regex admin\\s*=\\s*\"...\")")
     return found.group(1)
 
 

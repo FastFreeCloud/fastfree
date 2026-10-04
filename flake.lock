@@ -8,6 +8,7 @@
         "nix-darwin": "nix-darwin",
         "nix-select": "nix-select",
         "nixpkgs": [
+          "fastfree-os",
           "nixpkgs"
         ],
         "sops-nix": "sops-nix",
@@ -29,14 +30,17 @@
     "data-mesher": {
       "inputs": {
         "flake-parts": [
+          "fastfree-os",
           "clan-core",
           "flake-parts"
         ],
         "nixpkgs": [
+          "fastfree-os",
           "clan-core",
           "nixpkgs"
         ],
         "treefmt-nix": [
+          "fastfree-os",
           "clan-core",
           "treefmt-nix"
         ]
@@ -56,6 +60,7 @@
     "disko": {
       "inputs": {
         "nixpkgs": [
+          "fastfree-os",
           "clan-core",
           "nixpkgs"
         ]
@@ -77,6 +82,7 @@
     "disko_2": {
       "inputs": {
         "nixpkgs": [
+          "fastfree-os",
           "nixpkgs"
         ]
       },
@@ -94,9 +100,27 @@
         "type": "github"
       }
     },
+    "fastfree-os": {
+      "inputs": {
+        "clan-core": "clan-core",
+        "disko": "disko_2",
+        "nixpkgs": "nixpkgs",
+        "nixpkgs-unstable": "nixpkgs-unstable"
+      },
+      "locked": {
+        "path": "./apps/fastfree_os",
+        "type": "path"
+      },
+      "original": {
+        "path": "./apps/fastfree_os",
+        "type": "path"
+      },
+      "parent": []
+    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": [
+          "fastfree-os",
           "clan-core",
           "nixpkgs"
         ]
@@ -118,6 +142,7 @@
     "nix-darwin": {
       "inputs": {
         "nixpkgs": [
+          "fastfree-os",
           "clan-core",
           "nixpkgs"
         ]
@@ -184,15 +209,13 @@
     },
     "root": {
       "inputs": {
-        "clan-core": "clan-core",
-        "disko": "disko_2",
-        "nixpkgs": "nixpkgs",
-        "nixpkgs-unstable": "nixpkgs-unstable"
+        "fastfree-os": "fastfree-os"
       }
     },
     "sops-nix": {
       "inputs": {
         "nixpkgs": [
+          "fastfree-os",
           "clan-core",
           "nixpkgs"
         ]
@@ -230,6 +253,7 @@
     "treefmt-nix": {
       "inputs": {
         "nixpkgs": [
+          "fastfree-os",
           "clan-core",
           "nixpkgs"
         ]

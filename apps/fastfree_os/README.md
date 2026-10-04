@@ -2,7 +2,7 @@
 
 <img src="https://img.shields.io/badge/NixOS-26.05-5277C3?style=for-the-badge&logo=nixos&logoColor=white" />
 <img src="https://img.shields.io/badge/Hyper--V-Gen%202-0078D4?style=for-the-badge&logo=microsoft&logoColor=white" />
-<img src="https://img.shields.io/badge/WSL-2-0078D4?style=for-the-badge&logo=windows&logoColor=white" />
+<img src="https://img.shields.io/badge/Local-NixOS-5277C3?style=for-the-badge&logo=nixos&logoColor=white" />
 <img src="https://img.shields.io/badge/GitHub-Actions-2088FF?style=for-the-badge&logo=github&logoColor=white" />
 <img src="https://img.shields.io/badge/WireGuard-VPN-88B84D?style=for-the-badge&logo=wireguard&logoColor=white" />
 <img src="https://img.shields.io/badge/License-Private-EF4444?style=for-the-badge" />
@@ -11,7 +11,7 @@
 
 **NixOS Multi-Client Deployment System**
 
-Production-ready NixOS with multi-client architecture, **3 deployment types** (hostinger + Hyper-V + WSL), WireGuard VPN, Podman containers, GitHub Actions CI/CD, and auto-release.
+Production-ready NixOS with multi-client architecture, **3 deployment types** (vps + Hyper-V + local), COSMIC desktop everywhere, WireGuard VPN, Podman containers, GitHub Actions CI/CD, and auto-release.
 
 [Architecture](#architecture) | [Scripts](#scripts) | [CI/CD](#cicd-pipeline) | [Services](#services) | [Quick Start](#quick-start)
 
@@ -28,7 +28,7 @@ Production-ready NixOS with multi-client architecture, **3 deployment types** (h
 - [Services](#services)
 - [Quick Start](#quick-start)
 - [Multi-Client Architecture](#multi-client-architecture)
-- [WSL Configuration](#wsl-configuration)
+- [Local Machine (client3)](#local-machine-client3)
 - [Database](#database)
 - [Passwords](#passwords)
 - [WireGuard VPN](#wireguard-vpn)
@@ -46,23 +46,22 @@ Production-ready NixOS with multi-client architecture, **3 deployment types** (h
 │                    3 Deployment Types                           │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
-│  hostinger        hyperv              wsl                        │
-│  (VPS)            (Hyper-V)           (WSL2)                    │
+│  vps                hyperv              local                    │
+│  (fresh server)     (Hyper-V)           (existing machine)       │
 │       │                │                  │                      │
 │       ▼                ▼                  ▼                      │
-│  SSH deploy       VHDX image          .wsl.7z tarball           │
-│  nixos-anywhere   7z compressed       7z compressed             │
-│  build=false      build=true          build=true                │
+│  SSH deploy       VHDX image          in-place rebuild           │
+│  nixos-anywhere   7z compressed       preserves disk + desktop   │
+│  disko + build=false  build=true      build=false                │
 │                                                                  │
 │  ┌────────────────────────────────────────────────────────────┐ │
 │  │  CI auto-detects deployType:                              │ │
-│  │  • hostinger → skip build, force build=false              │ │
+│  │  • vps       → skip build, deploy via SSH                 │ │
 │  │  • hyperv    → build VHDX, compress, release              │ │
-│  │  • wsl       → build WSL, compress, release               │ │
+│  │  • local     → evaluate only, switch on the machine       │ │
 │  └────────────────────────────────────────────────────────────┘ │
 │                                                                  │
-│  Clients:  dev (WSL) · client1 (Hyper-V) · client2 (Hyper-V)   │
-│            server (hostinger)                                    │
+│  Clients:  client1 (Hyper-V) · client2 (VPS) · client3 (local)  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 │       │              flake.nix               frappe_docker       │
@@ -73,14 +72,14 @@ Production-ready NixOS with multi-client architecture, **3 deployment types** (h
 │       │                     │                      │             │
 │       ▼                     ▼                      ▼             │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │              NixOS VM (Hyper-V / hostinger)                   │   │
+│  │              NixOS VM (Hyper-V / VPS)                       │   │
 │  │                                                          │   │
 │  │  MariaDB ◄──── fastfree_backend.nix (Podman containers)    │   │
 │  │       ◄──── phpmyadmin.nix                              │   │
 │  │                                                          │   │
 │  │  WireGuard VPN ◄── wireguard.nix                        │   │
 │  │  Avahi mDNS     ◄── avahi-subdomains.nix                │   │
-│  │  Caddy          ◄── caddy.nix (hostinger only)                │   │
+│  │  Caddy          ◄── caddy.nix (VPS + local)                    │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
@@ -115,34 +114,30 @@ Production-ready NixOS with multi-client architecture, **3 deployment types** (h
 
 ```
 fastfree_os /
-├ flake.nix                            # NixOS flake — multi-client builder (mkVHDX + mkWSL)
-├ flake.lock                           # Locked dependencies (nixpkgs, disko, colmena, nixos-wsl)
-├ nix/
-│  ├── options.nix                     # Custom options (identity, passwords, apps, deployType, WSL)
-│  ├── cli.nix                         # FastFree CLI tool
-│  ├── disko.nix                       # hostinger disk partitioning
-│  ├── modules/                        # Service modules (toggle per client)
-│  │  ├── base.nix                     # Base system (Podman, SSH, users)
-│  │  ├── mariadb.nix                  # MariaDB database server
-│  │  ├── caddy.nix                    # Caddy reverse proxy (hostinger)
-│  │  ├── fastfree_backend.nix         # Frappe/ERPNext — Podman containers from GHCR
-│  │  ├── phpmyadmin.nix               # phpMyAdmin container
-│  │  ├── wireguard.nix                # WireGuard VPN (NixOS built-in)
-│  │  └── avahi-subdomains.nix         # Avahi mDNS
-│  └── clients/                        # Client configurations
-│     ├── server.nix                   # Hostinger (deployType=hostinger, build=false)
-│     ├── client1.nix                  # Hyper-V (deployType=hyperv, build=false)
-│     ├── client2.nix                  # Hyper-V (deployType=hyperv, build=false)
-│     └── dev.nix                      # WSL (deployType=wsl, build=true)
-├ scripts/
-│  ├── 01_test.ps1                     # PowerShell — syntax, flake validation & system builds
-│  ├── 02_build.ps1                    # PowerShell — build and compress VHDX/WSL image
-│  ├── 03_check_vm.ps1                 # PowerShell — SSH service and port health check
-│  ├── 04_deploy.ps1                   # PowerShell — sync and deploy configuration to VM
-│  ├── 05_setup_vm.ps1                 # PowerShell — automated Hyper-V VM provisioner
-│  └── logs/                           # Auto-generated log files
-├ .github/workflows/
-│  └── build.yml                        # GitHub Actions — 9-job CI pipeline + auto-release
+├ flake.nix                            # NixOS flake — Clan wrapper + VHDX builder + checks
+├ flake.lock                           # Locked dependencies (nixpkgs, disko, clan-core, unstable)
+├ clan.nix                             # Clan inventory (machines registry — canonical)
+├ options.nix                          # Custom options (identity, passwords, apps, deployType, desktop)
+├ cli.sh                               # FastFree CLI tool
+├ modules/                             # Service modules (toggle per client)
+│  ├── base.nix                        # Base system (Podman, SSH, users)
+│  ├── mariadb.nix                     # MariaDB database server
+│  ├── caddy.nix                       # Caddy reverse proxy
+│  ├── fastfree_backend.nix            # Frappe/ERPNext — Podman containers from GHCR
+│  ├── phpmyadmin.nix                  # phpMyAdmin container
+│  ├── desktop.nix                     # COSMIC desktop (all machines)
+│  ├── wireguard.nix                   # WireGuard VPN (NixOS built-in)
+│  └── avahi-subdomains.nix            # Avahi mDNS
+├ machines/                            # Clan machine configs (canonical)
+│  ├── client1/configuration.nix       # Hyper-V (deployType=hyperv, build=true)
+│  ├── client2/configuration.nix       # VPS (deployType=vps, build=false)
+│  └── client3/configuration.nix       # Local machine (deployType=local, build=false)
+├ wireguard/                         # WireGuard key registry + generated configs
+│  ├── fastfree_wg_keys.ps1           # Key generator (run on Windows)
+│  └── keys/<device>/                 # privatekey/publickey per device
+├ .github/workflows/                   # (repo root) CI pipelines
+│  ├── 09-client1.yaml                 # Validate + build client1 Hyper-V image
+│  └── 10-client2.yaml                 # Deploy + install client2 VPS
 └ README.md
 ```
 
@@ -150,42 +145,24 @@ fastfree_os /
 
 ## Scripts
 
-All scripts are PowerShell (`.ps1`) and run from Windows. They use WSL internally to execute Nix commands.
+> NOTE: the legacy `scripts/*.ps1` helpers and `build.yml` no longer exist.
+> Builds run via `nix` directly or CI (`09-client1.yaml`, `10-client2.yaml`).
+> The only script kept is `wireguard/fastfree_wg_keys.ps1` (key generator, run on Windows).
 
-### `01_test.ps1` — Validate Configuration
+### Quick validation
 
-Runs Nix checks inside the `fastfree` WSL distribution. Supports three testing depths:
-
-```powershell
-.\scripts\01_test.ps1              # Default: 5 basic evaluation & build tests
-.\scripts\01_test.ps1 -Quick       # Quick: 2 tests (Syntax/Flake check + flake metadata)
-.\scripts\01_test.ps1 -Full        # Full: 15 comprehensive evaluation, dry-run, VHDX build & GC tests
+```bash
+cd apps/fastfree_os
+nix-instantiate --parse flake.nix clan.nix machines/*/configuration.nix   # syntax
+nix eval .#clan.inventory.machines.client3  # evaluate (Clan inventory — canonical)
 ```
 
-| Test Depth | Number of Tests | Key Validations | Typical Duration |
-|:---|:---:|:---|:---|
-| **Quick** | 2 | Flake structural check (`--no-build`), flake metadata evaluation. | ~10-15 seconds |
-| **Default** | 5 | Syntax/Flake checks, custom option evaluation, flake show structure, rebuild build. | ~1-2 minutes |
-| **Full** | 15 | Quick checks, multiple option evaluations, build dry-runs for systems/packages, complete VHDX packaging build, multiple client evaluations, and garbage collection. | ~10-30 minutes |
+### Build client1 (Hyper-V VHDX)
 
-**Output**: `scripts/logs/test_YYYYMMDD_HHMMSS.log`
-
----
-
-### `02_build.ps1` — Build VHDX Image
-
-```powershell
-.\scripts\02_build.ps1                    # Build dev client
-.\scripts\02_build.ps1 -Client client1    # Build specific client
+```bash
+cd apps/fastfree_os
+nix build .#packages.x86_64-linux.client1   # → result/fastfree_client1.vhdx.7z (password: FastOS@2026)
 ```
-
-| Stage | What It Does | Duration |
-|:------|:-------------|:---------|
-| 1. Syntax Check | Validates all `.nix` files (excluding cli.nix) | ~5 sec |
-| 2. Flake Check | Validates flake structure and outputs | ~10 sec |
-| 3. Build VHDX | `nix build` → Fixed VHDX → 7z compress | ~20-40 min |
-
-**Output**: `result/fastfree_dev.vhdx.7z` (password: `FastOS@2026`) / `fastfree_dev.wsl.7z` (password: `FastOS@2026`)
 
 **What happens during build**:
 1. Nix evaluates `flake.nix` → resolves all dependencies
@@ -194,156 +171,39 @@ Runs Nix checks inside the `fastfree` WSL distribution. Supports three testing d
 4. Converts raw image to Fixed VHDX (Hyper-V format)
 5. Compresses with 7z (LZMA2, password-protected)
 
----
+### Deploy client2 (VPS)
 
-### `03_check_vm.ps1` — VM Health Check
-
-```powershell
-.\scripts\03_check_vm.ps1                       # Check dev.local
-.\scripts\03_check_vm.ps1 -Host 192.168.1.42    # Check by IP
+```bash
+gh workflow run 10-client2.yaml --ref master   # deploy (or install via nixos-anywhere)
 ```
 
-| Stage | What It Does |
-|:------|:-------------|
-| 1. Connection | SSH connection test |
-| 2. System Info | OS version, NixOS version |
-| 3. Services | Check systemd services (sshd, mysql, caddy, etc.) |
-| 4. Ports | Check listening ports (22, 3306, 443, 51820, 8081, 8082) |
-| 5. Containers | List running Podman containers |
-| 6. Errors | Recent journal errors |
+### Switch client3 (local machine, on the machine itself)
 
-**Output**: `scripts/logs/check_YYYYMMDD_HHMMSS.log`
-
----
-
-### `04_deploy.ps1` — Deploy to Running VM
-
-```powershell
-.\scripts\04_deploy.ps1                       # Deploy to dev.local
-.\scripts\04_deploy.ps1 -Host 192.168.1.42    # Deploy by IP
+```bash
+cd ~/Desktop/fastfree/apps/fastfree_os
+sudo nixos-rebuild switch --flake .#client3
 ```
-
-| Stage | What It Does |
-|:------|:-------------|
-| 1. Check Connection | SSH connection test |
-| 2. Sync Files | SCP entire `nix` directory and flake configurations to VM |
-| 3. Commit + Rebuild | `git add -A && git commit` → `nixos-rebuild switch` |
-| 4. Verify Services | Check systemd services after rebuild |
-
-**Output**: `scripts/logs/deploy_YYYYMMDD_HHMMSS.log`
-
-**What happens during deploy**:
-1. Copies local Nix configurations folder to VM via SCP
-2. Commits changes in the VM's `/etc/fastfree/` git repo
-3. Runs `nixos-rebuild switch --flake /etc/fastfree#dev`
-4. NixOS evaluates the flake, downloads dependencies, rebuilds system
-5. Services restart automatically
-
----
-
-### `05_setup_vm.ps1` — Provision Hyper-V VM (Admin required)
-
-Automates the provisioning of a NixOS Hyper-V Gen 2 virtual machine using a built VHDX image.
-
-```powershell
-# Run from an Administrator PowerShell prompt:
-.\scripts\05_setup_vm.ps1                                              # Default (dev client)
-.\scripts\05_setup_vm.ps1 -ClientName client1 -VMName "FastFree-Prod"  # Custom client
-```
-
-| Step | Operation | Purpose |
-|:---|:---|:---|
-| **1. Find & Extract VHDX** | Locates the latest `.vhdx.7z` in `result/` and extracts it using 7-Zip. | Prepares the virtual disk for provisioning. |
-| **2. Clean Pre-existing VM** | Checks if a VM with the same name exists, stops it, and clears checkpoints and hard disks. | Prevents creation conflicts. |
-| **3. Create VM** | Provisions a Gen 2 VM with custom memory, CPU cores (default: 2), and a network adapter. | Instantiates VM with proper hardware allocations. |
-| **4. Attach Disk** | Copies the extracted VHDX to the VM storage directory and mounts it to SCSI Controller 0. | Assigns NixOS system disk to the VM. |
-| **5. Compatibility Setup** | Disables Secure Boot (to support systemd-boot) and enables TPM. | Ensures compatibility with modern UEFI standards. |
-| **6. Integration Features**| Enables Hyper-V "Guest Service Interface" and sets checkpoint type to Standard. | Improves management and connection reliability. |
-
-**Output**: `scripts/logs/setup_vm_YYYYMMDD_HHMMSS.log`
 
 ---
 
 ## CI/CD Pipeline
 
-### The Build Workflow (`build.yml`)
+### OS workflows (`09-client1.yaml`, `10-client2.yaml`)
 
-When you push code or open a pull request, the comprehensive build pipeline defined in `.github/workflows/build.yml` triggers automatically. It features **9 jobs** arranged across 4 phases:
+OS deployment runs in two repo-root workflows (frontend/backend ship separately via `01-06`):
 
 ```
-                  ┌──────────────────────────────────────┐
-                  │          Phase 1: Fast Checks        │
-                  │   ┌──────────────────────────────┐   │
-                  │   │ syntax_check  ⚡             │   │
-                  │   ├──────────────────────────────┤   │
-                  │   │ nix_lint (optional) 🔍       │   │
-                  │   ├──────────────────────────────┤   │
-                  │   │ flake_validate 📦            │   │
-                  │   ├──────────────────────────────┤   │
-                  │   │ evaluation 🔧                │   │
-                  │   └──────────────┬───────────────┘   │
-                  └──────────────────┼───────────────────┘
-                                     ▼
-                  ┌──────────────────────────────────────┐
-                  │      Phase 2: Build & Integration    │
-                  │   ┌──────────────────────────────┐   │
-                  │   │ dry_build 🏗️                  │   │
-                  │   ├──────────────────────────────┤   │
-                  │   │ build_packages 📦            │   │
-                  │   ├──────────────────────────────┤   │
-                  │   │ service_tests 🧪 (KVM VM)    │   │
-                  │   └──────────────┬───────────────┘   │
-                  └──────────────────┼───────────────────┘
-                                     ▼
-                  ┌──────────────────────────────────────┐
-                  │           Phase 3: Reporting         │
-                  │   ┌──────────────────────────────┐   │
-                  │   │ test_report 📊               │   │
-                  │   └──────────────┬───────────────┘   │
-                  └──────────────────┼───────────────────┘
-                                     ▼
-                  ┌──────────────────────────────────────┐
-                  │           Phase 4: Release           │
-                  │   ┌──────────────────────────────┐   │
-                  │   │ release 🚀 (auto-tag)        │   │
-                  │   └──────────────────────────────┘   │
-                  └──────────────────────────────────────┘
+push to master (modules/**, machines/**, flake.*, 09/10 yaml)
+  ├─ 09-client1: validate (parse + eval) → build VHDX → compress → artifact fastfree_client1.vhdx.7z
+  └─ 10-client2: deploy (SSH + nixos-rebuild switch --flake .#client2) or fresh install (nixos-anywhere)
 ```
 
-#### Pipeline Job Breakdown
+#### What each workflow does
 
-1.  **⚡ Syntax Check (`syntax_check`)**:
-    *   Validates all `.nix` files syntax using `nix-instantiate --parse` (excluding `cli.nix`).
-    *   Verifies balanced curly braces `{ }` and checks that all local file `import` paths exist.
-2.  **🔍 Code Quality (`nix_lint`)**:
-    *   Runs `statix` to search for anti-patterns.
-    *   Runs `deadnix` to locate dead code and unused arguments.
-    *   *Non-blocking*: Warnings are flagged but do not break the build.
-3.  **📦 Flake Check (`flake_validate`)**:
-    *   Validates flake structure and exports via `nix flake check --no-build`, `nix flake show`, and `nix flake metadata`.
-    *   Performs Python-based JSON integrity checks on `flake.lock`.
-    *   Ensures 20 core configuration files/folders exist in the repository structure.
-4.  **🔧 Config Evaluation (`evaluation`)**:
-    *   Uses `nix eval` to parse all client system closures (those with `build = true`) to verify configuration option definitions.
-5.  **🏗️ Dry-Run Build (`dry_build`)**:
-    *   Ensures a valid build plan can be constructed using `nix build --dry-run` for system configurations and VHDX/WSL packages.
-6.  **📦 Build Packages (`build_packages`)**:
-    *   Builds actual NixOS packages for clients with `build = true`.
-    *   **WSL**: `nix build` → `sudo tarball-builder` → `7z compress` → upload `fastfree_dev.wsl.7z`.
-    *   **Hyper-V**: `nix build` → `7z compress` (LZMA2, mx=9, password-protected) → upload `.vhdx.7z`.
-    *   `hostinger` clients are automatically excluded (build=false).
-7.  **🧪 Service Integration Tests (`service_tests`)**:
-    *   Runs NixOS system VM integration tests (`nixosTest` defined in `checks.x86_64-linux`) for 5 system services: `sshd`, `mariadb`, `wireguard`, `phpmyadmin`, and `podman`.
-    *   Spawns complete sandboxed VMs and executes Python testing scripts inside them.
-    *   *Performance Optimization*: Leverages GitHub Actions runner virtualization by granting read/write permissions to `/dev/kvm` and setting `system-features = kvm nixos-test`, accelerating VM execution from hours to minutes.
-8.  **📊 Results Report (`test_report`)**:
-    *   Executes always (even if previous steps fail).
-    *   Generates a structured Markdown test report (`test-report.md`) uploaded as an Actions artifact.
-    *   Publishes results directly to the GitHub Action run summary (`GITHUB_STEP_SUMMARY`) and outputs an ASCII results table in the job log.
-9.  **🚀 Release (`release`)**:
-    *   Creates a Git tag with format `vYYYY.MM.DD.RUN_NUMBER` on every successful build to `master`.
-    *   Creates a **GitHub Release** with the compressed build artifacts (`.wsl.7z`, `.vhdx.7z`).
-    *   **Requires all 8 previous jobs to pass** before creating the release.
+1.  **⚡ Validate**: `nix-instantiate --parse` on all `.nix` files + `nix eval` of the client toplevel.
+2.  **🏗️ Build (09 only)**: `nix build .#packages.x86_64-linux.client1` → 7z compress (LZMA2, mx=9, password-protected) → upload `fastfree_client1.vhdx.7z` (30-day artifact).
+3.  **🚀 Deploy (10 only)**: copy `flake.nix + flake.lock + clan.nix + options.nix + cli.sh + machines/ + modules/` to the VPS over SSH → `nixos-rebuild switch --flake .#client2`, or fresh install via `nixos-anywhere --flake .#client2` (requires explicit confirm).
+4.  **🧪 Service checks**: `checks.x86_64-linux` NixOS VM tests (`mariadb`, `wireguard`, `sshd`, `podman`, `avahi`) run with `nix flake check`.
 
 #### GitHub Actions Versions
 
@@ -362,10 +222,11 @@ The workflow runs when you push to `main` or `master` or open a PR, and any of t
 
 | Path | Why |
 |:-----|:----|
-| `nix/**` | NixOS modules or client configs changed |
-| `flake.nix` | Flake structure changed |
-| `flake.lock` | Dependencies updated |
-| `.github/workflows/build.yml` | Build workflow itself changed |
+| `apps/fastfree_os/{modules,machines}/**` | NixOS modules or client configs changed |
+| `apps/fastfree_os/flake.nix` | Flake structure changed |
+| `apps/fastfree_os/flake.lock` | Dependencies updated |
+| `.github/workflows/09-client1.yaml` | client1 build workflow itself changed |
+| `.github/workflows/10-client2.yaml` | client2 deploy workflow itself changed |
 
 ---
 
@@ -406,7 +267,7 @@ git push → GitHub Actions →
 |:-----|:--------|:----------|:--------|
 | 22 | SSH | — | 0.0.0.0 |
 | 3306 | MariaDB | — | 0.0.0.0 |
-| 443 | Caddy | — | 0.0.0.0 (hostinger) |
+| 443 | Caddy | — | 0.0.0.0 (VPS) |
 | 51820 | WireGuard | — | 0.0.0.0 |
 | 8080 | Frappe/ERPNext | fastfree-backend-frontend | Podman |
 | 8082 | phpMyAdmin | phpmyadmin | Podman |
@@ -427,68 +288,49 @@ git push → GitHub Actions →
 
 ### Access URLs
 
-| Service | WSL | Hyper-V | hostinger |
+| Service | Local (client3) | Hyper-V (client1) | VPS (client2) |
 |:--------|:----|:--------|:----|
-| Frappe/ERPNext | `http://localhost:8080` | `http://client1.local:8080` | `https://erp.fastfree.cloud` |
-| phpMyAdmin | `http://localhost:8082` | `http://db.client1.local:8082` | `https://db.fastfree.cloud` |
-| SSH | `wsl -d fastfree` | `ssh root@client1.local` | `ssh root@fastfree.cloud` |
+| Frappe/ERPNext | `https://erp.fastfree.local` | `http://client1.local:8080` | `https://erp.fastfree.cloud` |
+| phpMyAdmin | `https://db.fastfree.local` | `http://db.client1.local:8082` | `https://db.fastfree.cloud` |
+| SSH | local login | `ssh root@client1.local` | `ssh root@fastfree.cloud` |
 
 ---
 
 ## Quick Start
 
-### Option A: WSL Deployment (Recommended for dev)
+### Option A: Local Machine — client3 (existing NixOS install)
+
+Rebuilds your current machine in place. Disk layout and desktop are preserved
+(`deployType = "local"` never touches partitions — no disko).
 
 #### Prerequisites
 
 | Requirement | Details |
 |:------------|:--------|
-| **OS** | Windows 10/11 with WSL2 enabled |
-| **WSL** | NixOS-WSL installed as `fastfree` distro |
+| **OS** | Existing NixOS install (x86_64) |
+| **Repo** | This monorepo checked out on the machine |
 
 #### Step 1: Validate
 
-```powershell
-.\scripts\01_test.ps1 -Quick
+```bash
+cd ~/Desktop/fastfree/apps/fastfree_os
+nix-instantiate --parse flake.nix machines/client3/configuration.nix
+nix eval .#clan.inventory.machines.client3
 ```
 
-#### Step 2: Download from GitHub Release
-
-The CI automatically builds `fastfree_dev.wsl.7z` on every push to `master`.
-
-1. Go to [Releases](https://github.com/FastFreeCloud/fastfree_os/releases)
-2. Download `fastfree_dev.wsl.7z` from the latest release
-3. Extract and import:
-   ```powershell
-   7z x fastfree_dev.wsl.7z -pFastOS@2026
-   wsl --import fastfree D:\fastfree\fastos fastfree_dev.wsl --version 2
-   ```
-
-#### Step 3: Access
-
-```powershell
-wsl -d fastfree
-```
-
-#### Step 4: Update (optional)
+#### Step 2: Switch (needs committed files — flake inputs must be git-tracked)
 
 ```bash
-# From inside WSL
-fastfree update
+git add -A
+sudo nixos-rebuild switch --flake .#client3
 ```
 
-### Option A2: GUI Setup Scripts
+#### Step 3: Manage
 
-Use the GUI tools in `scripts/setup/`:
-
-| Script | Purpose |
-|:-------|:--------|
-| `1_fastfree_installer.ps1` | First-time installation from GitHub Release |
-| `2_fastfree_backup.ps1` | Backup and restore WSL distribution |
-| `3_fastfree_tools.ps1` | Install required tools (7-Zip, Docker CLI) |
-| `4_fastfree_update.ps1` | Update system (nixos-rebuild switch) |
-
----
+```bash
+fastfree status    # FastFree CLI on the machine
+fastfree update
+```
 
 ### Option B: Hyper-V Deployment
 
@@ -501,42 +343,38 @@ Use the GUI tools in `scripts/setup/`:
 
 #### Step 1: Validate
 
-```powershell
-.\scripts\01_test.ps1 -Quick
+```bash
+cd apps/fastfree_os
+nix eval .#clan.inventory.machines.client1
 ```
 
 #### Step 2: Build VHDX
 
-```powershell
-.\scripts\02_build.ps1
+```bash
+nix build .#packages.x86_64-linux.client1
+# → fastfree_client1.vhdx.7z (password: FastOS@2026)
+# (or download the artifact from the 09-client1 CI run)
 ```
 
 #### Step 3: Create VM in Hyper-V
 
-1. Open a PowerShell prompt as **Administrator**.
-2. Run the VM provisioning script:
-   ```powershell
-   .\scripts\05_setup_vm.ps1 -ClientName client1 -VMName FastFree-Client1
-   ```
-   *Note: This script will extract your freshly built VHDX image, stop and clean up any pre-existing "FastFree-Dev" VM, provision a new Gen 2 VM, disable Secure Boot (for systemd-boot compatibility), enable Guest Integration Services, and automatically start the virtual machine.*
+1. Open Hyper-V Manager, create a **Generation 2** VM (Secure Boot OFF).
+2. Attach the extracted VHDX and start the VM.
+3. Reach it at `client1.local` (Avahi) or its IP — `ssh root@client1.local`.
 
-#### Step 4: Check VM
+#### Step 4: Deploy Updates
 
-```powershell
-.\scripts\03_check_vm.ps1
-```
-
-#### Step 5: Deploy Updates
-
-```powershell
-.\scripts\04_deploy.ps1
+```bash
+gh workflow run 10-client2.yaml --ref master   # VPS only; Hyper-V updates via rebuild + re-attach
 ```
 
 ---
 
-### Option C: Hostinger (VPS) Deployment
+### Option C: VPS Deployment (client2)
 
-The VPS deployment is handled automatically via `nixos-anywhere`. No VHDX/WSL build needed.
+The VPS deployment is handled via `10-client2.yaml`: fresh servers are installed
+with `nixos-anywhere` (disko partitions the disk — fresh machines only),
+existing servers update with `nixos-rebuild switch --flake .#client2`.
 
 ---
 
@@ -546,23 +384,23 @@ The VPS deployment is handled automatically via `nixos-anywhere`. No VHDX/WSL bu
 
 | Type | Build Output | Compression | Build in CI | Use Case |
 |:-----|:-------------|:------------|:------------|:---------|
-| `hostinger` | None (SSH deploy) | — | No | VPS / Production server |
+| `vps` | None (SSH deploy) | — | No | Fresh VPS / production server (disko) |
 | `hyperv` | `.vhdx.7z` | 7z LZMA2 | Yes | Hyper-V VMs |
-| `wsl` | `.wsl.7z` | 7z LZMA2 | Yes | WSL2 distributions |
+| `local` | None (in-place switch) | — | No | Existing physical machine (disk preserved) |
 
-> **Auto-detection**: CI automatically detects `deployType` and builds the correct format. `hostinger` clients always have `build = false`.
+> **Auto-detection**: CI builds only `hyperv` clients with `build = true`. `vps` and `local` clients always have `build = false`.
 
 ### Client Config Files
 
-Each client has its own config in `nix/clients/`:
+Each client has its own config in `machines/<name>/` (Clan inventory in `clan.nix`):
 
 ```nix
-# nix/clients/dev.nix (WSL — builds .wsl.7z)
+# machines/client3/configuration.nix (local — in-place rebuild, no disk changes)
 {
-  hostName = "fastfree";
+  hostName = "nixos";
   domain   = "fastfree.local";
-  deployType = "wsl";      # "hostinger" | "hyperv" | "wsl"
-  build = true;             # true = CI builds this client
+  deployType = "local";      # "vps" | "hyperv" | "local"
+  build = false;             # only hyperv images are CI-built
 
   passwords = {
     root        = "fastfree@2026";
@@ -585,67 +423,29 @@ Each client has its own config in `nix/clients/`:
 
 ### Adding a New Client
 
-1. Create `nix/clients/client2.nix` with unique `hostName`, `domain`, `passwords`
-2. Register in `flake.nix`: `clients.client2 = import ./nix/clients/client2.nix;`
-3. Set `deployType` and `build` in the client config
-4. Push to `master` — CI auto-detects and builds
+1. Create `machines/client5/configuration.nix` with unique `hostName`, `domain`, WireGuard address
+2. Register in `clan.nix` inventory (`inventory.machines.client5`); secrets via `clan vars`
+3. Set `deployType` (`vps` for fresh servers, `hyperv` for images, `local` for existing machines)
+4. `git add` the new files (flake files must be git-tracked for `nix eval`/`nixos-rebuild`)
+5. Push to `master` — CI validates (and builds Hyper-V images)
 
 ---
 
-## WSL Configuration
+## Local Machine (client3)
 
-### Available WSL Options
+The `local` deploy type rebuilds an **existing** NixOS machine in place:
 
-Configure WSL clients using `fastfree.wsl.*` options in your client config:
+- **No disko** — partitions are never touched; hardware comes from
+  `machines/client3/hardware-configuration.nix` (snapshot of the machine's own
+  `hardware-configuration.nix`).
+- **Desktop preserved** — `machines/client3/configuration.nix` keeps legacy GRUB (`/dev/sda` +
+  OS prober), NetworkManager, the `fastfree` user, and the open GPU stack;
+  server modules (networkd, xserver-disable, firmware-strip) are skipped for `local`.
+- **Same services as everyone else** — MariaDB, Caddy, backend containers,
+  COSMIC desktop, WireGuard (`10.100.0.8`), Avahi.
 
-| Option | Type | Default | Description |
-|:-------|:-----|:--------|:------------|
-| `defaultUser` | string | `"root"` | Default non-root user |
-| `useWindowsDriver` | bool | `true` | Enable OpenGL/GPU from Windows host |
-| `startMenuLaunchers` | bool | `true` | Create Start Menu shortcuts for GUI apps |
-| `dockerDesktop` | bool | `false` | Enable Docker Desktop WSL integration |
-| `wrapBinSh` | bool | `true` | Wrap `/bin/sh` with correct env vars |
-| `interop.includePath` | bool | `true` | Include Windows PATH in WSL |
-| `interop.register` | bool | `false` | Register binfmt_misc for Windows executables |
-| `wslConf.boot.systemd` | bool | `true` | Use systemd as init |
-| `wslConf.automount.root` | string | `"/mnt"` | Mount point for Windows drives |
-| `wslConf.automount.options` | string | `"metadata,uid=1000,gid=100"` | Default mount options |
-| `wslConf.network.generateResolvConf` | bool | `true` | Generate `/etc/resolv.conf` through WSL |
-| `sshAgent` | bool | `false` | Enable ssh-agent passthrough to Windows |
-| `usbip` | bool | `false` | Enable USB/IP integration |
-
-### WSL Example Config
-
-```nix
-# nix/clients/dev.nix
-{
-  hostName = "fastfree";
-  deployType = "wsl";
-  build = true;
-
-  fastfree.wsl = {
-    defaultUser = "root";
-    useWindowsDriver = true;
-    startMenuLaunchers = true;
-    interop.includePath = true;
-    wslConf.boot.systemd = true;
-    wslConf.automount.root = "/mnt";
-  };
-}
-```
-
-### Building WSL Locally
-
-```bash
-# Build the WSL tarball
-nix build .#packages.x86_64-linux.dev
-
-# Run the tarball builder (requires sudo)
-sudo ./result/bin/nixos-wsl-tarball-builder fastfree_dev.wsl
-
-# Compress
-7z a -t7z -m0=lzma2 -mx=9 fastfree_dev.wsl.7z fastfree_dev.wsl
-```
+> disko is correct for **fresh** machines (VPS via nixos-anywhere, Hyper-V images).
+> It must never run against a machine with data — that is exactly what `local` avoids.
 
 ---
 
@@ -661,7 +461,7 @@ sudo ./result/bin/nixos-wsl-tarball-builder fastfree_dev.wsl
 
 ## Passwords
 
-All passwords are centralized in `nix/clients/*.nix`:
+All passwords are centralized in `machines/*/configuration.nix` (+ `clan vars` secrets):
 
 | Key | Used For |
 |:----|:---------|
@@ -687,12 +487,13 @@ Each client runs a built-in WireGuard interface (`wg0`) managed by NixOS.
 
 ## Avahi mDNS
 
-Hyper-V clients use Avahi for zero-conf `.local` name resolution. WSL clients use `localhost` for port forwarding.
+All clients publish `.local` names via Avahi (mDNS).
 
 | Client | Domain | Published Names |
 |:-------|:-------|:----------------|
-| `dev` (WSL) | `localhost` | `localhost:8080`, `localhost:8081`, `localhost:8082` |
 | `client1` (Hyper-V) | `client1.fastfree.local` | `client1.fastfree.local`, `db.client1.fastfree.local` |
+| `client2` (VPS) | `fastfree.cloud` | public domains via Caddy |
+| `client3` (local) | `fastfree.local` | `nixos.fastfree.local`, `db.fastfree.local` |
 
 ---
 
@@ -706,7 +507,7 @@ Hyper-V clients use Avahi for zero-conf `.local` name resolution. WSL clients us
 | WireGuard | Encrypted VPN tunnel |
 | 7z Archive | Password-protected (LZMA2) — Hyper-V only |
 | Passwords | Centralized per client |
-| WSL | System isolation via WSL2 kernel |
+| Local machine | Disk never repartitioned (`local` skips disko) |
 | CI/CD | GitHub Actions with least-privilege permissions |
 
 ---

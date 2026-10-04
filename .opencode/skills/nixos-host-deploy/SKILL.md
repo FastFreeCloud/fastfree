@@ -1,6 +1,6 @@
 ---
 name: nixos-host-deploy
-description: Validate, build, provision, and SSH-deploy NixOS clients (dev, client1, client2, server, client3) with post-deploy diagnostics. Use for host deploys and deploy failures.
+description: Validate, build, provision, and SSH-deploy NixOS clients (client1 Hyper-V, client2 VPS, client3 local) with post-deploy diagnostics. Use for host deploys and deploy failures.
 ---
 
 # NixOS Host Deploy
@@ -9,36 +9,34 @@ description: Validate, build, provision, and SSH-deploy NixOS clients (dev, clie
 
 | Step | Command | Duration | Gate |
 |------|---------|----------|------|
-| 1. Fast tests | `.\scripts\01_test.ps1 -Quick` (in `apps/fastfree_os`) | ~15s, 2 tests | must pass |
-| 2. Full tests | `.\scripts\01_test.ps1` (Default 5 / `-Full` 15 tests) | minutes | must pass |
-| 3. Build | `.\scripts\02_build.ps1 -Client client1` (`nix build`, 7z) | long | artifact exists |
-| 4. Provision VM | `.\scripts\05_setup_vm.ps1 -ClientName client1 -VMName FastFree-Client1` (admin) | minutes | VM boots |
-| 5. Check VM | `.\scripts\03_check_vm.ps1` (ports 22,3306,443,51820,8081,8082 + podman) | ~1min | all green |
-| 6. Deploy VM | `.\scripts\04_deploy.ps1` (`nixos-rebuild switch`) | minutes | switch ok |
-| 7. CI validate | `08-client1.yaml`, `09-client2.yaml`, `10-client3.yaml` (validate job: `nix parse` + `eval`) | minutes | green |
-| 8. CI clients | `08-client1.yaml`, `09-client2.yaml` | long | green |
-| 9. Deploy server | `gh workflow run 10-client3.yaml --ref master` | long | green |
+| 1. Syntax | `nix-instantiate --parse flake.nix clan.nix machines/*/configuration.nix` (in `apps/fastfree_os`) | seconds | must pass |
+| 2. Evaluate | `nix eval .#clan.inventory.machines.clientX` | ~1min | must pass |
+| 3. Build (hyperv) | `nix build .#packages.x86_64-linux.client1` (7z) | long | artifact exists |
+| 4. Provision VM | Hyper-V Manager: Gen 2 VM, Secure Boot OFF, attach VHDX | minutes | VM boots |
+| 5. Deploy VPS | `gh workflow run 10-client2.yaml --ref master` | long | green |
+| 6. Switch local | `sudo nixos-rebuild switch --flake .#client3` (on the machine) | minutes | switch ok |
+| 7. CI validate | `09-client1.yaml`, `10-client2.yaml` (validate: `nix parse` + `eval`) | minutes | green |
 
-`10-client3` flow: `scp flake.nix/nix/` → `podman pull` SPA images → extract
-`/srv/fastfree-*` → `nixos-rebuild switch --flake .#client3` → MySQL Frappe-user fix
+`10-client2` flow: `scp flake.nix/lock/clan.nix/options.nix/cli.sh/machines/modules/` → `podman pull` SPA images → extract
+`/srv/fastfree-*` → `nixos-rebuild switch --flake .#client2` → MySQL Frappe-user fix
 (parses `site_config.json` db_name/db_password) → restart → embedded diagnose job.
 
 ## Secrets (names only — values live with the human, never in files)
 
-`CLIENT3_IP`, `CLIENT3_ROOT_PASSWORD`, `CLIENT3_DEPLOY_KEY`, per-client
-`nix/clients/*.nix` passwords, `FastOS@2026` (7z), backend DB passwords.
+`CLIENT2_IP`, `CLIENT2_ROOT_PASSWORD`, `CLIENT2_DEPLOY_KEY`, per-client
+`machines/*/configuration.nix` (+ `clan vars` secrets), `FastOS@2026` (7z), backend DB passwords.
 
 ## First-aid failures
 
 | Failure | Fix |
 |---------|-----|
-| `hostinger build=false` | skip the build step (CI auto-detects `deployType`) |
-| Secure Boot breaks systemd-boot | turn Secure Boot OFF, TPM ON |
-| Avahi `.local` unreachable | Hyper-V only; on WSL use `localhost:8080/8082` |
-| MySQL auth fails after rebuild | rerun the Frappe-user fix section of workflow 16 |
+| `vps`/`local` build=false | skip the build step (only `hyperv` with `build=true` builds) |
+| Secure Boot breaks boot | turn Secure Boot OFF for Hyper-V Gen 2 VMs |
+| Avahi `.local` unreachable | check firewall + `avahi-daemon.service`; Hyper-V uses `.local`, VPS uses public domains |
+| MySQL auth fails after rebuild | rerun the Frappe-user fix section of workflow 10-client2 |
 
 ## Boundaries
 
-- Container images themselves → skill `web-backend-release` (workflow 16 consumes them).
+- Container images themselves → skill `web-backend-release` (workflow 10-client2 consumes them).
 - App-level (Quasar/Frappe) bugs → respective domain skills, not host deploy.
 - `nixos-rebuild switch` on production → explicit human approval first.
