@@ -78,29 +78,32 @@ jobs:
       - name: "1. Checkout"
         uses: actions/checkout@v6
 
-      - name: "2. Install dependencies"
-        run: sudo apt-get update && sudo apt-get install -y sshpass
+      - name: "2. Setup SSH deploy key"
+        # Password SSH is disabled by Clan sshd (PasswordAuthentication=false);
+        # all VPS access uses the deploy key (GitHub secret CLIENT2_DEPLOY_KEY,
+        # whose pubkey is inventory sshd authorizedKeys "client2-deploy").
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s' "${{ secrets.CLIENT2_DEPLOY_KEY }}" > ~/.ssh/client2
+          chmod 600 ~/.ssh/client2
 
       - name: "3. Copy config to VPS"
-        env:
-          SSHPASS: ${{ secrets.CLIENT2_ROOT_PASSWORD }}
         run: |
-          sshpass -p "$SSHPASS" scp -o StrictHostKeyChecking=no -r \
+          scp -i ~/.ssh/client2 -o StrictHostKeyChecking=no -r \
             apps/fastfree_os/flake.nix \
             apps/fastfree_os/flake.lock \
             apps/fastfree_os/clan.nix \
             apps/fastfree_os/options.nix \
             apps/fastfree_os/cli.sh \
+            apps/fastfree_os/docs/ \
             apps/fastfree_os/machines/ \
             apps/fastfree_os/modules/ \
             apps/fastfree_os/vars/ \
             root@${{ secrets.CLIENT2_IP }}:/tmp/fastfree_os/
 
       - name: "4. Cleanup old SPA containers"
-        env:
-          SSHPASS: ${{ secrets.CLIENT2_ROOT_PASSWORD }}
         run: |
-          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
+          ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT2_IP }} << 'RESET'
             for svc in hr erp pos ledger; do
               systemctl stop "podman-fastfree-${svc}-frontend.service" 2>/dev/null || true
@@ -113,10 +116,8 @@ jobs:
           RESET
 
       - name: "5. Pull SPA images"
-        env:
-          SSHPASS: ${{ secrets.CLIENT2_ROOT_PASSWORD }}
         run: |
-          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
+          ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT2_IP }} << 'PULL'
             podman pull --quiet ghcr.io/fastfreecloud/fastfree_hr:latest || true
             podman pull --quiet ghcr.io/fastfreecloud/fastfree_erp:latest || true
@@ -127,10 +128,8 @@ jobs:
           PULL
 
       - name: "6. Extract SPA files to host"
-        env:
-          SSHPASS: ${{ secrets.CLIENT2_ROOT_PASSWORD }}
         run: |
-          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
+          ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT2_IP }} << 'EXTRACT'
             for app in hr erp ledger pos; do
               IMAGE="ghcr.io/fastfreecloud/fastfree_${app}:latest"
@@ -158,19 +157,15 @@ jobs:
           EXTRACT
 
       - name: "7. Run nixos-rebuild"
-        env:
-          SSHPASS: ${{ secrets.CLIENT2_ROOT_PASSWORD }}
         run: |
-          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
+          ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT2_IP }} \
             "cd /tmp/fastfree_os && nixos-rebuild switch --flake .#client2"
 
       - name: "8. Fix MySQL Frappe user (after rebuild)"
-        env:
-          SSHPASS: ${{ secrets.CLIENT2_ROOT_PASSWORD }}
         run: |
           sleep 15
-          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no root@${{ secrets.CLIENT2_IP }} << 'REMOTESCRIPT'
+          ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no root@${{ secrets.CLIENT2_IP }} << 'REMOTESCRIPT'
           SITE_CFG="/var/lib/containers/storage/volumes/fastfree-backend-sites/_data/backend.fastfree.cloud/site_config.json"
           DB_NAME=$(sed -n 's/.*"db_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$SITE_CFG")
           DB_PASS=$(sed -n 's/.*"db_password"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$SITE_CFG")
@@ -184,10 +179,8 @@ jobs:
           REMOTESCRIPT
 
       - name: "9. Restart ALL backend services"
-        env:
-          SSHPASS: ${{ secrets.CLIENT2_ROOT_PASSWORD }}
         run: |
-          sshpass -p "$SSHPASS" ssh -o StrictHostKeyChecking=no \
+          ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no \
             root@${{ secrets.CLIENT2_IP }} << 'RESTART'
             echo "Restarting all backend services..."
             systemctl restart podman-fastfree-backend-app.service 2>/dev/null || true
@@ -210,18 +203,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: "1. Install dependencies"
-        run: sudo apt-get update && sudo apt-get install -y sshpass
+      - name: "1. Setup SSH deploy key"
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s' "${{ secrets.CLIENT2_DEPLOY_KEY }}" > ~/.ssh/client2
+          chmod 600 ~/.ssh/client2
 
       - name: "2. Run full diagnostic"
-        env:
-          SSHPASS: ${{ secrets.CLIENT2_ROOT_PASSWORD }}
         run: |
           set -e
           IP="${{ secrets.CLIENT2_IP }}"
           USER="root"
 
-          SSH_CMD="sshpass -p \"$SSHPASS\" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 $USER@$IP"
+          SSH_CMD="ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no -o ConnectTimeout=10 $USER@$IP"
 
           echo "================================================================"
           echo "  FastFree OS — Diagnostic Report"
@@ -342,8 +336,6 @@ jobs:
         uses: DeterminateSystems/determinate-nix-action@v3
 
       - name: "3. nixos-anywhere install"
-        env:
-          SSHPASS: ${{ secrets.CLIENT2_ROOT_PASSWORD }}
         run: |
           nix run github:nix-community/nixos-anywhere -- \
             --flake ./apps/fastfree_os#client2 \
