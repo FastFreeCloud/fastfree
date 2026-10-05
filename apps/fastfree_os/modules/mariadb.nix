@@ -32,6 +32,17 @@
       };
     };
 
+    # Containers reach MariaDB via host-gateway IP, never loopback; the
+    # default firewall DROPs that (2026-10-05: bench hung in "Waiting for
+    # MariaDB" until this rule). Scoped to podman subnets only — never LAN.
+    # Inserted (-I) so it precedes the drop; -C guard keeps rebuilds idempotent.
+    networking.firewall.extraCommands = ''
+      for net in 10.88.0.0/16 10.89.0.0/24 10.90.0.0/24; do
+        iptables -C nixos-fw -s $net -p tcp --dport 3306 -j ACCEPT 2>/dev/null || \
+          iptables -I nixos-fw 1 -s $net -p tcp --dport 3306 -j ACCEPT
+      done
+    '';
+
     # Runtime DB init (replaces build-time initialScript so the password
     # never bakes into /nix/store). Idempotent: IF NOT EXISTS + GRANT.
     systemd.services.mariadb-init = {

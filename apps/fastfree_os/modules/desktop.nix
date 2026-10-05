@@ -1,11 +1,27 @@
 { config, lib, pkgs, ... }:
 
-{
+let
+  isLocal = config.fastfree.deployType == "local";
+in {
   config = lib.mkIf config.fastfree.apps.desktop {
 
     # ── COSMIC desktop (all deployTypes) ────────────────────
     services.displayManager.cosmic-greeter.enable = true;
     services.desktopManager.cosmic.enable = true;
+
+    # ── NVIDIA (local physical machine only) ────────────────
+    # Copied from the proven /etc/nixos config of this exact hardware.
+    # Without it COSMIC/Plymouth fall back to nouveau (broken/slow on
+    # modern NVIDIA). Servers/images keep the open stack (no HW present).
+    services.xserver.videoDrivers = lib.mkIf isLocal [ "nvidia" ];
+    hardware.nvidia = lib.mkIf isLocal {
+      modesetting.enable = true;
+      powerManagement.enable = true;
+      powerManagement.finegrained = false;
+      open = false;
+      nvidiaSettings = true;
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
+    };
 
     services.xserver.xkb = {
       # English + Arabic, Alt+Shift toggle (Windows-style).
