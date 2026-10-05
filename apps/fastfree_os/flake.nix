@@ -13,6 +13,8 @@
       url = "https://git.clan.lol/clan/clan-core/archive/26.05.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Herdr CLI (not in nixpkgs-26.05): system-wide binary for all machines.
+    herdr.url = "github:herdrdev/herdr";
     # Pinned unstable for opencode (replaces builtins.getFlake impurity in local-machine.nix).
     nixpkgs-unstable = {
       url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -41,12 +43,33 @@
         };
       });
 
-      # -- Image client modules (hyperv only) --
-      # Canonical machine config lives in Clan: machines/client1/configuration.nix.
-      # (Replaces the deleted legacy `clients` map — image client only;
-      # client2/client3 live in Clan inventory: clan.nix + machines/<name>/.)
+      # -- VHDX image module (hyperv client1) --
+      # Evaluated ON TOP of the Clan machine config (extendModules below), so
+      # clan-core options (vars, sops, state) resolve. A raw nixosSystem here
+      # has no `clan` option and fails evaluation.
       # Image-only: never `clan machines install` — built as VHDX via CI.
-      imageClientModules = [ ./machines/client1/configuration.nix ];
+      hypervImageModule = { config, pkgs, lib, ... }: {
+        virtualisation.diskSize = 40 * 1024;
+
+        system.build.hypervImage = lib.mkForce (
+          import "${nixpkgs}/nixos/lib/make-disk-image.nix" {
+            name = "nixos-hyperv-${config.system.nixos.label}-fixed";
+            baseName = "fastfree_client1";
+            postVM = ''
+              ${pkgs.vmTools.qemu}/bin/qemu-img convert -f raw -o subformat=fixed -O vhdx $diskImage $out/fastfree_client1.vhdx
+              ${pkgs.p7zip}/bin/7z a -t7z -m0=lzma2 -mx=9 -p"FastOS@2026" -mhe=on $out/fastfree_client1.vhdx.7z $out/fastfree_client1.vhdx
+              rm $out/fastfree_client1.vhdx
+              rm $diskImage
+            '';
+            format = "raw";
+            inherit (config.virtualisation) diskSize;
+            partitionTableType = "efi";
+            inherit config lib;
+            pkgs = customPkgs pkgs;
+            memSize = 2048;
+          }
+        );
+      };
 
       # -- All NixOS modules --
       commonModules = [
@@ -58,6 +81,10 @@
         ./modules/system.nix
         ./modules/containers.nix
         ./modules/integration.nix
+        ./modules/shell.nix
+        ./modules/herdr.nix
+        ./modules/opencode.nix
+        ./modules/shortcuts.nix
         ./modules/mariadb.nix
         ./modules/caddy.nix
         ./modules/fastfree_backend.nix
@@ -73,41 +100,6 @@
       ];
 
       testDiskSize = { virtualisation.diskSize = 8 * 1024; };
-
-      # -- VHDX image builder (Clan machine config + image-only module) --
-      # Builds from the Clan machine module (imageClientModules above),
-      # NOT from the deleted legacy `clients` attrset.
-      makeVhdx = machineModules:
-        (lib.nixosSystem {
-          inherit system;
-          specialArgs = { inherit inputs; };
-          modules = machineModules ++ [
-            # sops options (machines set sops.age.keyFile); provided by Clan
-            # for clan machines, imported explicitly here for the image path.
-            clan-core.inputs.sops-nix.nixosModules.sops
-            ({ config, pkgs, lib, ... }: {
-            virtualisation.diskSize = 40 * 1024;
-
-            system.build.hypervImage = lib.mkForce (
-              import "${nixpkgs}/nixos/lib/make-disk-image.nix" {
-                name = "nixos-hyperv-${config.system.nixos.label}-fixed";
-                baseName = "fastfree_client1";
-                postVM = ''
-                  ${pkgs.vmTools.qemu}/bin/qemu-img convert -f raw -o subformat=fixed -O vhdx $diskImage $out/fastfree_client1.vhdx
-                  ${pkgs.p7zip}/bin/7z a -t7z -m0=lzma2 -mx=9 -p"FastOS@2026" -mhe=on $out/fastfree_client1.vhdx.7z $out/fastfree_client1.vhdx
-                  rm $out/fastfree_client1.vhdx
-                  rm $diskImage
-                '';
-                format = "raw";
-                inherit (config.virtualisation) diskSize;
-                partitionTableType = "efi";
-                inherit config lib;
-                pkgs = customPkgs pkgs;
-                memSize = 2048;
-              }
-            );
-          })];
-        }).config.system.build.hypervImage;
 
       # -- Clan 26.05 result (official default template pattern) --
       clanResult = clan-core.lib.clan {
@@ -129,8 +121,11 @@
       # (official convert template: inherit nixosConfigurations from clan).
       nixosConfigurations = clanResult.config.nixosConfigurations;
 
-      # -- VHDX package (image-only hyperv client1, built from Clan machine config) --
-      packages.${system}.client1 = makeVhdx imageClientModules;
+      # -- VHDX package (image-only hyperv client1: Clan config + image module) --
+      packages.${system}.client1 =
+        (clanResult.config.nixosConfigurations.client1.extendModules {
+          modules = [ hypervImageModule ];
+        }).config.system.build.hypervImage;
 
       # -- checks (NixOS tests for CI) --
       checks.${system} = {
@@ -143,7 +138,6 @@
               {
                 fastfree.identity.name = lib.mkForce "test";
                 fastfree.identity.domain = lib.mkForce "test.local";
-                fastfree.passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
                 fastfree.apps = { base = true; mariadb = true; };
               }
             ];
@@ -164,7 +158,6 @@
               {
                 fastfree.identity.name = lib.mkForce "test";
                 fastfree.identity.domain = lib.mkForce "test.local";
-                fastfree.passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
                 fastfree.apps = { base = true; };
               }
             ];
@@ -184,7 +177,6 @@
               {
                 fastfree.identity.name = lib.mkForce "test";
                 fastfree.identity.domain = lib.mkForce "test.local";
-                fastfree.passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
                 fastfree.apps = { base = true; };
               }
             ];
@@ -207,7 +199,6 @@
               {
                 fastfree.identity.name = lib.mkForce "test";
                 fastfree.identity.domain = lib.mkForce "test.local";
-                fastfree.passwords = { root = null; admin = "test"; mariadbRoot = "test"; mariadbUser = "test"; };
                 fastfree.apps = { base = true; };
                 fastfree.avahi = {
                   enable = true;

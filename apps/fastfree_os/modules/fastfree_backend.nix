@@ -1,10 +1,45 @@
 { config, lib, pkgs, ... }:
 
 let
-  pw = config.fastfree.passwords;
   ghAccount = lib.strings.toLower config.fastfree.githubAccount;
+  # Secrets (Clan vars, official sops/age backend). Only .path is
+  # interpolated (points at /run/secrets) — values never enter /nix/store.
+  dbRootPassFile = config.clan.core.vars.generators.mariadb-root.files.password.path;
+  dbUserPassFile = config.clan.core.vars.generators.fastfree-backend.files.db-password.path;
+  frappeAdminPassFile = config.clan.core.vars.generators.fastfree-backend.files.admin-password.path;
 in {
   config = lib.mkIf config.fastfree.apps.fastfree_backend {
+
+    # ── Secrets (Clan vars generators, no prompts) ──────────
+    # openssl pattern per docs/guides/vars/vars-advanced-examples.
+    # Requires fastfree.apps.mariadb on the same machine (root password).
+    clan.core.vars.generators.fastfree-backend = {
+      files.db-password.secret = true;
+      files.db-password.neededFor = "services";
+      files.admin-password.secret = true;
+      files.admin-password.neededFor = "services";
+      runtimeInputs = [ pkgs.openssl ];
+      script = ''
+        openssl rand -hex 24 > $out/db-password
+        openssl rand -hex 24 > $out/admin-password
+      '';
+    };
+
+    # ── State for borgbackup: frappe sites + logs volumes ──
+    # /srv/* SPAs are deliberately NOT state (reproducible from GHCR images).
+    clan.core.state."fastfree-backend" = {
+      folders = [
+        "/var/lib/containers/storage/volumes/fastfree-backend-sites/_data"
+        "/var/lib/containers/storage/volumes/fastfree-backend-logs/_data"
+      ];
+      # Restore safety: stop backend containers while files are replaced.
+      preRestoreScript = ''
+        systemctl stop 'podman-fastfree-backend-*' 2>/dev/null || true
+      '';
+      postRestoreScript = ''
+        systemctl start 'podman-fastfree-backend-*' 2>/dev/null || true
+      '';
+    };
 
     # ── 1. Create fastfree_backend DB + user ────────────────
     systemd.services."fastfree-backend-db" = {
@@ -26,12 +61,14 @@ in {
           fi
           sleep 1
         done
+        ROOT_PASS=$(cat "${dbRootPassFile}")
+        USER_PASS=$(cat "${dbUserPassFile}")
         ${config.services.mysql.package}/bin/mysql <<SQL
-          CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('${pw.mariadbRoot}');
+          CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$ROOT_PASS');
           GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
           FLUSH PRIVILEGES;
           CREATE DATABASE IF NOT EXISTS fastfree_backend;
-          CREATE USER IF NOT EXISTS 'fastfree_backend'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('${pw.mariadbUser}');
+          CREATE USER IF NOT EXISTS 'fastfree_backend'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$USER_PASS');
           GRANT ALL PRIVILEGES ON fastfree_backend.* TO 'fastfree_backend'@'%';
           FLUSH PRIVILEGES;
         SQL
@@ -74,7 +111,8 @@ in {
 
         SQL="DROP USER IF EXISTS '$FRAPPE_DB_NAME'@'%'; DROP USER IF EXISTS '$FRAPPE_DB_NAME'@'localhost'; CREATE USER '$FRAPPE_DB_NAME'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS'); CREATE USER '$FRAPPE_DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS'); GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'%'; GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'localhost'; FLUSH PRIVILEGES;"
 
-        ${config.services.mysql.package}/bin/mysql --user=root --password="${pw.mariadbRoot}" -e "$SQL" 2>&1 && echo "[mysql-user] Done." || echo "[mysql-user] FAILED"
+        ROOT_PW=$(cat "${dbRootPassFile}")
+        ${config.services.mysql.package}/bin/mysql --user=root --password="$ROOT_PW" -e "$SQL" 2>&1 && echo "[mysql-user] Done." || echo "[mysql-user] FAILED"
       '';
     };
 
@@ -154,11 +192,11 @@ in {
       path = [ pkgs.podman pkgs.coreutils pkgs.gnused ];
       script = let
         siteName = "backend.${config.fastfree.identity.domain}";
-        dbPass = pw.mariadbRoot;
-        adminPass = pw.admin;
         ghAcc = ghAccount;
       in ''
         SITE="${siteName}"
+        DB_PASSWORD=$(cat "${dbRootPassFile}")
+        ADMIN_PASSWORD=$(cat "${frappeAdminPassFile}")
         IMAGE="ghcr.io/${ghAcc}/fastfree_backend:latest"
 
         echo "[setup] Pulling image..."
@@ -170,8 +208,8 @@ in {
           --add-host=host.containers.internal:host-gateway \
           -v fastfree-backend-sites:/home/frappe/frappe-bench/sites \
           -v fastfree-backend-logs:/home/frappe/frappe-bench/logs \
-          -e "DB_PASSWORD=${dbPass}" \
-          -e "ADMIN_PASSWORD=${adminPass}" \
+          -e "DB_PASSWORD=$DB_PASSWORD" \
+          -e "ADMIN_PASSWORD=$ADMIN_PASSWORD" \
           -e "FRAPPE_SITE_NAME_HEADER=$SITE" \
           "$IMAGE" bash -c '
             set -e
@@ -486,7 +524,7 @@ in {
         set -e
         DB_HOST="localhost"
         DB_USER="fastfree_backend"
-        DB_PASS="${pw.mariadbUser}"
+        DB_PASS=$(cat "${dbUserPassFile}")
         DB_NAME="fastfree_backend"
 
         BACKUP_DIR="/var/lib/fastfree/backups"

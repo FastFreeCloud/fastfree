@@ -3,7 +3,7 @@
 
 # Secrets (passwords/privateKeys) come in phase 2 via `clan vars` — intentionally absent here.
 # NOTE: image-only machine. Never `clan machines install` — built as VHDX via CI (09-client1.yaml).
-{ config, lib, pkgs, modulesPath, ... }:
+{ config, lib, pkgs, inputs, modulesPath, ... }:
 
 {
   # Official convert-existing pattern: declare the platform in the machine module.
@@ -18,6 +18,8 @@
     ../../modules/system.nix
     ../../modules/containers.nix
     ../../modules/integration.nix
+    ../../modules/shell.nix
+    ../../modules/herdr.nix
     ../../modules/mariadb.nix
     ../../modules/caddy.nix
     ../../modules/fastfree_backend.nix
@@ -27,6 +29,9 @@
     ../../modules/fastfree_pos.nix
     ../../modules/fastfree_website.nix
     ../../modules/phpmyadmin.nix
+    ../../modules/cockpit.nix
+    ../../modules/opencode.nix
+    ../../modules/shortcuts.nix
     ../../modules/desktop.nix
     ../../modules/avahi-subdomains.nix
     (modulesPath + "/virtualisation/hyperv-guest.nix")
@@ -49,6 +54,8 @@
 
   fastfree.apps = {
     base = true;
+    shell = true;
+    herdr = true;
     mariadb = true;
     fastfree_backend = true;
     fastfree_ledger = true;
@@ -61,6 +68,9 @@
     desktop = true;
     avahi = true;
   };
+
+  # Herdr CLI from flake input (system-wide binary).
+  fastfree.herdr.package = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   # Hyper-V guest disk layout (mirrors flake.nix mkClientModules hyperv branch).
   virtualisation.hypervGuest.enable = true;

@@ -24,7 +24,8 @@
 
   # Phase 1 instances (official: intro-to-vars + services/official/sshd + services/official/users).
   # - sshd: host keys auto-generated, no prompts.
-  # - user-root/user-admin: prompt=false = auto-generated (CI-safe, no questions).
+  # - users: prompt=false = auto-generate random password, never asks
+  #   (official docs: prompt=true would ask on install/update when var is missing).
   # Secrets land encrypted in vars/ via `clan vars generate` (phase 1b).
   inventory.instances = {
     sshd = {
@@ -38,27 +39,15 @@
       roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "root";
-        prompt = true;
+        prompt = false;
       };
     };
-    user-admin = {
-      module.name = "users";
-      roles.default.tags = [ "all" ];
-      roles.default.settings = {
-        user = "admin";
-        prompt = true;
-        groups = [ "wheel" "networkmanager" ];
-      };
-    };
-    # Local desktop user (client3 only) — password auto-generated into vars
-    # (replaces the old empty initialPassword). Retrieve with:
-    # clan vars get client3 user-fastfree/user-password
     user-fastfree = {
       module.name = "users";
       roles.default.machines."client3" = { };
       roles.default.settings = {
         user = "fastfree";
-        prompt = true;
+        prompt = false;
         groups = [ "networkmanager" "wheel" "podman" ];
       };
     };
@@ -75,6 +64,58 @@
       };
       roles.peer.machines."client1".settings.port = 51821;
       roles.peer.machines."client3".settings.port = 51821;
+    };
+    # Backups (docs: guides/backups/intro-to-backups + services/official/borgbackup).
+    # client2 (always-on VPS, SSH on) is the repo server; client1+client2 push to it
+    # (empty client settings = back up to the clan server, keys auto-generated).
+    # client3 keeps SSH OFF by design, so it backs up to a LOCAL borg repo (no SSH needed).
+    # clan.core.state folders are picked up automatically; default schedule 01:00.
+    borgbackup = {
+      module.name = "borgbackup";
+      module.input = "clan-core";
+      roles.server.machines."client2".settings = {
+        address = "fastfree.cloud";
+        directory = "/var/lib/borgbackup";
+      };
+      roles.client.machines."client1" = { };
+      roles.client.machines."client2" = { };
+      roles.client.machines."client3".settings = {
+        destinations.local.repo = "/var/lib/backups/client3";
+      };
+    };
+    # Monitoring (docs: services/official/monitoring) — exactly one server.
+    # client2 (always-on VPS) stores (Loki+Mimir+Grafana); all push to it.
+    monitoring = {
+      module.name = "monitoring";
+      module.input = "clan-core";
+      roles.client.tags = [ "all" ];
+      roles.client.settings.useSSL = false;
+      roles.server.machines."client2".settings = {
+        grafana.enable = true;
+      };
+    };
+    # Trusted binary caches (docs: services/official/trusted-nix-caches).
+    # Zero settings, zero secrets — speeds up builds on all machines.
+    clan-cache = {
+      module.name = "trusted-nix-caches";
+      module.input = "clan-core";
+      roles.default.machines = {
+        client1 = { };
+        client2 = { };
+        client3 = { };
+      };
+    };
+    # Emergency recovery password (docs: services/official/emergency-access).
+    # Auto-set by Clan, used only to debug boot failures. Remote/headless
+    # machines only (client3 has physical access); owns
+    # boot.initrd.systemd.emergencyAccess, so never set it in modules/.
+    emergency-access = {
+      module.name = "emergency-access";
+      module.input = "clan-core";
+      roles.default.machines = {
+        client1 = { };
+        client2 = { };
+      };
     };
   };
 

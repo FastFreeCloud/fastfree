@@ -4,7 +4,7 @@
 # Secrets (passwords/privateKey/deployPassword) come in phase 2 via `clan vars`.
 # Deployed via `clan machines update client2`; first install via
 # `clan machines install client2 --target-host root@<IP>` (wipes disk — fresh only).
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 {
   # Official convert-existing pattern: declare the platform in the machine module.
@@ -19,6 +19,8 @@
     ../../modules/system.nix
     ../../modules/containers.nix
     ../../modules/integration.nix
+    ../../modules/shell.nix
+    ../../modules/herdr.nix
     ../../modules/mariadb.nix
     ../../modules/caddy.nix
     ../../modules/fastfree_backend.nix
@@ -29,6 +31,8 @@
     ../../modules/fastfree_website.nix
     ../../modules/phpmyadmin.nix
     ../../modules/cockpit.nix
+    ../../modules/opencode.nix
+    ../../modules/shortcuts.nix
     ../../modules/desktop.nix
     ../../modules/avahi-subdomains.nix
   # NOTE: ./disko.nix is auto-imported by Clan autoincludes — do NOT add it here
@@ -54,6 +58,8 @@
 
   fastfree.apps = {
     base = true;
+    shell = true;
+    herdr = true;
     mariadb = true;
     caddy = true;
     phpmyadmin = true;
@@ -67,6 +73,9 @@
     desktop = true;
     avahi = true;
   };
+
+  # Herdr CLI from flake input (system-wide binary).
+  fastfree.herdr.package = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   fastfree.networking = {
     nameservers = [ "1.1.1.1" "8.8.8.8" ];
@@ -90,19 +99,5 @@
     interfaces = [ "ens18" "wg0" ];
   };
 
-  # MariaDB state for borgbackup (official: guides/backups/backup-advanced
-  # "Backup Hooks" + reference/clan.core/state — pre/postBackupScript).
-  # Online dump via mariadb-dump (--single-transaction: no service stop on
-  # production); the dump folder is part of state so borg archives it, and
-  # postBackupScript cleans the staging file to save disk.
-  clan.core.state."mariadb" = {
-    folders = [ "/var/lib/mysql" "/var/lib/mariadb-dump" ];
-    preBackupScript = ''
-      mkdir -p /var/lib/mariadb-dump
-      ${config.services.mysql.package}/bin/mariadb-dump --all-databases --single-transaction --quick > /var/lib/mariadb-dump/all-databases.sql
-    '';
-    postBackupScript = ''
-      rm -f /var/lib/mariadb-dump/all-databases.sql
-    '';
-  };
+  # MariaDB state lives in modules/mariadb.nix (all mariadb machines).
 }

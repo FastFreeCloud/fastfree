@@ -24,9 +24,21 @@
             root = {
               size = "100%";
               content = {
-                type = "filesystem";
-                format = "ext4";
-                mountpoint = "/";
+                type = "luks";
+                name = "crypted";
+                # Full-disk encryption (disko docs). Takes effect ONLY on
+                # fresh install (disko runs at install, never on update).
+                # - Install asks for the passphrase interactively twice.
+                #   For non-interactive CI: set passwordFile + pass
+                #   --disk-encryption-keys to nixos-anywhere instead.
+                # - The SAME passphrase is required on EVERY reboot
+                #   (VPS console) unless remote-unlock (initrd SSH) is added.
+                settings.allowDiscards = true;
+                content = {
+                  type = "filesystem";
+                  format = "ext4";
+                  mountpoint = "/";
+                };
               };
             };
           };

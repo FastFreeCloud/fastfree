@@ -32,39 +32,15 @@
       description = "VPS hostname or IP for nixos-anywhere deployment (e.g. fastfree.cloud).";
     };
 
-    deployPassword = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "VPS root password for nixos-anywhere initial SSH connection.";
-    };
-
-    passwords = {
-      # Single source of truth is Clan vars (user-password-root/user-password-admin);
-      # empty defaults ensure no burned plaintext password ships in the repo.
-      root = lib.mkOption {
-        type = lib.types.str;
-        default = "";
-        description = "Root user password.";
-      };
-      admin = lib.mkOption {
-        type = lib.types.str;
-        default = "";
-        description = "Admin user password.";
-      };
-      mariadbRoot = lib.mkOption {
-        type = lib.types.str;
-        default = "";
-        description = "MariaDB root password.";
-      };
-      mariadbUser = lib.mkOption {
-        type = lib.types.str;
-        default = "";
-        description = "MariaDB fastfree user password.";
-      };
-    };
+    # App secrets (DB root/user, Frappe admin) live in Clan vars generators
+    # (modules/mariadb.nix: mariadb-root, modules/fastfree_backend.nix:
+    # fastfree-backend) — never as Nix options (values would bake into /nix/store).
 
     apps = {
       base         = lib.mkEnableOption "Base NixOS system";
+      shell        = lib.mkEnableOption "zsh + deep-search CLI tools (rg/fd/ugrep/fzf)";
+      herdr        = lib.mkEnableOption "Herdr CLI + socket API helpers";
+      opencode     = lib.mkEnableOption "OpenCode web UI autostart";
       mariadb      = lib.mkEnableOption "MariaDB database server";
       caddy        = lib.mkEnableOption "Caddy reverse proxy";
       fastfree_backend = lib.mkEnableOption "FastFree Backend (Frappe/ERPNext)";
@@ -104,11 +80,9 @@
       description = "GitHub repo URL (auto-derived from githubAccount if empty).";
     };
 
-    githubToken = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "GitHub Personal Access Token for private repo access.";
-    };
+    # GitHub token lives in Clan vars (modules/integration.nix: github-token
+    # generator) — never as a Nix option (values would bake into /nix/store).
+    # Set with: clan vars set <machine> github-token/token
 
     gitOrigin = lib.mkOption {
       type = lib.types.str;

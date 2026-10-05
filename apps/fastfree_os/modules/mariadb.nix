@@ -3,19 +3,22 @@
 {
   config = lib.mkIf config.fastfree.apps.mariadb {
 
-    # DB root password via Clan vars (official sops/age backend).
-    # Value kept as before (Fastfree@2026) — only the storage is new.
-    # Set with: clan vars set <machine> mariadb-root/password
+    # DB credentials via Clan vars (official sops/age backend).
+    # Fully non-interactive: NO prompts — random values from openssl
+    # (official pattern: docs/guides/vars/vars-advanced-examples).
+    # Stored encrypted in vars/, deployed to /run/secrets.
+    # pma-env derives from the same value (docs: combine related files
+    # in one generator) for phpmyadmin's environmentFiles.
     clan.core.vars.generators.mariadb-root = {
       files.password.secret = true;
       files.password.neededFor = "services";
-      prompts.password.description = "MariaDB root password";
-      prompts.password.type = "hidden";
-      prompts.password.persist = false;
+      files.pma-env.secret = true;
+      files.pma-env.neededFor = "services";
+      runtimeInputs = [ pkgs.openssl ];
       script = ''
-        cat $prompts/password > $out/password
+        openssl rand -hex 24 > $out/password
+        printf 'MYSQL_ROOT_PASSWORD=%s\n' "$(cat $out/password)" > $out/pma-env
       '';
-      runtimeInputs = [ pkgs.coreutils ];
     };
 
     services.mysql = {
@@ -54,5 +57,28 @@
 
     systemd.services.mysql.serviceConfig.ExecStop =
       lib.mkForce "${config.services.mysql.package}/bin/mysqladmin shutdown";
+
+    # ── State for borgbackup (every mariadb machine) ────────
+    # Online dump via mariadb-dump (no service stop); the dump folder is
+    # part of state so borg archives it; postBackupScript cleans staging.
+    clan.core.state."mariadb" = {
+      folders = [ "/var/lib/mysql" "/var/lib/mariadb-dump" ];
+      preBackupScript = ''
+        mkdir -p /var/lib/mariadb-dump
+        MYSQL_PWD=$(cat "${config.clan.core.vars.generators.mariadb-root.files.password.path}") \
+          ${config.services.mysql.package}/bin/mariadb-dump --all-databases --single-transaction --quick > /var/lib/mariadb-dump/all-databases.sql
+      '';
+      postBackupScript = ''
+        rm -f /var/lib/mariadb-dump/all-databases.sql
+      '';
+      # Restore safety (docs: reference/clan.core/state): stop MySQL while
+      # files are replaced, start it afterwards. Never restore onto live InnoDB.
+      preRestoreScript = ''
+        systemctl stop mysql.service 2>/dev/null || true
+      '';
+      postRestoreScript = ''
+        systemctl start mysql.service 2>/dev/null || true
+      '';
+    };
   };
 }

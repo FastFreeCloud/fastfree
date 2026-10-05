@@ -117,24 +117,31 @@ fastfree_os /
 ├ flake.nix                            # NixOS flake — Clan wrapper + VHDX builder + checks
 ├ flake.lock                           # Locked dependencies (nixpkgs, disko, clan-core, unstable)
 ├ clan.nix                             # Clan inventory (machines registry — canonical)
-├ options.nix                          # Custom options (identity, passwords, apps, deployType, desktop)
+├ options.nix                          # Custom options (identity, apps, deployType, desktop)
 ├ cli.sh                               # FastFree CLI tool
-├ modules/                             # Service modules (toggle per client)
-│  ├── base.nix                        # Base system (Podman, SSH, users)
-│  ├── mariadb.nix                     # MariaDB database server
-│  ├── caddy.nix                       # Caddy reverse proxy
+├ modules/                             # Service modules (toggle per client via fastfree.apps)
+│  ├── system.nix                      # Base system (motd, journald, docs off)
+│  ├── networking.nix                  # Hostname, firewall, NetworkManager
+│  ├── containers.nix                  # Podman rootful + subuid
+│  ├── integration.nix                 # fastfree CLI package + GHCR auth
+│  ├── shell.nix                       # zsh + rg/fd/ugrep/fzf + aliases
+│  ├── herdr.nix                       # Herdr CLI docs + completion + integration
+│  ├── opencode.nix                    # OpenCode web UI autostart (client3)
+│  ├── shortcuts.nix                   # Desktop entries + aliases per enabled app
+│  ├── mariadb.nix                     # MariaDB + vars password + state
+│  ├── caddy.nix                       # Caddy reverse proxy (conditional sites)
 │  ├── fastfree_backend.nix            # Frappe/ERPNext — Podman containers from GHCR
-│  ├── phpmyadmin.nix                  # phpMyAdmin container
-│  ├── desktop.nix                     # COSMIC desktop (all machines)
-│  ├── wireguard.nix                   # WireGuard VPN (NixOS built-in)
+│  ├── fastfree_ledger/erp/hr/pos/website.nix  # SPA extractors served via Caddy
+│  ├── phpmyadmin.nix                  # phpMyAdmin container (env from vars)
+│  ├── cockpit.nix                     # Cockpit web panel (client2/3)
+│  ├── desktop.nix                     # COSMIC desktop + xkb us/ara + shortcuts
+│  ├── locale.nix                      # Timezone + en_US/ar_EG + Arabic fonts
 │  └── avahi-subdomains.nix            # Avahi mDNS
 ├ machines/                            # Clan machine configs (canonical)
 │  ├── client1/configuration.nix       # Hyper-V (deployType=hyperv, build=true)
 │  ├── client2/configuration.nix       # VPS (deployType=vps, build=false)
 │  └── client3/configuration.nix       # Local machine (deployType=local, build=false)
-├ wireguard/                         # WireGuard key registry + generated configs
-│  ├── fastfree_wg_keys.ps1           # Key generator (run on Windows)
-│  └── keys/<device>/                 # privatekey/publickey per device
+├ wireguard/                         # (removed: WireGuard now via clan.nix inventory)
 ├ .github/workflows/                   # (repo root) CI pipelines
 │  ├── 09-client1.yaml                 # Validate + build client1 Hyper-V image
 │  └── 10-client2.yaml                 # Deploy + install client2 VPS
@@ -145,9 +152,9 @@ fastfree_os /
 
 ## Scripts
 
-> NOTE: the legacy `scripts/*.ps1` helpers and `build.yml` no longer exist.
-> Builds run via `nix` directly or CI (`09-client1.yaml`, `10-client2.yaml`).
-> The only script kept is `wireguard/fastfree_wg_keys.ps1` (key generator, run on Windows).
+> NOTE: the legacy `scripts/*.ps1` helpers, `build.yml`, and `wireguard/*.ps1`
+> no longer exist. Builds run via `nix` directly or CI (`09-client1.yaml`,
+> `10-client2.yaml`). WireGuard keys come from `clan vars` (wireguard instance).
 
 ### Quick validation
 

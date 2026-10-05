@@ -22,10 +22,30 @@
     # Podman can't read Nix store symlinks reliably
     system.activationScripts.podman-subuid = lib.mkAfter ''
       rm -f /etc/subuid /etc/subgid
-      printf 'root:100000:65536\nadmin:100000:65536\n' > /etc/subuid
-      printf 'root:100000:65536\nadmin:100000:65536\n' > /etc/subgid
+      printf 'root:100000:65536\nfastfree:100000:65536\n' > /etc/subuid
+      printf 'root:100000:65536\nfastfree:100000:65536\n' > /etc/subgid
       chmod 644 /etc/subuid /etc/subgid
     '';
+
+    # ── Pull race fix: containers need network at first start ──
+    # Fresh switch pulls GBs of images; without this they fail before
+    # NetworkManager is up, hit start-limit, and never recover until
+    # reset/reboot. Same ordering the repo already uses for ledger-spa.
+    systemd.services = lib.genAttrs [
+      "podman-fastfree-redis-cache"
+      "podman-fastfree-redis-queue"
+      "podman-fastfree-backend-app"
+      "podman-fastfree-backend-frontend"
+      "podman-fastfree-backend-websocket"
+      "podman-fastfree-backend-queue-short"
+      "podman-fastfree-backend-queue-long"
+      "podman-fastfree-backend-scheduler"
+      "podman-fastfree-website-frontend"
+      "podman-phpmyadmin"
+    ] (_: {
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+    });
 
     # Override NixOS containers.conf with rootful settings
     environment.etc."containers/containers.conf".text = lib.mkForce ''

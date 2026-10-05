@@ -77,17 +77,21 @@ let
     ${lib.optionalString config.fastfree.apps.fastfree_hr (spaServer "hr" "/srv/fastfree-hr")}
     ${lib.optionalString config.fastfree.apps.fastfree_pos (spaServer "pos" "/srv/fastfree-pos")}
 
-    ${sd.db}.${domain} {
-      ${tlsBlock}
-      header -Server
-      reverse_proxy 127.0.0.1:8082
-    }
+    ${lib.optionalString config.fastfree.apps.phpmyadmin ''
+      ${sd.db}.${domain} {
+        ${tlsBlock}
+        header -Server
+        reverse_proxy 127.0.0.1:8082
+      }
+    ''}
 
-    ${sd.panel}.${domain} {
-      ${tlsBlock}
-      header -Server
-      reverse_proxy 127.0.0.1:9090
-    }
+    ${lib.optionalString config.fastfree.apps.cockpit ''
+      ${sd.panel}.${domain} {
+        ${tlsBlock}
+        header -Server
+        reverse_proxy 127.0.0.1:9090
+      }
+    ''}
   '';
 in {
   config = lib.mkIf config.fastfree.apps.caddy {

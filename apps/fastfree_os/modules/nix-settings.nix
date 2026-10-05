@@ -7,7 +7,7 @@
     # Mirrors /etc/nixos/configuration.nix: flakes + trusted-users + flox cache.
     nix.settings = {
       experimental-features = [ "nix-command" "flakes" ];
-      trusted-users = [ "root" "fastfree" "admin" ];
+      trusted-users = [ "root" "fastfree" ];
       extra-trusted-substituters = [ "https://cache.flox.dev" ];
       extra-trusted-public-keys = [
         "flox-cache-public-1:7F4OyH7ZCnFhcze3fJdfyXYLQw/aV7GEed86nQ7IsOs="

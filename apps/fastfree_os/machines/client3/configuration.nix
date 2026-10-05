@@ -25,6 +25,20 @@ in
     ../../modules/system.nix
     ../../modules/containers.nix
     ../../modules/integration.nix
+    ../../modules/shell.nix
+    ../../modules/herdr.nix
+    ../../modules/mariadb.nix
+    ../../modules/caddy.nix
+    ../../modules/fastfree_backend.nix
+    ../../modules/fastfree_ledger.nix
+    ../../modules/fastfree_erp.nix
+    ../../modules/fastfree_hr.nix
+    ../../modules/fastfree_pos.nix
+    ../../modules/fastfree_website.nix
+    ../../modules/phpmyadmin.nix
+    ../../modules/cockpit.nix
+    ../../modules/opencode.nix
+    ../../modules/shortcuts.nix
     ../../modules/desktop.nix
     ../../modules/avahi-subdomains.nix
   # NOTE: ./hardware-configuration.nix is auto-imported by Clan autoincludes —
@@ -35,7 +49,7 @@ in
   # Legacy BIOS GRUB + OS prober (dual-boot), NetworkManager, existing
   # desktop user, open GPU stack, SSH OFF, unfree allowed.
 
-  fastfree.identity.name = lib.mkForce "nixos";
+  fastfree.identity.name = lib.mkForce "client3";
   fastfree.identity.domain = lib.mkForce "fastfree.local";
   fastfree.deployType = "local";
   fastfree.build = false;
@@ -95,12 +109,31 @@ in
   # ── Unfree allowed ──
   nixpkgs.config.allowUnfree = true;
 
-  # SMOKE TEST: server apps stay OFF until first successful switch.
+  # All apps enabled (same set as production VPS client2 + shell/herdr).
   fastfree.apps = {
     base = true;
+    shell = true;
+    herdr = true;
+    opencode = true;
+    mariadb = true;
+    caddy = true;
+    fastfree_backend = true;
+    fastfree_ledger = true;
+    fastfree_erp = true;
+    fastfree_hr = true;
+    fastfree_pos = true;
+    fastfree_website = true;
+    phpmyadmin = true;
+    cockpit = true;
     desktop = true;
     avahi = true;
   };
+
+  # Herdr CLI from flake input (system-wide binary).
+  fastfree.herdr.package = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
+  # OpenCode web UI (same unstable package as systemPackages above).
+  fastfree.opencode.package = unstablePkgs.opencode;
 
   fastfree.avahi = {
     enable = true;

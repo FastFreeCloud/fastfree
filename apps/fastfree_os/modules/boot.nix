@@ -13,7 +13,8 @@ in {
 
     boot.kernelModules = lib.mkIf config.fastfree.kvm [ "kvm-intel" "kvm-amd" ];
 
-    # ── Initrd (NixOS 26.05 systemd stage 1) ─────────────
-    boot.initrd.systemd.emergencyAccess = (config.fastfree.deployType == "hyperv");
+    # NOTE: initrd emergency access is owned by the Clan emergency-access
+    # service (clan.nix) — do NOT set boot.initrd.systemd.emergencyAccess here
+    # (bool vs hash-string merge = eval error).
   };
 }
