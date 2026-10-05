@@ -93,6 +93,15 @@
   };
   services.openssh.enable = true;
 
+  # ── Password SSH (explicit user preference) ───────────────
+  # Clan sshd hardcodes PasswordAuthentication=false; override with HIGHER
+  # priority so password logins + password-based tooling keep working.
+  # PermitRootLogin is prohibit-password by NixOS default — open it too.
+  # fail2ban (default sshd jail, auto VERBOSE) absorbs brute-force bots.
+  services.openssh.settings.PasswordAuthentication = lib.mkForce true;
+  services.openssh.settings.PermitRootLogin = "yes";
+  services.fail2ban.enable = true;
+
   fastfree.avahi = {
     enable = true;
     reflector = false;
