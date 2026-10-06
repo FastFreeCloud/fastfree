@@ -14,15 +14,38 @@ in {
       wantedBy = [ "multi-user.target" ];
       serviceConfig.Type = "oneshot";
       serviceConfig.RemainAfterExit = true;
-      path = [ pkgs.podman pkgs.coreutils pkgs.gnutar ];
+      path = [ pkgs.podman pkgs.coreutils ];
       script = ''
+        # NOTE (2026-10-06): GHCR images contain nix-store SYMLINKS under /srv
+        # that resolve ONLY inside the container mount namespace (host-side
+        # `podman mount` view cannot read them). `podman cp` is server-side
+        # and materializes real files. Verified live: index.html extracts
+        # with correct <title>FastFree Ledger</title> content.
+        rm -rf ${spaDir}
         mkdir -p ${spaDir}
         IMAGE="ghcr.io/${ghAccount}/fastfree_ledger:latest"
         CID=$(podman create "$IMAGE" 2>/dev/null || true)
         if [ -n "$CID" ]; then
-          podman export "$CID" | tar -x --strip-components=1 -C ${spaDir} srv/
+          # Per-file server-side copy: podman cp resolves each symlink
+          # through the container namespace (bulk dir copy preserves links
+          # as dangling; host-side mount view cannot read them at all).
+          # Listing via mount works (names only, no content reads).
+          MNT=$(podman mount "$CID" 2>/dev/null || true)
+          if [ -n "$MNT" ] && [ -d "$MNT/srv" ]; then
+            ( cd "$MNT/srv" && find -L . -mindepth 1 | sort | while IFS= read -r rel; do
+              rel="''${rel#./}"
+              if [ -d "$MNT/srv/$rel" ]; then
+                mkdir -p "${spaDir}/$rel"
+              else
+                podman cp "$CID:/srv/$rel" "${spaDir}/$rel" >/dev/null 2>&1 || echo "WARNING: skip Ledger $rel"
+              fi
+            done )
+            echo "Ledger SPA files extracted to ${spaDir}: $(ls ${spaDir})"
+          else
+            echo "WARNING: Could not mount $IMAGE"
+          fi
+          podman unmount "$CID" >/dev/null 2>&1 || true
           podman rm "$CID" >/dev/null 2>&1 || true
-          echo "Ledger SPA files extracted to ${spaDir}: $(ls ${spaDir})"
         else
           echo "WARNING: Could not create container from $IMAGE"
         fi
