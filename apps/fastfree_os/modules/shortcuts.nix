@@ -2,16 +2,16 @@
 
 # FastFree app shortcuts — the professional NixOS way.
 # Every enabled app gets: an XDG desktop entry (COSMIC launcher, Super-searchable)
-# + a shell alias. URLs are interpolated at BUILD time, so each machine gets
-# its own correct domain. Web entries assume Caddy serves them (all app
-# machines enable caddy alongside the apps).
+# + a shell alias. URLs point at LOOPBACK ports on purpose:
+#   - no DNS needed (.local is unresolvable by design: nsswitch mdns4_minimal
+#     NOTFOUND=return + avahi refuses D-Bus publishing here)
+#   - no TLS warnings (plain http on loopback, never LAN-exposed)
+# The pretty https://<app>.<domain> names keep working wherever real DNS
+# exists (VPS/LAN) — served by the same Caddy blocks (see caddy.nix).
 # Skipped deliberately: backend (API only, no UI), mariadb (via db entry),
 # base/shell/herdr (CLI tools, already have aliases), caddy/avahi (infra).
 let
   apps = config.fastfree.apps;
-  domain = config.fastfree.identity.domain;
-  sd = config.fastfree.subdomains;
-  web = apps.caddy;
 
   webEntry = name: title: url: pkgs.makeDesktopItem {
     name = "fastfree-${name}";
@@ -25,31 +25,31 @@ let
 in {
   config = lib.mkIf apps.base {
     environment.systemPackages = [ pkgs.xdg-utils ] ++
-      lib.optional (web && apps.fastfree_website)
-        (webEntry "website" "Website" "https://${domain}") ++
-      lib.optional (web && apps.fastfree_erp)
-        (webEntry "erp" "ERP" "https://erp.${domain}") ++
-      lib.optional (web && apps.fastfree_ledger)
-        (webEntry "ledger" "Ledger" "https://ledger.${domain}") ++
-      lib.optional (web && apps.fastfree_hr)
-        (webEntry "HR" "HR" "https://hr.${domain}") ++
-      lib.optional (web && apps.fastfree_pos)
-        (webEntry "pos" "POS" "https://pos.${domain}") ++
-      lib.optional (web && apps.phpmyadmin)
-        (webEntry "db" "Database" "https://${sd.db}.${domain}") ++
-      lib.optional (web && apps.cockpit)
-        (webEntry "panel" "Server Panel" "https://${sd.panel}.${domain}") ++
+      lib.optional apps.fastfree_website
+        (webEntry "website" "Website" "http://127.0.0.1:9004") ++
+      lib.optional apps.fastfree_erp
+        (webEntry "erp" "ERP" "http://127.0.0.1:9101") ++
+      lib.optional apps.fastfree_ledger
+        (webEntry "ledger" "Ledger" "http://127.0.0.1:9102") ++
+      lib.optional apps.fastfree_hr
+        (webEntry "HR" "HR" "http://127.0.0.1:9103") ++
+      lib.optional apps.fastfree_pos
+        (webEntry "pos" "POS" "http://127.0.0.1:9104") ++
+      lib.optional apps.phpmyadmin
+        (webEntry "db" "Database" "http://127.0.0.1:8082") ++
+      lib.optional apps.cockpit
+        (webEntry "panel" "Server Panel" "http://127.0.0.1:9090") ++
       lib.optional apps.opencode
         (webEntry "opencode" "AI Assistant" "http://127.0.0.1:4096");
 
     environment.shellAliases = lib.mkMerge [
-      (lib.mkIf (web && apps.fastfree_website) { ff-site = openAlias "https://${domain}"; })
-      (lib.mkIf (web && apps.fastfree_erp) { ff-erp = openAlias "https://erp.${domain}"; })
-      (lib.mkIf (web && apps.fastfree_ledger) { ff-ledger = openAlias "https://ledger.${domain}"; })
-      (lib.mkIf (web && apps.fastfree_hr) { ff-hr = openAlias "https://hr.${domain}"; })
-      (lib.mkIf (web && apps.fastfree_pos) { ff-pos = openAlias "https://pos.${domain}"; })
-      (lib.mkIf (web && apps.phpmyadmin) { ff-db = openAlias "https://${sd.db}.${domain}"; })
-      (lib.mkIf (web && apps.cockpit) { ff-panel = openAlias "https://${sd.panel}.${domain}"; })
+      (lib.mkIf apps.fastfree_website { ff-site = openAlias "http://127.0.0.1:9004"; })
+      (lib.mkIf apps.fastfree_erp { ff-erp = openAlias "http://127.0.0.1:9101"; })
+      (lib.mkIf apps.fastfree_ledger { ff-ledger = openAlias "http://127.0.0.1:9102"; })
+      (lib.mkIf apps.fastfree_hr { ff-hr = openAlias "http://127.0.0.1:9103"; })
+      (lib.mkIf apps.fastfree_pos { ff-pos = openAlias "http://127.0.0.1:9104"; })
+      (lib.mkIf apps.phpmyadmin { ff-db = openAlias "http://127.0.0.1:8082"; })
+      (lib.mkIf apps.cockpit { ff-panel = openAlias "http://127.0.0.1:9090"; })
       (lib.mkIf apps.opencode { ff-opencode = openAlias "http://127.0.0.1:4096"; })
     ];
   };

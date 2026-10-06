@@ -10,36 +10,49 @@ let
     }
   '';
 
-  spaServer = name: spaDir: ''
+  # Shared SPA handlers (used by BOTH the https site and the loopback site).
+  spaInner = spaDir: ''
+    header -Server
+    header Access-Control-Allow-Origin "*"
+    header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    header Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+    header Access-Control-Allow-Credentials "true"
+    header Access-Control-Max-Age "86400"
+    root * ${spaDir}
+    @api path /api/*
+    handle @api {
+      reverse_proxy 127.0.0.1:8080
+    }
+    @apiOptions method OPTIONS path /api/*
+    handle @apiOptions {
+      respond "OK" 204
+    }
+    @socketio path /socket.io/*
+    handle @socketio {
+      reverse_proxy 127.0.0.1:8080
+    }
+    @entryDoc path / /*.html
+    header @entryDoc Cache-Control no-cache
+    @immutableAssets path /assets/*
+    header @immutableAssets Cache-Control "public, max-age=31536000, immutable"
+    handle {
+      try_files {path} /index.html
+      file_server
+    }
+  '';
+
+  # Each SPA gets TWO sites with identical handlers:
+  #   https://<name>.<domain>  (pretty URL, needs working DNS + trusted CA)
+  #   http://127.0.0.1:<port>  (always works locally: no DNS, no TLS, no LAN exposure)
+  spaServer = name: spaDir: localPort: ''
     ${name}.${domain} {
       ${tlsBlock}
-      header -Server
-      header Access-Control-Allow-Origin "*"
-      header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-      header Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
-      header Access-Control-Allow-Credentials "true"
-      header Access-Control-Max-Age "86400"
-      root * ${spaDir}
-      @api path /api/*
-      handle @api {
-        reverse_proxy 127.0.0.1:8080
-      }
-      @apiOptions method OPTIONS path /api/*
-      handle @apiOptions {
-        respond "OK" 204
-      }
-      @socketio path /socket.io/*
-      handle @socketio {
-        reverse_proxy 127.0.0.1:8080
-      }
-      @entryDoc path / /*.html
-      header @entryDoc Cache-Control no-cache
-      @immutableAssets path /assets/*
-      header @immutableAssets Cache-Control "public, max-age=31536000, immutable"
-      handle {
-        try_files {path} /index.html
-        file_server
-      }
+      ${spaInner spaDir}
+    }
+
+    http://127.0.0.1:${toString localPort} {
+      bind 127.0.0.1
+      ${spaInner spaDir}
     }
   '';
 
@@ -72,10 +85,10 @@ let
       }
     }
 
-    ${lib.optionalString config.fastfree.apps.fastfree_erp (spaServer "erp" "/srv/fastfree-erp")}
-    ${lib.optionalString config.fastfree.apps.fastfree_ledger (spaServer "ledger" "/srv/fastfree-ledger")}
-    ${lib.optionalString config.fastfree.apps.fastfree_hr (spaServer "hr" "/srv/fastfree-hr")}
-    ${lib.optionalString config.fastfree.apps.fastfree_pos (spaServer "pos" "/srv/fastfree-pos")}
+    ${lib.optionalString config.fastfree.apps.fastfree_erp (spaServer "erp" "/srv/fastfree-erp" 9101)}
+    ${lib.optionalString config.fastfree.apps.fastfree_ledger (spaServer "ledger" "/srv/fastfree-ledger" 9102)}
+    ${lib.optionalString config.fastfree.apps.fastfree_hr (spaServer "hr" "/srv/fastfree-hr" 9103)}
+    ${lib.optionalString config.fastfree.apps.fastfree_pos (spaServer "pos" "/srv/fastfree-pos" 9104)}
 
     ${lib.optionalString config.fastfree.apps.phpmyadmin ''
       ${sd.db}.${domain} {
