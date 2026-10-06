@@ -385,7 +385,7 @@ in {
       image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
       pull = "always";
       autoStart = true;
-      ports = [ "8080:8080" ];
+      ports = [ "127.0.0.1:8080:8080" ];
       extraOptions = [ "--network=fastfree-net" ];
       cmd = [ "nginx-entrypoint.sh" ];
       environment = {

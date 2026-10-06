@@ -24,7 +24,7 @@ in {
       image = "ghcr.io/${ghAccount}/fastfree_website:latest";
       pull = "always";
       autoStart = true;
-      ports = [ "9004:3000" ];
+      ports = [ "127.0.0.1:9004:3000" ];
       extraOptions = [
         "--network=fastfree-website-net"
       ];

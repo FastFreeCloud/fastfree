@@ -102,6 +102,10 @@ in {
       kitty
       btop
       google-chrome
+      # ── RDP clients (HopToDesk does NOT speak RDP — different protocol) ──
+      # Remmina: GUI profiles/gateway/shares; freerdp: xfreerdp CLI companion.
+      remmina
+      freerdp
     ];
 
     # ── COSMIC per-user config: keyboard + Windows shortcuts ─

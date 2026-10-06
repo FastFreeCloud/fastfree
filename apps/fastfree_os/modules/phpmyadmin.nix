@@ -14,7 +14,7 @@
       # start-limit-hit the unit). Use --regenerate-style manual pull for updates.
       pull = "missing";
       autoStart = true;
-      ports = [ "8082:80" ];
+      ports = [ "127.0.0.1:8082:80" ];
       extraOptions = [
         "--add-host=host.containers.internal:host-gateway"
       ];
