@@ -93,6 +93,6 @@
   fastfree.avahi = {
     enable = true;
     reflector = false;
-    interfaces = [ "eth0" "wg0" ];
+    interfaces = [ "eth0" "wg0" "wireguard" ];
   };
 }

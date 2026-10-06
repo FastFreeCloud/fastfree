@@ -146,7 +146,7 @@
       interfaces = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [];
-        description = "Network interfaces for Avahi (empty = all non-loopback).";
+        description = "Network interfaces for Avahi (empty = all non-loopback). NOTE: the Clan wireguard interface is literally named `wireguard` (instance name); legacy manual mesh is `wg0` — list both where both exist.";
       };
     };
 

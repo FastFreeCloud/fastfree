@@ -105,7 +105,7 @@
   fastfree.avahi = {
     enable = true;
     reflector = false;
-    interfaces = [ "ens18" "wg0" ];
+    interfaces = [ "ens18" "wg0" "wireguard" ];
   };
 
   # MariaDB state lives in modules/mariadb.nix (all mariadb machines).
