@@ -174,16 +174,19 @@ in {
           'map ctrl+minus change_font_size all -2.0' > "$k"
         chown "$user" "$k"
 
-        # 4) launcher hygiene: hide the kitty icon (binary stays for
-        # shortcuts; cosmic-term is the visible terminal). A user-level
-        # .desktop shadows the system one (XDG precedence). Created once;
-        # deleting it restores the icon until next switch.
+        # 4) launcher hygiene: hide redundant icons (binaries stay functional;
+        # htop runs via Ctrl+Shift+Esc, screenshot via Print key, printing
+        # via the Settings panel; cosmic-term is the visible terminal).
+        # NoDisplay user overrides shadow system entries (XDG precedence).
+        # Created once; deleting one restores its icon until next switch.
         mkdir -p "$home/.local/share/applications"
-        kf="$home/.local/share/applications/kitty.desktop"
-        if [ ! -f "$kf" ]; then
-          printf '%s\n' '[Desktop Entry]' 'Name=kitty' 'Type=Application' 'NoDisplay=true' > "$kf"
-        fi
-        chown "$user" "$kf"
+        for app in kitty htop com.system76.CosmicScreenshot cups; do
+          kf="$home/.local/share/applications/$app.desktop"
+          if [ ! -f "$kf" ]; then
+            printf '%s\n' '[Desktop Entry]' "Name=$app" 'Type=Application' 'NoDisplay=true' > "$kf"
+            chown "$user" "$kf"
+          fi
+        done
       done
     '';
   };

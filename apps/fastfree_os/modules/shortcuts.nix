@@ -53,9 +53,9 @@ in {
       (lib.mkIf apps.opencode { ff-opencode = openAlias "http://127.0.0.1:4096"; })
     ];
 
-    # ── FastFree group in COSMIC App Library ────────────────
-    # Seed-only: created once if absent, never overwritten, so the user's
-    # own organization (drag/rename/reorder) always wins over ours.
+    # ── FastFree group in COSMIC App Library (plus implicit Home) ─
+    # Exactly 2 groups total by design. Seed-only: created once if absent,
+    # never overwritten, so the user's own organization always wins.
     # Format per cosmic-app-library app_group.rs: AppIds = .desktop basenames.
     # (No Dock folders exist upstream — dock favorites stay a flat list.)
     system.activationScripts.fastfree-app-group = ''
@@ -67,7 +67,7 @@ in {
         mkdir -p "$gdir"
         if [ ! -f "$gdir/groups" ]; then
           printf '%s\n' \
-            '// fastfree-managed seed: FastFree app group (safe to edit freely).' \
+            '// fastfree-managed seed: app groups (safe to edit freely).' \
             '[' \
             '  (' \
             '    name: "FastFree",' \
