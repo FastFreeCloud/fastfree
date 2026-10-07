@@ -46,6 +46,13 @@ in {
     # ── Browser ─────────────────────────────────────────────
     programs.firefox.enable = true;
 
+    # Brave (unfree): full codecs out-of-box + Shields cut heavy pages.
+    # Best pick for weak-GPU machines over Firefox/Chrome stock.
+    nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+      "brave"
+    ];
+    environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
     # ── Flatpak + Flathub ───────────────────────────────────
     services.flatpak.enable = true;
     systemd.services.flatpak-repo = {
@@ -64,6 +71,10 @@ in {
       cosmic-term
       cosmic-files
       kitty
+      brave
+      # mpv + yt-dlp: YouTube outside the browser (lowest CPU on weak GPUs).
+      mpv
+      yt-dlp
       # Remmina GUI + xfreerdp CLI (HopToDesk does not speak RDP).
       remmina
       freerdp
