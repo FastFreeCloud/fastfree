@@ -83,6 +83,9 @@ in {
     # Backs up existing files once (*.fastfree-bak). GUI changes to Input
     # Sources overwrite xkb_config — re-run switch to restore ours.
     system.activationScripts.cosmic-windows = ''
+      # Activation PATH is minimal (no sed/grep/awk!): builtins + coreutils
+      # only. Keep every command in this script to that set.
+      export PATH="${pkgs.coreutils}/bin:$PATH"
       for home in /home/*; do
         [ -d "$home" ] || continue
         user=$(basename "$home")
@@ -139,10 +142,21 @@ in {
           src="$systemConfig/sw/share/applications/$id"
           dst="$home/.local/share/applications/$id"
           if [ ! -f "$dst" ] && [ -f "$src" ]; then
-            cp "$src" "$dst"
-            sed -i "s|^Name=.*|Name=$new|" "$dst"
-            sed -i "s|^Name\[en\]=.*|Name[en]=$new|" "$dst"
-            sed -i "s|^Name\[ar\]=.*|Name[ar]=$ar|" "$dst"
+            # Rename by streaming lines (no sed in activation): only the
+            # Name keys change, everything else (Exec/Icon/MimeType/Actions)
+            # passes through byte-identical.
+            while IFS= read -r line || [ -n "$line" ]; do
+              key="''${line%%=*}"
+              if [ "$key" = "Name" ]; then
+                printf 'Name=%s\n' "$new"
+              elif [ "$key" = "Name[en]" ]; then
+                printf 'Name[en]=%s\n' "$new"
+              elif [ "$key" = "Name[ar]" ]; then
+                printf 'Name[ar]=%s\n' "$ar"
+              else
+                printf '%s\n' "$line"
+              fi
+            done < "$src" > "$dst"
             chown "$user" "$dst"
           fi
         done

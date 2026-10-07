@@ -47,6 +47,8 @@ in {
     # ── Per-user opencode integration ───────────────────────
     # Idempotent upstream command; $systemConfig = new (not yet live) system.
     system.activationScripts.herdr-integrations = ''
+      # Activation PATH is minimal: add what this script uses.
+      export PATH="${pkgs.coreutils}/bin:${pkgs.sudo}/bin:$PATH"
       for home in /home/*; do
         [ -d "$home" ] || continue
         user=$(basename "$home")
