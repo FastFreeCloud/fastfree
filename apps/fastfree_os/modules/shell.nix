@@ -12,8 +12,7 @@
     programs.zsh.autosuggestions.enable = true;
     programs.zsh.syntaxHighlighting.enable = true;
 
-    # herdr completion (from https://herdr.dev/docs/cli-reference/#shell-completions)
-    # generates _herdr on every shell start if herdr is on PATH
+    # herdr completion (per https://herdr.dev/docs/cli-reference/#shell-completions)
     programs.zsh.interactiveShellInit = ''
       if command -v herdr >/dev/null 2>&1; then
         fpath=(~/.zfunc $fpath)
@@ -23,25 +22,25 @@
       autoload -Uz compinit 2>/dev/null || true
     '';
 
-    # ── Deep-search CLI tools (rg + fd + ugrep) ─────────────
+    # ── Search CLI tools ────────────────────────────────────
     environment.systemPackages = with pkgs; [
       zsh
-      ripgrep   # 1) fastest content search
-      fd        # 2) fastest file-name search
-      ugrep     # 3) deep regex search
+      ripgrep
+      fd
+      ugrep
       fzf
       bat
       eza
       zoxide
       starship
       jq
-      pciutils  # lspci: identify GPU/PCI hardware
+      pciutils
     ];
 
     programs.fzf.keybindings = true;
     programs.starship.enable = true;
 
-    # ── Aliases: deep search with 3+ tools ─────────────────
+    # ── Search aliases ──────────────────────────────────────
     environment.shellAliases = {
       ff-rg = "rg -n --hidden --glob '!.git'";
       ff-fd = "fd -H -I";

@@ -14,19 +14,13 @@
       "https://github.com/${config.fastfree.githubAccount}/fastfree.git";
 
     # ── GitHub Token via Clan vars (never a Nix option) ─────
-    # Token is issued by GitHub, not generatable: sentinel default keeps the
-    # feature dormant. Set a real one (stays encrypted, never in store):
-    #   clan vars set <machine> github-token/token
-    # Later `generate` runs keep it (only --regenerate would replace it).
+    # Issued by GitHub, not generatable: sentinel default = dormant.
+    # Set real one: clan vars set <machine> github-token/token
     clan.core.vars.generators.github-token = {
       files.token.secret = true;
       files.token.neededFor = "activation";
       runtimeInputs = [ pkgs.coreutils ];
       script = ''
-        # Token is issued by GitHub (not generatable). Sentinel default =
-        # feature dormant (sops cannot store empty secrets). Set a real one:
-        #   clan vars set <machine> github-token/token
-        # Later `generate` runs keep it (only --regenerate would restore this).
         printf '%s' '__NOT_SET__' > $out/token
       '';
     };
@@ -36,17 +30,14 @@
     environment.etc."fastfree/flake-config".text = config.fastfree.flakeConfigName;
     environment.etc."fastfree/git-origin".text = config.fastfree.gitOrigin;
 
-    # ── GitHub Token file (for private repo access) ─────────
-    # Reads the vars secret at RUNTIME (activation timing is guaranteed by
-    # neededFor="activation"); empty token = file removed = dormant.
+    # ── GitHub Token file (runtime vars read; empty = removed) ─
     systemd.services.fastfree-git-token = {
       description = "Write GitHub token to file";
       wantedBy = [ "multi-user.target" ];
       serviceConfig.Type = "oneshot";
       script = ''
         mkdir -p /etc/fastfree
-        # Tolerant read: secrets may not be deployed yet on first activation;
-        # converges on next switch/boot instead of failing the switch.
+        # Tolerant: converges next switch/boot if secrets aren't deployed yet.
         TOKEN=$(cat "${config.clan.core.vars.generators.github-token.files.token.path}" 2>/dev/null || true)
         if [ -n "$TOKEN" ] && [ "$TOKEN" != "__NOT_SET__" ]; then
           echo -n "$TOKEN" > /etc/fastfree/github-token
@@ -58,7 +49,7 @@
       '';
     };
 
-    # ── GHCR Authentication (runtime read, after secrets setup) ─
+    # ── GHCR Authentication (runtime read) ──────────────────
     system.activationScripts.ghcr-auth = lib.stringAfter [ "setupSecrets" ] ''
       SECRET="${config.clan.core.vars.generators.github-token.files.token.path}"
       if [ -s "$SECRET" ] && [ "$(cat "$SECRET")" != "__NOT_SET__" ]; then

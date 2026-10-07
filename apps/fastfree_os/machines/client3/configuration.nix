@@ -45,9 +45,8 @@ in
   # do NOT add it here (double import = conflicting definitions).
   ];
 
-  # ── Local preservation (was nix/local-machine.nix, merged here) ──
-  # Legacy BIOS GRUB + OS prober (dual-boot), NetworkManager, existing
-  # desktop user, open GPU stack, SSH OFF, unfree allowed.
+  # ── Local preservation: legacy BIOS GRUB + OS prober (dual-boot),
+  # NetworkManager, existing desktop user, open GPU stack, SSH OFF.
 
   fastfree.identity.name = lib.mkForce "client3";
   fastfree.identity.domain = lib.mkForce "fastfree.local";
@@ -99,7 +98,7 @@ in
   # ── SSH stays OFF (openssh was commented out on this machine) ──
   services.openssh.enable = lib.mkForce false;
 
-  # ── Packages (git comes from base.nix) ──
+  # ── Packages (git comes from the base module) ──
   environment.systemPackages = [
     pkgs.wget
     unstablePkgs.opencode

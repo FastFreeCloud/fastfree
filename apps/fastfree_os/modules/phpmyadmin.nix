@@ -9,9 +9,8 @@
     # Requires fastfree.apps.mariadb on the same machine.
     virtualisation.oci-containers.containers.phpmyadmin = {
       image = "docker.io/phpmyadmin:5.2.1";
-      # Pinned tag on quota-limited docker.io: pull once, never on every
-      # restart (2026-10-05: pull="always" burned the anonymous quota and
-      # start-limit-hit the unit). Use --regenerate-style manual pull for updates.
+      # Pinned tag on quota-limited docker.io: pull once (restarts must not
+      # burn anonymous quota into start-limit-hit).
       pull = "missing";
       autoStart = true;
       ports = [ "127.0.0.1:8082:80" ];

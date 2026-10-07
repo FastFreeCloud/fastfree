@@ -1,15 +1,8 @@
 { config, lib, pkgs, ... }:
 
-# FastFree app shortcuts — the professional NixOS way.
-# Every enabled app gets: an XDG desktop entry (COSMIC launcher, Super-searchable)
-# + a shell alias. URLs point at LOOPBACK ports on purpose:
-#   - no DNS needed (.local is unresolvable by design: nsswitch mdns4_minimal
-#     NOTFOUND=return + avahi refuses D-Bus publishing here)
-#   - no TLS warnings (plain http on loopback, never LAN-exposed)
-# The pretty https://<app>.<domain> names keep working wherever real DNS
-# exists (VPS/LAN) — served by the same Caddy blocks (see caddy.nix).
-# Skipped deliberately: backend (API only, no UI), mariadb (via db entry),
-# base/shell/herdr (CLI tools, already have aliases), caddy/avahi (infra).
+# App shortcuts: XDG desktop entry + shell alias per enabled app.
+# URLs use loopback ports (no DNS/TLS issues, never LAN-exposed).
+# Skipped: backend (API only), mariadb (via db), CLI tools (have aliases).
 let
   apps = config.fastfree.apps;
 

@@ -12,10 +12,8 @@ in {
   };
 
   config = lib.mkIf (config.fastfree.apps.opencode && cfg.package != null) {
-    # Runs as the logged-in user (needs their API keys in ~/.config/opencode).
-    # `opencode web` blocks serving HTTP 200 (verified) and tries to open the
-    # browser; without a display the server keeps running (verified headless).
-    # Localhost only (127.0.0.1) — no LAN exposure.
+    # Runs as the logged-in user (needs their API keys); localhost only.
+    # `opencode web` blocks serving HTTP (browser open is best-effort).
     systemd.user.services.opencode-web = {
       description = "OpenCode web interface on http://127.0.0.1:4096";
       wantedBy = [ "graphical-session.target" "default.target" ];

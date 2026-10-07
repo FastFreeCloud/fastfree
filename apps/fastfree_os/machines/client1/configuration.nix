@@ -1,7 +1,7 @@
 # Clan machine: client1 (Hyper-V image)
 # Official autoincludes: machines/<name>/configuration.nix is imported automatically.
 
-# Secrets (passwords/privateKeys) come in phase 2 via `clan vars` — intentionally absent here.
+# Secrets (passwords/privateKeys) come via `clan vars` — intentionally absent here.
 # NOTE: image-only machine. Never `clan machines install` — built as VHDX via CI (09-client1.yaml).
 { config, lib, pkgs, inputs, modulesPath, ... }:
 

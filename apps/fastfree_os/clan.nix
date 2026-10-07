@@ -1,5 +1,5 @@
 # FastFree Clan — inventory (official: clan.lol/docs/26.05/guides/inventory/intro-to-inventory)
-# Machines registry + service assignment. Secrets come later via `clan vars` (phase 2).
+# Machines registry + service assignment.
 {
   meta.name = "fastfree";
   meta.domain = "fastfree.local";
@@ -26,7 +26,7 @@
   # - sshd: host keys auto-generated, no prompts.
   # - users: prompt=false = auto-generate random password, never asks
   #   (official docs: prompt=true would ask on install/update when var is missing).
-  # Secrets land encrypted in vars/ via `clan vars generate` (phase 1b).
+  # Secrets land encrypted in vars/ via `clan vars generate`.
   inventory.instances = {
     sshd = {
       roles.server.tags = [ "all" ];

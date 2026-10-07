@@ -8,14 +8,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # Clan 26.05 (official: convert-existing-NixOS-configuration).
-    # Read-only in phase 1: inventory + build/check only, no install/switch.
     clan-core = {
       url = "https://git.clan.lol/clan/clan-core/archive/26.05.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # Herdr CLI (not in nixpkgs-26.05): system-wide binary for all machines.
     herdr.url = "github:herdrdev/herdr";
-    # Pinned unstable for opencode (replaces builtins.getFlake impurity in local-machine.nix).
+    # Pinned unstable for opencode.
     nixpkgs-unstable = {
       url = "github:NixOS/nixpkgs/nixos-unstable";
     };

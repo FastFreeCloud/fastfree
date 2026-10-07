@@ -64,8 +64,8 @@ Production-ready NixOS with multi-client architecture, **3 deployment types** (v
 │  Clients:  client1 (Hyper-V) · client2 (VPS) · client3 (local)  │
 └─────────────────────────────────────────────────────────────────┘
 ```
-│       │              flake.nix               frappe_docker       │
-│       │              nix build               docker build       │
+│       │              flake.nix               app sources         │
+│       │              nix build               docker build         │
 │       │                     │                      │             │
 │       │                     ▼                      ▼             │
 │       │              ghcr.io/fastfree_backend:latest             │
@@ -77,7 +77,7 @@ Production-ready NixOS with multi-client architecture, **3 deployment types** (v
 │  │  MariaDB ◄──── fastfree_backend.nix (Podman containers)    │   │
 │  │       ◄──── phpmyadmin.nix                              │   │
 │  │                                                          │   │
-│  │  WireGuard VPN ◄── wireguard.nix                        │   │
+│  │  WireGuard mesh ◄── clan.nix (official service)     │   │
 │  │  Avahi mDNS     ◄── avahi-subdomains.nix                │   │
 │  │  Caddy          ◄── caddy.nix (VPS + local)                    │   │
 │  └─────────────────────────────────────────────────────────┘   │
@@ -91,10 +91,10 @@ Production-ready NixOS with multi-client architecture, **3 deployment types** (v
                               fastfree_backend
                               ───────────────
 
-                              frappe_docker
-                                 │
-                                 └─ docker build
-                                    docker push → GHCR
+                               app sources
+                                  │
+                                  └─ docker build
+                                     docker push → GHCR
 
         GHCR (Image Registry)
         ─────────────────────
@@ -255,9 +255,9 @@ To support development, we use several testing methods spanning from instant syn
 
 #### fastfree_backend
 
-```
+```text
 git push → GitHub Actions →
-  ├─ Clone frappe_docker (official Frappe Containerfiles)
+  ├─ Clone app sources (official Frappe Containerfiles)
   ├─ Generate apps.json (ERPNext + fastfree_backend)
   ├─ docker build with BuildKit
   ├─ Tag + push to GHCR (latest, version, sha)
@@ -275,7 +275,7 @@ git push → GitHub Actions →
 | 22 | SSH | — | 0.0.0.0 |
 | 3306 | MariaDB | — | 0.0.0.0 |
 | 443 | Caddy | — | 0.0.0.0 (VPS) |
-| 51820 | WireGuard | — | 0.0.0.0 |
+| 51821 | WireGuard (Clan mesh) | — | 0.0.0.0 |
 | 8080 | Frappe/ERPNext | fastfree-backend-frontend | Podman |
 | 8082 | phpMyAdmin | phpmyadmin | Podman |
 
@@ -297,8 +297,8 @@ git push → GitHub Actions →
 
 | Service | Local (client3) | Hyper-V (client1) | VPS (client2) |
 |:--------|:----|:--------|:----|
-| Frappe/ERPNext | `https://erp.fastfree.local` | `http://client1.local:8080` | `https://erp.fastfree.cloud` |
-| phpMyAdmin | `https://db.fastfree.local` | `http://db.client1.local:8082` | `https://db.fastfree.cloud` |
+| Frappe/ERPNext | `https://erp.fastfree.local` | `https://erp.client1.fastfree.local` | `https://erp.fastfree.cloud` |
+| phpMyAdmin | `https://db.fastfree.local` | `https://db.client1.fastfree.local` | `https://db.fastfree.cloud` |
 | SSH | local login | `ssh root@client1.local` | `ssh root@fastfree.cloud` |
 
 ---
@@ -404,29 +404,21 @@ Each client has its own config in `machines/<name>/` (Clan inventory in `clan.ni
 ```nix
 # machines/client3/configuration.nix (local — in-place rebuild, no disk changes)
 {
-  hostName = "nixos";
-  domain   = "fastfree.local";
-  deployType = "local";      # "vps" | "hyperv" | "local"
-  build = false;             # only hyperv images are CI-built
+  fastfree.identity.name = "client3";
+  fastfree.identity.domain = "fastfree.local";
+  fastfree.deployType = "local";      # "vps" | "hyperv" | "local"
+  # Secrets (DB root/user, Frappe admin, user passwords) come from
+  # `clan vars` — never as Nix options (values would bake into /nix/store).
 
-  passwords = {
-    root        = "fastfree@2026";
-    admin       = "fastfree@2026";
-    mariadbRoot = "fastfree@2026";
-    mariadbUser = "fastfree@2026";
+  fastfree.apps = {
+    base             = true;
+    mariadb          = true;
+    fastfree_backend = true;
+    phpmyadmin       = true;
   };
-
-  apps = {
-    base              = true;
-    mariadb           = true;
-    fastfree_backend  = true;
-    phpmyadmin        = true;
-  };
-
-  wireguard = { enable = false; address = "10.100.0.1"; };
-  avahi     = { enable = false; };
 }
 ```
+WireGuard lives in `clan.nix` inventory (not per-machine options); Avahi via `fastfree.avahi.enable` + `fastfree.avahi.interfaces`.
 
 ### Adding a New Client
 
@@ -482,13 +474,16 @@ All passwords are centralized in `machines/*/configuration.nix` (+ `clan vars` s
 
 ---
 
-## WireGuard VPN
+## WireGuard
 
-Each client runs a built-in WireGuard interface (`wg0`) managed by NixOS.
+Two meshes (Clan docs: services/official/wireguard):
 
-| Interface | Address | ListenPort |
-|:----------|:--------|:-----------|
-| `wg0` | `10.100.0.x/24` | `51820` |
+| Mesh | Interface | Address | ListenPort | Managed by |
+|:-----|:----------|:--------|:-----------|:-----------|
+| Clan (primary) | `wireguard` | IPv6 ULA (`fd28:…/56`) | `51821` | `clan.nix` inventory |
+| Legacy (field devices) | `wg0` | `10.100.0.x/24` | manual | outside NixOS |
+
+Avahi `allowInterfaces` lists both where both exist (`options.nix`).
 
 ---
 

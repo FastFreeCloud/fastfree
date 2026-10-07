@@ -54,7 +54,7 @@
         "firecrawl-mcp"
       ],
       "environment": {
-        "FIRECRAWL_API_KEY": "fc-cb74dbc8adea45dc85a19a1e5c09fe94"
+        "FIRECRAWL_API_KEY": ""
       }
     },
     "browsermcp": {

@@ -2,8 +2,7 @@
 
 let
   ghAccount = lib.strings.toLower config.fastfree.githubAccount;
-  # Secrets (Clan vars, official sops/age backend). Only .path is
-  # interpolated (points at /run/secrets) — values never enter /nix/store.
+  # Secrets via Clan vars (only .path interpolated, never values).
   dbRootPassFile = config.clan.core.vars.generators.mariadb-root.files.password.path;
   dbUserPassFile = config.clan.core.vars.generators.fastfree-backend.files.db-password.path;
   frappeAdminPassFile = config.clan.core.vars.generators.fastfree-backend.files.admin-password.path;
@@ -11,8 +10,7 @@ in {
   config = lib.mkIf config.fastfree.apps.fastfree_backend {
 
     # ── Secrets (Clan vars generators, no prompts) ──────────
-    # openssl pattern per docs/guides/vars/vars-advanced-examples.
-    # Requires fastfree.apps.mariadb on the same machine (root password).
+    # Needs apps.mariadb on the same machine (root password generator).
     clan.core.vars.generators.fastfree-backend = {
       files.db-password.secret = true;
       files.db-password.neededFor = "services";
@@ -132,8 +130,7 @@ in {
       script = ''
         # Destroy and recreate network with DNS
         # NOTE: podman's default network already uses 10.89.0.0/24 —
-        # fastfree-net must NOT collide with it (2026-10-05: create failed
-        # silently, every backend container failed with "network not found").
+        # a colliding subnet fails silently and breaks every container.
         ${pkgs.podman}/bin/podman network rm fastfree-net 2>/dev/null || true
         ${pkgs.podman}/bin/podman network create \
           --driver bridge \

@@ -1,7 +1,7 @@
 # Clan machine: client2 (production VPS)
 # Official autoincludes: machines/<name>/configuration.nix is imported automatically.
 
-# Secrets (passwords/privateKey/deployPassword) come in phase 2 via `clan vars`.
+# Secrets (passwords/privateKeys) come via `clan vars` — intentionally absent here.
 # Deployed via `clan machines update client2`; first install via
 # `clan machines install client2 --target-host root@<IP>` (wipes disk — fresh only).
 { config, lib, pkgs, inputs, ... }:

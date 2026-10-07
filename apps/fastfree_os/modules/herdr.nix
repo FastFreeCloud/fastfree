@@ -11,19 +11,15 @@ in {
     };
   };
 
-  config = lib.mkIf (config.fastfree.apps.herdr || cfg.enable) {
+  config = lib.mkIf config.fastfree.apps.herdr {
 
-    # ── Optional system-wide herdr package ──────────────────
-    # Default null: herdr 0.9.3 is already installed per-user via
-    # `nix profile install github:herdrdev/herdr` (/home/fastfree/.nix-profile/bin/herdr).
-    # It is NOT in nixpkgs-26.05, so we do not force pkgs.herdr here.
+    # herdr comes from the flake input (set per-machine via
+    # fastfree.herdr.package); not in nixpkgs, never pkgs.herdr.
     environment.systemPackages =
       lib.optional (cfg.package != null) cfg.package
       ++ (with pkgs; [ jq ]);
 
-    # ── Local copy of CLI reference inside the project ──────
-    # Source: https://herdr.dev/docs/cli-reference/ (v0.9.3, stable)
-    # Full cheatsheet lives in docs/herdr-cli.md
+    # Local CLI reference (docs/herdr-cli.md) + quick start.
     environment.etc."herdr/cli-reference.md".source = ../docs/herdr-cli.md;
     environment.etc."herdr/README".text = ''
       Herdr CLI 0.9.3 — quick start:
@@ -36,7 +32,7 @@ in {
       Upstream docs: https://herdr.dev/docs/cli-reference/
     '';
 
-    # ── zsh integration (needs modules/shell.nix) ───────────
+    # ── zsh integration ─────────────────────────────────────
     programs.zsh.interactiveShellInit = lib.mkAfter ''
       # herdr socket helpers (same local socket API as CLI)
       if command -v herdr >/dev/null 2>&1; then
@@ -48,10 +44,8 @@ in {
       fi
     '';
 
-    # ── Per-user opencode integration (declarative) ─────────
-    # Runs `herdr integration install opencode` for every local user that
-    # has BOTH binaries (upstream command merges configs itself, idempotent).
-    # $systemConfig = new system (not yet live during activation).
+    # ── Per-user opencode integration ───────────────────────
+    # Idempotent upstream command; $systemConfig = new (not yet live) system.
     system.activationScripts.herdr-integrations = ''
       for home in /home/*; do
         [ -d "$home" ] || continue

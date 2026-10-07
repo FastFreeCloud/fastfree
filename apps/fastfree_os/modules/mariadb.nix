@@ -3,12 +3,8 @@
 {
   config = lib.mkIf config.fastfree.apps.mariadb {
 
-    # DB credentials via Clan vars (official sops/age backend).
-    # Fully non-interactive: NO prompts — random values from openssl
-    # (official pattern: docs/guides/vars/vars-advanced-examples).
-    # Stored encrypted in vars/, deployed to /run/secrets.
-    # pma-env derives from the same value (docs: combine related files
-    # in one generator) for phpmyadmin's environmentFiles.
+    # DB credentials via Clan vars (openssl pattern, no prompts).
+    # pma-env derives from the same value for phpmyadmin's environmentFiles.
     clan.core.vars.generators.mariadb-root = {
       files.password.secret = true;
       files.password.neededFor = "services";
@@ -33,8 +29,7 @@
     };
 
     # Containers reach MariaDB via host-gateway IP, never loopback; the
-    # default firewall DROPs that (2026-10-05: bench hung in "Waiting for
-    # MariaDB" until this rule). Scoped to podman subnets only — never LAN.
+    # default firewall DROPs that. Scoped to podman subnets only.
     # Inserted (-I) so it precedes the drop; -C guard keeps rebuilds idempotent.
     networking.firewall.extraCommands = ''
       for net in 10.88.0.0/16 10.89.0.0/24 10.90.0.0/24; do

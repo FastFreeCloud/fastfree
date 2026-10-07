@@ -16,10 +16,8 @@ in {
       serviceConfig.RemainAfterExit = true;
       path = [ pkgs.podman pkgs.coreutils ];
       script = ''
-        # NOTE (2026-10-06): GHCR images contain nix-store SYMLINKS under /srv
-        # that resolve ONLY inside the container mount namespace (host-side
-        # `podman mount` view cannot read them). `podman cp` is server-side
-        # and materializes real files. Verified live on ledger image.
+        # GHCR images carry nix-store symlinks under /srv that resolve only
+        # inside the container namespace — copy per-file server-side.
         rm -rf ${spaDir}
         mkdir -p ${spaDir}
         IMAGE="ghcr.io/${ghAccount}/fastfree_pos:latest"

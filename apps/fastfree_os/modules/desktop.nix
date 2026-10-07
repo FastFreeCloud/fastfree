@@ -9,37 +9,25 @@ in {
     services.displayManager.cosmic-greeter.enable = true;
     services.desktopManager.cosmic.enable = true;
 
-    # ── NVIDIA (local physical machine only) ────────────────
-    # Copied from the proven /etc/nixos config of this exact hardware.
-    # Without it COSMIC/Plymouth fall back to nouveau (broken/slow on
-    # modern NVIDIA). Servers/images keep the open stack (no HW present).
-#    services.xserver.videoDrivers = lib.mkIf isLocal [ "nvidia" ];
-#    hardware.nvidia = lib.mkIf isLocal {
- #     modesetting.enable = true;
-  #    powerManagement.enable = true;
-   #   powerManagement.finegrained = false;
-    #  open = false;
-     # nvidiaSettings = true;
-#      package = config.boot.kernelPackages.nvidiaPackages.stable;
- #   };
+    # No proprietary NVIDIA driver (user decision) — open stack stays.
+    # Do NOT re-add videoDrivers/hardware.nvidia without explicit approval.
 
     services.xserver.xkb = {
-      # English + Arabic, Alt+Shift toggle (Windows-style).
-      # Covers the login greeter, XWayland apps, and TTY (via useXkbConfig).
-      # COSMIC itself reads ~/.config/cosmic/.../xkb_config (deployed below).
+      # us+ara, Alt+Shift toggle. Covers greeter, XWayland, TTY.
+      # COSMIC reads ~/.config/cosmic/.../xkb_config (deployed below).
       layout = "us,ara";
       variant = ",";
       options = "grp:alt_shift_toggle";
     };
     console.useXkbConfig = true;
 
-    # Wayland fallback: compositors using libxkbcommon honor these.
+    # Wayland fallback for libxkbcommon compositors.
     environment.sessionVariables = {
       XKB_DEFAULT_LAYOUT = "us,ara";
       XKB_DEFAULT_OPTIONS = "grp:alt_shift_toggle";
     };
 
-    # ── Sound (PipeWire, same profile as local machine) ─────
+    # ── Sound ───────────────────────────────────────────────
     services.pulseaudio.enable = false;
     security.rtkit.enable = true;
     services.pipewire = {
@@ -56,7 +44,6 @@ in {
     programs.firefox.enable = true;
 
     # ── Flatpak + Flathub ───────────────────────────────────
-    # Flatseal (user's own) is managed here; HopToDesk removed per request.
     services.flatpak.enable = true;
     systemd.services.flatpak-repo = {
       wantedBy = [ "multi-user.target" ];
@@ -69,26 +56,19 @@ in {
     };
 
     # ── Terminal + Files + task manager ────────────────────
-    # Needed by the Windows-like shortcuts below
-    # (Ctrl+Alt+T, Win+E, Ctrl+Shift+Esc). htop (not btop) is the single
-    # visible task manager; kitty stays installed for shortcuts but hidden
-    # from the launcher (cosmic-term is the visible terminal).
+    # kitty is shortcut-only (hidden from launcher); htop is the task manager.
     environment.systemPackages = with pkgs; [
       cosmic-term
       cosmic-files
       kitty
-      # ── RDP clients (HopToDesk does NOT speak RDP — different protocol) ──
-      # Remmina: GUI profiles/gateway/shares; freerdp: xfreerdp CLI companion.
+      # Remmina GUI + xfreerdp CLI (HopToDesk does not speak RDP).
       remmina
       freerdp
     ];
 
-    # ── COSMIC per-user config: keyboard + Windows shortcuts ─
-    # COSMIC stores these as RON files under ~/.config/cosmic and has
-    # no NixOS options for them, so we deploy them via activation.
-    # First run backs up existing files to *.fastfree-bak (once only).
-    # NOTE: changing Input Sources in COSMIC Settings GUI overwrites
-    # xkb_config — re-run nixos-rebuild switch to restore ours.
+    # ── COSMIC per-user config (no NixOS options exist for these) ─
+    # Backs up existing files once (*.fastfree-bak). GUI changes to Input
+    # Sources overwrite xkb_config — re-run switch to restore ours.
     system.activationScripts.cosmic-windows = ''
       for home in /home/*; do
         [ -d "$home" ] || continue
