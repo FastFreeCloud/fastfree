@@ -66,11 +66,11 @@ in {
     };
 
     # ── Terminal + Files + task manager ────────────────────
-    # kitty is shortcut-only (hidden from launcher); htop is the task manager.
+    # cosmic-term is the single visible terminal; top (base system) is the
+    # task manager. No kitty/htop/btop packages (launcher stays clean).
     environment.systemPackages = with pkgs; [
       cosmic-term
       cosmic-files
-      kitty
       brave
       # mpv + yt-dlp: YouTube outside the browser (lowest CPU on weak GPUs).
       mpv
@@ -114,41 +114,49 @@ in {
           '{' \
           '    (modifiers: [Super], key: "e", description: Some("Files (Win+E)")): System(HomeFolder),' \
           '    (modifiers: [Super], key: "l", description: Some("Lock (Win+L)")): System(LockScreen),' \
-          '    (modifiers: [Super], key: "t", description: Some("Terminal kitty (Win+T)")): Spawn("kitty"),' \
-          '    (modifiers: [Ctrl, Alt], key: "t", description: Some("Terminal kitty (Ctrl+Alt+T)")): Spawn("kitty"),' \
+          '    (modifiers: [Super], key: "t", description: Some("Terminal (Win+T)")): Spawn("cosmic-term"),' \
+          '    (modifiers: [Ctrl, Alt], key: "t", description: Some("Terminal (Ctrl+Alt+T)")): Spawn("cosmic-term"),' \
           '    (modifiers: [Alt], key: "F2", description: Some("Run command")): System(Launcher),' \
-          '    (modifiers: [Ctrl, Shift], key: "Escape", description: Some("Task manager (Ctrl+Shift+Esc)")): Spawn("cosmic-term -e htop"),' \
+          '    (modifiers: [Ctrl, Shift], key: "Escape", description: Some("Task manager (Ctrl+Shift+Esc)")): Spawn("cosmic-term -e top"),' \
           '    (modifiers: [Ctrl, Alt], key: "Delete", description: Some("Log out (Ctrl+Alt+Del)")): System(LogOut),' \
           '}' > "$s"
 
         chown -R "$user" "$cfg"
 
-        # 3) kitty: Windows-style copy/paste (Ctrl+C/V).
-        # cosmic-term keybindings are hardcoded (Ctrl+Shift+C/V), but kitty
-        # supports copy_or_interrupt: copy when text is selected,
-        # SIGINT (like Windows terminal) otherwise.
-        mkdir -p "$home/.config/kitty"
-        k="$home/.config/kitty/kitty.conf"
-        [ -f "$k" ] && [ ! -f "$k.fastfree-bak" ] && cp -a "$k" "$k.fastfree-bak"
-        printf '%s\n' \
-          '# fastfree-managed: Windows-like copy/paste.' \
-          'map ctrl+c copy_or_interrupt' \
-          'map ctrl+v paste_from_clipboard' \
-          'map ctrl+shift+t new_tab' \
-          'map ctrl+shift+w close_tab' \
-          'map ctrl+tab next_tab' \
-          'map ctrl+shift+tab previous_tab' \
-          'map ctrl+equal change_font_size all +2.0' \
-          'map ctrl+minus change_font_size all -2.0' > "$k"
-        chown "$user" "$k"
+        # 3) COSMIC Terminal renamed to FastFree Terminal.
+        # Same filename shadows the system entry (XDG precedence); groups
+        # and pins follow the ID, so nothing else breaks. Old names kept
+        # in Keywords (and Name[ar] set) so search still finds it.
+        # Created once; delete the file to restore the original name.
+        mkdir -p "$home/.local/share/applications"
+        rt="$home/.local/share/applications/com.system76.CosmicTerm.desktop"
+        if [ ! -f "$rt" ]; then
+          printf '%s\n' \
+            '[Desktop Entry]' \
+            'Name=FastFree Terminal' \
+            'Name[ar]=طرفية FastFree' \
+            'Comment=Terminal emulator for the COSMIC desktop' \
+            'Comment[ar]=محاكي طرفي لسطح مكتب COSMIC' \
+            'Exec=cosmic-term' \
+            'Terminal=false' \
+            'Type=Application' \
+            'StartupNotify=true' \
+            'Icon=com.system76.CosmicTerm' \
+            'Categories=COSMIC;System;TerminalEmulator;' \
+            'Keywords=Command;Shell;Terminal;CLI;COSMIC Terminal;' \
+            'Keywords[ar]=cli;طرفية;أوامر;صدفة;أمر;COSMIC Terminal;' > "$rt"
+          chown "$user" "$rt"
+        fi
+        # kitty is gone: drop its stale NoDisplay override (kitty.conf and
+        # .bak stay untouched — possible user data).
+        rm -f "$home/.local/share/applications/kitty.desktop"
 
-        # 4) launcher hygiene: hide redundant icons (binaries stay functional;
-        # htop runs via Ctrl+Shift+Esc, screenshot via Print key, printing
-        # via the Settings panel; cosmic-term is the visible terminal).
+        # 4) launcher hygiene: hide redundant icons (top runs via shortcut,
+        # screenshot via Print key, printing via the Settings panel).
         # NoDisplay user overrides shadow system entries (XDG precedence).
         # Created once; deleting one restores its icon until next switch.
         mkdir -p "$home/.local/share/applications"
-        for app in kitty htop com.system76.CosmicScreenshot cups; do
+        for app in htop com.system76.CosmicScreenshot cups; do
           kf="$home/.local/share/applications/$app.desktop"
           if [ ! -f "$kf" ]; then
             printf '%s\n' '[Desktop Entry]' "Name=$app" 'Type=Application' 'NoDisplay=true' > "$kf"
