@@ -9,6 +9,9 @@ in {
     services.displayManager.cosmic-greeter.enable = true;
     services.desktopManager.cosmic.enable = true;
 
+    # System76 scheduler (wiki COSMIC tips): keeps UI responsive under load.
+    services.system76-scheduler.enable = true;
+
     # No proprietary NVIDIA driver (user decision) — open stack stays.
     # Do NOT re-add videoDrivers/hardware.nvidia without explicit approval.
 
