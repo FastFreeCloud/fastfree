@@ -45,6 +45,9 @@
       ff-rg = "rg -n --hidden --glob '!.git'";
       ff-fd = "fd -H -I";
       ff-ug = "ugrep -r --hidden -n";
+      # Brave fallback for broken GPU presentation (XWayland instead of
+      # native Wayland); try when the window looks frozen but pages load.
+      brave-x11 = "brave --ozone-platform=x11";
     };
   };
 }

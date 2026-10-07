@@ -122,30 +122,30 @@ in {
 
         chown -R "$user" "$cfg"
 
-        # 3) COSMIC Terminal renamed to FastFree Terminal.
-        # Same filename shadows the system entry (XDG precedence); groups
-        # and pins follow the ID, so nothing else breaks. Old names kept
-        # in Keywords (and Name[ar] set) so search still finds it.
-        # Created once; delete the file to restore the original name.
+        # 3) COSMIC → FastFree renames (terminal, files, editor, reader,
+        # settings). Same-basename user copy shadows system entry; groups
+        # and pins follow the ID so nothing breaks. Only Name/Name[ar] (and
+        # Name[en]) change — Exec/Icon/Categories/Keywords stay identical,
+        # so old names remain searchable. Created once; delete a file to
+        # restore its original name until next switch.
         mkdir -p "$home/.local/share/applications"
-        rt="$home/.local/share/applications/com.system76.CosmicTerm.desktop"
-        if [ ! -f "$rt" ]; then
-          printf '%s\n' \
-            '[Desktop Entry]' \
-            'Name=FastFree Terminal' \
-            'Name[ar]=طرفية FastFree' \
-            'Comment=Terminal emulator for the COSMIC desktop' \
-            'Comment[ar]=محاكي طرفي لسطح مكتب COSMIC' \
-            'Exec=cosmic-term' \
-            'Terminal=false' \
-            'Type=Application' \
-            'StartupNotify=true' \
-            'Icon=com.system76.CosmicTerm' \
-            'Categories=COSMIC;System;TerminalEmulator;' \
-            'Keywords=Command;Shell;Terminal;CLI;COSMIC Terminal;' \
-            'Keywords[ar]=cli;طرفية;أوامر;صدفة;أمر;COSMIC Terminal;' > "$rt"
-          chown "$user" "$rt"
-        fi
+        for spec in \
+          "com.system76.CosmicTerm.desktop|FastFree Terminal|طرفية FastFree" \
+          "com.system76.CosmicFiles.desktop|FastFree Files|ملفات FastFree" \
+          "com.system76.CosmicEdit.desktop|FastFree Editor|محرر FastFree" \
+          "com.system76.CosmicReader.desktop|FastFree Reader|قارئ FastFree" \
+          "com.system76.CosmicSettings.desktop|FastFree Settings|إعدادات FastFree"; do
+          id="''${spec%%|*}"; rest="''${spec#*|}"; new="''${rest%%|*}"; ar="''${rest#*|}"
+          src="$systemConfig/sw/share/applications/$id"
+          dst="$home/.local/share/applications/$id"
+          if [ ! -f "$dst" ] && [ -f "$src" ]; then
+            cp "$src" "$dst"
+            sed -i "s|^Name=.*|Name=$new|" "$dst"
+            sed -i "s|^Name\[en\]=.*|Name[en]=$new|" "$dst"
+            sed -i "s|^Name\[ar\]=.*|Name[ar]=$ar|" "$dst"
+            chown "$user" "$dst"
+          fi
+        done
         # kitty is gone: drop its stale NoDisplay override (kitty.conf and
         # .bak stay untouched — possible user data).
         rm -f "$home/.local/share/applications/kitty.desktop"
