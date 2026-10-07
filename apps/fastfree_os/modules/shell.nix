@@ -46,7 +46,6 @@
       ff-rg = "rg -n --hidden --glob '!.git'";
       ff-fd = "fd -H -I";
       ff-ug = "ugrep -r --hidden -n";
-      ff-deep = "rg -n --hidden --glob '!.git'";
     };
   };
 }
