@@ -44,7 +44,6 @@
   fastfree.identity.name = lib.mkForce "client1";
   fastfree.identity.domain = lib.mkForce "client1.fastfree.local";
   fastfree.deployType = "hyperv";
-  fastfree.build = true;
   fastfree.kvm = true;
   fastfree.flakeConfigName = "client1";
   fastfree.githubAccount = "FastFreeCloud";
@@ -66,7 +65,6 @@
     phpmyadmin = true;
     caddy = true;
     desktop = true;
-    avahi = true;
   };
 
   # Herdr CLI from flake input (system-wide binary).

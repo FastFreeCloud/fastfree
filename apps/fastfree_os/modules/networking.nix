@@ -1,12 +1,26 @@
 { config, lib, pkgs, ... }:
 
 let
+  domain = config.fastfree.identity.domain;
+  sd = config.fastfree.subdomains;
   hosts = {
     "10.100.0.1" = [ "fastfree.local" ];
     "10.100.0.3" = [ "server.fastfree.local" ];
     "10.100.0.6" = [ "client1.fastfree.local" ];
     "10.100.0.7" = [ "client2.fastfree.local" ];
     "10.100.0.8" = [ "nixos.fastfree.local" ];
+    # Loopback app names: identical on every machine (each serves its own
+    # apps locally). Names here MUST NOT duplicate legacy lines above.
+    # backend.* has no shortcut (API only); website root keeps its direct
+    # :9004 shortcut (root domain is legacy-mapped, avoid dual-mapping).
+    "127.0.0.1" = [
+      "erp.${domain}"
+      "ledger.${domain}"
+      "hr.${domain}"
+      "pos.${domain}"
+      "${sd.db}.${domain}"
+      "${sd.panel}.${domain}"
+    ];
   };
   isLocal = config.fastfree.deployType == "local";
 in {
@@ -14,6 +28,9 @@ in {
 
     # ── Networking ────────────────────────────────────────
     # Local machines keep NetworkManager + firewall (see local-machine.nix).
+    # NSS: `files` FIRST so /etc/hosts wins for our .local app names.
+    # mDNS/DNS still resolve everything else (miss → continue down the chain).
+    # Without this, mdns4_minimal [NOTFOUND=return] kills .local before files.
     networking = {
       hostName                     = config.fastfree.identity.name;
       hosts                        = hosts;
@@ -22,6 +39,10 @@ in {
       useDHCP                      = false;
       useNetworkd                  = true;
     };
+
+    # nsswitch files-first (see comment above). Duplicate `files` token is
+    # harmless: glibc uses the first match and continues on miss.
+    system.nssDatabases.hosts = lib.mkOrder 400 [ "files" ];
 
     # VPS/systemd-networkd for servers only (local uses NetworkManager)
     systemd.network = lib.mkIf (!isLocal) {

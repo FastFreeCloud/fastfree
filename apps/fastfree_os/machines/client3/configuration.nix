@@ -52,7 +52,6 @@ in
   fastfree.identity.name = lib.mkForce "client3";
   fastfree.identity.domain = lib.mkForce "fastfree.local";
   fastfree.deployType = "local";
-  fastfree.build = false;
   fastfree.flakeConfigName = "client3";
   fastfree.githubAccount = "FastFreeCloud";
   fastfree.gitOrigin = "https://github.com/FastFreeCloud/fastfree.git";
@@ -69,7 +68,7 @@ in
   boot.loader.grub = {
     enable = lib.mkForce true;
     device = lib.mkForce "/dev/sda";
-    useOSProber = true;
+    useOSProber = lib.mkForce false;
   };
 
   # ── Networking (NetworkManager, default firewall) ──
@@ -126,7 +125,6 @@ in
     phpmyadmin = true;
     cockpit = true;
     desktop = true;
-    avahi = true;
   };
 
   # Herdr CLI from flake input (system-wide binary).

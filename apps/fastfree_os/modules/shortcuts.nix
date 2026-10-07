@@ -52,5 +52,41 @@ in {
       (lib.mkIf apps.cockpit { ff-panel = openAlias "http://127.0.0.1:9090"; })
       (lib.mkIf apps.opencode { ff-opencode = openAlias "http://127.0.0.1:4096"; })
     ];
+
+    # ── FastFree group in COSMIC App Library ────────────────
+    # Seed-only: created once if absent, never overwritten, so the user's
+    # own organization (drag/rename/reorder) always wins over ours.
+    # Format per cosmic-app-library app_group.rs: AppIds = .desktop basenames.
+    # (No Dock folders exist upstream — dock favorites stay a flat list.)
+    system.activationScripts.fastfree-app-group = ''
+      for home in /home/*; do
+        [ -d "$home" ] || continue
+        user=$(basename "$home")
+        id "$user" >/dev/null 2>&1 || continue
+        gdir="$home/.config/cosmic/com.system76.CosmicAppLibrary/v1"
+        mkdir -p "$gdir"
+        if [ ! -f "$gdir/groups" ]; then
+          printf '%s\n' \
+            '// fastfree-managed seed: FastFree app group (safe to edit freely).' \
+            '[' \
+            '  (' \
+            '    name: "FastFree",' \
+            '    icon: "folder-symbolic",' \
+            '    filter: AppIds([' \
+            '      "fastfree-website",' \
+            '      "fastfree-erp",' \
+            '      "fastfree-ledger",' \
+            '      "fastfree-hr",' \
+            '      "fastfree-pos",' \
+            '      "fastfree-db",' \
+            '      "fastfree-panel",' \
+            '      "fastfree-opencode",' \
+            '    ]),' \
+            '  ),' \
+            ']' > "$gdir/groups"
+          chown "$user" "$gdir/groups"
+        fi
+      done
+    '';
   };
 }

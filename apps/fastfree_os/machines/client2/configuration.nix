@@ -46,7 +46,6 @@
   fastfree.identity.name = lib.mkForce "client2";
   fastfree.identity.domain = lib.mkForce "fastfree.cloud";
   fastfree.deployType = "vps";
-  fastfree.deployHost = "fastfree.cloud";
   fastfree.flakeConfigName = "client2";
   fastfree.githubAccount = "FastFreeCloud";
   fastfree.gitOrigin = "https://github.com/FastFreeCloud/fastfree.git";
@@ -71,7 +70,6 @@
     fastfree_pos = true;
     fastfree_website = true;
     desktop = true;
-    avahi = true;
   };
 
   # Herdr CLI from flake input (system-wide binary).

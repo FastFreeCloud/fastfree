@@ -4,7 +4,6 @@ let
   cfg = config.fastfree.herdr;
 in {
   options.fastfree.herdr = {
-    enable = lib.mkEnableOption "Herdr CLI + socket API helpers (https://herdr.dev/docs/cli-reference/)";
     package = lib.mkOption {
       type = lib.types.nullOr lib.types.package;
       default = null;

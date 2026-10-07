@@ -21,8 +21,11 @@ in
       };
     };
 
-    # Cockpit socket listens on *:9090 by default — restrict to loopback.
-    systemd.sockets.cockpit.listenStreams = lib.mkForce [ "127.0.0.1:9090" ];
+    # Cockpit socket binds *:9090 by package default (a per-address override
+    # only ADDS a second bind and breaks startup). Restriction is enforced
+    # one layer down instead: no firewall ACCEPT for 9090 (openFirewall=false
+    # + no allowedTCPPorts entry) while default-drop + localhost-allow hold.
+    # Reach it via http://127.0.0.1:9090 or the Caddy panel subdomain.
 
     # Cockpit plugins for container and VM management
     environment.systemPackages = with pkgs; [

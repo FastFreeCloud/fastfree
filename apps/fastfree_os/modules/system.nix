@@ -34,9 +34,7 @@ in {
     '';
 
     # ── Login Banner (MOTD) ──────────────────────────────────
-    services.getty.greetingLine = let
-      name = config.fastfree.identity.name;
-    in lib.mkForce ''
+    services.getty.greetingLine = lib.mkForce ''
       +----------------------------------------+
       |               FastFree                 |
       |           https://fastfree.cloud       |

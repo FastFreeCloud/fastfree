@@ -4,7 +4,6 @@ let
   cfg = config.fastfree.opencode;
 in {
   options.fastfree.opencode = {
-    enable = lib.mkEnableOption "OpenCode web UI autostart (no terminal needed)";
     package = lib.mkOption {
       type = lib.types.nullOr lib.types.package;
       default = null;

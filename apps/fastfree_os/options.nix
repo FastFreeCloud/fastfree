@@ -26,11 +26,8 @@
       description = "Internal: flake attribute name for nixos-rebuild --flake.";
     };
 
-    deployHost = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "VPS hostname or IP for nixos-anywhere deployment (e.g. fastfree.cloud).";
-    };
+    # NOTE: deploy target lives in Clan inventory (clan.nix deploy.targetHost),
+    # not in a fastfree.* option.
 
     # App secrets (DB root/user, Frappe admin) live in Clan vars generators
     # (modules/mariadb.nix: mariadb-root, modules/fastfree_backend.nix:
@@ -52,7 +49,6 @@
       phpmyadmin   = lib.mkEnableOption "phpMyAdmin";
       cockpit      = lib.mkEnableOption "Cockpit web-based server management";
       desktop      = lib.mkEnableOption "COSMIC desktop environment (all machines)";
-      avahi        = lib.mkEnableOption "Avahi mDNS/DNS-SD";
     };
 
     subdomains = {
@@ -121,18 +117,6 @@
 
 
     kvm = lib.mkEnableOption "KVM hardware acceleration for QEMU builds";
-
-    build = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "Whether to build this configuration in CI (set false to skip).";
-    };
-
-    kernelModules = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [];
-      description = "Extra kernel modules for boot.initrd.availableKernelModules (auto-derived from deployType when empty).";
-    };
 
     avahi = {
       enable = lib.mkEnableOption "Avahi mDNS/DNS-SD for .local domain resolution";

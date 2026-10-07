@@ -13,15 +13,15 @@ in {
     # Copied from the proven /etc/nixos config of this exact hardware.
     # Without it COSMIC/Plymouth fall back to nouveau (broken/slow on
     # modern NVIDIA). Servers/images keep the open stack (no HW present).
-    services.xserver.videoDrivers = lib.mkIf isLocal [ "nvidia" ];
-    hardware.nvidia = lib.mkIf isLocal {
-      modesetting.enable = true;
-      powerManagement.enable = true;
-      powerManagement.finegrained = false;
-      open = false;
-      nvidiaSettings = true;
-      package = config.boot.kernelPackages.nvidiaPackages.stable;
-    };
+#    services.xserver.videoDrivers = lib.mkIf isLocal [ "nvidia" ];
+#    hardware.nvidia = lib.mkIf isLocal {
+ #     modesetting.enable = true;
+  #    powerManagement.enable = true;
+   #   powerManagement.finegrained = false;
+    #  open = false;
+     # nvidiaSettings = true;
+#      package = config.boot.kernelPackages.nvidiaPackages.stable;
+ #   };
 
     services.xserver.xkb = {
       # English + Arabic, Alt+Shift toggle (Windows-style).
@@ -95,12 +95,13 @@ in {
 
     # ── Terminal + Files + task manager + Chrome ─────────
     # Needed by the Windows-like shortcuts below
-    # (Ctrl+Alt+T, Win+E, Ctrl+Shift+Esc).
+    # (Ctrl+Alt+T, Win+E, Ctrl+Shift+Esc). htop (not btop) is the single
+    # visible task manager; kitty stays installed for shortcuts but hidden
+    # from the launcher (cosmic-term is the visible terminal).
     environment.systemPackages = with pkgs; [
       cosmic-term
       cosmic-files
       kitty
-      btop
       google-chrome
       # ── RDP clients (HopToDesk does NOT speak RDP — different protocol) ──
       # Remmina: GUI profiles/gateway/shares; freerdp: xfreerdp CLI companion.
@@ -148,7 +149,7 @@ in {
           '    (modifiers: [Super], key: "t", description: Some("Terminal kitty (Win+T)")): Spawn("kitty"),' \
           '    (modifiers: [Ctrl, Alt], key: "t", description: Some("Terminal kitty (Ctrl+Alt+T)")): Spawn("kitty"),' \
           '    (modifiers: [Alt], key: "F2", description: Some("Run command")): System(Launcher),' \
-          '    (modifiers: [Ctrl, Shift], key: "Escape", description: Some("Task manager (Ctrl+Shift+Esc)")): Spawn("cosmic-term -e btop"),' \
+          '    (modifiers: [Ctrl, Shift], key: "Escape", description: Some("Task manager (Ctrl+Shift+Esc)")): Spawn("cosmic-term -e htop"),' \
           '    (modifiers: [Ctrl, Alt], key: "Delete", description: Some("Log out (Ctrl+Alt+Del)")): System(LogOut),' \
           '}' > "$s"
 
@@ -172,6 +173,17 @@ in {
           'map ctrl+equal change_font_size all +2.0' \
           'map ctrl+minus change_font_size all -2.0' > "$k"
         chown "$user" "$k"
+
+        # 4) launcher hygiene: hide the kitty icon (binary stays for
+        # shortcuts; cosmic-term is the visible terminal). A user-level
+        # .desktop shadows the system one (XDG precedence). Created once;
+        # deleting it restores the icon until next switch.
+        mkdir -p "$home/.local/share/applications"
+        kf="$home/.local/share/applications/kitty.desktop"
+        if [ ! -f "$kf" ]; then
+          printf '%s\n' '[Desktop Entry]' 'Name=kitty' 'Type=Application' 'NoDisplay=true' > "$kf"
+        fi
+        chown "$user" "$kf"
       done
     '';
   };

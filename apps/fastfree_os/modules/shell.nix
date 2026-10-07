@@ -35,6 +35,7 @@
       zoxide
       starship
       jq
+      pciutils  # lspci: identify GPU/PCI hardware
     ];
 
     programs.fzf.keybindings = true;
