@@ -60,7 +60,6 @@ in {
         mkdir -p "$gdir"
         if [ ! -f "$gdir/groups" ]; then
           printf '%s\n' \
-            '// fastfree-managed seed: app groups (safe to edit freely).' \
             '[' \
             '  (' \
             '    name: "FastFree",' \

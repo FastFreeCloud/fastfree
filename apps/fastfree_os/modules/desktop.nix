@@ -9,6 +9,12 @@ in {
     services.displayManager.cosmic-greeter.enable = true;
     services.desktopManager.cosmic.enable = true;
 
+    # Drop the media player (not a core package — verified in nixpkgs
+    # cosmic.nix corePkgs). Nothing depends on it.
+    environment.cosmic.excludePackages = with pkgs; [
+      cosmic-player
+    ];
+
     # System76 scheduler (wiki COSMIC tips): keeps UI responsive under load.
     services.system76-scheduler.enable = true;
 
@@ -53,17 +59,10 @@ in {
     ];
     environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
-    # ── Flatpak + Flathub ───────────────────────────────────
-    services.flatpak.enable = true;
-    systemd.services.flatpak-repo = {
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      path = [ pkgs.flatpak ];
-      script = ''
-        flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-      '';
-    };
+    # ── Flatpak: fully removed (no apps left, store excluded) ──
+    # services.flatpak stays disabled; COSMIC portals (needed by browsers)
+    # come from xdg-desktop-portal, unaffected. User flatpak data under
+    # /var/lib/flatpak and ~/.local/share/flatpak was wiped separately.
 
     # ── Terminal + Files + task manager ────────────────────
     # cosmic-term is the single visible terminal; top (base system) is the
