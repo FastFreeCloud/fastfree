@@ -55,15 +55,8 @@ in {
     # ── Browser ─────────────────────────────────────────────
     programs.firefox.enable = true;
 
-    # Google Chrome (unfree): precise allowlist, not blanket allowUnfree.
-    # Binary name is google-chrome-stable. NIXOS_OZONE_WL (wiki: Chromium)
-    # gives native Wayland to Chrome + most Electron apps.
-    nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-      "google-chrome"
-    ];
-    environment.sessionVariables.NIXOS_OZONE_WL = "1";
-
     # ── Flatpak + Flathub ───────────────────────────────────
+    # Flatseal (user's own) is managed here; HopToDesk removed per request.
     services.flatpak.enable = true;
     systemd.services.flatpak-repo = {
       wantedBy = [ "multi-user.target" ];
@@ -75,25 +68,7 @@ in {
       '';
     };
 
-    # ── HopToDesk remote desktop (Flathub, official ID) ─────
-    # Not in nixpkgs → Flatpak (docs: flathub.org/apps/com.hoptodesk.HopToDesk).
-    # Guarded install = idempotent. Uses public rendezvous/relay by default,
-    # so no inbound firewall ports needed for basic use.
-    systemd.services.hoptodesk-install = {
-      description = "Install HopToDesk from Flathub";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "flatpak-repo.service" "network-online.target" ];
-      wants = [ "network-online.target" ];
-      path = [ pkgs.flatpak ];
-      script = ''
-        flatpak info --system com.hoptodesk.HopToDesk >/dev/null 2>&1 || \
-          flatpak install --system -y flathub com.hoptodesk.HopToDesk
-      '';
-      serviceConfig.Type = "oneshot";
-      serviceConfig.RemainAfterExit = true;
-    };
-
-    # ── Terminal + Files + task manager + Chrome ─────────
+    # ── Terminal + Files + task manager ────────────────────
     # Needed by the Windows-like shortcuts below
     # (Ctrl+Alt+T, Win+E, Ctrl+Shift+Esc). htop (not btop) is the single
     # visible task manager; kitty stays installed for shortcuts but hidden
@@ -102,7 +77,6 @@ in {
       cosmic-term
       cosmic-files
       kitty
-      google-chrome
       # ── RDP clients (HopToDesk does NOT speak RDP — different protocol) ──
       # Remmina: GUI profiles/gateway/shares; freerdp: xfreerdp CLI companion.
       remmina
