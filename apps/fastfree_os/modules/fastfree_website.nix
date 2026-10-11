@@ -10,7 +10,7 @@ in {
       description = "Create shared podman network for Website containers";
       wantedBy = [ "multi-user.target" ];
       before = [
-        "fastfree-website-frontend.service"
+        "podman-fastfree-website-frontend.service"
       ];
       serviceConfig.Type = "oneshot";
       script = ''
@@ -35,7 +35,7 @@ in {
       };
     };
 
-    systemd.services."fastfree-website-frontend" = {
+    systemd.services."podman-fastfree-website-frontend" = {
       after = [ "fastfree-website-network.service" ];
       requires = [ "fastfree-website-network.service" ];
       serviceConfig.Restart = "on-failure";

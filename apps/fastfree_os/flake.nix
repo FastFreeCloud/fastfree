@@ -84,6 +84,8 @@
         ./modules/herdr.nix
         ./modules/opencode.nix
         ./modules/shortcuts.nix
+        ./modules/remote.nix
+        ./modules/tunnel.nix
         ./modules/mariadb.nix
         ./modules/caddy.nix
         ./modules/fastfree_backend.nix

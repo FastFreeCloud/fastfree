@@ -40,6 +40,8 @@ in
     ../../modules/opencode.nix
     ../../modules/shortcuts.nix
     ../../modules/desktop.nix
+    ../../modules/remote.nix
+    ../../modules/tunnel.nix
     ../../modules/avahi-subdomains.nix
   # NOTE: ./hardware-configuration.nix is auto-imported by Clan autoincludes —
   # do NOT add it here (double import = conflicting definitions).
@@ -101,11 +103,19 @@ in
   # ── Packages (git comes from the base module) ──
   environment.systemPackages = [
     pkgs.wget
+    pkgs.chromium
     unstablePkgs.opencode
   ];
 
   # ── Unfree allowed ──
   nixpkgs.config.allowUnfree = true;
+
+  # Chromium policies only (extensions / search / native messaging hosts).
+  # The browser binary itself comes from `pkgs.chromium` in
+  # environment.systemPackages above — this module writes /etc/chromium/* only.
+  # Declared here rather than in modules/desktop.nix because client1 also sets
+  # apps.desktop = true and a Hyper-V server image has no use for a browser.
+  programs.chromium.enable = true;
 
   # All apps enabled (same set as production VPS client2 + shell/herdr).
   fastfree.apps = {
@@ -124,6 +134,7 @@ in
     phpmyadmin = true;
     cockpit = true;
     desktop = true;
+    remote = true;
   };
 
   # Herdr CLI from flake input (system-wide binary).
@@ -132,9 +143,25 @@ in
   # OpenCode web UI (same unstable package as systemPackages above).
   fastfree.opencode.package = unstablePkgs.opencode;
 
+  # Cloudflare quick tunnels → phone-accessible https:// links for the loopback
+  # web UIs. Outbound only, no new firewall port; the URL is random and changes
+  # on every tunnel restart, so read it with `ff-urls` (see modules/tunnel.nix).
+  fastfree.tunnel.enable = true;
+
   fastfree.avahi = {
     enable = true;
     reflector = true;
     interfaces = [ ];
+  };
+
+  # ── ZeroTier overlay ─────────────────────────────────────
+  # Same fleet mesh as client2 (see machines/client2/configuration.nix).
+  # Network fada62b015365b47 lives on ZeroTier Central, so this node has to be
+  # authorised in the Central UI once; until then it sits in ACCESS_DENIED,
+  # which is exactly what you want to see right after the first switch.
+  services.zerotierone = {
+    enable = true;
+    port = 9993;
+    joinNetworks = [ "fada62b015365b47" ];
   };
 }

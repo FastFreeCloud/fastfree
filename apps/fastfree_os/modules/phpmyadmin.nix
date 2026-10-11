@@ -28,7 +28,7 @@
       ];
     };
 
-    systemd.services."phpmyadmin" = {
+    systemd.services."podman-phpmyadmin" = {
       serviceConfig.Restart = "on-failure";
       serviceConfig.RestartSec = "5";
     };

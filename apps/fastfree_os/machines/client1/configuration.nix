@@ -93,4 +93,14 @@
     reflector = false;
     interfaces = [ "eth0" "wg0" "wireguard" ];
   };
+
+  # ── ZeroTier overlay ─────────────────────────────────────
+  # Same fleet mesh as client2/client3 (see machines/client2/configuration.nix).
+  # client1 is a Hyper-V VHDX image (never installed via clan), so this block
+  # only lands on instances actually booted from packages.x86_64-linux.client1.
+  services.zerotierone = {
+    enable = true;
+    port = 9993;
+    joinNetworks = [ "fada62b015365b47" ];
+  };
 }

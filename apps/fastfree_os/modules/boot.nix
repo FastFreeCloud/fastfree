@@ -22,6 +22,23 @@ in {
 
     boot.kernelModules = lib.mkIf config.fastfree.kvm [ "kvm-intel" "kvm-amd" ];
 
+    # ── nouveau: disable atomic modesetting ───────────────
+    # cosmic-comp 1.2.0 calls drmModeSetProperty(VRR_ENABLED) on EVERY
+    # rendered frame, unconditionally, even when adaptive sync is already
+    # Disabled. nouveau on Kepler never exposes that property, so each frame
+    # produced:
+    #   "Unable to set adaptive VRR state: ... missing VRR_ENABLED"
+    # Measured: ~40 messages/s = 259,914 lines = 98% of the user journal,
+    # 522 MB in under 2 h, ~13% of a core burned in a pointless ioctl loop.
+    # With atomic=0 smithay selects its legacy DrmSurface path, where
+    # use_vrr(false) is a documented no-op — the ioctl and the log both stop.
+    # Trade-off: explicit sync + overlay scanout instead of atomic flips
+    # (already unavailable here, since nouveau lacks the VRR property) and a
+    # reboot is required. See modules/desktop.nix for the COSMIC side notes.
+    boot.extraModprobeConfig = lib.mkIf isLocal ''
+      options nouveau atomic=0
+    '';
+
     # ── GRUB theme (local only; servers stay text for serial) ─
     # sleek-grub-theme is in nixpkgs (no fetchers); BIOS-safe gfxterm.
     boot.loader.grub.theme = lib.mkIf isLocal

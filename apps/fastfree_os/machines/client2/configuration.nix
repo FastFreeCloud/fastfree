@@ -69,26 +69,47 @@
     fastfree_hr = true;
     fastfree_pos = true;
     fastfree_website = true;
-    desktop = true;
+    # Headless VPS: no monitor, no GPU, no local session. Keeping COSMIC here
+    # pulled ~5.6 GiB of the closure (Firefox, COSMIC, mesa, pipewire, CUPS,
+    # speech stack) for nothing — it was 49% of the 11.5 GiB system closure.
+    # modules/system.nix already sets xserver/libinput = false for this case.
+    desktop = false;
+  };
+
+  # ── ZeroTier overlay ─────────────────────────────────────
+  # Upstream fleet mesh. Network fada62b015365b47 is hosted on ZeroTier Central,
+  # so membership is authorised in the Central UI (network stays Private).
+  # Joining an unauthorised network is harmless: zerotier-one accepts the join
+  # and holds it in ACCESS_DENIED until Central authorises the node ID, so
+  # joinNetworks is safe to declare up front.
+  #
+  # networking.firewall.enable = false (modules/networking.nix, vps deployType)
+  # so the module's allowedUDPPorts is a no-op and 9993 is reachable anyway.
+  services.zerotierone = {
+    enable = true;
+    port = 9993;
+    joinNetworks = [ "fada62b015365b47" ];
   };
 
   # Herdr CLI from flake input (system-wide binary).
-  fastfree.herdr.package = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  fastfree.herdr.package = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default or null;
 
   fastfree.networking = {
+    interface = "eth0";
     nameservers = [ "1.1.1.1" "8.8.8.8" ];
     ipv4Address = "76.13.51.10";
     ipv4Gateway = "76.13.51.254";
-    ipv4Prefix = 32;
+    ipv4Prefix = 24;
   };
 
-  # VPS boot (mirrors flake.nix mkClientModules vps branch).
-  boot.initrd.availableKernelModules = [ "virtio_pci" "virtio_scsi" "sd_mod" ];
+  # VPS boot (Hostinger KVM BIOS GRUB on /dev/sda).
+  boot.initrd.availableKernelModules = [ "virtio_pci" "virtio_scsi" "virtio_blk" "sd_mod" ];
   boot.loader.grub = {
-    devices = [ "/dev/sda" ];
-    efiSupport = true;
-    efiInstallAsRemovable = true;
+    enable = true;
+    device = "/dev/sda";
+    efiSupport = false;
   };
+  services.qemuGuest.enable = true;
   services.openssh.enable = true;
 
   # ── Password SSH (explicit user preference) ───────────────
@@ -103,7 +124,7 @@
   fastfree.avahi = {
     enable = true;
     reflector = false;
-    interfaces = [ "ens18" "wg0" "wireguard" ];
+    interfaces = [ "eth0" "wg0" "wireguard" ];
   };
 
   # MariaDB state lives in modules/mariadb.nix (all mariadb machines).

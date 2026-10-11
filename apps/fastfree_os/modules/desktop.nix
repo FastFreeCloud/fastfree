@@ -50,14 +50,12 @@ in {
     services.printing.enable = true;
 
     # ── Browser ─────────────────────────────────────────────
+    # Firefox only (user decision): Chromium-family browsers (Brave/Chrome)
+    # NEVER map a window on this class of machine — COSMIC/Smithay + Kepler
+    # + nouveau fails at surface creation, and no GPU flag combination fixes
+    # it (verified: hardware GL, --disable-gpu-compositing, and full
+    # SwiftShader software rendering all behave the same).
     programs.firefox.enable = true;
-
-    # Brave (unfree): full codecs out-of-box + Shields cut heavy pages.
-    # Best pick for weak-GPU machines over Firefox/Chrome stock.
-    nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-      "brave"
-    ];
-    environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
     # ── Flatpak: fully removed (no apps left, store excluded) ──
     # services.flatpak stays disabled; COSMIC portals (needed by browsers)
@@ -70,14 +68,37 @@ in {
     environment.systemPackages = with pkgs; [
       cosmic-term
       cosmic-files
-      brave
-      # mpv + yt-dlp: YouTube outside the browser (lowest CPU on weak GPUs).
-      mpv
-      yt-dlp
-      # Remmina GUI + xfreerdp CLI (HopToDesk does not speak RDP).
-      remmina
-      freerdp
     ];
+
+    # ── Adaptive VRR: already off, and no config can silence the log ────
+    # Do NOT re-attempt a cosmic-config key for this (an `output_config`
+    # key under ~/.config/cosmic/com.system76.CosmicComp/v1/ is inert —
+    # wrong namespace, and outputs are RON state, not cosmic-config).
+    # The one real key is `vrr` in ~/.local/state/cosmic-comp/outputs.ron
+    # (XDG *state* dir, reached via xdg::place_state_file; RON, per-output
+    # under config[<OutputInfo>], value AdaptiveSync::Disabled == r#false).
+    # cosmic-comp 1.2.0 already forces it off itself, because
+    # SmithayDrmSurface::vrr_supported() returns NotSupported when the driver
+    # exposes no CRTC VRR_ENABLED property — which nouveau on Kepler never
+    # does — so apply_config_for_outputs takes the NotSupported branch and
+    # sets AdaptiveSync::Disabled. The compositor writes that state to
+    # outputs.ron at startup on its own.
+    # It still logs "Unable to set adaptive VRR state: ... missing a required
+    # property 'VRR_ENABLED'" ~40x/s (~98% of the user journal, ~13% of a
+    # core): backend/kms/surface/mod.rs calls DrmSurface::use_vrr() on every
+    # rendered frame, unconditionally, in both the direct-scanout and the
+    # offscreen branch. That call is NOT gated on the configured vrr value,
+    # so seeding the value from this module cannot suppress it. Verified on
+    # the live box: with outputs.ron already at vrr: r#false, the rate is
+    # unchanged (961 / 1455 lines per 30s measured).
+    # Real fixes, deliberately NOT applied here because each needs its own
+    # decision: (a) boot with `options nouveau atomic=0` so Smithay takes the
+    # legacy DRM path, where use_vrr(false) is a documented no-op — needs a
+    # reboot and costs explicit sync + overlay scanout; (b) patch
+    # cosmic-comp to skip use_vrr() when adaptive sync is Disabled — needs a
+    # nixpkgs overlay; (c) RUST_LOG=warn,cosmic_comp::backend::kms::surface=off
+    # (verified to be honoured by this exact binary) hides the flood but
+    # neither the ioctl nor the CPU, and needs the greetd session env.
 
     # ── COSMIC per-user config (no NixOS options exist for these) ─
     # Backs up existing files once (*.fastfree-bak). GUI changes to Input
@@ -117,7 +138,6 @@ in {
           '    (modifiers: [Super], key: "e", description: Some("Files (Win+E)")): System(HomeFolder),' \
           '    (modifiers: [Super], key: "l", description: Some("Lock (Win+L)")): System(LockScreen),' \
           '    (modifiers: [Super], key: "t", description: Some("Terminal (Win+T)")): Spawn("cosmic-term"),' \
-          '    (modifiers: [Ctrl, Alt], key: "t", description: Some("Terminal (Ctrl+Alt+T)")): Spawn("cosmic-term"),' \
           '    (modifiers: [Alt], key: "F2", description: Some("Run command")): System(Launcher),' \
           '    (modifiers: [Ctrl, Shift], key: "Escape", description: Some("Task manager (Ctrl+Shift+Esc)")): Spawn("cosmic-term -e top"),' \
           '    (modifiers: [Ctrl, Alt], key: "Delete", description: Some("Log out (Ctrl+Alt+Del)")): System(LogOut),' \
@@ -169,7 +189,10 @@ in {
         # NoDisplay user overrides shadow system entries (XDG precedence).
         # Created once; deleting one restores its icon until next switch.
         mkdir -p "$home/.local/share/applications"
-        for app in htop com.system76.CosmicScreenshot cups; do
+        # xterm ships in nixpkgs' xserver module (not via the COSMIC package
+        # set) the moment services.xserver.enable is on, which we need for the
+        # xrdp session — its terminal is alacritty, so hide the xterm icon.
+        for app in htop xterm com.system76.CosmicScreenshot cups; do
           kf="$home/.local/share/applications/$app.desktop"
           if [ ! -f "$kf" ]; then
             printf '%s\n' '[Desktop Entry]' "Name=$app" 'Type=Application' 'NoDisplay=true' > "$kf"

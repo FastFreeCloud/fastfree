@@ -13,6 +13,7 @@
     # Production VPS — deployed via `clan machines update client2`.
     client2 = {
       deploy.targetHost = "root@fastfree.cloud";
+      deploy.buildHost = "localhost";
       tags = [ "vps" "server" "fastfree" ];
     };
     # Local machine (nixos) — local-only updates, never wiped.
@@ -32,6 +33,10 @@
       roles.server.tags = [ "all" ];
       roles.server.machines."client2".settings.authorizedKeys = {
         "client2-deploy" = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILA5GRXOSiMnQEib+pXSH9CU10ujSc4qX8/GjblJKgM7 client2-deploy";
+        # Operator workstation (client3). WITHOUT this the deploy would replace
+        # root's key set with client2-deploy alone and lock out every manual
+        # `clan machines update` / `clan ssh` run from the workstation.
+        "client3-admin" = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGszztIACEpNLDgPR0IH7HdNCU6hEbIP8WG7ssMXKPwg fastfree@client3";
       };
     };
     user-root = {

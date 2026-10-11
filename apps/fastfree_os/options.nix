@@ -49,6 +49,7 @@
       phpmyadmin   = lib.mkEnableOption "phpMyAdmin";
       cockpit      = lib.mkEnableOption "Cockpit web-based server management";
       desktop      = lib.mkEnableOption "COSMIC desktop environment (all machines)";
+      remote       = lib.mkEnableOption "xrdp remote desktop (X11 session) for phone/other machines";
     };
 
     subdomains = {

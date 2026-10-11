@@ -1,6 +1,20 @@
 ###############################################################################
-# Client2 pipeline — validate + deploy via SSH + diagnose + guarded fresh install
-# Replaces: 13-validate-os.yaml (client2 leg) + 16-deploy-client2.yaml + 17-install-client2.yaml
+# Client2 pipeline — validate + deploy via Clan + diagnose + guarded fresh install
+#
+# Design: `clan machines update` builds the NixOS closure ON the GitHub runner
+# (`--build-host localhost`) and ships the closure to the VPS over SSH. The VPS
+# never compiles Nix — it only receives store paths and runs switch-to-configuration.
+#
+# The old raw-SCP + `nixos-rebuild` path was replaced because:
+#   1. It built on the 4 GB VPS (no swap) — slow and OOM-prone.
+#   2. It bypassed Clan vars/sops, so secrets handling was ad-hoc.
+#   3. Its podman/SPA steps were duplicated by the Nix modules
+#      (systemd.services."fastfree-<app>-spa" already extracts /srv/fastfree-*).
+#
+# Required repository secrets:
+#   CLIENT2_DEPLOY_KEY  — private key whose pubkey is inventory sshd authorizedKeys
+#   CLIENT2_IP          — public IP of the VPS
+#   SOPS_AGE_KEY        — operator age identity (decrypts vars/ for the build host)
 ###############################################################################
 
 name: 10-client2
@@ -20,16 +34,34 @@ on:
         description: "Type INSTALL to wipe and install the VPS (install only)"
         required: false
         default: ""
+      force_build:
+        description: "Ignore binary cache / rebuild everything (slow)"
+        required: false
+        default: "false"
 
 concurrency:
   group: client2-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Binary caches: nixpkgs + clan + flox. Keeps the runner-side build fast.
+  NIX_CONFIG: |
+    experimental-features = nix-command flakes
+    accept-flake-config = true
+    extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+      cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+      clan.cachix.org-1:mB9FShHNQzw3BKnWpuMQdjrQbymxUFDCVR1a1FYGV6M=
+      flox-cache-public-1:7F4OyH7ZCnFhcze3fJdfyXYLQw/aV7GEed86nQ7IsOs=
+      nix-community.cachix.org-1:mB9FShHNQzw3BKnWpuMQdjrQbymxUFDCVR1a1FYGV6M=
+    extra-substituters = https://cache.nixos.org https://cache.clan.lol https://cache.flox.dev https://nix-community.cachix.org
+    max-jobs = auto
+    keep-going = false
+
 jobs:
   validate:
     name: "1. Validate client2 config"
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -43,9 +75,6 @@ jobs:
         uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-unstable
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            accept-flake-config = true
 
       - name: "4. Parse Nix files"
         working-directory: apps/fastfree_os
@@ -62,138 +91,113 @@ jobs:
 
       - name: "5. Evaluate client2 toplevel"
         working-directory: apps/fastfree_os
-        run: nix eval --extra-experimental-features 'nix-command flakes' ".#clan.inventory.machines.client2" --no-update-lock-file --print-build-logs >/dev/null && echo "client2 evaluates OK"
+        run: nix eval ".#clan.inventory.machines.client2" --print-build-logs >/dev/null && echo "client2 evaluates OK"
+        shell: bash
+
+      - name: "6. Verify Clan vars decrypt"
+        working-directory: apps/fastfree_os
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+        run: |
+          printf '%s' "$SOPS_AGE_KEY" > /tmp/age.key
+          chmod 600 /tmp/age.key
+          export SOPS_AGE_KEY_FILE=/tmp/age.key
+          nix develop --command clan vars check client2
         shell: bash
 
   deploy:
-    name: "2. Deploy client2 via SSH"
+    name: "2. Deploy client2 via Clan"
     needs: validate
     if: ${{ inputs.action == 'deploy' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 90
     permissions:
       contents: read
-      packages: read
     steps:
       - name: "1. Checkout"
         uses: actions/checkout@v6
 
-      - name: "2. Setup SSH deploy key"
-        # Password SSH is disabled by Clan sshd (PasswordAuthentication=false);
-        # all VPS access uses the deploy key (GitHub secret CLIENT2_DEPLOY_KEY,
-        # whose pubkey is inventory sshd authorizedKeys "client2-deploy").
+      - name: "2. Install Nix"
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: "3. Setup SSH deploy key"
         run: |
           mkdir -p ~/.ssh
           printf '%s' "${{ secrets.CLIENT2_DEPLOY_KEY }}" > ~/.ssh/client2
           chmod 600 ~/.ssh/client2
+          cat > ~/.ssh/config <<'CFG'
+          Host client2
+            HostName ${{ secrets.CLIENT2_IP }}
+            User root
+            IdentityFile ~/.ssh/client2
+            StrictHostKeyChecking accept-new
+            ServerAliveInterval 60
+          CFG
 
-      - name: "3. Copy config to VPS"
+      - name: "4. Setup sops age identity"
         run: |
-          scp -i ~/.ssh/client2 -o StrictHostKeyChecking=no -r \
-            apps/fastfree_os/flake.nix \
-            apps/fastfree_os/flake.lock \
-            apps/fastfree_os/clan.nix \
-            apps/fastfree_os/options.nix \
-            apps/fastfree_os/cli.sh \
-            apps/fastfree_os/docs/ \
-            apps/fastfree_os/machines/ \
-            apps/fastfree_os/modules/ \
-            apps/fastfree_os/vars/ \
-            root@${{ secrets.CLIENT2_IP }}:/tmp/fastfree_os/
+          printf '%s' "${{ secrets.SOPS_AGE_KEY }}" > /tmp/age.key
+          chmod 600 /tmp/age.key
+          echo "SOPS_AGE_KEY_FILE=/tmp/age.key" >> "$GITHUB_ENV"
 
-      - name: "4. Cleanup old SPA containers"
+      - name: "5. Build closure on runner"
+        working-directory: apps/fastfree_os
         run: |
-          ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no \
-            root@${{ secrets.CLIENT2_IP }} << 'RESET'
-            for svc in hr erp pos ledger; do
-              systemctl stop "podman-fastfree-${svc}-frontend.service" 2>/dev/null || true
-              systemctl reset-failed "podman-fastfree-${svc}-frontend.service" 2>/dev/null || true
-              systemctl disable "podman-fastfree-${svc}-frontend.service" 2>/dev/null || true
-            done
-            systemctl daemon-reload
-            podman rm -f fastfree-hr-frontend fastfree-erp-frontend fastfree-pos-frontend fastfree-ledger-frontend 2>/dev/null || true
-            echo 'Cleanup done'
-          RESET
+          EXTRA=""
+          if [ "${{ inputs.force_build }}" = "true" ]; then
+            EXTRA="--option system.build.buildLoop=false"
+          fi
+          nix build ".#nixosConfigurations.client2.config.system.build.toplevel" \
+            --print-build-logs --no-link $EXTRA
+        shell: bash
 
-      - name: "5. Pull SPA images"
+      - name: "6. Deploy with Clan"
+        working-directory: apps/fastfree_os
         run: |
-          ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no \
-            root@${{ secrets.CLIENT2_IP }} << 'PULL'
-            podman pull --quiet ghcr.io/fastfreecloud/fastfree_hr:latest || true
-            podman pull --quiet ghcr.io/fastfreecloud/fastfree_erp:latest || true
-            podman pull --quiet ghcr.io/fastfreecloud/fastfree_pos:latest || true
-            podman pull --quiet ghcr.io/fastfreecloud/fastfree_ledger:latest || true
-            podman pull --quiet ghcr.io/fastfreecloud/fastfree_website:latest || true
-            echo 'All images pulled'
-          PULL
+          nix develop --command clan machines update client2 \
+            --build-host localhost \
+            --target-host "root@${{ secrets.CLIENT2_IP }}" \
+            --host-key-check accept-new
+        shell: bash
 
-      - name: "6. Extract SPA files to host"
+      - name: "7. Wait for boot"
         run: |
-          ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no \
-            root@${{ secrets.CLIENT2_IP }} << 'EXTRACT'
-            for app in hr erp ledger pos; do
-              IMAGE="ghcr.io/fastfreecloud/fastfree_${app}:latest"
-              DEST="/srv/fastfree-${app}"
-              rm -rf "$DEST"
-              mkdir -p "$DEST"
-              CID=$(podman create "$IMAGE" 2>/dev/null || true)
-              if [ -n "$CID" ]; then
-                TMPDIR=$(mktemp -d)
-                podman export "$CID" | tar -xf - -C "$TMPDIR"
-                SRV_SRC=$(find "$TMPDIR" -maxdepth 5 -type d -name srv -path "*/nix/store/*" | head -1)
-                if [ -n "$SRV_SRC" ]; then
-                  cp -a "$SRV_SRC"/* "$DEST/"
-                  echo "EXTRACTED ${app}: $(ls "$DEST")"
-                else
-                  echo "FAILED: srv/ directory not found in $IMAGE"
-                  find "$TMPDIR" -maxdepth 3 -type d | head -20
-                fi
-                rm -rf "$TMPDIR"
-                podman rm "$CID" >/dev/null 2>&1 || true
-              else
-                echo "FAILED: Could not create container from $IMAGE"
-              fi
-            done
-          EXTRACT
+          ssh client2 'nixos-version && uptime'
+        shell: bash
 
-      - name: "7. Run nixos-rebuild"
+      - name: "8. Fix MySQL Frappe user"
         run: |
-          ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no \
-            root@${{ secrets.CLIENT2_IP }} \
-            "cd /tmp/fastfree_os && nixos-rebuild switch --flake .#client2"
-
-      - name: "8. Fix MySQL Frappe user (after rebuild)"
-        run: |
-          sleep 15
-          ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no root@${{ secrets.CLIENT2_IP }} << 'REMOTESCRIPT'
+          ssh client2 << 'REMOTESCRIPT'
           SITE_CFG="/var/lib/containers/storage/volumes/fastfree-backend-sites/_data/backend.fastfree.cloud/site_config.json"
+          if [ ! -f "$SITE_CFG" ]; then echo "site_config.json not found — skipping"; exit 0; fi
           DB_NAME=$(sed -n 's/.*"db_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$SITE_CFG")
           DB_PASS=$(sed -n 's/.*"db_password"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$SITE_CFG")
-          echo "db_name=$DB_NAME (password masked)"
           MYSQL_BIN=$(ls /nix/store/*/bin/mysql 2>/dev/null | head -1)
-          echo "mysql=$MYSQL_BIN"
+          if [ -z "$MYSQL_BIN" ]; then echo "mysql client not found — skipping"; exit 0; fi
           MYSQL_ROOT_PASS="${{ secrets.CLIENT2_MYSQL_ROOT_PASSWORD }}"
-          MYSQL_ROOT_PASS="${MYSQL_ROOT_PASS:-FastFree@2026}"
           "$MYSQL_BIN" --user=root --password="$MYSQL_ROOT_PASS" -e "DROP USER IF EXISTS '${DB_NAME}'@'%'; DROP USER IF EXISTS '${DB_NAME}'@'localhost'; CREATE USER '${DB_NAME}'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('${DB_PASS}'); CREATE USER '${DB_NAME}'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('${DB_PASS}'); GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_NAME}'@'%'; GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_NAME}'@'localhost'; FLUSH PRIVILEGES;" 2>&1
           echo "DONE"
           REMOTESCRIPT
+        shell: bash
 
-      - name: "9. Restart ALL backend services"
+      - name: "9. Restart backend services"
         run: |
-          ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no \
-            root@${{ secrets.CLIENT2_IP }} << 'RESTART'
-            echo "Restarting all backend services..."
-            systemctl restart podman-fastfree-backend-app.service 2>/dev/null || true
-            systemctl restart podman-fastfree-backend-frontend.service 2>/dev/null || true
-            systemctl restart podman-fastfree-backend-websocket.service 2>/dev/null || true
-            systemctl restart podman-fastfree-backend-queue-short.service 2>/dev/null || true
-            systemctl restart podman-fastfree-backend-queue-long.service 2>/dev/null || true
-            systemctl restart podman-fastfree-backend-scheduler.service 2>/dev/null || true
-            systemctl restart podman-fastfree-website-frontend.service 2>/dev/null || true
-            sleep 5
-            systemctl restart caddy
-            echo "All services restarted"
+          ssh client2 << 'RESTART'
+          for svc in backend-app backend-frontend backend-websocket queue-short queue-long scheduler; do
+            systemctl restart "podman-fastfree-${svc}.service" 2>/dev/null || true
+          done
+          systemctl restart podman-fastfree-website-frontend.service 2>/dev/null || true
+          sleep 5
+          systemctl restart caddy
+          echo "All services restarted"
           RESTART
+        shell: bash
+
+      - name: "10. Remove age key"
+        if: always()
+        run: rm -f /tmp/age.key
 
   diagnose:
     name: "3. Diagnostic — client2"
@@ -208,14 +212,18 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s' "${{ secrets.CLIENT2_DEPLOY_KEY }}" > ~/.ssh/client2
           chmod 600 ~/.ssh/client2
+          cat > ~/.ssh/config <<'CFG'
+          Host client2
+            HostName ${{ secrets.CLIENT2_IP }}
+            User root
+            IdentityFile ~/.ssh/client2
+            StrictHostKeyChecking accept-new
+          CFG
 
       - name: "2. Run full diagnostic"
         run: |
           set -e
-          IP="${{ secrets.CLIENT2_IP }}"
-          USER="root"
-
-          SSH_CMD="ssh -i ~/.ssh/client2 -o StrictHostKeyChecking=no -o ConnectTimeout=10 $USER@$IP"
+          R="ssh client2"
 
           echo "================================================================"
           echo "  FastFree OS — Diagnostic Report"
@@ -224,59 +232,63 @@ jobs:
           echo ""
 
           echo "=== 1. SYSTEM INFO ==="
-          eval "$SSH_CMD" "hostname; echo '---'; uname -a; echo '---'; uptime; echo '---'; cat /etc/os-release | head -5"
+          eval "$R" "hostname; echo '---'; uname -a; echo '---'; uptime; echo '---'; cat /etc/os-release | head -5"
           echo ""
 
           echo "=== 2. NETWORK ==="
-          eval "$SSH_CMD" "ip addr show ens18 | grep 'inet '; echo '---'; ip route show default; echo '---'; ping -c 2 -W 3 8.8.8.8 || echo 'PING FAILED'"
+          eval "$R" "ip -br addr; echo '---'; ip route show default; echo '---'; ping -c 2 -W 3 8.8.8.8 || echo 'PING FAILED'"
           echo ""
 
-          echo "=== 3. LISTENING PORTS ==="
-          eval "$SSH_CMD" "ss -tlnp | grep -E '(22|80|443|3306|51820|8080|8082|9000|9001|9002|9003|9004|9090)' || echo 'No services listening'"
+          echo "=== 3. ZEROTIER ==="
+          eval "$R" "ip -br addr show zt0 2>/dev/null || echo 'zt0: absent'; echo '---'; zerotier-cli listnetworks 2>/dev/null || echo 'zerotier-cli: absent'"
           echo ""
 
-          echo "=== 4. PODMAN CONTAINERS ==="
-          eval "$SSH_CMD" "podman ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' || echo 'podman not available'"
+          echo "=== 4. LISTENING PORTS ==="
+          eval "$R" "ss -tulnp | grep -E '(22|80|443|3306|9993|51821|8080|8082|900[0-9]|9090)' || echo 'No services listening'"
           echo ""
 
-          echo "=== 5. PODMAN IMAGES ==="
-          eval "$SSH_CMD" "podman images --format 'table {{.Repository}}\t{{.Tag}}\t{{.Size}}' || echo 'No images'"
+          echo "=== 5. PODMAN CONTAINERS ==="
+          eval "$R" "podman ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' || echo 'podman not available'"
           echo ""
 
-          echo "=== 6. SYSTEMD SERVICES ==="
-          eval "$SSH_CMD" "systemctl list-units --type=service --state=running | grep -E '(podman|caddy|mysql|wireguard|avahi|fastfree|cockpit)' || echo 'No FastFree services'"
+          echo "=== 6. PODMAN IMAGES ==="
+          eval "$R" "podman images --format 'table {{.Repository}}\t{{.Tag}}\t{{.Size}}' || echo 'No images'"
           echo ""
 
-          echo "=== 7. FAILED SERVICES ==="
-          eval "$SSH_CMD" "systemctl list-units --type=service --state=failed || echo 'No failed services'"
+          echo "=== 7. SYSTEMD SERVICES ==="
+          eval "$R" "systemctl list-units --type=service --state=running | grep -E '(podman|caddy|mysql|wireguard|zerotier|avahi|fastfree|cockpit)' || echo 'No FastFree services'"
           echo ""
 
-          echo "=== 8. CADDY STATUS ==="
-          eval "$SSH_CMD" "systemctl status caddy --no-pager -l | head -15 || echo 'Caddy not running'"
+          echo "=== 8. FAILED SERVICES ==="
+          eval "$R" "systemctl list-units --type=service --state=failed || echo 'No failed services'"
           echo ""
 
-          echo "=== 9. CADDY ERRORS (last 10) ==="
-          eval "$SSH_CMD" "journalctl -u caddy --no-pager -n 10 --since '2 min ago' 2>&1 || true"
+          echo "=== 9. CADDY STATUS ==="
+          eval "$R" "systemctl status caddy --no-pager -l | head -15 || echo 'Caddy not running'"
           echo ""
 
-          echo "=== 10. MARIADB STATUS ==="
-          eval "$SSH_CMD" "mysqladmin ping -h localhost 2>&1 || echo 'MySQL not reachable'"
+          echo "=== 10. CADDY ERRORS (last 10) ==="
+          eval "$R" "journalctl -u caddy --no-pager -n 10 --since '2 min ago' 2>&1 || true"
           echo ""
 
-          echo "=== 11. WIREGUARD STATUS ==="
-          eval "$SSH_CMD" "wg show || echo 'WireGuard not running'"
+          echo "=== 11. MARIADB STATUS ==="
+          eval "$R" "mysqladmin ping -h localhost 2>&1 || echo 'MySQL not reachable'"
           echo ""
 
-          echo "=== 12. NIXOS GENERATION ==="
-          eval "$SSH_CMD" "nixos-rebuild --version 2>/dev/null || echo 'NixOS not available'"
+          echo "=== 12. WIREGUARD STATUS ==="
+          eval "$R" "wg show || echo 'WireGuard not running'"
           echo ""
 
-          echo "=== 13. DISK USAGE ==="
-          eval "$SSH_CMD" "df -h / /var /tmp 2>/dev/null || df -h"
+          echo "=== 13. NIXOS GENERATION ==="
+          eval "$R" "nixos-version; echo '---'; readlink /run/current-system; echo '---'; bootctl list --no-pager 2>/dev/null | head -10 || echo 'no systemd-boot'"
           echo ""
 
-          echo "=== 14. HTTP ENDPOINTS (localhost) ==="
-          eval "$SSH_CMD" "
+          echo "=== 14. DISK USAGE ==="
+          eval "$R" "df -h / /var /tmp 2>/dev/null || df -h"
+          echo ""
+
+          echo "=== 15. HTTP ENDPOINTS (localhost) ==="
+          eval "$R" "
             for port in 80 443 8080 8082 9000 9001 9002 9003 9004 9090; do
               HTTP_CODE=\$(curl -s -o /dev/null -w '%{http_code}' --connect-timeout 3 http://localhost:\$port/ 2>/dev/null || echo '000')
               echo \"  Port \$port: HTTP \$HTTP_CODE\"
@@ -284,27 +296,27 @@ jobs:
           "
           echo ""
 
-          echo "=== 15. EXTERNAL CURL TESTS ==="
+          echo "=== 16. EXTERNAL CURL TESTS ==="
           for domain in hr.fastfree.cloud erp.fastfree.cloud ledger.fastfree.cloud pos.fastfree.cloud backend.fastfree.cloud fastfree.cloud db.fastfree.cloud panel.fastfree.cloud www.fastfree.cloud; do
             CODE=$(curl -m 5 -sI "https://$domain/" 2>&1 | head -1 || echo "TIMEOUT")
             echo "  $domain: $CODE"
           done
           echo ""
 
-          echo "=== 16. COCKPIT STATUS ==="
-          eval "$SSH_CMD" "
+          echo "=== 17. COCKPIT STATUS ==="
+          eval "$R" "
             systemctl status cockpit.socket --no-pager -l 2>/dev/null | head -10 || echo 'cockpit.socket not found'
             echo '---'
             curl -s -o /dev/null -w 'Cockpit (9090): HTTP %{http_code}' http://localhost:9090/ 2>/dev/null || echo 'Cockpit not reachable'
           "
           echo ""
 
-          echo "=== 17. RECENT JOURNAL ERRORS ==="
-          eval "$SSH_CMD" "journalctl -p err --no-pager -n 15 2>/dev/null || echo 'journalctl not available'"
+          echo "=== 18. RECENT JOURNAL ERRORS ==="
+          eval "$R" "journalctl -p err --no-pager -n 15 2>/dev/null || echo 'journalctl not available'"
           echo ""
 
-          echo "=== 18. SPA FILES ON HOST ==="
-          eval "$SSH_CMD" "
+          echo "=== 19. SPA FILES ON HOST ==="
+          eval "$R" "
             for app in hr erp ledger pos; do
               dir=\"/srv/fastfree-\${app}\"
               if [ -d \"\$dir\" ]; then
@@ -325,7 +337,7 @@ jobs:
     needs: validate
     if: ${{ inputs.action == 'install' && inputs.confirm == 'INSTALL' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     permissions:
       contents: read
     steps:
@@ -340,14 +352,15 @@ jobs:
           nix run github:nix-community/nixos-anywhere -- \
             --flake ./apps/fastfree_os#client2 \
             --target-host root@${{ secrets.CLIENT2_IP }} \
+            --build-on github-hosted \
             --env-password
 
       - name: "4. Verify (SSH key)"
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.CLIENT2_DEPLOY_KEY }}" > ~/.ssh/client2
+          printf '%s' "${{ secrets.CLIENT2_DEPLOY_KEY }}" > ~/.ssh/client2
           chmod 600 ~/.ssh/client2
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/client2 \
+          ssh -o StrictHostKeyChecking=accept-new -i ~/.ssh/client2 \
             root@${{ secrets.CLIENT2_IP }} "nixos-version && hostname && echo DEPLOY_OK"
 
   guard-install:
