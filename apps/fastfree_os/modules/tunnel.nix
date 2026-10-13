@@ -151,6 +151,23 @@ in
       default = "http://127.0.0.1:4096";
       description = "Loopback origin for the OpenCode tunnel (must be reachable only from this machine).";
     };
+
+    herdr.url = lib.mkOption {
+      type = lib.types.str;
+      default = "http://127.0.0.1:7317";
+      description = ''
+        Loopback origin for the herdr-web-ui tunnel. This is the escape hatch
+        when neither the LAN nor the ZeroTier managed route reaches the phone:
+        the plugin binds 0.0.0.0 with HOST=0.0.0.0, but a quick tunnel dials
+        out to the Cloudflare edge and proxies back down, so nothing new has to
+        be routable from the phone. Set fastfree.tunnel.herdr.enable = false
+        to drop it; a tunnel URL is public and unauthenticated at the edge, so
+        HERDR_WEB_TOKEN must be set (see the plugin's own docs/guide.md) before
+        enabling this.
+      '';
+    };
+
+    herdr.enable = lib.mkEnableOption "Cloudflare quick tunnel for the herdr web UI (phone access when LAN and ZeroTier both fail)"; # default: false
   };
 
   config = lib.mkIf cfg.enable {
@@ -161,6 +178,8 @@ in
     systemd.services = {
       cloudflared-guacamole = guacamoleUnit;
       cloudflared-opencode = opencodeUnit;
+      # Opt-in: only when the phone cannot reach this machine any other way.
+      cloudflared-herdr = lib.mkIf cfg.herdr.enable (unit "herdr" cfg.herdr.url [ ]);
     };
 
     # Create the URL files empty and world-readable at every boot, so the
@@ -170,6 +189,7 @@ in
     systemd.tmpfiles.rules = [
       "f /run/fastfree-tunnel-guacamole.url 0644 root root -"
       "f /run/fastfree-tunnel-opencode.url 0644 root root -"
+      "f /run/fastfree-tunnel-herdr.url 0644 root root -"
     ];
   };
 }

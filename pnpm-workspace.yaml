@@ -1,15 +1,34 @@
 packages:
   - 'packages/*'
   - 'packages/fastfree_update/ae'
+  # The extension playground is a nested Quasar app that resolves the local
+  # extension via `workspace:*`, so it has to be a workspace member — its
+  # `postinstall` (`quasar prepare`) is run by packages/fastfree_update and
+  # needs @quasar/cli in its own node_modules/.bin.
+  - 'packages/fastfree_update/playground'
   - 'apps/*'
+  # The MCP server that renders documentation HTML. A workspace member so its
+  # @modelcontextprotocol/sdk stays pinned in the shared lockfile and is
+  # installed by `flox activate -- pnpm install` at the repo root.
+  - 'tools/*'
 allowBuilds:
   '@parcel/watcher': true
-  '@tailwindcss/oxide': set this to true or false
+  # apps/fastfree_website uses @tailwindcss/postcss; oxide ships a native binary
+  # that its postinstall unpacks.
+  '@tailwindcss/oxide': true
   bufferutil: true
-  electron: set this to true or false
+  core-js: true
+  # electron arrives only as a transitive dep of @vue/devtools-electron
+  # (fastfree_erp devDep). Its postinstall downloads a ~100 MB binary that
+  # nothing here uses, and @vue/devtools falls back to the browser build, so
+  # deny the build script rather than pay for it on every install.
+  electron: false
+  electron-winstaller: true
   esbuild: true
+  lightningcss: true
+  rolldown: true
   sharp: true
-  unrs-resolver: set this to true or false
+  unrs-resolver: true
   utf-8-validate: true
   vue-demi: true
 overrides:

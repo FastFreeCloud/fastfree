@@ -41,8 +41,12 @@ in {
     # No X display manager is involved: xrdp starts its own Xorg per session.
     # openbox alone is a window manager, not a desktop, so it contributes no
     # panels/docks and — crucially — no duplicated launcher entries.
-    services.xserver.enable = true;
-    services.xserver.windowManager.openbox.enable = true;
+    # mkForce: modules/system.nix hard-disables the X server for headless
+    # hosts with `lib.mkIf (...) false`, and mkIf outranks a plain value, so a
+    # bare `true` here would abort the whole evaluation with
+    # "The option `services.xserver.enable' has conflicting definition values".
+    services.xserver.enable = lib.mkForce true;
+    services.xserver.windowManager.openbox.enable = lib.mkForce true;
 
     # Terminal for the remote session. Alacritty ships no .desktop file.
     environment.systemPackages = [ pkgs.alacritty ];

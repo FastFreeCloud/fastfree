@@ -97,8 +97,18 @@ in
     LC_TIME = "en_US.UTF-8";
   };
 
-  # ── SSH stays OFF (openssh was commented out on this machine) ──
-  services.openssh.enable = lib.mkForce false;
+  # ── SSH ────────────────────────────────────────────────
+  # On so that `clan machines update client3` works without a console.
+  # Bound to the wireguard mesh + LAN; the operator key is provisioned from
+  # the clan vars users instance, and WireGuard-only reachability is enforced
+  # by the firewall rule below.
+  services.openssh.enable = lib.mkForce true;
+  services.openssh.settings = {
+    PermitRootLogin = "yes";
+    PasswordAuthentication = false;
+    KbdInteractiveAuthentication = false;
+  };
+  networking.firewall.allowedTCPPorts = [ 22 ];
 
   # ── Packages (git comes from the base module) ──
   environment.systemPackages = [
@@ -148,20 +158,21 @@ in
   # on every tunnel restart, so read it with `ff-urls` (see modules/tunnel.nix).
   fastfree.tunnel.enable = true;
 
+  # Herdr web UI on the phone. The plugin binds 0.0.0.0 (HOST in its
+  # HERDR_PLUGIN_CONFIG_DIR/.env), but neither the LAN address nor the
+  # ZeroTier managed route reaches the phone from this network, so publish it
+  # through a third quick tunnel. The tunnel dials out to the Cloudflare edge
+  # and the edge proxies back, so no port has to be routable here.
+  #
+  # HERDR_WEB_TOKEN is set, which is what makes this safe: the tunnel URL is
+  # public and the edge does not authenticate. Without the token anyone who
+  # gets the URL could type into this machine's terminals.
+  fastfree.tunnel.herdr.enable = true;
+
   fastfree.avahi = {
     enable = true;
     reflector = true;
     interfaces = [ ];
   };
 
-  # ── ZeroTier overlay ─────────────────────────────────────
-  # Same fleet mesh as client2 (see machines/client2/configuration.nix).
-  # Network fada62b015365b47 lives on ZeroTier Central, so this node has to be
-  # authorised in the Central UI once; until then it sits in ACCESS_DENIED,
-  # which is exactly what you want to see right after the first switch.
-  services.zerotierone = {
-    enable = true;
-    port = 9993;
-    joinNetworks = [ "fada62b015365b47" ];
-  };
-}
+  }

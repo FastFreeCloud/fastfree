@@ -1,4 +1,23 @@
-# AGENTS.md — FastFree Monorepo
+# AGENTS.md — FastFree Monorepo (Multi-Agent & Herdr Ecosystem)
+
+## 🤖 منظومة الوكلاء المتعددين (Multi-Agent Operating Environment with Herdr)
+المشروع يدار بواسطة وكلاء ذكاء اصطناعي متعددين يعملون بالتوازي داخل طرفيات **Herdr** (`herdr.dev` مع `HERDR_ENV=1`):
+- **الوكلاء النشطون**: Antigravity (`agy`), OpenCode (`opencode`), Claude Code (`claude`).
+- **المهارة المشتركة المعتمدة**: [FastFree Guide Skill](file:///.agents/skills/fastfree-guide/SKILL.md) (متوفرة في `.agents/skills/fastfree-guide/` و `.gemini/skills/fastfree-guide/`).
+- **خوادم MCP المشتركة**: موحدة بين `opencode.json` و `~/.gemini/config/mcp_config.json` عبر السكربت `.gemini/skills/fastfree-guide/scripts/sync-mcp.sh`.
+- **أدوات MCP المتوفرة للوكلاء**:
+  1. `quasar`: مكونات وإضافات Quasar UI.
+  2. `playwright`: اختبارات المتصفح وفحص E2E وأخذ لقطات.
+  3. `nixos`: خيارات وحزم وإعدادات NixOS و Flakes.
+  4. `firecrawl-mcp`: استخراج وتلخيص محتوى الويب المتقدم.
+  5. `sequential-thinking`: التفكير المنطقي المتسلسل وحل المشكلات المعقدة.
+  6. `context7`: توثيق المكتبات الخارجي الحي.
+  7. `grep`: البحث السحابي في كود المشاريع المفتوحة.
+  8. `exa`: محرك البحث الدلالي.
+  9. `browsermcp`: تصفح الويب التفاعلي.
+  10. `midscene-web`: الفحص البصري التلقائي للواجهات.
+
+---
 
 ## أوامر الفحص (لازم تتشغل من apps/fastfree_ledger)
 
