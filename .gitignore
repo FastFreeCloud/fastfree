@@ -93,3 +93,19 @@ apps/*/lint-output.txt
 # verification screenshots
 /check-*.png
 /erp-*.png
+
+# pnpm 11 renamed its store; the rule above still names the pnpm 9/10 path.
+package-manager-store/
+
+# midscene-web MCP run artifacts. Only the .log inside was caught by the
+# global *.log rule, so a screenshot or report would have been swept in.
+midscene_run/
+
+# Herdr web-UI scratch (agent-written PLAN/CLAUDE files). Timestamped and
+# regenerated each session.
+.herdr-web-ui/
+
+# Absolute symlinks into /home/fastfree used to keep AGENTS.md's skill paths
+# working. Committing them bakes an absolute home path into the repo, so every
+# other clone gets two dangling links. The real content lives in .gemini/.
+.agents/
