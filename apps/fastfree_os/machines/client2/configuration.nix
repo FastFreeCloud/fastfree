@@ -100,7 +100,14 @@
   # fail2ban (default sshd jail, auto VERBOSE) absorbs brute-force bots.
   services.openssh.settings.PasswordAuthentication = lib.mkForce true;
   services.openssh.settings.PermitRootLogin = "yes";
-  services.fail2ban.enable = true;
+  services.fail2ban = {
+    enable = true;
+    ignoreIP = [
+      "127.0.0.1/8"
+      "::1"
+      "197.34.19.171"
+    ];
+  };
 
   fastfree.avahi = {
     enable = true;
