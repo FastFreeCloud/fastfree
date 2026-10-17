@@ -49,9 +49,14 @@
       {{ clanStore.error }}
     </q-banner>
 
+    <!-- Loading State -->
+    <div v-if="clanStore.loading && filteredMachines.length === 0" class="row justify-center q-pa-xl">
+      <q-spinner-dots color="primary" size="48px" />
+    </div>
+
     <!-- Empty State -->
     <EmptyState
-      v-if="!clanStore.loading && filteredMachines.length === 0"
+      v-else-if="!clanStore.loading && filteredMachines.length === 0"
       icon="mdi-server-off"
       title="No machines found"
       message="No machines are currently registered or matched the filter."
@@ -119,7 +124,15 @@
             >
               <q-tooltip>Run clan machines update {{ m.name }}</q-tooltip>
             </q-btn>
-            <q-btn flat dense size="sm" color="grey-5" icon="mdi-information-outline" label="Details" />
+            <q-btn
+              flat
+              dense
+              size="sm"
+              color="grey-5"
+              icon="mdi-information-outline"
+              label="Details"
+              @click.stop="openDetail(m)"
+            />
           </q-card-actions>
         </q-card>
       </div>
@@ -161,10 +174,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
 import { useClanStore } from '../stores/clan';
 import { type MachineSummary } from '../lib/api';
 import { DynamicTable, EmptyState } from '../lib/lowcode';
 
+const $q = useQuasar();
 const clanStore = useClanStore();
 const filter = ref('');
 const detailOpen = ref(false);
@@ -215,7 +230,20 @@ function openDetail(m: MachineSummary): void {
 
 async function handleUpdate(machineName: string): Promise<void> {
   if (!machineName) return;
-  await clanStore.triggerMachineUpdate(machineName);
+  try {
+    await clanStore.triggerMachineUpdate(machineName);
+    $q.notify({
+      type: 'positive',
+      icon: 'mdi-check-circle',
+      message: `Machine ${machineName} updated successfully!`,
+    });
+  } catch {
+    $q.notify({
+      type: 'negative',
+      icon: 'mdi-alert-circle',
+      message: clanStore.error || `Failed to update machine ${machineName}`,
+    });
+  }
 }
 
 onMounted(() => {

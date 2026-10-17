@@ -96,7 +96,15 @@
         <span>Mesh Peers · أطراف الشبكة</span>
       </div>
 
-      <div class="row q-col-gutter-md">
+      <!-- Empty State for WireGuard Peers -->
+      <EmptyState
+        v-if="filteredPeers.length === 0"
+        icon="mdi-lan-disconnect"
+        title="No peers found"
+        message="No WireGuard peers matched the filter."
+      />
+
+      <div v-else class="row q-col-gutter-md">
         <div
           v-for="peer in filteredPeers"
           :key="peer.publicKey"
@@ -215,7 +223,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
-import { DynamicTable } from '../lib/lowcode';
+import { DynamicTable, EmptyState } from '../lib/lowcode';
 
 export interface WireguardPeer {
   name: string;
@@ -351,13 +359,21 @@ async function pingPeer(peer: WireguardPeer): Promise<void> {
   }
 }
 
-function copyKey(key: string): void {
-  void navigator.clipboard.writeText(key);
-  $q.notify({
-    type: 'info',
-    icon: 'mdi-content-copy',
-    message: 'WireGuard public key copied to clipboard!',
-  });
+async function copyKey(key: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(key);
+    $q.notify({
+      type: 'info',
+      icon: 'mdi-content-copy',
+      message: 'WireGuard public key copied to clipboard!',
+    });
+  } catch {
+    $q.notify({
+      type: 'warning',
+      icon: 'mdi-alert-circle',
+      message: 'Failed to copy to clipboard',
+    });
+  }
 }
 
 async function refreshNetwork(): Promise<void> {

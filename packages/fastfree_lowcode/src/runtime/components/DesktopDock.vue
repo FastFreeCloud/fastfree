@@ -210,21 +210,28 @@ onUnmounted(() => {
   gap: 4px;
   padding: 6px;
   max-width: 94vw;
-  background: var(--lc-dock-bg, color-mix(in srgb, var(--lc-surface, #ffffff) 90%, transparent));
-  backdrop-filter: blur(20px) saturate(1.3);
-  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  background: var(--lc-dock-bg, rgba(255, 255, 255, 0.88));
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
   border: 1px solid var(--lc-dock-border, var(--lc-border, rgba(0, 0, 0, 0.1)));
-  border-radius: 18px;
+  border-radius: 20px;
   box-shadow:
-    0 6px 28px rgba(0, 0, 0, 0.12),
-    0 1px 4px rgba(0, 0, 0, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
 
   .lc-dock--mobile & {
     justify-content: space-evenly;
     gap: 2px;
   }
+}
+
+body.body--dark .lc-dock__bar {
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 // ── Dock item ──
@@ -234,12 +241,12 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  padding: 6px 10px;
-  min-width: 48px;
-  border-radius: 12px;
+  padding: 6px 12px;
+  min-width: 52px;
+  border-radius: 14px;
   border: none;
   background: transparent;
-  color: var(--lc-on-surface-variant, #555);
+  color: var(--lc-on-surface-variant);
   cursor: pointer;
   position: relative;
   flex-shrink: 0;
@@ -258,23 +265,28 @@ onUnmounted(() => {
   }
 
   &:hover {
-    background: color-mix(in srgb, var(--lc-primary, #1565C0) 10%, transparent);
-    color: var(--lc-primary, #1565C0);
+    background: color-mix(in srgb, var(--lc-primary) 14%, transparent);
+    color: var(--lc-primary);
     transform: translateY(-2px);
   }
 
   &:active {
-    transform: scale(0.9);
+    transform: scale(0.92);
     transition-duration: 0.06s;
   }
 
   &--active {
-    color: var(--lc-on-primary, #fff);
-    background: var(--lc-primary, #1565C0);
-    box-shadow: 0 4px 14px color-mix(in srgb, var(--lc-primary, #1565C0) 45%, transparent);
+    color: var(--lc-on-primary, #fff) !important;
+    background: linear-gradient(135deg, var(--lc-primary-dark, #0D47A1), var(--lc-primary, #1565C0));
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--lc-primary) 50%, transparent);
 
     .lc-dock__label { font-weight: 700; }
+    .lc-dock__icon { color: var(--lc-on-primary, #fff); }
   }
+}
+
+body.body--dark .lc-dock__item:hover:not(.lc-dock__item--active) {
+  color: var(--lc-primary-light, #93c5fd);
 }
 
 .lc-dock__icon {
@@ -307,31 +319,33 @@ onUnmounted(() => {
 // ── Active dot ──
 .lc-dock__dot {
   position: absolute;
-  bottom: 4px;
+  bottom: 3px;
   left: 50%;
   transform: translateX(-50%);
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: currentColor;
+  background: var(--lc-on-primary, #ffffff);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
   animation: lc-pill-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 // ── Badge ──
 .lc-dock__badge {
   position: absolute;
-  top: 0;
-  inset-inline-end: 0;
-  min-width: 14px;
-  height: 14px;
-  border-radius: 7px;
-  padding: 0 3px;
-  font-size: 8px;
+  top: -1px;
+  inset-inline-end: 2px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  padding: 0 4px;
+  font-size: 9px;
   font-weight: 700;
-  line-height: 14px;
+  line-height: 16px;
   text-align: center;
   background: var(--lc-negative, #C10015);
   color: #fff;
+  box-shadow: 0 0 0 1.5px var(--lc-surface, #ffffff), 0 2px 4px rgba(0, 0, 0, 0.25);
   pointer-events: none;
   animation: lc-badge-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -340,30 +354,37 @@ onUnmounted(() => {
 .lc-dock__ctx {
   position: fixed;
   z-index: 10000;
-  min-width: 150px;
+  min-width: 160px;
   background: var(--lc-surface, #fff);
-  border: 1px solid var(--lc-border, rgba(0, 0, 0, 0.1));
-  border-radius: 10px;
-  padding: 4px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--lc-border);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
+  color: var(--lc-on-surface);
 }
 
 .lc-dock__ctx-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 10px;
-  border-radius: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 12px;
-  color: var(--lc-on-surface, #333);
-  transition: background 0.1s ease;
+  font-size: 13px;
+  color: var(--lc-on-surface);
+  transition: background 0.12s ease, color 0.12s ease;
 
-  &:hover { background: color-mix(in srgb, var(--lc-primary, #1565C0) 8%, transparent); }
+  &:hover {
+    background: color-mix(in srgb, var(--lc-primary) 12%, transparent);
+    color: var(--lc-primary);
+  }
 
   &--danger {
     color: var(--lc-negative, #C10015);
-    &:hover { background: color-mix(in srgb, var(--lc-negative, #C10015) 8%, transparent); }
+    &:hover {
+      background: color-mix(in srgb, var(--lc-negative) 12%, transparent);
+      color: var(--lc-negative, #C10015);
+    }
   }
 }
 

@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/latin-400-Df88CuCL.css","assets/latin-600-RhtgTSEl.css","assets/arabic-400-DfBU05-w.css","assets/arabic-600-K0ANa84q.css","assets/latin-400-Ca34VLOU.css"])))=>i.map(i=>d[i]);
-import{i as e}from"./index-DIBrv7GC.js";async function t(){await Promise.all([e(()=>Promise.resolve({}),__vite__mapDeps([0])),e(()=>Promise.resolve({}),__vite__mapDeps([1])),e(()=>Promise.resolve({}),__vite__mapDeps([2])),e(()=>Promise.resolve({}),__vite__mapDeps([3])),e(()=>Promise.resolve({}),__vite__mapDeps([4]))])}export{t as default};

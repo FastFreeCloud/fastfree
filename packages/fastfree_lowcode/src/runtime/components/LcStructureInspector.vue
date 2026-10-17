@@ -90,7 +90,7 @@ function updatePageLoadTime() {
 
 function formatBytes(bytes: number | null): string {
   if (bytes === null) return 'N/A'
-  if (bytes === 0) return '0 B'
+  if (bytes <= 0) return '0 B'
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
@@ -102,7 +102,7 @@ onMounted(() => {
   updateMemoryInfo()
   updatePageLoadTime()
   window.addEventListener('online', updateNetworkInfo)
-  window.removeEventListener('offline', updateNetworkInfo)
+  window.addEventListener('offline', updateNetworkInfo)
   const conn = (navigator as unknown as { connection?: NetworkConnection }).connection
   if (conn?.addEventListener) conn.addEventListener('change', updateNetworkInfo)
 })
@@ -124,11 +124,15 @@ function matchesSearch(...values: (string | number | boolean | null | undefined)
 }
 
 function copyToClipboard(data: Record<string, unknown>) {
-  navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
-    $q.notify({ message: t('inspector.copied'), color: 'positive', icon: 'mdi-check-circle', timeout: 2000 })
-  }).catch(() => {
+  try {
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
+      $q.notify({ message: t('inspector.copied'), color: 'positive', icon: 'mdi-check-circle', timeout: 2000 })
+    }).catch(() => {
+      $q.notify({ message: t('inspector.clipboardError'), color: 'negative', icon: 'mdi-alert-circle', timeout: 2000 })
+    })
+  } catch {
     $q.notify({ message: t('inspector.clipboardError'), color: 'negative', icon: 'mdi-alert-circle', timeout: 2000 })
-  })
+  }
 }
 
 const appInfo = computed(() => ({

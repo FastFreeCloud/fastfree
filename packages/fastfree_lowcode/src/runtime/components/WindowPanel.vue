@@ -14,7 +14,7 @@
       </template>
       <div class="window-titlebar" @mousedown="startDrag" @touchstart="startDrag">
         <div class="titlebar-left">
-          <q-icon :name="info.icon" size="16px" color="white" />
+          <q-icon :name="info.icon" size="16px" />
           <span class="titlebar-title">{{ info.title }}</span>
         </div>
         <div class="titlebar-actions">
@@ -38,7 +38,7 @@
             :icon="info.isMaximized ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
             :aria-label="t('common.maximize')"
             @click.stop="desktop.toggleMaximize(info.id)" />
-          <q-btn round flat dense size="xs" icon="mdi-close" color="negative"
+          <q-btn round flat dense size="xs" icon="mdi-close" class="titlebar-close-btn"
             :aria-label="t('common.close')"
             @click.stop="desktop.closeWindow(info.id)" />
         </div>
@@ -48,14 +48,14 @@
       </div>
       <div v-if="info.isMaximized" class="window-restore-bar" :class="{ 'auto-show': autoShowRestore }">
         <div class="restore-bar-inner" @click="desktop.toggleMaximize(info.id)">
-          <q-icon :name="info.icon" size="14px" color="white" />
+          <q-icon :name="info.icon" size="14px" class="restore-icon" />
           <span class="restore-title">{{ info.title }}</span>
           <q-btn round flat dense size="xs" icon="mdi-minus"
             @click.stop="desktop.toggleMinimize(info.id)" />
           <q-btn round flat dense size="xs" icon="mdi-fullscreen-exit"
             :aria-label="t('common.maximize')"
             @click.stop="desktop.toggleMaximize(info.id)" />
-          <q-btn round flat dense size="xs" icon="mdi-close"
+          <q-btn round flat dense size="xs" icon="mdi-close" class="restore-close-btn"
             :aria-label="t('common.close')"
             @click.stop="desktop.closeWindow(info.id)" />
         </div>
@@ -301,13 +301,16 @@ onUnmounted(() => {
   border: 1px solid var(--lc-border);
   border-radius: 12px;
   overflow: hidden;
-  background: var(--lc-surface-alt, var(--lc-surface));
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease, border-color 0.2s ease;
+  background: var(--lc-surface);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14), 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.3s ease, border-color 0.2s ease, box-shadow 0.25s ease;
 
   &.active {
-    box-shadow: 0 8px 32px color-mix(in srgb, var(--lc-primary) 20%, transparent);
     border-color: var(--lc-primary);
+    box-shadow:
+      0 16px 44px rgba(0, 0, 0, 0.28),
+      0 0 0 1px color-mix(in srgb, var(--lc-primary) 50%, transparent),
+      0 0 24px color-mix(in srgb, var(--lc-primary) 20%, transparent);
   }
 
   &.maximized {
@@ -375,9 +378,11 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: linear-gradient(135deg, var(--lc-primary-dark, #0D47A1), var(--lc-primary, #1565C0));
+  background: var(--lc-surface-container, #f1f5f9);
+  border-bottom: 1px solid var(--lc-border);
   min-height: 36px;
   touch-action: manipulation;
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
 
 @media (hover: none) and (pointer: coarse) {
@@ -386,8 +391,19 @@ onUnmounted(() => {
   }
 }
 
+.window-panel.active .window-titlebar {
+  background: linear-gradient(135deg, var(--lc-primary-dark, #0D47A1), var(--lc-primary, #1565C0));
+  border-bottom: 1px solid transparent;
+}
+
 body.body--dark .window-titlebar {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--lc-primary-dark, #0D47A1) 65%, black), color-mix(in srgb, var(--lc-primary, #1565C0) 65%, black));
+  background: var(--lc-surface-container, #25253b);
+  border-bottom: 1px solid var(--lc-border);
+}
+
+body.body--dark .window-panel.active .window-titlebar {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--lc-primary-dark, #0D47A1) 75%, black), color-mix(in srgb, var(--lc-primary, #1565C0) 80%, black));
+  border-bottom: 1px solid transparent;
 }
 
 .titlebar-left {
@@ -396,14 +412,26 @@ body.body--dark .window-titlebar {
   gap: 8px;
 
   .q-icon {
-    color: var(--lc-on-primary, #ffffff);
+    color: var(--lc-on-surface-variant);
+    transition: color 0.2s ease;
   }
+}
+
+.window-panel.active .titlebar-left .q-icon {
+  color: var(--lc-on-primary, #ffffff);
 }
 
 .titlebar-title {
   font-size: 13px;
   font-weight: 500;
+  color: var(--lc-on-surface);
+  transition: color 0.2s ease;
+}
+
+.window-panel.active .titlebar-title {
   color: var(--lc-on-primary, #ffffff);
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 .titlebar-actions {
@@ -416,29 +444,52 @@ body.body--dark .window-titlebar {
 .titlebar-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 
   .q-btn {
-    color: color-mix(in srgb, var(--lc-on-primary, #ffffff) 80%, transparent);
+    color: var(--lc-on-surface-variant);
     touch-action: manipulation;
+    transition: color 0.15s ease, background 0.15s ease;
 
     // Expand the tap target on touch screens (visual size stays small).
     &::after {
       content: '';
       position: absolute;
-      inset: -12px;
+      inset: -10px;
     }
 
     &:hover {
-      color: var(--lc-on-primary, #ffffff);
-      background: color-mix(in srgb, var(--lc-on-primary, #ffffff) 10%, transparent);
+      color: var(--lc-on-surface);
+      background: color-mix(in srgb, var(--lc-on-surface) 10%, transparent);
     }
   }
 
   .fav-btn {
     &.fav-active {
-      color: #ffc107;
+      color: #f59e0b;
     }
+  }
+}
+
+.window-panel.active .titlebar-right {
+  .q-btn {
+    color: rgba(255, 255, 255, 0.85);
+
+    &:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.18);
+    }
+  }
+
+  .fav-btn.fav-active {
+    color: #f59e0b;
+  }
+}
+
+.titlebar-close-btn {
+  &:hover {
+    background: #e53935 !important;
+    color: #ffffff !important;
   }
 }
 
@@ -452,7 +503,8 @@ body.body--dark .window-titlebar {
   flex-direction: column;
   padding: 12px;
   background: var(--lc-surface);
-  transition: background-color 0.3s ease;
+  color: var(--lc-on-surface);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .maximized .window-content {
@@ -475,31 +527,50 @@ body.body--dark .window-titlebar {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
-  background: color-mix(in srgb, var(--lc-surface) 85%, transparent);
-  backdrop-filter: blur(4px);
+  padding: 8px 14px;
+  background: color-mix(in srgb, var(--lc-surface) 92%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   color: var(--lc-on-surface);
   border: 1px solid var(--lc-border);
-  border-radius: 0 0 8px 8px;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
   font-size: 12px;
   cursor: pointer;
   pointer-events: auto;
-  opacity: 0.85;
-  transition: opacity 0.2s, background-color 0.3s ease, color 0.3s ease;
+  opacity: 0.92;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  transition: opacity 0.2s, background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
   touch-action: manipulation;
 
+  .restore-icon {
+    color: var(--lc-primary);
+  }
+
   .q-btn {
+    color: var(--lc-on-surface-variant);
     // Expand the tap target on touch screens (visual size stays small).
     &::after {
       content: '';
       position: absolute;
-      inset: -12px;
+      inset: -10px;
     }
+
+    &:hover {
+      color: var(--lc-on-surface);
+      background: color-mix(in srgb, var(--lc-on-surface) 10%, transparent);
+    }
+  }
+
+  .restore-close-btn:hover {
+    background: #e53935 !important;
+    color: #ffffff !important;
   }
 }
 
 .restore-bar-inner:hover {
   opacity: 1;
+  transform: translateY(2px);
 }
 
 .window-restore-bar.auto-show .restore-bar-inner {

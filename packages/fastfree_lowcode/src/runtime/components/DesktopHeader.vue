@@ -39,9 +39,16 @@ const props = withDefaults(defineProps<{
 
 const hovered = ref(false)
 
-const headerStyle = computed(() => ({
-  background: `linear-gradient(135deg, ${props.gradient[0]}, ${props.gradient[1]})`,
-}))
+const headerStyle = computed(() => {
+  if (props.gradient && (props.gradient[0] !== '#0D47A1' || props.gradient[1] !== '#1565C0')) {
+    return {
+      background: `linear-gradient(135deg, ${props.gradient[0]}, ${props.gradient[1]})`,
+    }
+  }
+  return {
+    background: 'linear-gradient(135deg, var(--lc-primary-dark, #0D47A1), var(--lc-primary, #1565C0))',
+  }
+})
 </script>
 
 <style lang="scss" scoped>
@@ -49,6 +56,8 @@ const headerStyle = computed(() => ({
   z-index: 5000;
   position: relative;
   overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
 .lc-hdr__bar {
@@ -64,17 +73,19 @@ const headerStyle = computed(() => ({
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   flex-shrink: 0;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   &--hover {
-    background: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.26);
+    border-color: rgba(255, 255, 255, 0.35);
     transform: scale(1.08);
-    box-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
   }
 }
 
@@ -90,10 +101,11 @@ const headerStyle = computed(() => ({
   overflow: hidden;
   text-overflow: ellipsis;
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.95rem;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.25px;
   line-height: 1.2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   animation: lc-hdr-title-in 0.4s ease both;
 }
 

@@ -1,12 +1,5 @@
 // app global css
 
-// fastfree_panel is a dark-first UI. Painting the document surface with the
-// design token keeps the initial paint and any area the Quasar layout does not
-// cover (overscroll, the gap above the footer) from flashing white.
-body {
-  background: #0e1216;
-}
-
 // design/*.dc.html specifies IBM Plex Sans with IBM Plex Sans Arabic for
 // Arabic text. --q-font-family keeps Quasar components (buttons, chips, fields)
 // on the same face; the body rule covers plain markup.
@@ -16,4 +9,80 @@ body {
 
 body {
   font-family: var(--q-font-family);
+  background: var(--lc-bg-primary, #0e1216);
+  color: var(--lc-on-surface, #e0e0e0);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color var(--lc-transition-duration, 0.3s) ease,
+              color var(--lc-transition-duration, 0.3s) ease;
+}
+
+// ── Universal custom scrollbars ──
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--lc-scrollbar-thumb, rgba(120, 120, 120, 0.3)) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--lc-scrollbar-thumb, rgba(120, 120, 120, 0.3));
+  border-radius: 4px;
+
+  &:hover {
+    background: var(--lc-scrollbar-thumb-hover, rgba(120, 120, 120, 0.5));
+  }
+}
+
+// ── Text selection ──
+::selection {
+  background: color-mix(in srgb, var(--lc-primary, #1565c0) 30%, transparent);
+  color: inherit;
+}
+
+// ── Quasar component surface adaptations ──
+.q-card--dark,
+body.body--dark .q-card {
+  background: var(--lc-surface, #1a1a28);
+  border-color: var(--lc-border, rgba(255, 255, 255, 0.14));
+  color: var(--lc-on-surface, #f1f5f9);
+}
+
+body:not(.body--dark) .q-card {
+  background: var(--lc-surface, #ffffff);
+  border-color: var(--lc-border, rgba(0, 0, 0, 0.12));
+  color: var(--lc-on-surface, #0f172a);
+}
+
+body.body--dark .q-menu {
+  background: var(--lc-surface, #1a1a28);
+  border: 1px solid var(--lc-border, rgba(255, 255, 255, 0.14));
+  color: var(--lc-on-surface, #f1f5f9);
+}
+
+body:not(.body--dark) .q-menu {
+  background: var(--lc-surface, #ffffff);
+  border: 1px solid var(--lc-border, rgba(0, 0, 0, 0.12));
+  color: var(--lc-on-surface, #0f172a);
+}
+
+body.body--dark .q-dialog .q-card {
+  background: var(--lc-surface, #1a1a28);
+  border: 1px solid var(--lc-border, rgba(255, 255, 255, 0.14));
+  color: var(--lc-on-surface, #f1f5f9);
+}
+
+body:not(.body--dark) .q-dialog .q-card {
+  background: var(--lc-surface, #ffffff);
+  border: 1px solid var(--lc-border, rgba(0, 0, 0, 0.12));
+  color: var(--lc-on-surface, #0f172a);
 }

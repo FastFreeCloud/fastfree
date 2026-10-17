@@ -1,0 +1,1 @@
+import{b as e,ct as t,k as n,mt as r}from"./runtime-core.esm-bundler-afr98a2z.js";import{r as i}from"./index-Cf5nwrpO.js";var a=n({__name:`machines`,setup(n){let a=i();return t(()=>{a.replace(`/`)}),(t,n)=>(r(),e(`div`))}});export{a as default};

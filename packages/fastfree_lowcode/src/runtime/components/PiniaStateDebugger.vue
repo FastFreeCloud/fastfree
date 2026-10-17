@@ -422,6 +422,16 @@ function init() {
     })
   }
 
+  // Populate currently existing stores from piniaInternal._s
+  if (piniaInternal._s) {
+    const current = new Map(stores.value)
+    piniaInternal._s.forEach((store, id) => {
+      // @ts-expect-error pnpm duplicate pinia instances — works at runtime
+      current.set(id, store)
+    })
+    stores.value = current
+  }
+
   if (autoRefresh.value) startAutoRefresh()
 }
 
@@ -485,7 +495,15 @@ function getAllState(): Record<string, unknown> {
 
 function copyStateToClipboard() {
   const json = JSON.stringify(getAllState(), null, 2)
-  navigator.clipboard.writeText(json)
+  try {
+    navigator.clipboard.writeText(json).then(() => {
+      $q.notify({ type: 'positive', message: 'Pinia state copied to clipboard!', icon: 'mdi-check-circle' })
+    }).catch(() => {
+      $q.notify({ type: 'negative', message: 'Failed to copy state to clipboard' })
+    })
+  } catch {
+    $q.notify({ type: 'negative', message: 'Failed to copy state to clipboard' })
+  }
 }
 
 function downloadState() {
@@ -611,7 +629,17 @@ function computeDiff(oldObj: Record<string, unknown>, newObj: Record<string, unk
 
 function startAutoRefresh() {
   refreshTimer.value = window.setInterval(() => {
-    stores.value = new Map(stores.value)
+    const p = getActivePinia() as (Pinia & { _s?: Map<string, Store> }) | null
+    if (p?._s) {
+      const current = new Map(stores.value)
+      p._s.forEach((store, id) => {
+        // @ts-expect-error pnpm duplicate pinia instances — works at runtime
+        current.set(id, store)
+      })
+      stores.value = current
+    } else {
+      stores.value = new Map(stores.value)
+    }
   }, 1000)
 }
 

@@ -177,13 +177,15 @@ function handleLogout() {
 
 // ── Visible action buttons (theme / language) ──
 .lc-hdr-action {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  transition: background 0.2s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.28);
+    border-color: rgba(255, 255, 255, 0.35);
     transform: scale(1.06);
   }
 
@@ -211,21 +213,23 @@ function handleLogout() {
   font-weight: 700;
   line-height: 15px;
   text-align: center;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
   pointer-events: none;
 }
 
 // ── Profile button ──
 .lc-profile-btn {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  transition: background 0.2s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
   animation: lc-fade-slide 0.4s ease 0.2s forwards;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.28);
+    border-color: rgba(255, 255, 255, 0.35);
     transform: scale(1.06);
   }
 
@@ -240,7 +244,8 @@ function handleLogout() {
   align-items: flex-start;
   gap: 12px;
   padding: 14px 16px;
-  background: color-mix(in srgb, var(--q-primary, #1565C0) 6%, transparent);
+  background: color-mix(in srgb, var(--lc-primary, #1565C0) 8%, var(--lc-surface, #ffffff));
+  border-bottom: 1px solid var(--lc-border);
 }
 
 .lc-profile-card__avatar {
@@ -256,6 +261,7 @@ function handleLogout() {
   font-size: 15px;
   font-weight: 700;
   line-height: 1.3;
+  color: var(--lc-on-surface);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -263,7 +269,7 @@ function handleLogout() {
 
 .lc-profile-card__email {
   font-size: 12px;
-  color: var(--lc-on-surface-variant, #666);
+  color: var(--lc-on-surface-variant);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -282,6 +288,8 @@ function handleLogout() {
 
 .lc-profile-menu {
   border-radius: 0 0 12px 12px;
+  background: var(--lc-surface);
+  color: var(--lc-on-surface);
 }
 
 // ── Mobile ──

@@ -74,7 +74,7 @@ const PRESETS: ThemePreset[] = [
       warning: '#F2C037',
     },
     dark: {
-      primary: '#1976D2',
+      primary: '#42A5F5',
       secondary: '#26A69A',
       accent: '#CE93D8',
       positive: '#21BA45',
@@ -343,6 +343,8 @@ export const useThemeStore = defineStore('lc-theme', () => {
     for (const name of BRAND_NAMES) {
       setCssVar(name, colors[name])
     }
+    setCssVar('dark', isDarkMode ? '#1a1a28' : '#1d1d1d')
+    setCssVar('dark-page', isDarkMode ? '#0e1216' : '#ffffff')
     const root = document.documentElement
     const batch: Record<string, string> = {
       '--lc-primary': colors.primary,
@@ -354,56 +356,59 @@ export const useThemeStore = defineStore('lc-theme', () => {
       '--lc-accent': colors.accent,
       '--lc-accent-dark': lighten(colors.accent, -15),
       '--lc-accent-light': lighten(colors.accent, 15),
+      '--lc-positive': colors.positive,
+      '--lc-negative': colors.negative,
+      '--lc-warning': colors.warning,
+      '--lc-info': colors.info,
     }
     if (isDarkMode) {
-      const surfaceAlt = lighten('#1e1e2e', -5)
       Object.assign(batch, {
-        '--lc-surface': '#1e1e2e',
-        '--lc-surface-alt': surfaceAlt,
-        '--lc-surface-container': surfaceAlt,
-        '--lc-surface-container-low': lighten('#1e1e2e', -3),
-        '--lc-surface-container-lowest': lighten('#1e1e2e', -1),
-        '--lc-on-surface': '#e0e0e0',
-        '--lc-on-surface-variant': '#a1a1b3',
-        '--lc-surface-variant': '#232338',
-        '--lc-outline-variant': '#3a3a4d',
-        '--lc-on-surface-muted': '#999999',
-        '--lc-border': 'rgba(255,255,255,0.12)',
-        '--lc-border-light': 'rgba(255,255,255,0.06)',
-        '--lc-bg-primary': '#1a1a2e',
+        '--lc-surface': '#1a1a28',
+        '--lc-surface-alt': '#212134',
+        '--lc-surface-container': '#25253b',
+        '--lc-surface-container-low': '#161623',
+        '--lc-surface-container-lowest': '#111119',
+        '--lc-on-surface': '#f1f5f9',
+        '--lc-on-surface-variant': '#cbd5e1',
+        '--lc-surface-variant': '#2a2a44',
+        '--lc-outline-variant': 'rgba(255, 255, 255, 0.12)',
+        '--lc-on-surface-muted': '#94a3b8',
+        '--lc-border': 'rgba(255, 255, 255, 0.14)',
+        '--lc-border-light': 'rgba(255, 255, 255, 0.08)',
+        '--lc-bg-primary': '#0e1216',
         '--lc-on-primary': '#ffffff',
-        '--lc-scrollbar-thumb': '#555555',
-        '--lc-scrollbar-thumb-hover': '#777777',
-        '--lc-table-header-text': '#e0e0e0',
-        '--lc-table-cell-border': '#2a2a3c',
-        '--lc-table-row-hover': '#16213e',
-        '--lc-dock-bg': 'rgba(26,26,46,0.92)',
-        '--lc-dock-border': 'rgba(255,255,255,0.1)',
+        '--lc-scrollbar-thumb': 'rgba(255, 255, 255, 0.22)',
+        '--lc-scrollbar-thumb-hover': 'rgba(255, 255, 255, 0.38)',
+        '--lc-table-header-text': '#f1f5f9',
+        '--lc-table-cell-border': 'rgba(255, 255, 255, 0.08)',
+        '--lc-table-row-hover': 'rgba(255, 255, 255, 0.05)',
+        '--lc-dock-bg': 'rgba(20, 20, 32, 0.88)',
+        '--lc-dock-border': 'rgba(255, 255, 255, 0.14)',
       })
     } else {
-      const surfaceAlt = lighten(colors.primary, 95)
+      const surfaceAlt = '#f8fafc'
       Object.assign(batch, {
         '--lc-surface': '#ffffff',
         '--lc-surface-alt': surfaceAlt,
-        '--lc-surface-container': '#f8f9fa',
-        '--lc-surface-container-low': '#f5f6f8',
-        '--lc-surface-container-lowest': '#fafbfc',
-        '--lc-on-surface': '#1a1a2e',
-        '--lc-on-surface-variant': '#6b7280',
-        '--lc-surface-variant': '#f8f9fa',
-        '--lc-outline-variant': '#e5e7eb',
-        '--lc-on-surface-muted': '#555555',
-        '--lc-border': 'rgba(0,0,0,0.12)',
-        '--lc-border-light': 'rgba(0,0,0,0.06)',
-        '--lc-bg-primary': '#f0f2f5',
+        '--lc-surface-container': '#f1f5f9',
+        '--lc-surface-container-low': '#f8fafc',
+        '--lc-surface-container-lowest': '#ffffff',
+        '--lc-on-surface': '#0f172a',
+        '--lc-on-surface-variant': '#334155',
+        '--lc-surface-variant': '#e2e8f0',
+        '--lc-outline-variant': '#cbd5e1',
+        '--lc-on-surface-muted': '#64748b',
+        '--lc-border': 'rgba(0, 0, 0, 0.12)',
+        '--lc-border-light': 'rgba(0, 0, 0, 0.06)',
+        '--lc-bg-primary': '#f1f5f9',
         '--lc-on-primary': '#ffffff',
-        '--lc-scrollbar-thumb': '#c4c8cf',
-        '--lc-scrollbar-thumb-hover': '#a0a5ad',
-        '--lc-table-header-text': '#495057',
-        '--lc-table-cell-border': '#f0f0f0',
+        '--lc-scrollbar-thumb': 'rgba(0, 0, 0, 0.2)',
+        '--lc-scrollbar-thumb-hover': 'rgba(0, 0, 0, 0.35)',
+        '--lc-table-header-text': '#0f172a',
+        '--lc-table-cell-border': '#e2e8f0',
         '--lc-table-row-hover': '#f0f4ff',
-        '--lc-dock-bg': 'rgba(255,255,255,0.85)',
-        '--lc-dock-border': 'rgba(255,255,255,0.4)',
+        '--lc-dock-bg': 'rgba(255, 255, 255, 0.88)',
+        '--lc-dock-border': 'rgba(0, 0, 0, 0.12)',
       })
     }
     batch['--lc-transition-duration'] = '0.3s'

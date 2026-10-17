@@ -258,7 +258,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { DynamicTable, EmptyState } from '../lib/lowcode';
 import { useWebMcp } from '../composables/useWebMcp';
@@ -472,6 +472,10 @@ async function refreshAgents(): Promise<void> {
     loading.value = false;
   }
 }
+
+onMounted(() => {
+  void refreshAgents();
+});
 </script>
 
 <style scoped lang="scss">

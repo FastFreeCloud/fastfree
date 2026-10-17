@@ -39,6 +39,16 @@
       </q-btn>
     </div>
 
+    <!-- Error Banner -->
+    <q-banner
+      v-if="clanStore.error"
+      rounded
+      class="bg-negative text-white q-mb-md"
+      icon="mdi-alert-circle-outline"
+    >
+      {{ clanStore.error }}
+    </q-banner>
+
     <!-- Health Metrics Cards -->
     <div class="row q-col-gutter-md q-mb-md">
       <!-- Status Card -->
@@ -46,7 +56,7 @@
         <q-card flat bordered class="q-pa-sm text-center">
           <q-icon name="mdi-server-security" size="32px" color="primary" />
           <div class="text-caption text-grey-5 q-mt-xs">Server Status</div>
-          <div class="text-h6 text-weight-bolder text-positive">OPERATIONAL</div>
+          <div :class="['text-h6 text-weight-bolder', 'text-' + serverStatusColor]">{{ serverStatus }}</div>
           <div class="text-caption text-grey-6">
             Uptime: {{ uptimeFormatted }}
           </div>
@@ -117,9 +127,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
 import { useClanStore } from '../stores/clan';
 import { useWebMcp } from '../composables/useWebMcp';
 
+const $q = useQuasar();
 const clanStore = useClanStore();
 const { isConnected: mcpConnected } = useWebMcp();
 const loading = ref(false);
@@ -133,6 +145,19 @@ const coreServices = [
   { name: 'DbGate Database GUI', desc: 'Advanced web SQL explorer', port: '8082', icon: 'mdi-table-large', color: 'purple-8' },
 ];
 
+const serverStatus = computed(() => {
+  if (clanStore.error) return 'DEGRADED';
+  return clanStore.systemHealth?.status?.toUpperCase() || 'OPERATIONAL';
+});
+
+const serverStatusColor = computed(() => {
+  if (clanStore.error) return 'negative';
+  const st = clanStore.systemHealth?.status?.toLowerCase();
+  if (st === 'ok' || st === 'healthy' || st === 'operational') return 'positive';
+  if (st === 'warning' || st === 'degraded') return 'warning';
+  return 'positive';
+});
+
 const uptimeFormatted = computed(() => {
   const s = clanStore.systemHealth?.uptimeSeconds;
   if (!s) return 'Active';
@@ -145,6 +170,19 @@ async function refreshHealth(): Promise<void> {
   loading.value = true;
   try {
     await clanStore.fetchHealth();
+    if (clanStore.error) {
+      $q.notify({
+        type: 'negative',
+        icon: 'mdi-alert-circle',
+        message: clanStore.error,
+      });
+    }
+  } catch {
+    $q.notify({
+      type: 'negative',
+      icon: 'mdi-alert-circle',
+      message: 'Failed to refresh system health',
+    });
   } finally {
     loading.value = false;
   }

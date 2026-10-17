@@ -316,16 +316,14 @@ onMounted(() => {
     min-width: 0;
     :deep(.q-field__control) {
       border-radius: 24px;
-      background: color-mix(
-        in srgb,
-        var(--lc-surface, #ffffff) 80%,
-        transparent
-      );
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--lc-border, rgba(0, 0, 0, 0.08));
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      background: var(--lc-surface, #ffffff);
+      border: 1px solid var(--lc-border);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       padding: 0 16px;
+      color: var(--lc-on-surface);
+    }
+    :deep(.q-field__native) {
+      color: var(--lc-on-surface);
     }
   }
 }
@@ -333,8 +331,8 @@ onMounted(() => {
 .search-count-inline {
   font-size: 12px;
   font-weight: 600;
-  color: var(--lc-on-surface-variant, #666);
-  background: var(--lc-surface-container, #f0f0f0);
+  color: var(--lc-primary);
+  background: color-mix(in srgb, var(--lc-primary) 12%, transparent);
   border-radius: 12px;
   padding: 2px 10px;
   white-space: nowrap;
@@ -357,28 +355,28 @@ onMounted(() => {
   gap: 8px;
   cursor: pointer;
   padding: 12px 8px;
-  border-radius: 12px;
+  border-radius: 14px;
   transition: all 0.2s ease;
   width: 100%;
   max-width: 120px;
   position: relative;
+  border: 1px solid transparent;
 
   &:hover,
   &.active {
-    background: color-mix(in srgb, var(--lc-primary, #1565c0) 8%, transparent);
+    background: color-mix(in srgb, var(--lc-primary, #1565c0) 10%, transparent);
+    border-color: color-mix(in srgb, var(--lc-primary, #1565c0) 25%, transparent);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
 
     .cosmic-app-icon-wrap {
       transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
 
-    .cosmic-fav-btn {
-      opacity: 0.7;
-    }
-
+    .cosmic-fav-btn,
     .cosmic-pin-btn {
-      opacity: 0.7;
+      opacity: 0.85;
     }
   }
 
@@ -395,8 +393,9 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 18px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid var(--lc-border, rgba(0, 0, 0, 0.06));
+  background: var(--lc-surface-container, #f1f5f9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--lc-border);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -416,16 +415,17 @@ body.body--dark .cosmic-app-icon {
   opacity: 0;
   transition: all 0.2s ease;
   background: var(--lc-surface, #fff) !important;
+  border: 1px solid var(--lc-border);
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-  width: 18px !important;
-  height: 18px !important;
-  min-width: 18px !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
   pointer-events: auto;
 
   .cosmic-app-item:hover &,
   .cosmic-app-item.active & {
-    opacity: 0.7;
+    opacity: 0.85;
   }
 
   .cosmic-app-icon-wrap:hover & {
@@ -436,21 +436,23 @@ body.body--dark .cosmic-app-icon {
   &:hover {
     opacity: 1 !important;
     transform: scale(1.15);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   }
 
   &.is-fav,
   &.is-fav:hover {
     opacity: 1 !important;
     transform: scale(1) !important;
-    color: var(--q-warning, #ffc107) !important;
+    color: #f59e0b !important;
+    border-color: #f59e0b;
   }
 
   &.is-pinned,
   &.is-pinned:hover {
     opacity: 1 !important;
     transform: scale(1) !important;
-    color: var(--q-primary, #1976d2) !important;
+    color: var(--lc-primary) !important;
+    border-color: var(--lc-primary);
   }
 
   .cosmic-app-item:hover &.is-fav,
@@ -472,8 +474,8 @@ body.body--dark .cosmic-app-icon {
 
 .cosmic-app-label {
   font-size: 12px;
-  font-weight: 500;
-  color: var(--lc-on-surface, #333);
+  font-weight: 600;
+  color: var(--lc-on-surface);
   line-height: 1.3;
   max-width: 100%;
   overflow: hidden;
@@ -482,8 +484,8 @@ body.body--dark .cosmic-app-icon {
 }
 
 .cosmic-app-type {
-  font-size: 10px;
-  color: var(--lc-on-surface-variant, #999);
+  font-size: 11px;
+  color: var(--lc-on-surface-muted);
   margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -586,6 +588,20 @@ body.body--dark .cosmic-app-icon {
   margin-bottom: 24px;
 }
 
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lc-on-surface-variant);
+  margin-bottom: 10px;
+
+  .q-icon {
+    color: var(--lc-primary);
+  }
+}
+
 .pinned-scroll {
   display: flex;
   gap: 8px;
@@ -602,19 +618,28 @@ body.body--dark .cosmic-app-icon {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
-  background: color-mix(in srgb, var(--lc-primary, #1565c0) 10%, transparent);
+  background: color-mix(in srgb, var(--lc-primary, #1565c0) 10%, var(--lc-surface, #ffffff));
+  border: 1px solid color-mix(in srgb, var(--lc-primary, #1565c0) 25%, transparent);
   color: var(--lc-primary, #1565c0);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: color-mix(in srgb, var(--lc-primary, #1565c0) 18%, transparent);
+    background: color-mix(in srgb, var(--lc-primary, #1565c0) 18%, var(--lc-surface, #ffffff));
+    border-color: var(--lc-primary);
     transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
+}
+
+body.body--dark .pinned-chip {
+  color: var(--lc-primary-light, #93c5fd);
+  background: color-mix(in srgb, var(--lc-primary, #1565c0) 16%, var(--lc-surface));
+  border-color: color-mix(in srgb, var(--lc-primary, #1565c0) 35%, transparent);
 }
 </style>

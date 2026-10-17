@@ -13,6 +13,16 @@
       </div>
     </div>
 
+    <!-- Error Banner -->
+    <q-banner
+      v-if="clanStore.error && !clanStore.isDeploying"
+      rounded
+      class="bg-negative text-white q-mb-md"
+      icon="mdi-alert-circle-outline"
+    >
+      {{ clanStore.error }}
+    </q-banner>
+
     <!-- Active Deployment Warning / Progress -->
     <q-banner
       v-if="clanStore.isDeploying"
@@ -130,7 +140,20 @@ function formatProgress(prog: number | string | DeployProgress | null): string {
 }
 
 async function triggerDeployAll(): Promise<void> {
-  await clanStore.triggerMachineUpdate('client2');
+  try {
+    await clanStore.triggerMachineUpdate('client2');
+    $q.notify({
+      type: 'positive',
+      icon: 'mdi-check-decagram',
+      message: 'Deployment completed successfully for client2!',
+    });
+  } catch {
+    $q.notify({
+      type: 'negative',
+      icon: 'mdi-alert-circle',
+      message: clanStore.error || 'Failed to deploy to client2',
+    });
+  }
 }
 
 function confirmRollback(): void {
@@ -144,7 +167,22 @@ function confirmRollback(): void {
       label: 'Rollback Now',
     },
   }).onOk(() => {
-    void clanStore.triggerRollback('client2');
+    void (async () => {
+      try {
+        await clanStore.triggerRollback('client2');
+        $q.notify({
+          type: 'positive',
+          icon: 'mdi-undo-variant',
+          message: 'System rollback successfully completed!',
+        });
+      } catch {
+        $q.notify({
+          type: 'negative',
+          icon: 'mdi-alert-circle',
+          message: clanStore.error || 'Failed to rollback system',
+        });
+      }
+    })();
   });
 }
 </script>

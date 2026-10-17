@@ -31,9 +31,9 @@
         :class="{ 'has-maximized-window': desktop.hasMaximizedWindow }"
       >
         <div class="lc-desktop-empty" v-if="desktop.sortedWindows.length === 0">
-          <q-icon :name="icon" size="64px" color="grey-4" />
-          <div class="text-h6 text-grey-5 q-mt-md">{{ title }}</div>
-          <div class="text-caption text-grey-5">
+          <q-icon :name="icon" size="64px" class="lc-desktop-empty__icon" />
+          <div class="text-h6 q-mt-md">{{ title }}</div>
+          <div class="text-caption">
             {{ t("common.clickDockHint") }}
           </div>
         </div>
@@ -143,25 +143,27 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   text-align: center;
-  opacity: 0.5;
   user-select: none;
   flex: 1;
 
-  .q-icon {
-    opacity: 0.4;
+  &__icon {
+    color: var(--lc-primary);
+    opacity: 0.45;
     margin-bottom: 16px;
   }
 
   .text-h6 {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--lc-primary, #1565c0);
+    color: var(--lc-on-surface);
+    opacity: 0.7;
     letter-spacing: 0.5px;
   }
 
   .text-caption {
     font-size: 0.9rem;
-    color: #999;
+    color: var(--lc-on-surface-variant);
+    opacity: 0.85;
     margin-top: 8px;
   }
 }
