@@ -64,7 +64,7 @@ let
         reverse_proxy 127.0.0.1:9004
         handle_errors {
           root * /srv/fastfree-panel
-          try_files {path} /index.html
+          rewrite * /index.html
           file_server
         }
       '' else ''
