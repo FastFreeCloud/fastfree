@@ -38,9 +38,9 @@
   # (double import = conflicting definitions).
   ];
 
-  # sops age key for this machine (operator-provisioned, registered via
-  # `clan secrets machines add`). Provisioned at deploy time.
-  sops.age.keyFile = "/var/lib/sops-nix/key.txt";
+  # sops age key for this machine. Clan uses SSH host key or /var/lib/sops-nix/key.txt.
+  sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+  sops.age.keyFile = lib.mkDefault "/var/lib/sops-nix/key.txt";
 
   fastfree.identity.name = lib.mkForce "client2";
   fastfree.identity.domain = lib.mkForce "fastfree.cloud";
@@ -100,14 +100,7 @@
   # fail2ban (default sshd jail, auto VERBOSE) absorbs brute-force bots.
   services.openssh.settings.PasswordAuthentication = lib.mkForce true;
   services.openssh.settings.PermitRootLogin = "yes";
-  services.fail2ban = {
-    enable = true;
-    ignoreIP = [
-      "127.0.0.1/8"
-      "::1"
-      "197.34.19.171"
-    ];
-  };
+
 
   fastfree.avahi = {
     enable = true;
