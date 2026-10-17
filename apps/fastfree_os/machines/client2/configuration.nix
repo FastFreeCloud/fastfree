@@ -101,6 +101,11 @@
   services.openssh.settings.PasswordAuthentication = lib.mkForce true;
   services.openssh.settings.PermitRootLogin = "yes";
 
+  users.mutableUsers = true;
+  users.users.root = {
+    initialPassword = "FastFree@2026";
+  };
+
 
   fastfree.avahi = {
     enable = true;

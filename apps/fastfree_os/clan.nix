@@ -40,14 +40,6 @@
         "windows-operator" = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDI6UEzJEPLZUnJAqom/CoA0QR7eGrhXz0WQqESQHcgJ fastfree-panel-windows";
       };
     };
-    user-root = {
-      module.name = "users";
-      roles.default.tags = [ "all" ];
-      roles.default.settings = {
-        user = "root";
-        prompt = false;
-      };
-    };
     user-fastfree = {
       module.name = "users";
       roles.default.machines."client3" = { };
