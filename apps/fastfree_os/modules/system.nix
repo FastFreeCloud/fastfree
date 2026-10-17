@@ -12,8 +12,8 @@ in {
     # (COSMIC needs the display stack: xserver + libinput).
     hardware.enableRedistributableFirmware       = lib.mkIf (!isLocal) (lib.mkForce false);
     hardware.firmware                            = lib.mkIf (!isLocal) (lib.mkForce []);
-    services.xserver.enable                      = lib.mkIf (!isLocal && !config.fastfree.apps.desktop) false;
-    services.libinput.enable                     = lib.mkIf (!isLocal && !config.fastfree.apps.desktop) false;
+    services.xserver.enable                      = lib.mkIf (!isLocal) false;
+    services.libinput.enable                     = lib.mkIf (!isLocal) false;
     system.stateVersion = "26.05";
 
     # ── Size Reduction ────────────────────────────────────

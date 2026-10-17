@@ -39,9 +39,6 @@ in
     ../../modules/dbgate.nix
     ../../modules/cockpit.nix
     ../../modules/opencode.nix
-    ../../modules/shortcuts.nix
-    ../../modules/desktop.nix
-    ../../modules/remote.nix
     ../../modules/tunnel.nix
     ../../modules/avahi-subdomains.nix
   # NOTE: ./hardware-configuration.nix is auto-imported by Clan autoincludes —
@@ -122,10 +119,6 @@ in
   nixpkgs.config.allowUnfree = true;
 
   # Chromium policies only (extensions / search / native messaging hosts).
-  # The browser binary itself comes from `pkgs.chromium` in
-  # environment.systemPackages above — this module writes /etc/chromium/* only.
-  # Declared here rather than in modules/desktop.nix because client1 also sets
-  # apps.desktop = true and a Hyper-V server image has no use for a browser.
   programs.chromium.enable = true;
 
   # All apps enabled (same set as production VPS client2 + shell/herdr).
@@ -144,8 +137,6 @@ in
     fastfree_website = true;
     dbgate = true;
     cockpit = true;
-    desktop = true;
-    remote = true;
   };
 
   # Herdr CLI from flake input (system-wide binary).

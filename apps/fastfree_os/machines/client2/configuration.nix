@@ -33,9 +33,6 @@
     ../../modules/dbgate.nix
     ../../modules/cockpit.nix
     ../../modules/opencode.nix
-    ../../modules/shortcuts.nix
-    ../../modules/desktop.nix
-    ../../modules/remote.nix
     ../../modules/avahi-subdomains.nix
   # NOTE: ./disko.nix is auto-imported by Clan autoincludes — do NOT add it here
   # (double import = conflicting definitions).
@@ -73,26 +70,6 @@
     fastfree_hr = true;
     fastfree_pos = true;
     fastfree_website = true;
-    # Headless VPS: no monitor, no GPU, no local session. Keeping COSMIC here
-    # pulled ~5.6 GiB of the closure (Firefox, COSMIC, mesa, pipewire, CUPS,
-    # speech stack) for nothing — it was 49% of the 11.5 GiB system closure.
-    # modules/system.nix already sets xserver/libinput = false for this case.
-    #
-    # The operator asked for a GUI on this box. modules/remote.nix already solves
-    # exactly this: xrdp serving a minimal X11 session (openbox + a terminal),
-    # which is the only thing RDP can drive — xrdp starts its own Xorg through
-    # xorgxrdp, so a Wayland session such as COSMIC cannot be presented.
-    # Cost is a fraction of the 5.6 GiB COSMIC closure we removed.
-    desktop = false;
-    remote = true;
-  };
-
-  # RDP port. 3389 is reachable from the public internet because the firewall
-  # is disabled for vps deployType, so password auth stays on and fail2ban
-  # absorbs the brute force, same as SSH.
-  fastfree.remote = {
-    port = 3389;
-    openFirewall = false;
   };
 
   # Herdr CLI from flake input (system-wide binary).

@@ -32,8 +32,6 @@
     ../../modules/dbgate.nix
     ../../modules/cockpit.nix
     ../../modules/opencode.nix
-    ../../modules/shortcuts.nix
-    ../../modules/desktop.nix
     ../../modules/avahi-subdomains.nix
     (modulesPath + "/virtualisation/hyperv-guest.nix")
   ];
@@ -65,7 +63,6 @@
     fastfree_website = true;
     dbgate = true;
     caddy = true;
-    desktop = true;
   };
 
   # Herdr CLI from flake input (system-wide binary).

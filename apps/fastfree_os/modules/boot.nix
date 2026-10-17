@@ -34,7 +34,7 @@ in {
     # use_vrr(false) is a documented no-op — the ioctl and the log both stop.
     # Trade-off: explicit sync + overlay scanout instead of atomic flips
     # (already unavailable here, since nouveau lacks the VRR property) and a
-    # reboot is required. See modules/desktop.nix for the COSMIC side notes.
+    # reboot is required.
     boot.extraModprobeConfig = lib.mkIf isLocal ''
       options nouveau atomic=0
     '';

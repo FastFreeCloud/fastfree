@@ -83,8 +83,6 @@
         ./modules/shell.nix
         ./modules/herdr.nix
         ./modules/opencode.nix
-        ./modules/shortcuts.nix
-        ./modules/remote.nix
         ./modules/tunnel.nix
         ./modules/mariadb.nix
         ./modules/caddy.nix
@@ -97,7 +95,6 @@
         ./modules/fastfree_website.nix
         ./modules/dbgate.nix
         ./modules/cockpit.nix
-        ./modules/desktop.nix
         ./modules/avahi-subdomains.nix
       ];
 
