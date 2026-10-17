@@ -15,7 +15,6 @@ loki-auth/htpasswd: ********
 loki-auth/password: ********
 loki-auth/username: admin
 mariadb-root/password: ********
-mariadb-root/pma-env: ********
 mimir-auth/htpasswd: ********
 mimir-auth/password: ********
 mimir-auth/username: admin

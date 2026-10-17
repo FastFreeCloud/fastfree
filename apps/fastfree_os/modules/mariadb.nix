@@ -7,12 +7,9 @@
     clan.core.vars.generators.mariadb-root = {
       files.password.secret = true;
       files.password.neededFor = "services";
-      files.pma-env.secret = true;
-      files.pma-env.neededFor = "services";
       runtimeInputs = [ pkgs.openssl ];
       script = ''
         openssl rand -hex 24 > $out/password
-        printf 'MYSQL_ROOT_PASSWORD=%s\n' "$(cat $out/password)" > $out/pma-env
       '';
     };
 

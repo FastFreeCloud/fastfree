@@ -45,7 +45,7 @@ __________________fastfree_deployment/
                                   10.0.1.50 db (MariaDB 11.8)
                                   10.0.1.60 redis-cache
                                   10.0.1.61 redis-queue
-                                  10.0.1.70 phpmyadmin
+                                  10.0.1.70 dbgate
                                   10.0.1.11 create-site (initialization once)
 ```
 
@@ -194,7 +194,7 @@ REDIS_QUEUE=redis-queue:6379
 
 # ── المنفذ ──
 HTTP_PUBLISH_PORT=8080
-PMA_PORT=8081
+DBGATE_PORT=8082
 
 # ── كلمة مرور المسؤول ──
 ADMIN_PASSWORD=admin
@@ -227,7 +227,7 @@ CLIENT_MAX_BODY_SIZE=50m
 | **وضع الفوترة** | `docker compose down -v` (إعادة تركيب بسيطة) | تكاليف التخزين أرخص |
 | **PRE-COMMIT** | ruff + ESLint + Prettier + pyupgrade | قدرة "الإنشاء مرة واحدة" |
 | **الاستعداد التلقائي** | `docker compose logs -f create-site` → الموقع مستعد في ~5 دقائق | لا حاجة لحساب تشغيل طول الوقت |
-| **وصول الطوارئ** | `phpmyadmin` على `http://erp.fastfree.cloud:8081` | إدارة قواعد البيانات بدون مشرفات خارجية |
+| **إدارة قاعدة البيانات** | `dbgate` على `https://db.fastfree.cloud` | إدارة MariaDB + Redis عبر واجهة حديثة |
 | **مجموعات المستودع** | العمل المستمد: `fastfree_backend/` + `fastfree_deployment/` | بسيط وحدي → امازجة الإصدار/التطبيق |
 | **نشر CI/CD** | `actionlint` (syntax) + التحقق من الحجم >100MB + `jq` للتحقق | جودة عالية الصحيحة + تكامل CI/CD |
 
@@ -241,7 +241,7 @@ CLIENT_MAX_BODY_SIZE=50m
 | **الـ `POST:** "تحديث المصدر --server-check ----Report ينشئ فشل CI/CD" | `pre-commit`: `ruff . --exit-zero` | **الحل:** `ruff check . --exit-zero` |
 | **الـ `PUT:** `laravel/uỉnh' القصد إلى `laravel/ui` | **الـ `GET:** التحقق من البنية المعمارية لمخطوات الدعم | **الدليل:** `ls -la fastfree_backend/` |
 | **REQUEST: الاختبار أفعال** | لا يوجد مسار اختبار | **اقتراح:** أضف `tests/` مع `pytest` عبر `pyproject.toml` |
-| **PROBLEM: الاتصال بـ PHPMyAdmin عبر IP مخصص** | **الحل:** أضف `environment → PMA_HOST: db` في `docker-compose.yml` |
+| **PROBLEM: مراقبة قاعدة البيانات** | **الحل:** تم توفير واجهة DbGate على `https://db.fastfree.cloud` |
 
 ---
 

@@ -101,7 +101,7 @@
 |---------|-----------|------|-----|
 | **Next.js App** | `fastfree_web` | 3000 | `10.0.0.12` |
 | **MySQL** | `fastfree_db` | 3306 | `10.0.0.10` |
-| **phpMyAdmin** | `fastfree_phpmyadmin` | 8080 | `10.0.0.11` |
+| **DbGate** | `dbgate` | 8082 | `127.0.0.1` |
 | **Caddy Proxy** | `fastfree_proxy` | 80/443 | `10.0.0.13` |
 
 ---
@@ -158,14 +158,14 @@ images: { formats: ['image/avif', 'image/webp'], minimumCacheTTL: 2592000 },
 |--------|--------|
 | **الموقع العام** | [https://fastfree.cloud](https://fastfree.cloud) |
 | **لوحة التحكم** | [https://fastfree.cloud/login](https://fastfree.cloud/login) |
-| **phpMyAdmin** | [https://db.fastfree.cloud](https://db.fastfree.cloud) |
+| **DbGate** | [https://db.fastfree.cloud](https://db.fastfree.cloud) |
 
 ### بيانات الدخول
 
 | الحساب | البريد الإلكتروني | كلمة المرور |
 |--------|------------------|-------------|
 | **Admin** | `sales@fastfree.cloud` | `FastFree@Admin2026!` |
-| **phpMyAdmin** | `root` | `FastFree@Secure2026!` |
+| **DbGate** | `root` | `FastFree@Secure2026!` |
 
 ### اختصار مخفي للدخول
 - اضغط `Ctrl + Shift + A` للذهاب لصفحة تسجيل الدخول
@@ -335,7 +335,7 @@ graph LR
 
 ```bash
 # تنظيف قديم (إن لزم)
-docker rm -f fastfree_db fastfree_phpmyadmin fastfree_web fastfree_proxy
+docker rm -f fastfree_db fastfree_dbgate fastfree_web fastfree_proxy
 docker network rm fastfree_network
 
 # نشر جديد عبر Portainer
