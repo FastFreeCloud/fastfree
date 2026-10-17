@@ -532,11 +532,11 @@ export const useThemeStore = defineStore('lc-theme', () => {
     () => {
       if (isServer) return
       try {
-        setThemeConfig(STORAGE_KEY, {
+        void setThemeConfig(STORAGE_KEY, {
           mode: mode.value,
           preset: presetName.value,
-          customLight: customLight.value,
-          customDark: customDark.value,
+          customLight: { ...customLight.value },
+          customDark: { ...customDark.value },
         })
       } catch { /* ignore */ }
       // Synchronous mirror: survives even when IndexedDB is blocked

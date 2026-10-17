@@ -23,6 +23,11 @@ export async function getThemeConfig<T>(key: string): Promise<T | null> {
 }
 
 export async function setThemeConfig(key: string, value: unknown): Promise<void> {
-  const table: Table<ThemeRecord> = getDb().table('themes')
-  await table.put({ id: key, value, updatedAt: Date.now() })
+  try {
+    const table: Table<ThemeRecord> = getDb().table('themes')
+    const plainValue = JSON.parse(JSON.stringify(value))
+    await table.put({ id: key, value: plainValue, updatedAt: Date.now() })
+  } catch {
+    // Graceful fallback: storage errors must never crash UI or trigger unhandled rejections
+  }
 }

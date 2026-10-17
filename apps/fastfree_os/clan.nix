@@ -49,20 +49,8 @@
         groups = [ "networkmanager" "wheel" ];
       };
     };
-    # Official wireguard mesh (docs: services/official/wireguard) — IPv6 ULA,
-    # auto keys/hosts. Runs ALONGSIDE the legacy IPv4 wg0 (10.100.0.x) which
-    # still serves non-NixOS field devices. Port 51821 (not 51820) to avoid
-    # the documented "Address already in use" clash with the legacy interface.
-    wireguard = {
-      module.name = "wireguard";
-      module.input = "clan-core";
-      roles.controller.machines."client2".settings = {
-        endpoint = "fastfree.cloud";
-        port = 51821;
-      };
-      roles.peer.machines."client1".settings.port = 51821;
-      roles.peer.machines."client3".settings.port = 51821;
-    };
+    # Official wireguard mesh: Disabled during bootstrap until Clan vars are re-keyed on new generation.
+    # wireguard = { ... };
     # Backups & Monitoring: Disabled until Clan vars are re-keyed with current server host key.
     # borgbackup = { ... };
     # monitoring = { ... };
