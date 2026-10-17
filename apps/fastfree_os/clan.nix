@@ -53,7 +53,7 @@
       roles.default.settings = {
         user = "fastfree";
         prompt = false;
-        groups = [ "networkmanager" "wheel" "podman" ];
+        groups = [ "networkmanager" "wheel" ];
       };
     };
     # Official wireguard mesh (docs: services/official/wireguard) — IPv6 ULA,

@@ -31,7 +31,15 @@ allowBuilds:
   unrs-resolver: true
   utf-8-validate: true
   vue-demi: true
+autoInstallPeers: false
 overrides:
+  # vite declares sass-embedded as an OPTIONAL peer and pnpm auto-installs optional
+  # peers, so sass-embedded lands in the tree. Its prebuilt dart-sass binary cannot
+  # exec on NixOS and the compiler socket dies with EPIPE mid-run, taking the whole
+  # dev server down. Point the name at the pure-JS sass package: Vite only uses
+  # the import and compileString entry points, which sass provides, and the
+  # optional peer now resolves to a working implementation.
+  sass-embedded: "npm:sass@^1.80.0"
   vue-router: 5.2.0
   pinia: 4.0.2
   sass: ^1.80.0

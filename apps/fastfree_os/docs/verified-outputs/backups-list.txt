@@ -1,0 +1,6 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+[client2] $ borgbackup-list
+Failed to list backups for provider borgbackup:
+borgbackup-list exited with 255
+error output: Connection closed by 76.13.51.10 port 22
+

@@ -22,8 +22,12 @@
         "pkg-path": "python312"
       }
     },
+    "vars": {
+      "CLAN_DIR": "${FLOX_ENV_PROJECT}/apps/fastfree_os",
+      "CLAN_PANEL_TOKEN": "dev-token"
+    },
     "hook": {
-      "on-activate": "echo \"FastFree env activated\"\n"
+      "on-activate": "echo \"FastFree env activated\"\n# `clan` is a Nix flake package, not a FloxHub package, so it cannot be listed\n# under [install]. Resolve it once per activation and put it on PATH; the\n# panel's backend falls back to a bare `clan` lookup when CLAN_BINARY is unset.\nif ! command -v clan >/dev/null 2>&1; then\n  CLAN_BIN=\"$(nix develop \"$FLOX_ENV_PROJECT/apps/fastfree_os\" --command which clan 2>/dev/null | tail -1)\"\n  if [ -n \"$CLAN_BIN\" ]; then\n    export CLAN_BINARY=\"$CLAN_BIN\"\n    export PATH=\"$(dirname \"$CLAN_BIN\"):$PATH\"\n    echo \"clan: $CLAN_BIN\"\n  else\n    echo \"warning: clan not found — the panel backend will not be able to run clan\" >&2\n  fi\nfi\n"
     },
     "profile": {},
     "options": {

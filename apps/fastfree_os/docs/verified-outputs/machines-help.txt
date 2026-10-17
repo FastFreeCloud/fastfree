@@ -1,0 +1,42 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+usage: clan [-h] [SUBCOMMAND] machines [-h]
+                                       {build,update,create,delete,list,init-hardware-config,update-hardware-config,install,generations} ...
+
+Manage machines and their configuration
+
+options:
+  -h, --help            show this help message and exit
+
+command:
+  the command to run
+
+  {build,update,create,delete,list,init-hardware-config,update-hardware-config,install,generations}
+                        the command to run
+    build (b)           Build machine configurations
+    update (u)          Update one or more machines
+    create              Create a machine
+    delete              Delete a machine
+    list                List machines
+    init-hardware-config
+                        Generate hardware specifics for a machine
+    update-hardware-config
+                        Generate hardware specifics for a machine
+    install             Install a machine
+    generations         list generations of machines
+
+This subcommand provides an interface to machines managed by Clan.
+
+Examples:
+
+  $ clan machines list
+  List all the machines managed by Clan.
+
+  $ clan machines update [MACHINES]
+  Will update the specified machines [MACHINES], if [MACHINES] is omitted, the command
+  will attempt to update every configured machine.
+
+  $ clan machines install [MACHINE] --target-host [TARGET_HOST]
+  Will install the specified machine [MACHINE] to the specified [TARGET_HOST].
+  If the `--target-host` flag is omitted will try to find host information by
+  checking the deployment configuration inside the specified machine.
+        

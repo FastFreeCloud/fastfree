@@ -1,0 +1,4 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+client1
+client2
+client3

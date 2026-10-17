@@ -1,0 +1,36 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+borgbackup/borgbackup.repokey: ********
+borgbackup/borgbackup.ssh.pub: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJN3mP+s3bYUk5n/cDeNaE6aV+UN383QmRRishoji2EC 
+
+borgbackup/borgbackup.ssh: ********
+emergency-access/password-hash: $6$mOfTdfOQ$Hg5SHugxw7/JWyVM62MwjWD5ZNzEUYT1hPlhopwREWtY1YFc66WGKbXucLqs0ZT/tTAx7W.NJKuMjx2D8tJNP0
+emergency-access/password: ********
+fastfree-backend/admin-password: ********
+fastfree-backend/db-password: ********
+github-token/token: ********
+grafana-admin/password: ********
+grafana-admin/username: admin
+grafana-secret/key: ********
+loki-auth/htpasswd: ********
+loki-auth/password: ********
+loki-auth/username: admin
+mariadb-root/password: ********
+mariadb-root/pma-env: ********
+mimir-auth/htpasswd: ********
+mimir-auth/password: ********
+mimir-auth/username: admin
+openssh-ca/id_ed25519.pub: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGpA+9Ew6OuALade5dr2SD8gGjBuduUkmMJA86zjSxIa 
+
+openssh-ca/id_ed25519: ********
+openssh-cert/ssh.id_ed25519-cert.pub: ssh-ed25519-cert-v01@openssh.com AAAAIHNzaC1lZDI1NTE5LWNlcnQtdjAxQG9wZW5zc2guY29tAAAAINgI5ryIdqXqvJFdrdExFTvtOEdrlnSULEPDbmm71yGIAAAAIFyKQFb14etSqCcOyBbJIMjIQchC7kdzo8VBqIFPEI5oAAAAAAAAAAAAAAACAAAAB2NsaWVudDIAAAAaAAAAFmNsaWVudDIuZmFzdGZyZWUubG9jYWwAAAAAAAAAAP//////////AAAAAAAAAAAAAAAAAAAAMwAAAAtzc2gtZWQyNTUxOQAAACBqQPvRMOjrgC2nXuXa9kg/IBowbnblJJjCQPOs40sSGgAAAFMAAAALc3NoLWVkMjU1MTkAAABAe91qdhWSk7l6zsdvLvZwLSHZQJYeFfy4chMeqwFALPs+tsDmfccOXBAmxHjMBZ8o0af7IwVp18ScrE7wD8NUDQ== /tmp/nix-shell.tENCLF/vars-1dadme9j/in/openssh/ssh.id_ed25519.pub
+
+openssh/ssh.id_ed25519.pub: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFyKQFb14etSqCcOyBbJIMjIQchC7kdzo8VBqIFPEI5o 
+
+openssh/ssh.id_ed25519: ********
+state-version/version: 26.05
+user-password-root/user-password-hash: ********
+user-password-root/user-password: ********
+wireguard-keys-wireguard/privatekey: ********
+wireguard-keys-wireguard/publickey: bCcmoi03/b9+GbjNs3w0O/Q9bhsUBPusFWRN9Wzfl2Q=
+
+wireguard-network-wireguard/prefix: fd28:387a:3f:4500

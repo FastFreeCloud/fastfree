@@ -1,0 +1,19 @@
+// app global css
+
+// fastfree_panel is a dark-first UI. Painting the document surface with the
+// design token keeps the initial paint and any area the Quasar layout does not
+// cover (overscroll, the gap above the footer) from flashing white.
+body {
+  background: #0e1216;
+}
+
+// design/*.dc.html specifies IBM Plex Sans with IBM Plex Sans Arabic for
+// Arabic text. --q-font-family keeps Quasar components (buttons, chips, fields)
+// on the same face; the body rule covers plain markup.
+:root {
+  --q-font-family: 'IBM Plex Sans', 'IBM Plex Sans Arabic', sans-serif;
+}
+
+body {
+  font-family: var(--q-font-family);
+}

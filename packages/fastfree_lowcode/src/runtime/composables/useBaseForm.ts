@@ -3,7 +3,17 @@ import { useQuasar } from 'quasar'
 import { useLcI18n } from '../i18n'
 import { useFormatNumber } from './useFormatNumber'
 import { useStatusHelpers } from './useStatusHelpers'
-import type { ApiResponse } from 'fastfree-auth'
+
+/**
+ * Minimal API envelope. Declared here instead of importing `fastfree-auth`
+ * because lowcode must stay usable by apps that do not depend on that package
+ * (for example `fastfree_panel`, which only consumes lowcode).
+ */
+export interface ApiResponse<T> {
+  success: boolean
+  data?: T
+  error?: { code?: string; message?: string; details?: unknown }
+}
 
 export interface FormField {
   name: string

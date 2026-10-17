@@ -2,8 +2,8 @@
 
 let
   domain = config.fastfree.identity.domain;
-  panelSubdomain = config.fastfree.subdomains.panel;
-  panelUrl = "https://${panelSubdomain}.${domain}";
+  cockpitSubdomain = config.fastfree.subdomains.cockpit or "cockpit";
+  cockpitUrl = "https://${cockpitSubdomain}.${domain}";
 in
 {
   config = lib.mkIf config.fastfree.apps.cockpit {
@@ -11,12 +11,12 @@ in
       enable = true;
       port = 9090;
       # Never expose the root-equivalent panel publicly: loopback only,
-      # served to the LAN/internet through Caddy (panel subdomain) with TLS.
+      # served to the LAN/internet through Caddy (cockpit subdomain) with TLS.
       # Container port publishes bypass the firewall, so bind them too.
       openFirewall = false;
       settings = {
         WebService = {
-          Origins = lib.mkForce "${panelUrl} http://localhost:9090";
+          Origins = lib.mkForce "${cockpitUrl} http://localhost:9090";
         };
       };
     };
@@ -27,9 +27,8 @@ in
     # + no allowedTCPPorts entry) while default-drop + localhost-allow hold.
     # Reach it via http://127.0.0.1:9090 or the Caddy panel subdomain.
 
-    # Cockpit plugins for container and VM management
+    # Cockpit plugins for VM management (Podman removed)
     environment.systemPackages = with pkgs; [
-      cockpit-podman
       cockpit-machines
     ];
 

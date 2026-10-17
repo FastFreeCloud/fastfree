@@ -1,0 +1,20 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+[client2] $ nixos-rebuild list-generations --json
+[client2] Connection closed by 76.13.51.10 port 22
+Failed for machine client2: 
+=================================== Command ====================================
+ssh \
+    root@fastfree.cloud \
+    -o StrictHostKeyChecking=accept-new \
+    -o ControlMaster=auto \
+    -o ControlPersist=1m \
+    -o ControlPath=/tmp/nix-shell.O9jBSI/clan-ssh4pygk24k/socket \
+    -- bash \
+    -c ''"'"'exec "$@"'"'"'' \
+    -- 'nixos-rebuild list-generations --json'
+
+==================================== Stderr ====================================
+Connection closed by 76.13.51.10 port 22
+
+Return Code: 255
+

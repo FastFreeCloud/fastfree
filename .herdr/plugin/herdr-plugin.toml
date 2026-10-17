@@ -1,0 +1,35 @@
+id = "fastfree.workspace"
+name = "FastFree Workspace"
+version = "1.0.0"
+min_herdr_version = "0.9.3"
+description = "FastFree ERP Monorepo manager - Dev servers, TypeCheck, Linting, and Architecture overview"
+platforms = ["linux"]
+
+[[actions]]
+id = "ledger-dev"
+title = "Run FastFree Ledger Dev Server"
+command = ["bash", "scripts/ledger-dev.sh"]
+
+[[actions]]
+id = "typecheck"
+title = "Run TypeCheck (vue-tsc)"
+command = ["bash", "scripts/typecheck.sh"]
+
+[[actions]]
+id = "lint"
+title = "Run Lint Check"
+command = ["bash", "scripts/lint.sh"]
+
+[[panes]]
+id = "typecheck-popup"
+title = "FastFree TypeCheck"
+placement = "popup"
+width = "85%"
+height = 25
+command = ["bash", "scripts/typecheck.sh"]
+
+[[panes]]
+id = "monorepo-status"
+title = "FastFree Monorepo Status"
+placement = "overlay"
+command = ["bash", "scripts/status.sh"]

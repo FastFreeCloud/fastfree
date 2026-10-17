@@ -24,6 +24,7 @@
     ../../modules/mariadb.nix
     ../../modules/caddy.nix
     ../../modules/fastfree_backend.nix
+    ../../modules/fastfree_panel.nix
     ../../modules/fastfree_ledger.nix
     ../../modules/fastfree_erp.nix
     ../../modules/fastfree_hr.nix
@@ -54,6 +55,7 @@
   fastfree.subdomains = {
     db = "db";
     panel = "panel";
+    cockpit = "cockpit";
   };
 
   fastfree.apps = {
@@ -65,6 +67,7 @@
     phpmyadmin = true;
     cockpit = true;
     fastfree_backend = true;
+    fastfree_panel = true;
     fastfree_ledger = true;
     fastfree_erp = true;
     fastfree_hr = true;

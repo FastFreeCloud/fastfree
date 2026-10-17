@@ -18,6 +18,7 @@ let
       "pos.${domain}"
       "${sd.db}.${domain}"
       "${sd.panel}.${domain}"
+      "${sd.cockpit}.${domain}"
     ];
   };
   isLocal = config.fastfree.deployType == "local";

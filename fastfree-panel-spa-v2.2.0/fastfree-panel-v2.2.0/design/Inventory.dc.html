@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Inventory</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#8FC7FF}a:hover{color:#C2E0FF}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 820px; background: #12161B; color: #E6EAEE; font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; line-height: 1.45">
+<nav aria-label="Main" style="flex: 0 0 248px; box-sizing: border-box; padding: 20px 12px; display: flex; flex-direction: column; gap: 14px; background: #0E1216; border-right: 1px solid #232A32">
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 0 12px">
+<div style="display: flex; align-items: center; gap: 10px"><div style="width: 10px; height: 10px; border-radius: 3px; background: #5CC8A1"></div><div style="font-size: 16px; font-weight: 600">Clan Panel</div><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; color: #8B97A3; font-weight: 400; font-size: 13px">لوحة Clan</span></div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #8B97A3">my-clan · clan.example</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px"><div style="display: flex; justify-content: space-between; padding: 0 12px 4px; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #6F7B87"><span>Fleet</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; letter-spacing: 0; text-transform: none">الأسطول</span></div>
+<a href="Overview.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Overview</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">نظرة عامة</span></a>
+<a href="Main.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Machines</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">الأجهزة</span></a>
+<a href="Inventory.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; background: #1F2831; color: #E6EAEE; font-weight: 500; text-decoration: none; font-size: 13.5px"><span>Inventory</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">المخزون</span></a>
+<a href="Services.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Services</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">الخدمات</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px"><div style="display: flex; justify-content: space-between; padding: 0 12px 4px; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #6F7B87"><span>Operations</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; letter-spacing: 0; text-transform: none">العمليات</span></div>
+<a href="Jobs.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Jobs</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">المهام</span></a>
+<a href="Build.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Build</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">البناء</span></a>
+<a href="Generations.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Generations</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">الإصدارات</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px"><div style="display: flex; justify-content: space-between; padding: 0 12px 4px; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #6F7B87"><span>Data</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; letter-spacing: 0; text-transform: none">البيانات</span></div>
+<a href="Backups.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Backups</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">النسخ الاحتياطي</span></a>
+<a href="State.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>State</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">الحالة</span></a>
+<a href="Vars.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Vars</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">المتغيرات</span></a>
+<a href="VarsHealth.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Vars health</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">سلامة المتغيرات</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px"><div style="display: flex; justify-content: space-between; padding: 0 12px 4px; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #6F7B87"><span>Security</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; letter-spacing: 0; text-transform: none">الأمان</span></div>
+<a href="Secrets.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Secrets</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">الأسرار</span></a>
+<a href="Access.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Access</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">الوصول</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px"><div style="display: flex; justify-content: space-between; padding: 0 12px 4px; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #6F7B87"><span>Infrastructure</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; letter-spacing: 0; text-transform: none">البنية</span></div>
+<a href="Network.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Network</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">الشبكة</span></a>
+<a href="Monitoring.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Monitoring</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">المراقبة</span></a>
+<a href="Settings.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; box-sizing: border-box; padding: 0 12px; border-radius: 6px; color: #B4BDC6; text-decoration: none; font-size: 13.5px"><span>Settings</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-size: 12.5px; opacity: 0.8">الإعدادات</span></a>
+</div>
+<div style="margin-top: auto; padding: 0 12px; display: flex; flex-direction: column; gap: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #8B97A3"><div>127.0.0.1:9000</div><div>token auth on</div></div>
+</nav>
+<main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 24px 32px; display: flex; flex-direction: column; gap: 20px">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h1 style="margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; font-size: 24px; font-weight: 600"><span>Inventory</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; color: #8B97A3; font-weight: 400; font-size: 20px">المخزون</span></h1>
+<div style="display: flex; flex-wrap: wrap; gap: 2px 12px; color: #8B97A3"><span>Machines, classes and tags</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif">الأجهزة وأنواعها ووسومها</span></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px"><span style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border: 1px solid #5B4A22; border-radius: 999px; color: #E0B35A; font-size: 12px; font-weight: 500">Partly verified<span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; font-weight: 400">موثّق جزئياً</span></span><button type="button" style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 6px; font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; font-weight: 600; text-decoration: none; box-sizing: border-box; border: 1px solid #3A444F; background: transparent; color: #E6EAEE; cursor: pointer; font-weight: 500">Refresh<span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; margin-inline-start: 8px; font-weight: 400; color: inherit; opacity: 0.85">تحديث</span></button></div>
+</header>
+<section aria-label="Inventory machines" style="background: #1A2027; border: 1px solid #2A323B; border-radius: 8px; overflow-x: auto">
+<div role="table" aria-label="Inventory machines" style="min-width: 900px">
+<div role="row" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; padding: 12px 20px; border-bottom: 1px solid #2A323B; color: #8B97A3; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase"><div role="columnheader" style="display: flex; flex-direction: column; gap: 1px"><span>Machine</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; letter-spacing: 0; text-transform: none; font-size: 12px; text-align: start">الجهاز</span></div><div role="columnheader" style="display: flex; flex-direction: column; gap: 1px"><span>Class</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; letter-spacing: 0; text-transform: none; font-size: 12px; text-align: start">النوع</span></div><div role="columnheader" style="display: flex; flex-direction: column; gap: 1px"><span>Tags</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; letter-spacing: 0; text-transform: none; font-size: 12px; text-align: start">الوسوم</span></div><div role="columnheader" style="display: flex; flex-direction: column; gap: 1px"><span>Target host</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; letter-spacing: 0; text-transform: none; font-size: 12px; text-align: start">عنوان الهدف</span></div><div role="columnheader" style="display: flex; flex-direction: column; gap: 1px"><span>Instances</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; letter-spacing: 0; text-transform: none; font-size: 12px; text-align: start">النسخ المشغلة</span></div></div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+<div role="row" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; align-items: center; padding: 12px 20px; border-bottom: 1px solid #232A32"><div role="cell" style="min-width: 0"><span style="font-family: 'IBM Plex Mono', monospace; font-weight: 500">{{r.name}}</span></div><div role="cell" style="min-width: 0"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; overflow-wrap: anywhere">{{r.cls}}</span></div><div role="cell" style="min-width: 0"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px">{{r.tags}}</span></div><div role="cell" style="min-width: 0"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; overflow-wrap: anywhere">{{r.target}}</span></div><div role="cell" style="min-width: 0"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; overflow-wrap: anywhere">{{r.instances}}</span></div></div>
+</sc-for>
+</div>
+</section>
+<section aria-label="Auto tags" style="background: #1A2027; border: 1px solid #2A323B; border-radius: 8px; padding: 16px 20px; display: flex; flex-direction: column; gap: 6px"><h2 style="margin: 0 0 8px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; font-size: 14px; font-weight: 600"><span>Built-in tags</span><span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; color: #8B97A3; font-weight: 400; font-size: 13px">وسوم مدمجة</span></h2>
+<div style="display: flex; flex-wrap: wrap; gap: 8px"><span style="display: inline-flex; align-items: center; gap: 8px; padding: 2px 10px; border: 1px solid #3A444F; border-radius: 999px; color: #E6EAEE; font-size: 12px">all<span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; color: #E6EAEE; font-weight: 400; font-size: 12px">كل الأجهزة</span></span><span style="display: inline-flex; align-items: center; gap: 8px; padding: 2px 10px; border: 1px solid #3A444F; border-radius: 999px; color: #E6EAEE; font-size: 12px">nixos<span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; color: #E6EAEE; font-weight: 400; font-size: 12px">أجهزة NixOS</span></span><span style="display: inline-flex; align-items: center; gap: 8px; padding: 2px 10px; border: 1px solid #3A444F; border-radius: 999px; color: #E6EAEE; font-size: 12px">darwin<span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; color: #E6EAEE; font-weight: 400; font-size: 12px">أجهزة macOS</span></span></div>
+<div style="color: #8B97A3; font-size: 13px">A service can target a tag instead of naming machines. <span lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; margin-inline-start: 6px">الخدمة تستهدف وسماً بدل تسمية الأجهزة.</span></div></section>
+<div style="display: flex; flex-direction: column; gap: 2px; color: #8B97A3; font-size: 12px"><div>Sample data from inventory.machines. Read only: changes are made in clan.nix.</div><div lang="ar" dir="rtl" style="font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; text-align: start">بيانات تجريبية من inventory.machines. للقراءة فقط: التعديل يتم في clan.nix.</div></div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":820}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+ "rows": [
+  {
+   "name": "controller",
+   "cls": "nixos",
+   "tags": "nixos, zerotier",
+   "target": "root@controller.clan.example",
+   "instances": "6"
+  },
+  {
+   "name": "erp-prod",
+   "cls": "nixos",
+   "tags": "nixos, prod",
+   "target": "(auto: ZeroTier)",
+   "instances": "7"
+  },
+  {
+   "name": "build-host",
+   "cls": "nixos",
+   "tags": "nixos",
+   "target": "root@build.example.com",
+   "instances": "4"
+  },
+  {
+   "name": "edge-eg",
+   "cls": "nixos",
+   "tags": "nixos, edge",
+   "target": "(auto: Tor)",
+   "instances": "4"
+  }
+ ]
+};
+}
+}
+</script>
+</body>
+</html>

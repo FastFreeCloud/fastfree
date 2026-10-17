@@ -1,0 +1,4 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+Name: fastfree
+Description: None
+Domain: fastfree.local

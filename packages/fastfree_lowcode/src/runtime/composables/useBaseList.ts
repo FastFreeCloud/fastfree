@@ -54,6 +54,8 @@ export interface BaseListReturn<T extends Record<string, unknown>> {
   formatNumber: (value: number | undefined | null, decimals?: number) => string
   formatCurrency: (value: number | undefined | null, currency?: string) => string
   formatPercent: (value: number | undefined | null) => string
+  translateStatus: (status: string) => string
+  statusColor: (status: string) => string
   translate: (key: string, params?: Record<string, string | number>) => string
 }
 
@@ -233,6 +235,8 @@ export function useBaseList<T extends Record<string, unknown>>(
     formatNumber,
     formatCurrency,
     formatPercent,
+    translateStatus,
+    statusColor,
     translate: t,
   }
 }

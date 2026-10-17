@@ -1,0 +1,622 @@
+/**
+ * Browser session management over CDP.
+ *
+ * By default the server launches the browser itself (no terminal needed),
+ * waits for the CDP endpoint, then attaches. Set FLOW_AUTO_LAUNCH=0 to
+ * attach to a browser you started yourself.
+ *
+ * Attaching means the agent reuses the Google session already in that
+ * profile - no API keys anywhere.
+ */
+import { chromium } from 'playwright-core';
+import { spawn, spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import { config } from './config.js';
+
+const CLOSE_GRACE_MS = 5000;
+
+/* ------------------------------------------------------------------ */
+/* CDP availability                                                    */
+/* ------------------------------------------------------------------ */
+
+export async function cdpAlive(port = config.cdpPort) {
+  try {
+    const res = await fetch(`http://127.0.0.1:${port}/json/version`, {
+      signal: AbortSignal.timeout(2500),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function waitForCdp(port = config.cdpPort, timeoutMs = config.launchTimeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (await cdpAlive(port)) return true;
+    await new Promise((r) => setTimeout(r, 800));
+  }
+  return false;
+}
+
+/* ------------------------------------------------------------------ */
+/* Launch                                                             */
+/* ------------------------------------------------------------------ */
+
+function profileDir() {
+  return path.join(config.userDataDir, config.profile);
+}
+
+/**
+ * Profile flags must be present on every launch, including a restart.
+ * Leaving them off makes the browser open its default profile, which loses
+ * the signed-in Google session the whole tool depends on.
+ */
+function browserArgs() {
+  const args = [
+    `--remote-debugging-port=${config.cdpPort}`,
+    '--remote-allow-origins=*',
+    '--no-first-run',
+    '--no-default-browser-check',
+    `--profile-directory=${config.profile}`,
+  ];
+
+  if (config.userDataDir) args.unshift(`--user-data-dir=${config.userDataDir}`);
+
+  return args;
+}
+
+/**
+ * Close the browser we are attached to, by CDP.
+ *
+ * CentBrowser ships a binary literally named chrome.exe, so killing by image
+ * name would take the user's personal Chrome down with it. Browser.close
+ * over CDP reaches exactly the instance listening on our port.
+ */
+async function closeOverCdp() {
+  if (!(await cdpAlive())) return { closed: false, reason: 'no browser on the CDP port' };
+
+  try {
+    const browser = await chromium.connectOverCDP(`http://127.0.0.1:${config.cdpPort}`);
+    const session = await browser.newBrowserCDPSession();
+    try {
+      await session.send('Browser.close');
+    } finally {
+      await session.detach().catch(() => {});
+      await browser.close().catch(() => {});
+    }
+    return { closed: true, via: 'cdp' };
+  } catch (err) {
+    return { closed: false, reason: err.message };
+  }
+}
+
+/** Last resort when there is no CDP endpoint to close politely. */
+function killByImageName() {
+  const image = path.basename(config.browser, '.exe');
+
+  try {
+    // taskkill exits 128 when nothing matched, and does not throw.
+    const r = spawnSync('taskkill', ['/IM', `${image}.exe`, '/F'], {
+      stdio: 'ignore',
+      timeout: 15000,
+    });
+    return { closed: r.status === 0, via: 'taskkill', image };
+  } catch {
+    return { closed: false, via: 'taskkill', image };
+  }
+}
+
+export async function launchBrowser({ restart = false } = {}) {
+  if (!fs.existsSync(config.browser)) {
+    throw new Error(
+      `Browser binary not found: ${config.browser}\n` +
+        'Point FLOW_BROWSER at the correct chrome.exe, or run scripts\\launch.cmd manually.',
+    );
+  }
+
+  if (config.userDataDir && !fs.existsSync(profileDir())) {
+    throw new Error(
+      `Profile directory not found: ${profileDir()}\n` +
+        'FLOW_USER_DATA or FLOW_PROFILE points at a folder that does not exist, ' +
+        'so the signed-in Google session would be lost. Chrome can create a new ' +
+        'profile only if you sign in again inside it.',
+    );
+  }
+
+  let kill = null;
+  if (restart) {
+    kill = await closeOverCdp();
+    if (!kill.closed) kill = killByImageName();
+    // Wait for the port to actually free up, or the new instance silently
+    // attaches to the old one.
+    for (let i = 0; i < 10 && (await cdpAlive()); i++) {
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+
+  const child = spawn(config.browser, browserArgs(), { detached: true, stdio: 'ignore' });
+
+  // A bad path or a denied permission surfaces as an async 'error' event.
+  // Without this listener Node rethrows it and the whole MCP server dies,
+  // taking every other tool down with one typo in the config.
+  await new Promise((resolve, reject) => {
+    const onError = (err) => {
+      child.removeListener('spawn', onSpawn);
+      reject(new Error(`Could not start browser (${config.browser}): ${err.message}`));
+    };
+    const onSpawn = () => {
+      child.removeListener('error', onError);
+      resolve();
+    };
+    child.once('error', onError);
+    child.once('spawn', onSpawn);
+  });
+
+  // Keep a permanent no-op listener. Removing the last 'error' listener
+  // makes Node rethrow any later error (kill failure, IPC close) as an
+  // uncaught exception, which would kill the stdio server.
+  child.on('error', () => {});
+  child.unref();
+
+  return { launched: true, restart, kill, browser: config.browser, profile: config.profile };
+}
+
+export async function ensureBrowser({ restart = false } = {}) {
+  if (await cdpAlive()) {
+    return { launched: false, reused: true, cdp: config.cdpPort };
+  }
+
+  if (!config.autoLaunch) {
+    throw new Error(
+      `No browser on CDP port ${config.cdpPort}. Start it with scripts\\launch.cmd, ` +
+        'or unset FLOW_AUTO_LAUNCH to let the server launch it.',
+    );
+  }
+
+  await launchBrowser({ restart });
+
+  const ok = await waitForCdp();
+  if (!ok) {
+    throw new Error(
+      `Browser started but CDP port ${config.cdpPort} never responded. ` +
+        'Check FLOW_CDP_PORT and make sure no other app already holds that port.',
+    );
+  }
+
+  return { launched: true, reused: false, cdp: config.cdpPort };
+}
+
+/* ------------------------------------------------------------------ */
+/* Session                                                            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * True when the page is really on the Flow origin.
+ *
+ * A prefix match would accept "https://flow.google.com.attacker.tld", so
+ * the origin is compared properly.
+ */
+export function onFlow(page) {
+  try {
+    return new URL(page.url()).origin === new URL(config.flowUrl).origin;
+  } catch {
+    return false;
+  }
+}
+
+export async function connect() {
+  const browser = await chromium.connectOverCDP(`http://127.0.0.1:${config.cdpPort}`);
+  const context = browser.contexts()[0];
+
+  if (!context) {
+    await closeQuietly(browser);
+    throw new Error('The browser exposes no context. Restart it with scripts\\launch.cmd.');
+  }
+
+  const pages = context.pages();
+  const page = pages.find((p) => !p.url().startsWith('devtools://')) || pages[0];
+
+  if (!page) {
+    await closeQuietly(browser);
+    throw new Error('The browser has no open tab. Open one in the window, then retry.');
+  }
+
+  return { browser, context, page };
+}
+
+/** Detach without hanging forever on a wedged CDP link. */
+async function closeQuietly(browser) {
+  const timer = setTimeout(() => {}, CLOSE_GRACE_MS);
+  if (typeof timer.unref === 'function') timer.unref();
+
+  try {
+    await Promise.race([
+      browser.close().catch(() => {}),
+      new Promise((r) => {
+        const t = setTimeout(r, CLOSE_GRACE_MS);
+        if (typeof t.unref === 'function') t.unref();
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function runSession(fn) {
+  await ensureBrowser();
+  const { browser, page } = await connect();
+
+  // The MCP-level timeout cannot cancel a Playwright call, and this session
+  // holds the serialization chain. Dropping the connection is what actually
+  // unblocks a wedged page.evaluate() or CDP send, so one hung operation
+  // fails one tool instead of freezing every later call.
+  const watchdog = setTimeout(() => {
+    browser.close().catch(() => {});
+  }, config.toolTimeoutMs);
+  if (typeof watchdog.unref === 'function') watchdog.unref();
+
+  try {
+    return await fn(page);
+  } finally {
+    clearTimeout(watchdog);
+    await closeQuietly(browser);
+  }
+}
+
+/**
+ * Every browser-backed tool runs through here, one at a time.
+ *
+ * The tools all drive the same tab, so two concurrent calls would
+ * interleave navigation and each one would read the other's output as its
+ * own. Serialising keeps every baseline, poll and click honest.
+ */
+let chain = Promise.resolve();
+
+export function withSession(fn) {
+  const run = chain.then(() => runSession(fn), () => runSession(fn));
+  chain = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
+export async function openFlow(page, { newProject = false } = {}) {
+  await page.goto(config.flowUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForTimeout(5000);
+
+  // Optional project lock
+  if (config.projectId && !page.url().includes(config.projectId)) {
+    throw new Error(
+      `Flow project lock active: expected project ID "${config.projectId}" in URL, ` +
+        `but current page is ${page.url()}. ` +
+        'Either remove FLOW_PROJECT_ID to unlock, or open the correct project in the browser.'
+    );
+  }
+
+  if (newProject || !page.url().includes('/project/')) {
+    await page.locator('text=New project').first().click().catch(() => {});
+    await page.waitForTimeout(7000);
+  }
+  return page.url();
+}
+
+export async function sessionState(page) {
+  const s = await page.evaluate(() => {
+    const label = document
+      .querySelector('[aria-label*="Google Account"]')
+      ?.getAttribute('aria-label')
+      ?.replace(/\s+/g, ' ')
+      .trim();
+
+    return {
+      // Positive evidence only. Absence of an accounts.google.com URL also
+      // matches consent screens, bot checks and error pages.
+      authenticated: Boolean(label),
+      account: label || 'unknown',
+      url: location.href,
+    };
+  });
+
+  let accountWarning = null;
+  if (config.expectedAccount && s.account !== 'unknown') {
+    const signedIn = s.account.toLowerCase().includes(config.expectedAccount.toLowerCase());
+    if (!signedIn) {
+      accountWarning =
+        `Signed-in account does not match FLOW_ACCOUNT (${config.expectedAccount}). ` +
+        `Current: ${s.account}`;
+    }
+  } else if (config.expectedAccount && !s.authenticated) {
+    accountWarning = 'No Google Account badge found on the page - sign in through the browser window.';
+  }
+
+  return { ...s, accountWarning };
+}
+
+/* ------------------------------------------------------------------ */
+/* Media collection                                                    */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Single source of truth for "what counts as generated media".
+ *
+ * Both the poll counter and the download harvester call this, so a
+ * thumbnail can never inflate a baseline or survive into a download list.
+ */
+export async function collectMedia(page, kind = 'image', limit = config.maxMediaPerRun) {
+  const pattern = kind === 'video' ? config.mediaPatterns.video : config.mediaPatterns.image;
+
+  return page.evaluate(
+    ({ src, minPx, max }) => {
+      const re = new RegExp(src);
+      const seen = new Set();
+      const urls = [];
+      let duplicates = 0;
+
+      for (const el of document.querySelectorAll('img, video')) {
+        const raw = el.src || el.getAttribute('src') || '';
+        if (!raw || !re.test(raw)) continue;
+        if (el.tagName === 'IMG' && (el.naturalWidth || 0) < minPx) continue;
+
+        // Identity ignores Google's own size parameters; anything else,
+        // including a seed or id, stays distinct. Params are sorted so the
+        // same asset with a different order is still recognised as one.
+        const [base, query = ''] = raw.split('?');
+        const kept = [...new URLSearchParams(query)]
+          .filter(([k]) => !/^(w|s|sz|q|q_?sig|_)$/i.test(k))
+          .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+          .map(([k, v]) => `${k}=${v}`)
+          .join('&');
+        const key = `${base}?${kept}`;
+
+        if (seen.has(key)) {
+          duplicates += 1;
+          continue;
+        }
+        seen.add(key);
+
+        if (urls.length < max) urls.push(raw);
+      }
+
+      // Count distinct assets, not DOM elements, so a page showing three
+      // size variants of one image is not read as three fresh results.
+      return { urls, total: seen.size, duplicates, dropped: Math.max(0, seen.size - urls.length) };
+    },
+    { src: pattern, minPx: config.minMediaPixels, max: limit },
+  );
+}
+
+export async function countMedia(page, kind = 'image') {
+  const { total } = await collectMedia(page, kind, Number.MAX_SAFE_INTEGER);
+  return total;
+}
+
+/**
+ * Wait until the media count stops moving.
+ *
+ * `baseline` is mandatory: it is the count captured BEFORE the prompt was
+ * submitted. Without it, images left over from an earlier run look like
+ * fresh output. When Flow swaps an image in place instead of appending,
+ * the count never grows - so a stable count settles too and `reusedOnly`
+ * tells the caller the result may be stale.
+ */
+export async function waitForMedia(page, kind = 'image', baseline) {
+  if (baseline == null) {
+    throw new Error('waitForMedia needs the baseline count captured before submitting');
+  }
+
+  let prev = -1;
+  let stable = 0;
+  let last = baseline;
+
+  for (let i = 0; i < config.maxPolls; i++) {
+    await page.waitForTimeout(config.pollIntervalMs);
+    const { total } = await collectMedia(page, kind, Number.MAX_SAFE_INTEGER);
+    last = total;
+
+    if (total === prev) {
+      if (++stable >= config.settleRounds) {
+        return {
+          settled: true,
+          fresh: Math.max(0, total - baseline),
+          reusedOnly: total <= baseline,
+          polls: i + 1,
+        };
+      }
+    } else {
+      stable = 0;
+    }
+
+    prev = total;
+  }
+
+  return {
+    settled: false,
+    fresh: Math.max(0, last - baseline),
+    reusedOnly: last <= baseline,
+    polls: config.maxPolls,
+  };
+}
+
+/**
+ * Type a prompt into the Flow composer.
+ *
+ * `submit: false` leaves the text in the box without sending it, which is
+ * how flow_setup_video avoids starting a paid render.
+ */
+export async function submitPrompt(page, prompt, { submit = true } = {}) {
+  await page.waitForSelector('[contenteditable="true"]', { timeout: 30000 });
+
+  const box = page.locator('[contenteditable="true"]').first();
+  await box.click();
+  await page.keyboard.type(prompt, { delay: config.typeDelayMs });
+  await page.waitForTimeout(800);
+
+  if (!submit) return { typed: true, submitted: false, via: null };
+
+  const send = page
+    .locator('[aria-label*="arrow_forward"], button:has-text("arrow_forward")')
+    .first();
+
+  if (await send.count()) {
+    const clicked = await send.click({ timeout: 5000 }).then(() => true).catch(() => false);
+    return { typed: true, submitted: clicked, via: 'button' };
+  }
+
+  await page.keyboard.press('Enter');
+  return { typed: true, submitted: true, via: 'enter' };
+}
+
+/* ------------------------------------------------------------------ */
+/* Ratio                                                              */
+/* ------------------------------------------------------------------ */
+
+/** Flow hides the model, aspect ratio and image count behind one button. */
+const SETTINGS_TRIGGER = '[aria-label="Settings trigger"], .settings-trigger-button';
+
+/** Read the options Flow is actually offering right now. */
+export async function flowRatios(page) {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('[role="radio"]')]
+      .map((el) => ({
+        label: (el.innerText || el.textContent || '').trim().replace(/\s+/g, ' '),
+        checked: el.getAttribute('aria-checked') === 'true',
+      }))
+      .filter((o) => /\d\s*:\s*\d/.test(o.label)),
+  );
+}
+
+/**
+ * Set the aspect ratio through Flow's own settings menu.
+ *
+ * Flow has no standalone ratio button. The label on the composer reads
+ * "crop_16_9" and clicking it opens a radio group whose items carry the
+ * ratio as text ("crop_square 1:1") plus aria-checked. Selecting through
+ * that menu and reading aria-checked back is the only way to know the
+ * change actually landed.
+ */
+export async function selectRatio(page, ratio) {
+  const want = String(ratio ?? '').trim();
+  if (!want) return { requested: null, applied: false, reason: 'not requested' };
+
+  const target = want.replace(/\s+/g, '');
+  const trigger = page.locator(SETTINGS_TRIGGER).first();
+
+  if (!(await trigger.count())) {
+    return {
+      requested: want,
+      applied: false,
+      reason: 'the composer settings button was not found on this Flow build',
+    };
+  }
+
+  const opened = await trigger
+    .click({ timeout: 6000 })
+    .then(() => true)
+    .catch(() => false);
+
+  if (!opened) {
+    return { requested: want, applied: false, reason: 'could not open the composer settings menu' };
+  }
+
+  await page.waitForTimeout(1200);
+
+  const options = await flowRatios(page);
+  const wanted = options.find((o) => o.label.endsWith(target) || o.label === target);
+
+  if (!wanted) {
+    await page.keyboard.press('Escape').catch(() => {});
+    return {
+      requested: want,
+      applied: false,
+      reason: `Flow does not offer ${want}. It offers: ${options.map((o) => o.label).join(', ') || 'none found'}`,
+    };
+  }
+
+  const option = page.locator(`[role="radio"]:has-text("${target}")`).first();
+  await option.click({ timeout: 6000 }).catch(() => {});
+
+  // Read the control's own state. Trusting the click alone would report
+  // success for a click that never registered.
+  const checked = await option.getAttribute('aria-checked').catch(() => null);
+
+  await page.waitForTimeout(600);
+  await page.keyboard.press('Escape').catch(() => {});
+  await page.waitForTimeout(400);
+
+  return {
+    requested: want,
+    applied: checked === 'true',
+    via: 'settings-menu',
+    label: wanted.label,
+    reason: checked === 'true' ? null : `Flow reported aria-checked="${checked}" after the click`,
+  };
+}
+
+export async function currentModel(page) {
+  return page.evaluate(() => {
+    const text = document.body.innerText.replace(/\s+/g, ' ');
+    const m = text.match(/(Nano Banana[^x]*|Imagen 4|Omni Flash|Veo 3\.1[^x]*)\s*x?\d*/i);
+    return m ? m[0].trim() : 'unknown';
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Screenshots                                                         */
+/* ------------------------------------------------------------------ */
+
+const SHOT_TIMEOUT_MS = 15000;
+const CDP_TIMEOUT_MS = 20000;
+
+/** Reject a promise that never settles instead of wedging the tool chain. */
+function withDeadline(promise, ms, label) {
+  let timer;
+  const deadline = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+    if (typeof timer.unref === 'function') timer.unref();
+  });
+
+  return Promise.race([promise, deadline]).finally(() => clearTimeout(timer));
+}
+
+/**
+ * Save a PNG of the viewport.
+ *
+ * Playwright's screenshot waits for the page to stop repainting. Flow keeps
+ * a live canvas running, so that wait never resolves and the call times out
+ * no matter how large the timeout is. CDP's captureScreenshot takes the
+ * frame as-is, which is what a screenshot of a running app should mean.
+ */
+export async function capture(page, file) {
+  try {
+    await page.screenshot({ path: file, timeout: SHOT_TIMEOUT_MS, animations: 'disabled' });
+    return { ok: true, file, via: 'playwright' };
+  } catch {
+    /* fall through to CDP */
+  }
+
+  let session;
+  try {
+    session = await withDeadline(
+      page.context().newCDPSession(page),
+      CDP_TIMEOUT_MS,
+      'newCDPSession',
+    );
+
+    const { data } = await withDeadline(
+      session.send('Page.captureScreenshot', { format: 'png' }),
+      CDP_TIMEOUT_MS,
+      'Page.captureScreenshot',
+    );
+
+    fs.writeFileSync(file, Buffer.from(data, 'base64'));
+    return { ok: true, file, via: 'cdp' };
+  } catch (err) {
+    return { ok: false, file, reason: err.message };
+  } finally {
+    await session?.detach().catch(() => {});
+  }
+}

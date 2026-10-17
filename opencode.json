@@ -9,9 +9,9 @@
     "quasar": {
       "type": "local",
       "command": [
-        "sh",
-        "-c",
-        "command -v flox >/dev/null 2>&1 && exec flox activate -d /home/fastfree/Desktop/fastfree -- pnpm dlx @quasar/mcp@latest || exec flatpak-spawn --host flox activate -d /home/fastfree/Desktop/fastfree -- pnpm dlx @quasar/mcp@latest"
+        "npx",
+        "-y",
+        "@quasar/mcp@latest"
       ],
       "enabled": true,
       "timeout": 300000,
@@ -24,9 +24,9 @@
     "sequential-thinking": {
       "type": "local",
       "command": [
-        "sh",
-        "-c",
-        "command -v flox >/dev/null 2>&1 && exec flox activate -d /home/fastfree/Desktop/fastfree -- pnpm dlx @modelcontextprotocol/server-sequential-thinking@0.6.2 || exec flatpak-spawn --host flox activate -d /home/fastfree/Desktop/fastfree -- pnpm dlx @modelcontextprotocol/server-sequential-thinking@0.6.2"
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking@0.6.2"
       ],
       "timeout": 300000,
       "cwd": "."
@@ -38,9 +38,9 @@
     "midscene-web": {
       "type": "local",
       "command": [
-        "sh",
-        "-c",
-        "command -v flox >/dev/null 2>&1 && exec flox activate -d /home/fastfree/Desktop/fastfree -- sh -c 'cd /tmp && exec npx -y @midscene/web-bridge-mcp' || exec flatpak-spawn --host flox activate -d /home/fastfree/Desktop/fastfree -- sh -c 'cd /tmp && exec npx -y @midscene/web-bridge-mcp'"
+        "npx",
+        "-y",
+        "@midscene/web-bridge-mcp"
       ],
       "environment": {
         "MCP_SERVER_REQUEST_TIMEOUT": "600000"
@@ -51,9 +51,12 @@
     "playwright": {
       "type": "local",
       "command": [
-        "sh",
-        "-c",
-        "command -v flox >/dev/null 2>&1 && exec flox activate -d /home/fastfree/Desktop/fastfree -- pnpm dlx @playwright/mcp@latest --caps=devtools --user-data-dir=.auth/mcp-profile --browser=chromium || exec flatpak-spawn --host flox activate -d /home/fastfree/Desktop/fastfree -- pnpm dlx @playwright/mcp@latest --caps=devtools --user-data-dir=.auth/mcp-profile --browser=chromium"
+        "npx",
+        "-y",
+        "@playwright/mcp@latest",
+        "--caps=devtools",
+        "--user-data-dir=.auth/mcp-profile",
+        "--browser=chromium"
       ],
       "timeout": 300000,
       "cwd": "."
@@ -61,9 +64,9 @@
     "firecrawl-mcp": {
       "type": "local",
       "command": [
-        "sh",
-        "-c",
-        "command -v flox >/dev/null 2>&1 && exec flox activate -d /home/fastfree/Desktop/fastfree -- sh -c 'cd /tmp && exec npx -y firecrawl-mcp' || exec flatpak-spawn --host flox activate -d /home/fastfree/Desktop/fastfree -- sh -c 'cd /tmp && exec npx -y firecrawl-mcp'"
+        "npx",
+        "-y",
+        "firecrawl-mcp"
       ],
       "environment": {
         "FIRECRAWL_API_KEY": "fc-a6393086cab440e48a0f9fc3311bb2c2"
@@ -81,16 +84,32 @@
       "enabled": true,
       "timeout": 120000
     },
-    "fastfree-html-writer": {
+    "rea": {
       "type": "local",
       "command": [
-        "sh",
-        "-c",
-        "command -v flox >/dev/null 2>&1 && exec flox activate -d /home/fastfree/Desktop/fastfree -- node /home/fastfree/Desktop/fastfree/tools/fastfree-html-writer/build/index.js || exec flatpak-spawn --host flox activate -d /home/fastfree/Desktop/fastfree -- node /home/fastfree/Desktop/fastfree/tools/fastfree-html-writer/build/index.js"
+        "npx",
+        "-y",
+        "rea-agents@6.5.0",
+        "mcp"
       ],
-      "enabled": true,
-      "timeout": 60000,
+      "timeout": 300000,
       "cwd": "."
+    },
+    "fastfree-flow": {
+      "type": "local",
+      "command": [
+        "node",
+        "C:/Users/FastFree/Desktop/fastfree/fastfree_mcp_tools/fastfree_flow_mcp/src/index.js"
+      ],
+      "environment": {
+        "FLOW_BROWSER": "C:/Users/FastFree/AppData/Local/CentBrowser/Application/chrome.exe",
+        "FLOW_USER_DATA": "C:/Users/FastFree/AppData/Local/CentBrowser/User Data",
+        "FLOW_PROFILE": "Default",
+        "FLOW_CDP_PORT": "9222",
+        "FLOW_ACCOUNT": "mohamed.fastfree@gmail.com"
+      },
+      "enabled": true,
+      "timeout": 600000
     }
   },
   "permission": {

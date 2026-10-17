@@ -4,8 +4,9 @@
 // ============================================================
 
 import { initFastFreeAuth } from './init'
+import type { App } from 'vue'
 
-export default async function ({ app }: { app: { provide: (key: string | symbol, value: unknown) => void; component: (name: string, component: unknown) => void; config: { globalProperties: Record<string, unknown> } } }) {
+export default async function ({ app }: { app: App }) {
   const baseUrl =
     (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_API_BASE_URL ||
     localStorage.getItem('fastfree_base_url') ||

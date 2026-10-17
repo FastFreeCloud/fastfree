@@ -19,32 +19,83 @@
 
 ---
 
-## أوامر الفحص (لازم تتشغل من apps/fastfree_ledger)
+## المتطلبات
+
+| الأداة | الإصدار الدنيا | ملاحظة |
+|--------|----------------|--------|
+| **Node.js** | **>= 22.22.0** (مُختبَر على 26.8.1) | `@quasar/app-vite` 3.10.2 يرفض أقل من 22.22 |
+| pnpm | ^11.11.0 | `corepack enable pnpm` |
+| git | أي إصدار | مطلوب للوكلاء |
+
+> بدون الترقية الصحيحة يفشل `quasar prepare` ولا يُنشأ مجلد `.quasar`،
+> فتظهر أخطاء `TS2307: Cannot find module '#q-app'` في كل ملفات التطبيق.
+
+---
+
+## أوامر الفحص
+
+### التطبيقات (المهمة الأساسية)
 
 ```bash
-# TypeCheck — صفر أخطاء
-cd apps/fastfree_ledger && npx vue-tsc --noEmit
+# fastfree_panel — Clan Panel SPA
+cd apps/fastfree_panel
+npx quasar prepare          # مرة واحدة بعد أي تغيير في quasar.config.ts
+npx vue-tsc --noEmit        # TypeCheck — صفر أخطاء
+npx eslint -c ./eslint.config.js "./src*/**/*.{ts,js,cjs,mjs,vue}"   # Lint
+npm run dev
 
-# Lint Check — صفر violations
-cd apps/fastfree_ledger && npm run lint:check
-
-# Lint + Auto Fix
-cd apps/fastfree_ledger && npm run lint
-
-# Dev Server
-cd apps/fastfree_ledger && npm run dev
+# fastfree_ledger — Accounting + Sales + Inventory
+cd apps/fastfree_ledger
+npx quasar prepare          # مرة واحدة بعد أي تغيير في quasar.config.ts
+npx vue-tsc --noEmit        # TypeCheck — صفر أخطاء
+npx eslint -c ./eslint.config.js "./src*/**/*.{ts,js,cjs,mjs,vue}"   # Lint
+npm run dev
 ```
 
-## حالة المشروع
+> ⚠️ `npm run lint:check` يشغّل **prettier** الذي يكتب الملفات — استخدم
+> `npx eslint` للفحص فقط، و`npm run lint` للإصلاح التلقائي.
 
-| البكج | الحالة | شاشات | خدمات | ترجمة | TS Errors |
+### الحزم (packages/)
+
+```bash
+cd packages/<pkg> && npx vue-tsc --noEmit
+```
+
+### فحص كل الحزم دفعة واحدة
+
+```bash
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+foreach($p in @('fastfree_auth','fastfree_accounting','fastfree_inventory','fastfree_sales','fastfree_purchase','fastfree_hr','fastfree_crm')){
+  cd "C:\Users\FastFree\Desktop\fastfree\packages\$p"
+  Write-Output "$p = $((npx vue-tsc --noEmit 2>&1 | Select-String 'error TS' | Measure-Object).Count)"
+}
+```
+
+---
+
+## التطبيقات (apps/)
+
+| التطبيق | الإصدار | الوصف | TypeScript | Lint |
+|---------|---------|-------|-----------|------|
+| **fastfree_panel** | 2.2.0 | Clan Panel SPA + Private Node backend (Hono) | ✅ 0 | ✅ 0 |
+| **fastfree_ledger** | 0.0.1 | Accounting + Sales + Inventory عبر lowcode | ✅ 0 | ✅ 0 |
+| fastfree_erp | — | ERP | — | — |
+| fastfree_pos | — | Point of Sale | — | — |
+| fastfree_hr | — | HR منفصل | — | — |
+| fastfree_clan_panel | — | **محذوف** — استُبدل بـ `fastfree_panel` | — | — |
+
+---
+
+## حالة المشروع — الحزم (packages/)
+
+| الحزمة | الحالة | شاشات | خدمات | ترجمة | TS Errors |
 |-------|--------|-------|-------|-------|-----------|
-| fastfree_lowcode | ✅ | 12 | — | 383 | 0 |
-| fastfree_auth | ✅ | 5 | 3 | 131 | 0 |
-| fastfree_accounting | ✅ | 8 | 7 | 117 | 0 |
-| fastfree_inventory | ✅ | 8 | 5 | 80 | 0 |
-| fastfree_sales | ✅ | 7 | 6 | 150 | 0 |
-| fastfree_purchase | ✅ | 7 | 5 | 140 | 0 |
+| fastfree_lowcode | ✅ | 38 مكوّن | 27 composable | 393×2 | 0 |
+| fastfree_auth | ✅ | 6 | 11 | 131 | 0 |
+| fastfree_accounting | ✅ | 13 | 9 | 117 | 0 |
+| fastfree_inventory | ✅ | 8 | 10 | ✅ جديد | 0 |
+| fastfree_sales | ✅ | 8 | 7 | 150 | 0 |
+| fastfree_purchase | ✅ | 7 | 6 | 140 | 0 |
 | fastfree_hr | ✅ | 7 | 9 | 114 | 0 |
 | fastfree_crm | ✅ | 6 | 8 | 108 | 0 |
 | **المجموع** | ✅ | **60** | **43** | **1253** | **0** |

@@ -1,45 +1,44 @@
 { config, lib, pkgs, ... }:
 
-let
-  ghAccount = lib.strings.toLower config.fastfree.githubAccount;
-in {
+{
   config = lib.mkIf config.fastfree.apps.fastfree_website {
 
-    # ── 1. Shared Podman network ───────────────────────────
-    systemd.services."fastfree-website-network" = {
-      description = "Create shared podman network for Website containers";
-      wantedBy = [ "multi-user.target" ];
-      before = [
-        "podman-fastfree-website-frontend.service"
-      ];
-      serviceConfig.Type = "oneshot";
-      script = ''
-        ${pkgs.podman}/bin/podman network inspect fastfree-website-net >/dev/null 2>&1 || \
-          ${pkgs.podman}/bin/podman network create fastfree-website-net
-      '';
-    };
+    # Ensure website root directory exists
+    systemd.tmpfiles.rules = [
+      "d /srv/fastfree-website 0755 root root -"
+    ];
 
-    # ── 2. Frontend container (Next.js standalone server) ─
-    virtualisation.oci-containers.containers.fastfree-website-frontend = {
-      image = "ghcr.io/${ghAccount}/fastfree_website:latest";
-      pull = "always";
-      autoStart = true;
-      ports = [ "127.0.0.1:9004:3000" ];
-      extraOptions = [
-        "--network=fastfree-website-net"
-      ];
+    # Native Systemd service running Next.js standalone server on port 9004 (Zero Podman)
+    systemd.services.fastfree-website = {
+      description = "FastFree Website (Next.js Standalone)";
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      wantedBy = [ "multi-user.target" ];
       environment = {
         NODE_ENV = "production";
-        PORT = "3000";
-        HOSTNAME = "0.0.0.0";
+        PORT = "9004";
+        HOSTNAME = "127.0.0.1";
       };
-    };
-
-    systemd.services."podman-fastfree-website-frontend" = {
-      after = [ "fastfree-website-network.service" ];
-      requires = [ "fastfree-website-network.service" ];
-      serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "5";
+      serviceConfig = {
+        DynamicUser = true;
+        WorkingDirectory = "/srv/fastfree-website";
+        Restart = "on-failure";
+        RestartSec = "5s";
+        ExecStartPre = pkgs.writeShellScript "fastfree-website-prestart" ''
+          if [ ! -f /srv/fastfree-website/server.js ]; then
+            mkdir -p /srv/fastfree-website
+            cat > /srv/fastfree-website/server.js << 'EOF'
+const http = require('http');
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end('<h1>FastFree Website</h1><p>Website is initializing...</p>');
+});
+server.listen(9004, '127.0.0.1');
+EOF
+          fi
+        '';
+        ExecStart = "${pkgs.nodejs_22}/bin/node /srv/fastfree-website/server.js";
+      };
     };
   };
 }

@@ -21,7 +21,7 @@ let
     root * ${spaDir}
     @api path /api/*
     handle @api {
-      reverse_proxy 127.0.0.1:8080
+      reverse_proxy 127.0.0.1:8000
     }
     @apiOptions method OPTIONS path /api/*
     handle @apiOptions {
@@ -29,7 +29,7 @@ let
     }
     @socketio path /socket.io/*
     handle @socketio {
-      reverse_proxy 127.0.0.1:8080
+      reverse_proxy 127.0.0.1:9000
     }
     @entryDoc path / /*.html
     header @entryDoc Cache-Control no-cache
@@ -75,13 +75,21 @@ let
       header Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
       header Access-Control-Allow-Credentials "true"
       header Access-Control-Max-Age "86400"
-      @api path /api/*
-      handle @api {
-        reverse_proxy 127.0.0.1:8080
+      @socketio path /socket.io/*
+      handle @socketio {
+        reverse_proxy 127.0.0.1:9000
+      }
+      @assets path /assets/*
+      handle @assets {
+        root * /var/lib/frappe/frappe-bench/sites/assets
+        file_server
       }
       @apiOptions method OPTIONS path /api/*
       handle @apiOptions {
         respond "OK" 204
+      }
+      handle {
+        reverse_proxy 127.0.0.1:8000
       }
     }
 
@@ -89,6 +97,22 @@ let
     ${lib.optionalString config.fastfree.apps.fastfree_ledger (spaServer "ledger" "/srv/fastfree-ledger" 9102)}
     ${lib.optionalString config.fastfree.apps.fastfree_hr (spaServer "hr" "/srv/fastfree-hr" 9103)}
     ${lib.optionalString config.fastfree.apps.fastfree_pos (spaServer "pos" "/srv/fastfree-pos" 9104)}
+
+    ${lib.optionalString config.fastfree.apps.fastfree_panel ''
+      panel.${domain} {
+        ${tlsBlock}
+        header -Server
+        root * /srv/fastfree-panel
+        @api path /api/*
+        handle @api {
+          reverse_proxy 127.0.0.1:9099
+        }
+        handle {
+          try_files {path} /index.html
+          file_server
+        }
+      }
+    ''}
 
     ${lib.optionalString config.fastfree.apps.phpmyadmin ''
       ${sd.db}.${domain} {
@@ -99,7 +123,7 @@ let
     ''}
 
     ${lib.optionalString config.fastfree.apps.cockpit ''
-      ${sd.panel}.${domain} {
+      cockpit.${domain} {
         ${tlsBlock}
         header -Server
         reverse_proxy 127.0.0.1:9090

@@ -167,35 +167,7 @@ jobs:
           ssh client2 'nixos-version && uptime'
         shell: bash
 
-      - name: "8. Fix MySQL Frappe user"
-        run: |
-          ssh client2 << 'REMOTESCRIPT'
-          SITE_CFG="/var/lib/containers/storage/volumes/fastfree-backend-sites/_data/backend.fastfree.cloud/site_config.json"
-          if [ ! -f "$SITE_CFG" ]; then echo "site_config.json not found — skipping"; exit 0; fi
-          DB_NAME=$(sed -n 's/.*"db_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$SITE_CFG")
-          DB_PASS=$(sed -n 's/.*"db_password"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$SITE_CFG")
-          MYSQL_BIN=$(ls /nix/store/*/bin/mysql 2>/dev/null | head -1)
-          if [ -z "$MYSQL_BIN" ]; then echo "mysql client not found — skipping"; exit 0; fi
-          MYSQL_ROOT_PASS="${{ secrets.CLIENT2_MYSQL_ROOT_PASSWORD }}"
-          "$MYSQL_BIN" --user=root --password="$MYSQL_ROOT_PASS" -e "DROP USER IF EXISTS '${DB_NAME}'@'%'; DROP USER IF EXISTS '${DB_NAME}'@'localhost'; CREATE USER '${DB_NAME}'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('${DB_PASS}'); CREATE USER '${DB_NAME}'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('${DB_PASS}'); GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_NAME}'@'%'; GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_NAME}'@'localhost'; FLUSH PRIVILEGES;" 2>&1
-          echo "DONE"
-          REMOTESCRIPT
-        shell: bash
-
-      - name: "9. Restart backend services"
-        run: |
-          ssh client2 << 'RESTART'
-          for svc in backend-app backend-frontend backend-websocket queue-short queue-long scheduler; do
-            systemctl restart "podman-fastfree-${svc}.service" 2>/dev/null || true
-          done
-          systemctl restart podman-fastfree-website-frontend.service 2>/dev/null || true
-          sleep 5
-          systemctl restart caddy
-          echo "All services restarted"
-          RESTART
-        shell: bash
-
-      - name: "10. Remove age key"
+      - name: "8. Remove age key"
         if: always()
         run: rm -f /tmp/age.key
 
@@ -247,16 +219,16 @@ jobs:
           eval "$R" "ss -tulnp | grep -E '(22|80|443|3306|9993|51821|8080|8082|900[0-9]|9090)' || echo 'No services listening'"
           echo ""
 
-          echo "=== 5. PODMAN CONTAINERS ==="
-          eval "$R" "podman ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' || echo 'podman not available'"
+          echo "=== 5. FASTFREE BACKEND SERVICES ==="
+          eval "$R" "systemctl status 'fastfree-backend-*' --no-pager -l 2>/dev/null || echo 'No fastfree-backend services'"
           echo ""
 
-          echo "=== 6. PODMAN IMAGES ==="
-          eval "$R" "podman images --format 'table {{.Repository}}\t{{.Tag}}\t{{.Size}}' || echo 'No images'"
+          echo "=== 6. FASTFREE PANEL STATUS ==="
+          eval "$R" "systemctl status fastfree-panel --no-pager -l 2>/dev/null || echo 'fastfree-panel not running'"
           echo ""
 
           echo "=== 7. SYSTEMD SERVICES ==="
-          eval "$R" "systemctl list-units --type=service --state=running | grep -E '(podman|caddy|mysql|wireguard|zerotier|avahi|fastfree|cockpit)' || echo 'No FastFree services'"
+          eval "$R" "systemctl list-units --type=service --state=running | grep -E '(caddy|mysql|mariadb|wireguard|avahi|fastfree|cockpit)' || echo 'No FastFree services'"
           echo ""
 
           echo "=== 8. FAILED SERVICES ==="

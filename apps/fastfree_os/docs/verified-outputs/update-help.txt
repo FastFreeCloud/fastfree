@@ -1,0 +1,55 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+usage: clan [-h] [SUBCOMMAND] machines update [-h] [--tags TAGS [TAGS ...]]
+                                              [--host-key-check {strict,ask,accept-new,tofu,none}]
+                                              [--target-host TARGET_HOST]
+                                              [--build-host BUILD_HOST]
+                                              [--upload-inputs]
+                                              [--specialisation SPECIALISATION]
+                                              [--no-check] [--debug]
+                                              [--option name value]
+                                              [--flake PATH]
+                                              [MACHINE ...]
+
+positional arguments:
+  MACHINE               Machine to update. If no machines are specified, all machines that don't require explicit updates will be updated.
+
+options:
+  -h, --help            show this help message and exit
+  --tags TAGS [TAGS ...]
+                        Tags that machines should be queried for. Multiple tags will intersect.
+  --host-key-check {strict,ask,accept-new,tofu,none}
+                        Host key (.ssh/known_hosts) check mode. (default: ask)
+  --target-host TARGET_HOST
+                        Address of the machine to update, in the format of user@host:1234.
+  --build-host BUILD_HOST
+                        The machine on which to build the machine configuration.
+                        Pass 'localhost' to build on the local machine, or an ssh address like user@host:1234
+  --upload-inputs       Upload all flake inputs from the local machine instead of the build host/target host.
+                        This is useful if downloading the inputs requires authentication which is only available to the local machine
+  --specialisation SPECIALISATION
+                        Activate a NixOS specialisation on the target machine. Specialisations are named, pre-built alternative system configurations that can be switched to without rebuilding. See ]8;;https://clan.lol/docs/26.05/guides/specialisations\https://clan.lol/docs/26.05/guides/specialisations]8;;\
+  --no-check            Skip NixOS pre-switch safety checks (switch inhibitors). Use when you know the live switch is safe despite critical component changes. Equivalent to setting NIXOS_NO_CHECK=1.
+  --debug               Enable debug logging
+  --option name value   Nix option to set
+  --flake PATH          path to the flake where the clan resides in, can be a remote flake or local, can be set through the [CLAN_DIR] environment variable
+
+This subcommand provides an interface to update machines managed by Clan.
+
+Examples:
+
+  $ clan machines update [MACHINES]
+  Will update the specified machines [MACHINES], if [MACHINES] is omitted, the command
+  will attempt to update every configured machine.
+  To exclude machines being updated `clan.core.deployment.requireExplicitUpdate = true;`
+  can be set in the machine config.
+
+  $ clan machines update --tags [TAGS..]
+  Will update all machines that have the specified tags associated through the inventory.
+  If multiple tags are specified machines are matched against both tags.
+
+  $ clan machines update --tags vm
+  Will update all machines that are associated with the "vm" tag through the inventory.
+
+  $ clan machines update machine1 machine2 --tags production
+  Will update only machine1 and machine2 if they both have the "production" tag.
+        

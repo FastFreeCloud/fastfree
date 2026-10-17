@@ -1,0 +1,19 @@
+{
+  "name": "fastfree-flow-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "fastfree_flow_mcp - drive Google Flow from your coding agent. Image and video generation through your own Google account.",
+  "main": "src/index.js",
+  "bin": { "fastfree-flow-mcp": "src/index.js" },
+  "scripts": {
+    "start": "node src/index.js",
+    "check": "node scripts/check.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.9.0",
+    "playwright-core": "^1.49.0"
+  },
+  "engines": { "node": ">=18.0.0" },
+  "license": "MIT"
+}

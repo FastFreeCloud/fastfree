@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark" />
+<title>أدوات الوكلاء — Antigravity · Herdr · REA</title>
+<style>
+:root{
+  --bg:#0e1117;
+  --panel:#161b22;
+  --panel2:#1c2333;
+  --line:#2a3240;
+  --fg:#e6edf3;
+  --dim:#8b949e;
+  --acc:#4c9aff;
+  --ok:#3fb950;
+  --warn:#d29922;
+  --bad:#f85149;
+  --code:#0b0f16;
+  --sans:"Segoe UI","Noto Sans Arabic","Noto Kufi Arabic","Cairo","Tajawal",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono","Cascadia Code","SF Mono","Fira Code","DejaVu Sans Mono","Noto Sans Mono","Noto Sans Arabic","Noto Naskh Arabic",Menlo,Consolas,"Courier New",monospace;
+  --radius:14px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.75;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 20px 64px}
+.nav{
+  display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+  margin:0 0 22px;padding:10px 12px;
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+}
+.nav .nv{
+  display:inline-block;padding:5px 12px;border-radius:7px;
+  color:var(--dim);text-decoration:none;font-size:.88rem;
+  border:1px solid transparent;transition:.15s;
+}
+.nav .nv:hover{color:var(--fg);background:var(--panel);border-color:var(--line)}
+.nav .nv.on{
+  color:var(--acc);background:rgba(76,154,255,.10);
+  border-color:rgba(76,154,255,.35);font-weight:600;
+}
+header{
+  background:linear-gradient(180deg,var(--panel) 0%,var(--bg) 100%);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:24px 22px;
+  margin-block-end:28px;
+  display:flex;
+  gap:18px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+header .logo{
+  width:52px;height:52px;flex:0 0 auto;border-radius:12px;
+  background:var(--panel2);border:1px solid var(--line);
+  object-fit:contain;display:block;
+}
+h1{
+  font-size:1.7rem;line-height:1.3;margin:0;font-weight:700;letter-spacing:-.01em;
+}
+h2{
+  font-size:1.2rem;margin:34px 0 12px;padding-block-end:8px;
+  border-block-end:1px solid var(--line);font-weight:650;
+}
+h3{font-size:1rem;margin:22px 0 8px;font-weight:650;color:var(--fg)}
+.sub{color:var(--dim);margin:4px 0 0;font-size:.95rem}
+p{margin:0 0 12px}
+.big{font-size:1.12rem;line-height:1.85;color:var(--fg)}
+a{color:var(--acc);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{color:#fff;font-weight:700}
+code{
+  font-family:var(--mono);
+  font-size:.88em;
+  background:var(--code);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:1px 6px;
+  direction:ltr;
+  unicode-bidi:embed;
+}
+pre{
+  background:var(--code);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:14px 16px;
+  overflow-x:auto;
+  direction:ltr;
+  text-align:left;
+  unicode-bidi:isolate;
+  margin:0 0 14px;
+}
+pre code{
+  background:none;border:0;padding:0;
+  font-size:.85rem;line-height:1.6;
+  display:block;white-space:pre;
+}
+.tcap{color:var(--dim);font-size:.82rem;margin:-8px 0 14px}
+.fig{margin:0 0 14px}
+.hgroup{flex:1 1 auto;min-width:0}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-inline-start:3px solid var(--acc);
+  border-radius:var(--radius);
+  padding:16px 18px;
+  margin:0 0 16px;
+}
+.card > :last-child{margin-block-end:0}
+.card.ok{border-inline-start-color:var(--ok)}
+.card.acc{border-inline-start-color:var(--acc)}
+.card.warn{border-inline-start-color:var(--warn)}
+.card.bad{border-inline-start-color:var(--bad)}
+.ctitle{font-weight:650;margin-block-end:8px}
+.tw{overflow-x:auto;margin:0 0 16px}
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:var(--panel);
+  font-size:.92rem;
+}
+th,td{
+  border:1px solid var(--line);
+  padding:9px 12px;
+  text-align:start;
+  vertical-align:top;
+}
+th{background:var(--panel2);color:var(--fg);font-weight:650;white-space:nowrap}
+tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
+td.code,th.code{
+  font-family:var(--mono);font-size:.84em;
+  direction:ltr;text-align:left;unicode-bidi:isolate;
+  white-space:pre-wrap;word-break:break-word;
+}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.tag{
+  display:inline-block;
+  border:1px solid var(--line);
+  background:var(--panel2);
+  color:var(--fg);
+  border-radius:999px;
+  padding:3px 12px;
+  font-size:.8rem;
+  line-height:1.7;
+}
+.tag.ok{border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.12);color:#7ee787}
+.tag.no{border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.12);color:#ff9492}
+.tag.acc{border-color:rgba(76,154,255,.5);background:rgba(76,154,255,.12);color:#9ecbff}
+.tag.warn{border-color:rgba(210,153,34,.5);background:rgba(210,153,34,.12);color:#e3b341}
+.kv{
+  font-family:var(--mono);font-size:.82em;
+  background:var(--panel2);border:1px dashed var(--line);
+  border-radius:6px;padding:1px 7px;direction:ltr;unicode-bidi:embed;
+}
+.steps{list-style:none;counter-reset:st;margin:0 0 16px;padding:0}
+.steps > li{
+  counter-increment:st;
+  position:relative;
+  padding-inline-start:3rem;
+  padding-block:2px 2px;
+  margin-block-end:12px;
+}
+.steps > li::before{
+  content:counter(st);
+  position:absolute;inset-inline-start:0;top:2px;
+  width:1.9rem;height:1.9rem;border-radius:50%;
+  background:var(--panel2);border:1px solid var(--line);color:var(--acc);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:700;
+}
+.steps > li > .st{margin:0 0 4px;font-weight:650}
+.docs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:0 0 16px}
+.doc{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;color:inherit;text-decoration:none;display:block;
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;
+}
+.doc:hover{
+  transform:translateY(-3px);
+  border-color:var(--acc);
+  box-shadow:0 8px 22px rgba(0,0,0,.4);
+  text-decoration:none;
+}
+.doc .dt{font-weight:650;margin-block-end:6px;color:var(--acc)}
+.doc .db{color:var(--dim);font-size:.9rem;line-height:1.6}
+.qa{margin:0 0 16px;display:grid;gap:12px}
+.qa .q,.qa .a{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:12px 16px;
+}
+.qa .q{font-weight:650;border-inline-start:3px solid var(--acc)}
+.qa .a{color:var(--dim);background:var(--panel2)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 16px}
+.fi{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:8px 14px;display:flex;flex-direction:column;min-width:0;
+}
+.fi .fn{color:var(--acc);font-weight:700;font-size:.78rem}
+.fi .ft{font-weight:600;font-size:.92rem}
+.fi .fd{color:var(--dim);font-size:.78rem}
+.fi+.fi::before{
+  content:"\2190";
+  color:var(--dim);
+  align-self:center;
+  margin-inline-end:4px;
+  order:-1;
+}
+.tree{
+  font-family:var(--mono);font-size:.84rem;line-height:1.65;
+  background:var(--code);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;overflow-x:auto;
+  direction:ltr;text-align:left;unicode-bidi:isolate;
+  white-space:pre;margin:0 0 16px;color:#c9d1d9;
+}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:0 0 16px}
+.barrow{display:flex;align-items:center;gap:12px;margin-block-end:10px}
+.barrow .bl{min-width:120px;color:var(--dim);font-size:.86rem}
+.bar{
+  flex:1 1 auto;height:.7rem;border-radius:999px;
+  background:var(--panel2);border:1px solid var(--line);overflow:hidden;
+}
+.bar .s,.bar .m,.bar .l{
+  display:block;height:100%;
+  background:linear-gradient(90deg,#2f6fd0,var(--acc));
+}
+.bar .s{width:33%}
+.bar .m{width:66%}
+.bar .l{width:100%}
+footer{
+  margin-block-start:40px;padding-block-start:16px;
+  border-block-start:1px solid var(--line);
+  color:var(--dim);font-size:.84rem;
+}
+.hidden{display:none !important}
+.path{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:12px 16px;margin:0 0 12px;
+  cursor:pointer;user-select:none;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  transition:border-color .15s ease,background .15s ease;
+}
+.path:hover{border-color:var(--acc);background:var(--panel2)}
+.path .pm{color:var(--acc);font-weight:700}
+ul,ol{margin:0 0 12px;padding-inline-start:1.5rem}
+li{margin-block-end:4px}
+.side{
+  position:fixed;
+  inset-block:0;
+  inset-inline-start:0;
+  width:264px;
+  z-index:40;
+  display:flex;
+  flex-direction:column;
+  background:var(--panel);
+  border-inline-end:1px solid var(--line);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding-block-end:20px;
+  visibility:visible;
+  transition:transform .26s ease,visibility .26s ease;
+  scrollbar-width:thin;
+  scrollbar-color:var(--line) transparent;
+}
+.side::-webkit-scrollbar{width:8px}
+.side::-webkit-scrollbar-track{background:transparent}
+.side::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px}
+.side-h{
+  flex:0 0 auto;
+  padding-block:20px 12px;
+  padding-inline:62px 18px;
+  border-block-end:1px solid var(--line);
+  color:var(--dim);
+  font-size:.78rem;
+  font-weight:650;
+  line-height:1.6;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.side-h .side-t{flex:1 1 auto}
+.side-h .side-c{
+  flex:0 0 auto;
+  padding:1px 7px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:var(--panel2);
+  font-family:Consolas,monospace;
+  font-size:.72rem;
+  font-weight:600;
+}
+.side .t{display:inline}
+.side-l{
+  list-style:none;
+  margin:0;
+  padding:10px 10px 0;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.side .si{margin:0}
+.side .sl{
+  position:relative;
+  display:block;
+  padding:9px 12px;
+  border-radius:8px;
+  color:var(--dim);
+  font-size:.88rem;
+  line-height:1.7;
+  text-decoration:none;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  transition:background .15s ease,color .15s ease;
+}
+.side .sl:hover{color:var(--fg);background:var(--panel2);text-decoration:none}
+.side .sl:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.side .sl.on{
+  color:var(--acc);
+  background:rgba(76,154,255,.10);
+  font-weight:650;
+}
+.side .sl.on::before{
+  content:"";
+  position:absolute;
+  inset-block:6px;
+  inset-inline-start:0;
+  width:3px;
+  border-radius:999px;
+  background:var(--acc);
+}
+.side .n{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:1.55rem;
+  height:1.55rem;
+  padding-inline:5px;
+  margin-inline-end:8px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:var(--panel2);
+  color:var(--dim);
+  font-family:var(--mono);
+  font-size:.72rem;
+  line-height:1;
+  vertical-align:-4px;
+  unicode-bidi:embed;
+}
+.side .sl.on .n{
+  color:var(--acc);
+  border-color:rgba(76,154,255,.35);
+  background:rgba(76,154,255,.10);
+}
+.side .n:empty{display:none}
+.side .sl.home .n{display:none}
+.side.hid{transform:translateX(-100%);visibility:hidden}
+[dir="rtl"] .side.hid{transform:translateX(100%);visibility:hidden}
+.side-btn{
+  position:fixed;
+  inset-block-start:14px;
+  inset-inline-start:14px;
+  z-index:60;
+  width:34px;
+  height:34px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--panel2);
+  color:var(--dim);
+  font-size:1rem;
+  line-height:1;
+  text-decoration:none;
+  cursor:pointer;
+  transition:background .15s ease,border-color .15s ease,color .15s ease;
+}
+.side-btn:hover{
+  color:var(--acc);
+  background:var(--panel);
+  border-color:rgba(76,154,255,.45);
+  text-decoration:none;
+}
+.side-btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+@media (min-width:901px){
+  .wrap{max-width:1344px;padding-inline-start:284px}
+}
+@media (max-width:900px){
+  .wrap{padding-inline-start:0}
+  .side{
+    width:min(86vw,300px);
+    transform:translateX(-100%);
+    visibility:hidden;
+    box-shadow:0 14px 44px rgba(0,0,0,.55);
+  }
+  [dir="rtl"] .side{transform:translateX(100%)}
+  .side:not(.hid){transform:translateX(0);visibility:visible}
+  .sidebg{
+    position:fixed;
+    inset:0;
+    z-index:35;
+    background:rgba(4,7,13,.62);
+    opacity:0;
+    visibility:hidden;
+    transition:opacity .24s ease,visibility .24s ease;
+  }
+  .sidebg.on{opacity:1;visibility:visible}
+  body.sideopen{overflow:hidden}
+  body.sideopen::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:35;
+    background:rgba(4,7,13,.62);
+  }
+}
+@media (max-width:760px){
+  .wrap{padding:18px 14px 48px}
+  header{padding:18px 16px;gap:12px}
+  h1{font-size:1.35rem}
+  .grid,.docs{grid-template-columns:1fr}
+  .flow{flex-direction:column;align-items:stretch}
+  .fi+.fi::before{content:"\2193";align-self:flex-start;order:-1;margin:0 0 0 14px}
+  .barrow{flex-direction:column;align-items:stretch;gap:4px}
+  .barrow .bl{min-width:0}
+  .steps > li{padding-inline-start:2.6rem}
+}
+
+</style>
+</head>
+<body>
+<!-- ff-side -->
+<aside class="side" id="ff-side">
+<div class="side-h"><button type="button" class="side-btn" id="ff-sidebtn" aria-controls="ff-side" aria-expanded="true">☰</button><span class="side-t">الصفحات</span><span class="side-c">0</span></div>
+<ol class="side-l">
+<li class="si"><a class="sl" href="index.html"><span class="n"></span><span class="t">الرئيسية</span></a></li>
+</ol>
+</aside>
+<!-- /ff-side -->
+
+<div class="wrap">
+<header><img class="logo" src="FastFree · Agent Toolkit Audit" alt="FastFree · Agent Toolkit Audit" /><div class="hgroup"><h1>أدوات الوكلاء — Antigravity · Herdr · REA</h1><p class="sub">رد على السؤال: هل استخدمتها فعلاً؟ بحث عميق + خطة</p></div></header>
+<div class="card bad"><div class="ctitle">الإجابة الصريحة — قبل ما سألت</div><p>السؤال: هل استخدمت Antigravity و Herdr و rea.tools؟ الإجابة الصريحة أولاً — لأ، ما استخدمتهمش لحد دلوقتي. في أول 3 ساعات الشغل كان كله بـ opencode لوحده وأدواته المدمجة. بعد ما سألت، رحت بحثت وفحصت وثبّتّهم فعلاً. التفاصيل تحت.</p></div><ul><li>Antigravity (agy) — ما استخدمتوش خالص، ومعرفتش إنه مثبّت أصلاً.</li><li>Herdr — ما فهمتش إنه أنا جوا عميل multiplexer. كنت شايف pane عادي.</li><li>rea.tools — ما بحثتش فيه. كنت فاكر إنه أداة اختبار UI.</li><li>Playwright MCP — حاولت، لكن الـ browser binary مفقود.</li></ul><span class="kv">HERDR_ENV=1 · HERDR_SOCKET_PATH=~/.config/herdr/herdr.sock · HERDR_PANE_ID=wJ:p1 · binary: /home/fastfree/.nix-profile/bin/herdr · version 0.9.3</span><p>البحث كشف حاجة مهمة: Herdr عندها API للوكلاء (agent CLI) — list, prompt, wait, send-keys, read. يعني agent يقدر يشغّل agent تاني وينسق معاه. و Herdr بيعرف حالة كل agent: working / blocked / done / idle.</p><div class="card warn"><div class="ctitle">الوضع قبل ما أشغّل حاجة</div><p>herdr agent list طلعلي 2 workspaces و 3 agents، كلهم opencode. مفيش Antigravity شغال في أي pane.</p></div><div class="tw"><table><thead><tr><th>Workspace</th><th>Panes</th><th>Agent</th><th>Status</th></tr></thead><tbody><tr><td>flow up (wD)</td><td>2 panes</td><td>opencode + opencode-2</td><td>idle</td></tr><tr><td>fastfree (wJ)</td><td>1 pane</td><td>opencode (أنا)</td><td>working</td></tr></tbody></table></div><h2>2. Antigravity — شغّلته فعلاً</h2><p>الـ binary موجود في ~/.local/bin/agy (Antigravity CLI 1.3.3). Herdr بيسجله كـ agent مدعوم (kind = agy). فتحت workspace جديد باسم clan-panel-agy وبدأت فيه agent جديد.</p><ol class="steps"><li><div class="st">herdr workspace create --label clan-panel-agy</div><div class="sb">رجع workspace_id = wK مع pane wK:p1</div></li><li><div class="st">cd للمشروع ثم herdr agent start agy-1 --kind agy --pane wK:p1</div><div class="sb">رجع بـ agent_status: idle, cwd: /home/fastfree/Desktop/fastfree. Antigravity اتفتح بـ Gemini 3.8 Flash (High).</div></li><li><div class="st">herdr agent prompt</div><div class="sb">بعتّله الـ 2 bugs المفتوحين في شاشة Machines: العربي مش بيترندر، والـ hydration مش بيحصل.</div></li><li><div class="st">herdr agent send-keys — الرد على الـ permissions</div><div class="sb">وقف 3 مرات على &#39;Requesting permission&#39; (tail, ps, systemctl). Herdr بيعمل ده agent_blocked — وده بالظبط الـ use case بتاعه: تعرف الوكيل واقف محتاجك.</div></li><li><div class="st">أول lead</div><div class="sb">أول lead كان &#39;missing function tAr within MainLayout&#39;. يعني شغال صح في الكود.</div></li></ol><p>وضّحت له الـ rules: مايلمسش الـ auth guard في clan-api.ts، ومايشغّلش أي clan command بيغيّر حالة.</p><h2>3. rea.tools — ظننت إنه UI testing، لأ</h2><p>REA = Reverse Engineering for your Coding Agent. مش أداة اختبار UI. هي بتدّي الـ agent أدوات تفحص binaries و executables و websites — إزاي الشغّال، إيه الـ connections، إيه الـ strings — من غير ما يشغّل البرنامج. Providers بتاعتها: Ghidra, Hopper, IDA للـ native binaries، ومعاهم CDP browser provider للـ webpages.</p><div class="card warn"><div class="ctitle">الـ CLI موجود — 6.4.0</div><p>فحصته بـ npx rea-agents@latest doctor. النتيجة: healthy: false — مفيش registration في opencode ولا antigravity ولا gemini، ومفيش skill متسطب. يعني حتى لو ثبّته، أنا مش هقدر أستخدمه.</p></div><p>REA عندها browser guide: بتفتح Chrome بـ remote-debugging-port، وبعدين inspect-web-page على target معيّن — بترجع accessibility text + network activity + script sources. فتحت Chromium على البانل بالـ CDP وبعتّله الـ target، بس الـ observation failed لأن الـ host check بيفشل على NixOS. الـ CLI موجود والـ MCP متسطب، بس محتاج إعادة تشغيل opencode.</p><h2>4. حالة شاشة Machines دلوقتي</h2><div class="tw"><table><thead><tr><th>الجزء</th><th>الحالة</th><th>تفاصيل</th></tr></thead><tbody><tr><td>auth server-side</td><td>شغال</td><td>غير-نفس-الأصل يعدّي بدون توكن؛ توكن غلط = 401 (متأكد بالاختبار)</td></tr><tr><td>صفحة HTML</td><td>شغال</td><td>GET /machines = 200، و 17 لينك في الـ sidebar</td></tr><tr><td>الـ API</td><td>شغال</td><td>client1/2/3 جايين من clan select. ping client1 = not reachable</td></tr><tr><td>الجدول</td><td>فشل</td><td>0 صفوف — hydration مش بيحصل</td></tr><tr><td>العربي</td><td>فشل</td><td>بيطلع English</td></tr><tr><td>خطوط IBM Plex</td><td>جزئي</td><td>مش في Nix — بيرجع fallback</td></tr></tbody></table></div><h2>5. الـ gates</h2><figure class="fig"><pre><code>vue-tsc --noEmit        →  0 errors
+eslint (src*/**)      →  0 errors
+quasar build -m ssr   →  Compiled SSR Server + Client</code></pre><div class="tcap">كلهم نضاف في آخر مرة</div></figure><h2>6. الخطة</h2><div class="flow"><div class="fi"><span class="fn">1</span><span class="ft">Antigravity يكمّل الـ 2 bugs</span><span class="fd">هو شغال دلوقتي على hydration + العربي. أنا براجعه عبر herdr agent read / wait.</span></div><div class="fi"><span class="fn">2</span><span class="ft">أعيد تشغيل opencode</span><span class="fd">عشان MCP بتاع REA يبان. بعد كده أستخدم inspect-web-page على البانل.</span></div><div class="fi"><span class="fn">3</span><span class="ft">أثبّت خطوط IBM Plex</span><span class="fd">أبحث عن ibm-plex في nixpkgs أو أحمّلها local — التصميم معتمد عليها.</span></div><div class="fi"><span class="fn">4</span><span class="ft">الـ waves الباقية</span><span class="fd">Wave 2: State, Vars, VarsHealth, Secrets, Network, Backups, Generations, Inventory. Wave 3: Jobs, Machine detail, Build. Wave 4: Services, Access, Monitoring (ناقصهم outputs).</span></div></div><div class="card acc"><div class="ctitle">ملاحظة على أسلوبي</div><p>كان المفروض أستخدم الوكلاء المتعددين من الأول — المشروع أصلاً مصمم كده. وأنا اشتغلت لوحدي وقلت &#39;أبحث وأستخدم&#39; بس ما عملتش. الـ Herdr env vars اللي طلعوا معايا كان مفروض تفتح عيني من الأول: معناها كنت داخل orchestrator أصلاً.</p></div>
+
+</div>
+<script>
+(function(){
+var nodes=document.querySelectorAll('.path');
+if(!nodes.length){return;}
+for(var i=0;i<nodes.length;i++){
+(function(node){
+node.addEventListener('click',function(){
+var a=document.getElementById(node.getAttribute('data-target-a')||'');
+var b=document.getElementById(node.getAttribute('data-target-b')||'');
+if(a){a.classList.toggle('hidden');}
+if(b){b.classList.toggle('hidden');}
+});
+})(nodes[i]);
+}
+})();
+(function(){
+function boot(){
+var side=document.getElementById('ff-side');
+if(!side){return;}
+var btn=document.getElementById('ff-sidebtn');
+var KEY='ff-side-collapsed';
+var HID='hid';
+function read(){try{return window.localStorage.getItem(KEY)==='1';}catch(e){return false;}}
+function write(v){try{window.localStorage.setItem(KEY,v?'1':'0');}catch(e){}}
+function apply(collapsed){
+if(collapsed){side.classList.add(HID);}else{side.classList.remove(HID);}
+if(btn){btn.setAttribute('aria-expanded',collapsed?'false':'true');}
+}
+apply(read());
+if(btn){
+btn.addEventListener('click',function(){
+var collapsed=!side.classList.contains(HID);
+apply(collapsed);
+write(collapsed);
+});
+}
+}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}else{boot();}
+})();
+</script>
+</body>
+</html>

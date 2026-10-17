@@ -23,6 +23,7 @@
     ../../modules/mariadb.nix
     ../../modules/caddy.nix
     ../../modules/fastfree_backend.nix
+    ../../modules/fastfree_panel.nix
     ../../modules/fastfree_ledger.nix
     ../../modules/fastfree_erp.nix
     ../../modules/fastfree_hr.nix

@@ -1,0 +1,26 @@
+{
+  "name": "@fastfree/clan-panel-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Private Node API backend for the Fastfree Clan Panel. Never exposed to the public internet.",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.0",
+    "hono": "^4.12.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

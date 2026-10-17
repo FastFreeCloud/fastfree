@@ -1,0 +1,24 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+{
+    "client1": [
+        "hyperv",
+        "server",
+        "fastfree",
+        "all",
+        "nixos"
+    ],
+    "client2": [
+        "vps",
+        "server",
+        "fastfree",
+        "all",
+        "nixos"
+    ],
+    "client3": [
+        "local",
+        "never-install",
+        "fastfree",
+        "all",
+        "nixos"
+    ]
+}

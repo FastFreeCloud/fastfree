@@ -3,3 +3,5 @@ try {
 } catch {
   // Cairo font not installed — consumer must add @fontsource-variable/cairo
 }
+
+export {}

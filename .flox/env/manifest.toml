@@ -20,7 +20,8 @@ gh.pkg-path = "gh"
 ##      as well as [hook], [profile] scripts and [services] below.
 ## -------------------------------------------------------------------
 [vars]
-# INTRO_MESSAGE = "It's gettin' Flox in here"
+CLAN_DIR = "${FLOX_ENV_PROJECT}/apps/fastfree_os"
+CLAN_PANEL_TOKEN = "dev-token"
 
 
 ## Activation Hook ---------------------------------------------------
@@ -29,6 +30,19 @@ gh.pkg-path = "gh"
 [hook]
 on-activate = """
 echo "FastFree env activated"
+# `clan` is a Nix flake package, not a FloxHub package, so it cannot be listed
+# under [install]. Resolve it once per activation and put it on PATH; the
+# panel's backend falls back to a bare `clan` lookup when CLAN_BINARY is unset.
+if ! command -v clan >/dev/null 2>&1; then
+  CLAN_BIN="$(nix develop "$FLOX_ENV_PROJECT/apps/fastfree_os" --command which clan 2>/dev/null | tail -1)"
+  if [ -n "$CLAN_BIN" ]; then
+    export CLAN_BINARY="$CLAN_BIN"
+    export PATH="$(dirname "$CLAN_BIN"):$PATH"
+    echo "clan: $CLAN_BIN"
+  else
+    echo "warning: clan not found — the panel backend will not be able to run clan" >&2
+  fi
+fi
 """
 
 

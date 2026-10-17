@@ -1,0 +1,60 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+{
+    "client1": {
+        "deploy": {
+            "buildHost": null,
+            "forwardAgent": null,
+            "targetHost": null
+        },
+        "description": null,
+        "icon": null,
+        "installedAt": null,
+        "machineClass": "nixos",
+        "name": "client1",
+        "tags": [
+            "hyperv",
+            "server",
+            "fastfree",
+            "all",
+            "nixos"
+        ]
+    },
+    "client2": {
+        "deploy": {
+            "buildHost": "localhost",
+            "forwardAgent": null,
+            "targetHost": "root@fastfree.cloud"
+        },
+        "description": null,
+        "icon": null,
+        "installedAt": null,
+        "machineClass": "nixos",
+        "name": "client2",
+        "tags": [
+            "vps",
+            "server",
+            "fastfree",
+            "all",
+            "nixos"
+        ]
+    },
+    "client3": {
+        "deploy": {
+            "buildHost": null,
+            "forwardAgent": null,
+            "targetHost": null
+        },
+        "description": null,
+        "icon": null,
+        "installedAt": null,
+        "machineClass": "nixos",
+        "name": "client3",
+        "tags": [
+            "local",
+            "never-install",
+            "fastfree",
+            "all",
+            "nixos"
+        ]
+    }
+}

@@ -1,0 +1,28 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+· service: fastfree-backend
+  folders:
+  - /var/lib/containers/storage/volumes/fastfree-backend-sites/_data
+  - /var/lib/containers/storage/volumes/fastfree-backend-logs/_data
+  preRestoreCommand: pre-restore-fastfree-backend
+  postRestoreCommand: post-restore-fastfree-backend
+
+· service: grafana
+  folders:
+  - /var/backup/postgres/grafana
+  preBackupCommand: pre-backup-grafana
+  postRestoreCommand: post-restore-grafana
+
+· service: mariadb
+  folders:
+  - /var/lib/mysql
+  - /var/lib/mariadb-dump
+  preBackupCommand: pre-backup-mariadb
+  postBackupCommand: post-backup-mariadb
+  preRestoreCommand: pre-restore-mariadb
+  postRestoreCommand: post-restore-mariadb
+
+· service: monitoring
+  folders:
+  - /var/lib/mimir
+  - /var/lib/loki
+

@@ -30,6 +30,7 @@ in
     ../../modules/mariadb.nix
     ../../modules/caddy.nix
     ../../modules/fastfree_backend.nix
+    ../../modules/fastfree_panel.nix
     ../../modules/fastfree_ledger.nix
     ../../modules/fastfree_erp.nix
     ../../modules/fastfree_hr.nix
@@ -81,7 +82,7 @@ in
   users.users."fastfree" = {
     isNormalUser = true;
     description = "mohamed";
-    extraGroups = [ "networkmanager" "wheel" "podman" ];
+    extraGroups = [ "networkmanager" "wheel" ];
   };
 
   # ── Locale extras ──

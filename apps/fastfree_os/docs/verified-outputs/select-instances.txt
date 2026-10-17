@@ -1,0 +1,465 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+{
+    "borgbackup": {
+        "module": {
+            "input": "clan-core",
+            "name": "borgbackup"
+        },
+        "roles": {
+            "client": {
+                "extraModules": [],
+                "machines": {
+                    "client1": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.borgbackup.roles.client.machines.client1.settings",
+                                    "imports": [
+                                        {}
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "client2": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.borgbackup.roles.client.machines.client2.settings",
+                                    "imports": [
+                                        {}
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "client3": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/bkw45j2d3mcgmrijxhjh5ynfvkg421j2-source/apps/fastfree_os/clan.nix, via option inventory.instances.borgbackup.roles.client.machines.client3.settings",
+                                    "imports": [
+                                        {
+                                            "destinations": {
+                                                "local": {
+                                                    "repo": "/var/lib/backups/client3"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "settings": {
+                    "imports": [
+                        {
+                            "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.borgbackup.roles.client.settings",
+                            "imports": [
+                                {}
+                            ]
+                        }
+                    ]
+                },
+                "tags": {}
+            },
+            "server": {
+                "extraModules": [],
+                "machines": {
+                    "client2": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/bkw45j2d3mcgmrijxhjh5ynfvkg421j2-source/apps/fastfree_os/clan.nix, via option inventory.instances.borgbackup.roles.server.machines.client2.settings",
+                                    "imports": [
+                                        {
+                                            "address": "fastfree.cloud",
+                                            "directory": "/var/lib/borgbackup"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "settings": {
+                    "imports": [
+                        {
+                            "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.borgbackup.roles.server.settings",
+                            "imports": [
+                                {}
+                            ]
+                        }
+                    ]
+                },
+                "tags": {}
+            }
+        }
+    },
+    "clan-cache": {
+        "module": {
+            "input": "clan-core",
+            "name": "trusted-nix-caches"
+        },
+        "roles": {
+            "default": {
+                "extraModules": [],
+                "machines": {
+                    "client1": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.clan-cache.roles.default.machines.client1.settings",
+                                    "imports": [
+                                        {}
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "client2": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.clan-cache.roles.default.machines.client2.settings",
+                                    "imports": [
+                                        {}
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "client3": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.clan-cache.roles.default.machines.client3.settings",
+                                    "imports": [
+                                        {}
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "settings": {
+                    "imports": [
+                        {
+                            "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.clan-cache.roles.default.settings",
+                            "imports": [
+                                {}
+                            ]
+                        }
+                    ]
+                },
+                "tags": {}
+            }
+        }
+    },
+    "emergency-access": {
+        "module": {
+            "input": "clan-core",
+            "name": "emergency-access"
+        },
+        "roles": {
+            "default": {
+                "extraModules": [],
+                "machines": {
+                    "client1": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.emergency-access.roles.default.machines.client1.settings",
+                                    "imports": [
+                                        {}
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "client2": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.emergency-access.roles.default.machines.client2.settings",
+                                    "imports": [
+                                        {}
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "settings": {
+                    "imports": [
+                        {
+                            "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.emergency-access.roles.default.settings",
+                            "imports": [
+                                {}
+                            ]
+                        }
+                    ]
+                },
+                "tags": {}
+            }
+        }
+    },
+    "monitoring": {
+        "module": {
+            "input": "clan-core",
+            "name": "monitoring"
+        },
+        "roles": {
+            "client": {
+                "extraModules": [],
+                "machines": {},
+                "settings": {
+                    "imports": [
+                        {
+                            "_file": "/nix/store/bkw45j2d3mcgmrijxhjh5ynfvkg421j2-source/apps/fastfree_os/clan.nix, via option inventory.instances.monitoring.roles.client.settings",
+                            "imports": [
+                                {
+                                    "useSSL": false
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "tags": {
+                    "all": {}
+                }
+            },
+            "server": {
+                "extraModules": [],
+                "machines": {
+                    "client2": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/bkw45j2d3mcgmrijxhjh5ynfvkg421j2-source/apps/fastfree_os/clan.nix, via option inventory.instances.monitoring.roles.server.machines.client2.settings",
+                                    "imports": [
+                                        {
+                                            "grafana": {
+                                                "enable": true
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "settings": {
+                    "imports": [
+                        {
+                            "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.monitoring.roles.server.settings",
+                            "imports": [
+                                {}
+                            ]
+                        }
+                    ]
+                },
+                "tags": {}
+            }
+        }
+    },
+    "sshd": {
+        "module": {
+            "input": null,
+            "name": "sshd"
+        },
+        "roles": {
+            "server": {
+                "extraModules": [],
+                "machines": {
+                    "client2": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/bkw45j2d3mcgmrijxhjh5ynfvkg421j2-source/apps/fastfree_os/clan.nix, via option inventory.instances.sshd.roles.server.machines.client2.settings",
+                                    "imports": [
+                                        {
+                                            "authorizedKeys": {
+                                                "client2-deploy": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILA5GRXOSiMnQEib+pXSH9CU10ujSc4qX8/GjblJKgM7 client2-deploy",
+                                                "client3-admin": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGszztIACEpNLDgPR0IH7HdNCU6hEbIP8WG7ssMXKPwg fastfree@client3"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "settings": {
+                    "imports": [
+                        {
+                            "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.sshd.roles.server.settings",
+                            "imports": [
+                                {}
+                            ]
+                        }
+                    ]
+                },
+                "tags": {
+                    "all": {}
+                }
+            }
+        }
+    },
+    "user-fastfree": {
+        "module": {
+            "input": null,
+            "name": "users"
+        },
+        "roles": {
+            "default": {
+                "extraModules": [],
+                "machines": {
+                    "client3": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.user-fastfree.roles.default.machines.client3.settings",
+                                    "imports": [
+                                        {}
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "settings": {
+                    "imports": [
+                        {
+                            "_file": "/nix/store/bkw45j2d3mcgmrijxhjh5ynfvkg421j2-source/apps/fastfree_os/clan.nix, via option inventory.instances.user-fastfree.roles.default.settings",
+                            "imports": [
+                                {
+                                    "groups": [
+                                        "networkmanager",
+                                        "wheel",
+                                        "podman"
+                                    ],
+                                    "prompt": false,
+                                    "user": "fastfree"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "tags": {}
+            }
+        }
+    },
+    "user-root": {
+        "module": {
+            "input": null,
+            "name": "users"
+        },
+        "roles": {
+            "default": {
+                "extraModules": [],
+                "machines": {},
+                "settings": {
+                    "imports": [
+                        {
+                            "_file": "/nix/store/bkw45j2d3mcgmrijxhjh5ynfvkg421j2-source/apps/fastfree_os/clan.nix, via option inventory.instances.user-root.roles.default.settings",
+                            "imports": [
+                                {
+                                    "prompt": false,
+                                    "user": "root"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "tags": {
+                    "all": {}
+                }
+            }
+        }
+    },
+    "wireguard": {
+        "module": {
+            "input": "clan-core",
+            "name": "wireguard"
+        },
+        "roles": {
+            "controller": {
+                "extraModules": [],
+                "machines": {
+                    "client2": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/bkw45j2d3mcgmrijxhjh5ynfvkg421j2-source/apps/fastfree_os/clan.nix, via option inventory.instances.wireguard.roles.controller.machines.client2.settings",
+                                    "imports": [
+                                        {
+                                            "endpoint": "fastfree.cloud",
+                                            "port": 51821
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "settings": {
+                    "imports": [
+                        {
+                            "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.wireguard.roles.controller.settings",
+                            "imports": [
+                                {}
+                            ]
+                        }
+                    ]
+                },
+                "tags": {}
+            },
+            "peer": {
+                "extraModules": [],
+                "machines": {
+                    "client1": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/bkw45j2d3mcgmrijxhjh5ynfvkg421j2-source/apps/fastfree_os/clan.nix, via option inventory.instances.wireguard.roles.peer.machines.client1.settings",
+                                    "imports": [
+                                        {
+                                            "port": 51821
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "client3": {
+                        "settings": {
+                            "imports": [
+                                {
+                                    "_file": "/nix/store/bkw45j2d3mcgmrijxhjh5ynfvkg421j2-source/apps/fastfree_os/clan.nix, via option inventory.instances.wireguard.roles.peer.machines.client3.settings",
+                                    "imports": [
+                                        {
+                                            "port": 51821
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "settings": {
+                    "imports": [
+                        {
+                            "_file": "/nix/store/h93sjrr9aplfmg6bii0z3950xpacipy9-source/modules/inventoryClass/inventory.nix, via option inventory.instances.wireguard.roles.peer.settings",
+                            "imports": [
+                                {}
+                            ]
+                        }
+                    ]
+                },
+                "tags": {}
+            }
+        }
+    }
+}

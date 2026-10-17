@@ -1,6 +1,16 @@
 name: 05-website
 
 on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'apps/fastfree_website/**'
+      - '.github/workflows/05-website.yaml'
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'apps/fastfree_website/**'
+      - '.github/workflows/05-website.yaml'
   workflow_dispatch:
 
 concurrency:
@@ -9,17 +19,14 @@ concurrency:
 
 env:
   NODE_OPTIONS: "--no-deprecation"
-  REGISTRY: ghcr.io
-  IMAGE_PREFIX: ghcr.io/fastfreecloud/fastfree_website
 
 jobs:
-  lint-and-build:
-    name: "1. Lint and Build"
+  validate-and-build:
+    name: "1. Validate and Build Website"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     permissions:
       contents: read
-      packages: write
     steps:
       - name: "1. Safe directory"
         run: git config --global safe.directory '*'
@@ -48,80 +55,16 @@ jobs:
           dir: .
           command: cd apps/fastfree_website && npm run lint
 
-      - name: "7. Install Nix"
-        uses: cachix/install-nix-action@v31
+      - name: "7. Build Next.js app"
+        uses: flox/activate-action@v1
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            accept-flake-config = true
-
-      - name: "8. Install skopeo"
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/google-chrome.list || true
-          sudo apt-get update || true
-          sudo apt-get install -y skopeo
-
-      - name: "9. Build frontend image"
-        working-directory: apps/fastfree_website
-        run: nix build .#frontendImage -o frontend-image --print-build-logs --extra-experimental-features 'nix-command flakes'
-
-      - name: "10. Login to GHCR"
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: "11. Ensure GHCR package exists"
-        continue-on-error: true
-        run: |
-          PKG="fastfree_website"
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/users/${{ github.repository_owner }}/packages/container/${PKG}")
-          if [ "$HTTP_CODE" = "404" ]; then
-            echo "Package not found — creating as public..."
-            curl -s -X POST \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Accept: application/vnd.github+json" \
-              "https://api.github.com/user/packages/container/${PKG}" \
-              -d '{"visibility": "public"}' || echo "create failed — may already exist"
-          elif [ "$HTTP_CODE" = "200" ]; then
-            echo "Package exists"
-          else
-            echo "Unexpected response: $HTTP_CODE"
-          fi
-
-      - name: "12. Save frontend image to tarball"
-        working-directory: apps/fastfree_website
-        run: ./frontend-image > frontend-image.tar
-
-      - name: "13. Push frontend image (latest)"
-        working-directory: apps/fastfree_website
-        env:
-          SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
-        run: |
-          skopeo copy \
-            --dest-creds "$SKOPEO_DEST_CREDS" \
-            docker-archive:frontend-image.tar \
-            docker://${{ env.IMAGE_PREFIX }}:latest
-
-      - name: "14. Push frontend image (sha)"
-        working-directory: apps/fastfree_website
-        env:
-          SKOPEO_DEST_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
-        run: |
-          skopeo copy \
-            --dest-creds "$SKOPEO_DEST_CREDS" \
-            docker-archive:frontend-image.tar \
-            docker://${{ env.IMAGE_PREFIX }}:${{ github.sha }}
+          dir: .
+          command: cd apps/fastfree_website && npm run build
 
   release:
     name: "2. Release"
-    needs: [lint-and-build]
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    needs: [validate-and-build]
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -166,4 +109,3 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }}
           generate_release_notes: true
-

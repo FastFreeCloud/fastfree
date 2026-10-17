@@ -1,0 +1,4 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+Network       Priority  Module      Running   Peers
+---------------------------------------------------
+wireguard     1000      direct      Yes       client2, client1, client3

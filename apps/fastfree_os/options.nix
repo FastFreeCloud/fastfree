@@ -41,6 +41,7 @@
       mariadb      = lib.mkEnableOption "MariaDB database server";
       caddy        = lib.mkEnableOption "Caddy reverse proxy";
       fastfree_backend = lib.mkEnableOption "FastFree Backend (Frappe/ERPNext)";
+      fastfree_panel   = lib.mkEnableOption "FastFree Clan Panel (Native Service + Caddy SPA)";
       fastfree_ledger  = lib.mkEnableOption "FastFree Ledger (Accounting + Inventory)";
       fastfree_erp     = lib.mkEnableOption "FastFree ERP (Full Enterprise Resource Planning)";
       fastfree_hr      = lib.mkEnableOption "FastFree HR (Human Resources + CRM)";
@@ -61,7 +62,12 @@
       panel = lib.mkOption {
         type = lib.types.str;
         default = "panel";
-        description = "Cockpit panel subdomain prefix.";
+        description = "FastFree Clan Panel subdomain prefix.";
+      };
+      cockpit = lib.mkOption {
+        type = lib.types.str;
+        default = "cockpit";
+        description = "Cockpit server management subdomain prefix.";
       };
     };
 

@@ -63,6 +63,15 @@ export default defineConfig((ctx) => {
           tsConfig.compilerOptions.paths['quasar-app-extension-fastfree-lowcode/src/runtime/*'] = [
             '../../../packages/fastfree_lowcode/src/runtime/*',
           ]
+          tsConfig.compilerOptions.paths['quasar-app-extension-fastfree-lowcode'] = [
+            '../../../packages/fastfree_lowcode/src/runtime/index.ts',
+          ]
+          tsConfig.compilerOptions.paths['quasar-app-extension-fastfree-lowcode/runtime'] = [
+            '../../../packages/fastfree_lowcode/src/runtime/index.ts',
+          ]
+          tsConfig.compilerOptions.paths['quasar-app-extension-fastfree-lowcode/*'] = [
+            '../../../packages/fastfree_lowcode/src/runtime/*',
+          ]
           tsConfig.compilerOptions.paths['fastfree-auth'] = [
             '../../../packages/fastfree_auth/src/index.ts',
           ]

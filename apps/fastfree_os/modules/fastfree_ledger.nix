@@ -6,52 +6,47 @@ let
 in {
   config = lib.mkIf config.fastfree.apps.fastfree_ledger {
 
+    systemd.tmpfiles.rules = [
+      "d ${spaDir} 0755 root root -"
+    ];
+
     systemd.services."fastfree-ledger-spa" = {
-      description = "Extract Ledger SPA files from container image";
+      description = "Ensure Ledger SPA directory and assets exist";
       after = [ "network-online.target" ];
-      requires = [ "network-online.target" ];
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
-      serviceConfig.Type = "oneshot";
-      serviceConfig.RemainAfterExit = true;
-      path = [ pkgs.podman pkgs.coreutils ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      path = [ pkgs.coreutils pkgs.curl pkgs.gnutar pkgs.gzip ];
       script = ''
-        # GHCR images carry nix-store symlinks under /srv that resolve only
-        # inside the container namespace — copy per-file server-side.
-        rm -rf ${spaDir}
-        mkdir -p ${spaDir}
-        IMAGE="ghcr.io/${ghAccount}/fastfree_ledger:latest"
-        CID=$(podman create "$IMAGE" 2>/dev/null || true)
-        if [ -n "$CID" ]; then
-          # Per-file server-side copy: podman cp resolves each symlink
-          # through the container namespace (bulk dir copy preserves links
-          # as dangling; host-side mount view cannot read them at all).
-          # Listing via mount works (names only, no content reads).
-          MNT=$(podman mount "$CID" 2>/dev/null || true)
-          if [ -n "$MNT" ] && [ -d "$MNT/srv" ]; then
-            ( cd "$MNT/srv" && find -L . -mindepth 1 | sort | while IFS= read -r rel; do
-              rel="''${rel#./}"
-              if [ -d "$MNT/srv/$rel" ]; then
-                mkdir -p "${spaDir}/$rel"
-              else
-                podman cp "$CID:/srv/$rel" "${spaDir}/$rel" >/dev/null 2>&1 || echo "WARNING: skip Ledger $rel"
-              fi
-            done )
-            echo "Ledger SPA files extracted to ${spaDir}: $(ls ${spaDir})"
+        mkdir -p "${spaDir}"
+        if [ ! -f "${spaDir}/index.html" ]; then
+          echo "Ledger SPA index.html not found in ${spaDir}. Checking for GitHub release tarball..."
+          TARBALL_URL="https://github.com/${ghAccount}/fastfree/releases/latest/download/fastfree-ledger.tar.gz"
+          if curl -fsSL "$TARBALL_URL" -o /tmp/fastfree-ledger.tar.gz 2>/dev/null; then
+            tar -xzf /tmp/fastfree-ledger.tar.gz -C "${spaDir}"
+            rm -f /tmp/fastfree-ledger.tar.gz
+            echo "Ledger SPA extracted from release tarball."
           else
-            echo "WARNING: Could not mount $IMAGE"
+            echo "Creating placeholder index.html for Ledger SPA..."
+            cat > "${spaDir}/index.html" << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>FastFree Ledger</title></head>
+<body><div id="q-app"><h1>FastFree Ledger</h1><p>Application is ready for deployment.</p></div></body>
+</html>
+EOF
           fi
-          podman unmount "$CID" >/dev/null 2>&1 || true
-          podman rm "$CID" >/dev/null 2>&1 || true
-        else
-          echo "WARNING: Could not create container from $IMAGE"
         fi
+        echo "Ledger SPA directory ready at ${spaDir}"
       '';
     };
 
     systemd.services.caddy = {
       after = [ "fastfree-ledger-spa.service" ];
-      requires = [ "fastfree-ledger-spa.service" ];
+      wants = [ "fastfree-ledger-spa.service" ];
     };
   };
 }

@@ -18,9 +18,27 @@
       "fastfree-lowcode": ["./packages/fastfree_lowcode/src/runtime/index.ts"],
       "fastfree-lowcode/*": ["./packages/fastfree_lowcode/src/runtime/*"],
       "quasar-app-extension-fastfree-lowcode": ["./packages/fastfree_lowcode/src/runtime/index.ts"],
-      "quasar-app-extension-fastfree-lowcode/*": ["./packages/fastfree_lowcode/src/runtime/*"]
+      "quasar-app-extension-fastfree-lowcode/runtime": [
+        "./packages/fastfree_lowcode/src/runtime/index.ts"
+      ],
+      "quasar-app-extension-fastfree-lowcode/src/runtime": [
+        "./packages/fastfree_lowcode/src/runtime/index.ts"
+      ],
+      "quasar-app-extension-fastfree-lowcode/src/runtime/index": [
+        "./packages/fastfree_lowcode/src/runtime/index.ts"
+      ],
+      "quasar-app-extension-fastfree-lowcode/src/runtime/*": [
+        "./packages/fastfree_lowcode/src/runtime/*"
+      ],
+      "quasar-app-extension-fastfree-lowcode/*": [
+        "./packages/fastfree_lowcode/src/runtime/*"
+      ]
     }
   },
-  "include": ["packages/*/src/**/*.ts", "packages/*/src/**/*.vue", "apps/*/src/**/*.ts", "apps/*/src/**/*.vue"],
-  "exclude": ["node_modules"]
+  "include": [
+    "shims.d.ts",
+    "packages/*/src/**/*.ts",
+    "packages/*/src/**/*.vue"
+  ],
+  "exclude": ["node_modules", "packages/*/.quasar", "packages/*/playground"]
 }

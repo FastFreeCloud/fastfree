@@ -1,0 +1,35 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+usage: clan [-h] [SUBCOMMAND] machines generations [-h]
+                                                   [--tags TAGS [TAGS ...]]
+                                                   [--host-key-check {strict,ask,accept-new,tofu,none}]
+                                                   [--target-host TARGET_HOST]
+                                                   [--skip-outdated-check]
+                                                   [--debug]
+                                                   [--option name value]
+                                                   [--flake PATH]
+                                                   [MACHINE ...]
+
+list generations of machines
+
+positional arguments:
+  MACHINE               Machine to update. If no machines are specified, all machines that don't require explicit updates will be updated.
+
+options:
+  -h, --help            show this help message and exit
+  --tags TAGS [TAGS ...]
+                        Tags that machines should be queried for. Multiple tags will intersect.
+  --host-key-check {strict,ask,accept-new,tofu,none}
+                        Host key (.ssh/known_hosts) check mode. (default: ask)
+  --target-host TARGET_HOST
+                        Address of the machine to update, in the format of user@host:1234.
+  --skip-outdated-check
+                        Skip checking if the current generation is outdated (faster).
+  --debug               Enable debug logging
+  --option name value   Nix option to set
+  --flake PATH          path to the flake where the clan resides in, can be a remote flake or local, can be set through the [CLAN_DIR] environment variable
+
+  List NixOS generations of the machine.
+  The generations are the different versions of the machine that are installed on the target host.
+  Examples:
+  $ clan generations [MACHINE]
+            

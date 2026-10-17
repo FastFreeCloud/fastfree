@@ -1,0 +1,10 @@
+# The root pnpm workspace only globs `apps/*`, so this backend is not a member
+# of the monorepo and would otherwise have no node_modules of its own. Declaring
+# it a nested workspace keeps its dependency install self-contained and prevents
+# the monorepo install from reaching in here.
+packages:
+  - '.'
+
+allowBuilds:
+  # tsx depends on esbuild; the postinstall fetches the platform binary.
+  esbuild: true

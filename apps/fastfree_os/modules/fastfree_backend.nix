@@ -6,11 +6,46 @@ let
   dbRootPassFile = config.clan.core.vars.generators.mariadb-root.files.password.path;
   dbUserPassFile = config.clan.core.vars.generators.fastfree-backend.files.db-password.path;
   frappeAdminPassFile = config.clan.core.vars.generators.fastfree-backend.files.admin-password.path;
+  siteName = "backend.${config.fastfree.identity.domain}";
+
+  # Native FHS runtime environment for Frappe Bench
+  frappeFHS = pkgs.buildFHSEnv {
+    name = "frappe-env";
+    targetPkgs = pkgs: (with pkgs; [
+      python311
+      python311Packages.pip
+      python311Packages.virtualenv
+      python311Packages.setuptools
+      python311Packages.wheel
+      nodejs_22
+      git
+      mariadb
+      mariadb-connector-c
+      gcc
+      gnumake
+      pkg-config
+      libffi
+      openssl
+      zlib
+      redis
+      curl
+      gnused
+      gawk
+      coreutils
+      bash
+      which
+      patch
+      stdenv.cc.cc.lib
+      procps
+      findutils
+      jq
+    ]);
+    runScript = "bash";
+  };
 in {
   config = lib.mkIf config.fastfree.apps.fastfree_backend {
 
     # ── Secrets (Clan vars generators, no prompts) ──────────
-    # Needs apps.mariadb on the same machine (root password generator).
     clan.core.vars.generators.fastfree-backend = {
       files.db-password.secret = true;
       files.db-password.neededFor = "services";
@@ -23,27 +58,74 @@ in {
       '';
     };
 
-    # ── State for borgbackup: frappe sites + logs volumes ──
-    # /srv/* SPAs are deliberately NOT state (reproducible from GHCR images).
+    # ── Native Redis Services ──────────────────────────────
+    services.redis.servers."fastfree-redis-cache" = {
+      enable = true;
+      bind = "127.0.0.1";
+      port = 11000;
+    };
+
+    services.redis.servers."fastfree-redis-queue" = {
+      enable = true;
+      bind = "127.0.0.1";
+      port = 11001;
+    };
+
+    # ── Dedicated System User & Group ──────────────────────
+    users.users.frappe = {
+      isSystemUser = true;
+      group = "frappe";
+      home = "/var/lib/frappe";
+      createHome = true;
+      description = "Frappe Bench system user";
+      shell = "${pkgs.bash}/bin/bash";
+    };
+
+    users.groups.frappe = {};
+
+    # Allow Caddy to access Frappe sites assets
+    users.users.caddy.extraGroups = lib.mkIf config.fastfree.apps.caddy [ "frappe" ];
+
+    # ── Runtime dynamic linker support (nix-ld) ────────────
+    programs.nix-ld.enable = true;
+    programs.nix-ld.libraries = with pkgs; [
+      stdenv.cc.cc.lib
+      zlib
+      openssl
+      libffi
+      mariadb-connector-c
+      mariadb
+      curl
+    ];
+
+    # ── State for borgbackup: frappe sites directly ────────
     clan.core.state."fastfree-backend" = {
       folders = [
-        "/var/lib/containers/storage/volumes/fastfree-backend-sites/_data"
-        "/var/lib/containers/storage/volumes/fastfree-backend-logs/_data"
+        "/var/lib/frappe/frappe-bench/sites"
       ];
-      # Restore safety: stop backend containers while files are replaced.
       preRestoreScript = ''
-        systemctl stop 'podman-fastfree-backend-*' 2>/dev/null || true
+        systemctl stop fastfree-backend-web.service fastfree-backend-websocket.service fastfree-backend-worker-short.service fastfree-backend-worker-long.service fastfree-backend-scheduler.service 2>/dev/null || true
       '';
       postRestoreScript = ''
-        systemctl start 'podman-fastfree-backend-*' 2>/dev/null || true
+        systemctl start fastfree-backend-web.service fastfree-backend-websocket.service fastfree-backend-worker-short.service fastfree-backend-worker-long.service fastfree-backend-scheduler.service 2>/dev/null || true
       '';
     };
+
+    # ── Ensure directory permissions ───────────────────────
+    systemd.tmpfiles.rules = [
+      "d /var/lib/frappe 0755 frappe frappe -"
+      "d /var/lib/frappe/frappe-bench 0755 frappe frappe -"
+      "d /var/lib/frappe/frappe-bench/sites 0755 frappe frappe -"
+      "d /var/lib/frappe/frappe-bench/logs 0755 frappe frappe -"
+      "d /var/lib/frappe/frappe-bench/config 0755 frappe frappe -"
+      "d /var/lib/fastfree/backups 0750 root root -"
+    ];
 
     # ── 1. Create fastfree_backend DB + user ────────────────
     systemd.services."fastfree-backend-db" = {
       description = "Create FastFree Backend database and user in MariaDB";
       after       = [ "mysql.service" ];
-      before      = [ "podman-fastfree-backend-app.service" ];
+      before      = [ "fastfree-backend-setup.service" ];
       wantedBy    = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
@@ -62,12 +144,12 @@ in {
         ROOT_PASS=$(cat "${dbRootPassFile}")
         USER_PASS=$(cat "${dbUserPassFile}")
         ${config.services.mysql.package}/bin/mysql <<SQL
-          CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$ROOT_PASS');
-          GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+          CREATE USER IF NOT EXISTS 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$ROOT_PASS');
+          GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;
           FLUSH PRIVILEGES;
           CREATE DATABASE IF NOT EXISTS fastfree_backend;
-          CREATE USER IF NOT EXISTS 'fastfree_backend'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$USER_PASS');
-          GRANT ALL PRIVILEGES ON fastfree_backend.* TO 'fastfree_backend'@'%';
+          CREATE USER IF NOT EXISTS 'fastfree_backend'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$USER_PASS');
+          GRANT ALL PRIVILEGES ON fastfree_backend.* TO 'fastfree_backend'@'localhost';
           FLUSH PRIVILEGES;
         SQL
       '';
@@ -77,20 +159,20 @@ in {
     systemd.services."fastfree-backend-mysql-user" = {
       description = "Ensure Frappe MySQL user exists and password matches site_config.json";
       after       = [ "mysql.service" "fastfree-backend-setup.service" ];
-      before      = [ "podman-fastfree-backend-app.service" ];
+      before      = [ "fastfree-backend-web.service" ];
       wantedBy    = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
       };
-      path = [ pkgs.podman pkgs.coreutils pkgs.gnused ];
-      script = let siteName = "backend.${config.fastfree.identity.domain}"; in ''
+      path = [ pkgs.coreutils pkgs.gnused ];
+      script = ''
         for i in $(seq 1 30); do
           if ${config.services.mysql.package}/bin/mysqladmin ping -h localhost --silent 2>/dev/null; then break; fi
           sleep 1
         done
 
-        SITE_CFG="/var/lib/containers/storage/volumes/fastfree-backend-sites/_data/${siteName}/site_config.json"
+        SITE_CFG="/var/lib/frappe/frappe-bench/sites/${siteName}/site_config.json"
         if [ ! -f "$SITE_CFG" ]; then
           echo "[mysql-user] site_config.json not found — skipping"
           exit 0
@@ -105,81 +187,28 @@ in {
         fi
 
         echo "[mysql-user] Ensuring user $FRAPPE_DB_NAME exists with correct password..."
-        echo "[mysql-user] NOTE: database creation is bench new-site's job — never create an empty DB here."
-
-        SQL="DROP USER IF EXISTS '$FRAPPE_DB_NAME'@'%'; DROP USER IF EXISTS '$FRAPPE_DB_NAME'@'localhost'; CREATE USER '$FRAPPE_DB_NAME'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS'); CREATE USER '$FRAPPE_DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS'); GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'%'; GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'localhost'; FLUSH PRIVILEGES;"
+        SQL="DROP USER IF EXISTS '$FRAPPE_DB_NAME'@'localhost'; CREATE USER '$FRAPPE_DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS'); GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'localhost'; FLUSH PRIVILEGES;"
 
         ROOT_PW=$(cat "${dbRootPassFile}")
         ${config.services.mysql.package}/bin/mysql --user=root --password="$ROOT_PW" -e "$SQL" 2>&1 && echo "[mysql-user] Done." || echo "[mysql-user] FAILED"
       '';
     };
 
-    # ── 2. Ensure fastfree-net network exists with DNS ──
-    systemd.services."fastfree-backend-network" = {
-      description = "Create fastfree-net podman network with DNS for backend containers";
-      wantedBy = [ "multi-user.target" ];
-      before = [
-        "podman-fastfree-backend-app.service"
-        "podman-fastfree-backend-frontend.service"
-        "podman-fastfree-backend-websocket.service"
-        "podman-fastfree-backend-queue-short.service"
-        "podman-fastfree-backend-queue-long.service"
-        "podman-fastfree-backend-scheduler.service"
-      ];
-      serviceConfig.Type = "oneshot";
-      script = ''
-        # Destroy and recreate network with DNS
-        # NOTE: podman's default network already uses 10.89.0.0/24 —
-        # a colliding subnet fails silently and breaks every container.
-        ${pkgs.podman}/bin/podman network rm fastfree-net 2>/dev/null || true
-        ${pkgs.podman}/bin/podman network create \
-          --driver bridge \
-          --subnet 10.90.0.0/24 \
-          --dns 10.90.0.1 \
-          fastfree-net 2>/dev/null || true
-        # Enable DNS on the network (podman 4+ supports this via network reload)
-        ${pkgs.podman}/bin/podman network reload fastfree-net 2>/dev/null || true
-      '';
-    };
-
-    # ── 3. Redis containers ────────────────────────────────
-    virtualisation.oci-containers.containers.fastfree-redis-cache = {
-      image = "redis:8.6-alpine";
-      pull = "always";
-      autoStart = true;
-      extraOptions = [ "--network=fastfree-net" ];
-    };
-
-    virtualisation.oci-containers.containers.fastfree-redis-queue = {
-      image = "redis:8.6-alpine";
-      pull = "always";
-      autoStart = true;
-      extraOptions = [ "--network=fastfree-net" ];
-    };
-
-    systemd.services."podman-fastfree-redis-cache" = {
-      after = [ "fastfree-backend-network.service" ];
-      serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "5";
-    };
-
-    systemd.services."podman-fastfree-redis-queue" = {
-      after = [ "fastfree-backend-network.service" ];
-      serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "5";
-    };
-
-    # ── 4+5. Setup site (configure + create in one service) ──
+    # ── 2. Setup site (configure globals + ensure site exists + bench migrate) ──
     systemd.services."fastfree-backend-setup" = {
-      description = "Configure bench globals and create Frappe site";
+      description = "Configure bench globals and ensure Frappe site exists";
       after = [
-        "fastfree-backend-network.service"
         "mysql.service"
         "fastfree-backend-db.service"
-        "podman-fastfree-redis-cache.service"
-        "podman-fastfree-redis-queue.service"
+        "redis-fastfree-redis-cache.service"
+        "redis-fastfree-redis-queue.service"
       ];
-      requires = [ "mysql.service" "fastfree-backend-db.service" ];
+      requires = [
+        "mysql.service"
+        "fastfree-backend-db.service"
+        "redis-fastfree-redis-cache.service"
+        "redis-fastfree-redis-queue.service"
+      ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
@@ -188,332 +217,274 @@ in {
         RestartSec = "15";
         StartLimitIntervalSec = "300";
         StartLimitBurst = "5";
+        User = "frappe";
+        Group = "frappe";
+        WorkingDirectory = "/var/lib/frappe/frappe-bench";
       };
-      path = [ pkgs.podman pkgs.coreutils pkgs.gnused ];
-      script = let
-        siteName = "backend.${config.fastfree.identity.domain}";
-        ghAcc = ghAccount;
-      in ''
+      path = [ pkgs.coreutils pkgs.gnused pkgs.jq pkgs.curl pkgs.git ];
+      script = ''
         SITE="${siteName}"
         DB_PASSWORD=$(cat "${dbRootPassFile}")
         ADMIN_PASSWORD=$(cat "${frappeAdminPassFile}")
-        IMAGE="ghcr.io/${ghAcc}/fastfree_backend:latest"
+        BENCH_DIR="/var/lib/frappe/frappe-bench"
+        SITES_DIR="$BENCH_DIR/sites"
+        COMMON_CFG="$SITES_DIR/common_site_config.json"
 
-        echo "[setup] Pulling image..."
-        ${pkgs.podman}/bin/podman pull --quiet "$IMAGE" || true
+        echo "[setup] Waiting for MariaDB..."
+        for i in $(seq 1 60); do
+          if ${config.services.mysql.package}/bin/mysqladmin ping -h localhost --silent 2>/dev/null; then break; fi
+          if [ "$i" -eq 60 ]; then echo "[setup] ERROR: MariaDB timeout"; exit 1; fi
+          sleep 1
+        done
 
-        echo "[setup] Running setup container..."
-        ${pkgs.podman}/bin/podman run --rm \
-          --network fastfree-net \
-          --add-host=host.containers.internal:host-gateway \
-          -v fastfree-backend-sites:/home/frappe/frappe-bench/sites \
-          -v fastfree-backend-logs:/home/frappe/frappe-bench/logs \
-          -e "DB_PASSWORD=$DB_PASSWORD" \
-          -e "ADMIN_PASSWORD=$ADMIN_PASSWORD" \
-          -e "FRAPPE_SITE_NAME_HEADER=$SITE" \
-          "$IMAGE" bash -c '
-            set -e
-            echo "[setup] Waiting for MariaDB..."
-            for i in $(seq 1 60); do
-              if mysqladmin ping -h host.containers.internal --silent 2>/dev/null; then break; fi
-              if [ "$i" -eq 60 ]; then echo "[setup] ERROR: MariaDB timeout"; exit 1; fi
-              sleep 2
-            done
-            echo "[setup] MariaDB ready."
+        echo "[setup] Waiting for Redis servers..."
+        for i in $(seq 1 30); do
+          if ${pkgs.redis}/bin/redis-cli -h 127.0.0.1 -p 11000 ping 2>/dev/null | grep -q PONG && \
+             ${pkgs.redis}/bin/redis-cli -h 127.0.0.1 -p 11001 ping 2>/dev/null | grep -q PONG; then
+            break
+          fi
+          if [ "$i" -eq 30 ]; then echo "[setup] WARNING: Redis timeout, continuing"; fi
+          sleep 1
+        done
 
-            echo "[setup] Waiting for Redis..."
-            for i in $(seq 1 30); do
-              if redis-cli -h fastfree-redis-cache ping 2>/dev/null | grep -q PONG; then break; fi
-              if [ "$i" -eq 30 ]; then echo "[setup] WARNING: Redis not reachable, continuing anyway"; fi
-              sleep 2
-            done
+        mkdir -p "$SITES_DIR" "$BENCH_DIR/logs" "$BENCH_DIR/config"
 
-            echo "[setup] Configuring bench globals..."
-            bench set-config -g db_host host.containers.internal
-            bench set-config -gp db_port 3306
-            bench set-config -g redis_cache "redis://fastfree-redis-cache:6379"
-            bench set-config -g redis_queue "redis://fastfree-redis-queue:6379"
-            bench set-config -g redis_socketio "redis://fastfree-redis-queue:6379"
-            bench set-config -gp socketio_port 9000
+        echo "[setup] Writing / updating common_site_config.json..."
+        if [ ! -f "$COMMON_CFG" ]; then
+          cat > "$COMMON_CFG" << 'EOF'
+{
+  "db_host": "127.0.0.1",
+  "db_port": 3306,
+  "redis_cache": "redis://127.0.0.1:11000",
+  "redis_queue": "redis://127.0.0.1:11001",
+  "redis_socketio": "redis://127.0.0.1:11001",
+  "socketio_port": 9000,
+  "webserver_port": 8000
+}
+EOF
+        else
+          TMP_CFG=$(mktemp)
+          ${pkgs.jq}/bin/jq '
+            .db_host = "127.0.0.1" |
+            .db_port = 3306 |
+            .redis_cache = "redis://127.0.0.1:11000" |
+            .redis_queue = "redis://127.0.0.1:11001" |
+            .redis_socketio = "redis://127.0.0.1:11001" |
+            .socketio_port = 9000 |
+            .webserver_port = 8000
+          ' "$COMMON_CFG" > "$TMP_CFG" && mv "$TMP_CFG" "$COMMON_CFG"
+          chmod 644 "$COMMON_CFG"
+        fi
 
-            echo "[setup] Checking if site $FRAPPE_SITE_NAME_HEADER exists and is healthy..."
-            SITE_DIR="/home/frappe/frappe-bench/sites/$FRAPPE_SITE_NAME_HEADER"
-            SITE_BROKEN=false
+        echo "[setup] Executing bench setup via FHS environment..."
+        ${frappeFHS}/bin/frappe-env -c "
+          set -e
+          cd \"$BENCH_DIR\"
 
-            if [ -d "$SITE_DIR" ]; then
-              echo "[setup] Site directory exists, checking health..."
+          # Ensure python virtual environment exists
+          if [ ! -d \"$BENCH_DIR/env\" ]; then
+            echo '[setup] Initializing Python virtualenv...'
+            python3 -m venv \"$BENCH_DIR/env\"
+            ./env/bin/pip install --upgrade pip setuptools wheel
+          fi
 
-              if [ ! -f "$SITE_DIR/site_config.json" ]; then
-                echo "[setup] WARNING: site_config.json missing — site is broken"
-                SITE_BROKEN=true
-              elif ! grep -q "db_host" "$SITE_DIR/site_config.json" 2>/dev/null; then
-                echo "[setup] WARNING: site_config.json missing db_host — site is broken"
-                SITE_BROKEN=true
-              fi
+          source env/bin/activate
 
-              if [ -d "$SITE_DIR/apps/erpnext" ]; then
-                echo "[setup] erpnext app found."
-              else
-                echo "[setup] WARNING: erpnext app NOT installed — site is broken"
-                SITE_BROKEN=true
-              fi
-
-              if [ "$SITE_BROKEN" = false ]; then
-                echo "[setup] Checking if database actually exists in MariaDB..."
-                SITE_DB_NAME=$(sed -n "s/.*\"db_name\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" "$SITE_DIR/site_config.json")
-                if [ -z "$SITE_DB_NAME" ]; then
-                  echo "[setup] WARNING: db_name empty in site_config.json — site is broken"
-                  SITE_BROKEN=true
-                elif ! mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "USE \`$SITE_DB_NAME\`" 2>/dev/null; then
-                  echo "[setup] WARNING: database $SITE_DB_NAME does not exist — site is broken"
-                  SITE_BROKEN=true
-                elif mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "SELECT 1 FROM \`$SITE_DB_NAME\`.tabDocType LIMIT 1" 2>/dev/null | grep -q 1; then
-                  echo "[setup] Database $SITE_DB_NAME exists and has tables."
-                else
-                  echo "[setup] WARNING: database $SITE_DB_NAME is empty (no tables) — site is broken"
-                  SITE_BROKEN=true
-                fi
-              fi
-
-              if [ "$SITE_BROKEN" = true ]; then
-                echo "[setup] Dropping broken site $FRAPPE_SITE_NAME_HEADER..."
-                STALE_DB_NAME=$(sed -n "s/.*\"db_name\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" "$SITE_DIR/site_config.json" 2>/dev/null)
-                bench drop-site "$FRAPPE_SITE_NAME_HEADER" \
-                  --db-root-username=root \
-                  --db-root-password="$DB_PASSWORD" || true
-                if [ -n "$STALE_DB_NAME" ]; then
-                  echo "[setup] Dropping stale database $STALE_DB_NAME explicitly..."
-                  mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "DROP DATABASE IF EXISTS \`$STALE_DB_NAME\`" 2>/dev/null || true
-                fi
-                rm -rf "$SITE_DIR" || true
-              fi
-            fi
-
-            if [ ! -d "$SITE_DIR" ] || [ "$SITE_BROKEN" = true ]; then
-              echo "[setup] Creating site $FRAPPE_SITE_NAME_HEADER..."
-              bench new-site "$FRAPPE_SITE_NAME_HEADER" \
-                --mariadb-user-host-login-scope="%" \
-                --admin-password="$ADMIN_PASSWORD" \
+          SITE_DIR=\"$SITES_DIR/$SITE\"
+          if [ -d \"$SITE_DIR\" ] && [ -f \"$SITE_DIR/site_config.json\" ]; then
+            echo '[setup] Existing site detected for $SITE. Running bench migrate...'
+            # Ensure site config points to localhost
+            sed -i 's/\"db_host\"[[:space:]]*:[[:space:]]*\"[^\"]*\"/\"db_host\": \"127.0.0.1\"/' \"$SITE_DIR/site_config.json\"
+            bench --site \"$SITE\" set-config db_host 127.0.0.1 || true
+            bench --site \"$SITE\" set-config db_port 3306 || true
+            bench --site \"$SITE\" migrate || echo '[setup] Warning: bench migrate had non-zero exit code'
+          else
+            echo '[setup] Site $SITE not found or uninitialized.'
+            if command -v bench >/dev/null 2>&1; then
+              echo '[setup] Creating new Frappe site $SITE...'
+              INSTALL_ARGS=\"\"
+              [ -d \"$BENCH_DIR/apps/erpnext\" ] && INSTALL_ARGS=\"\$INSTALL_ARGS --install-app erpnext\"
+              [ -d \"$BENCH_DIR/apps/fastfree_backend\" ] && INSTALL_ARGS=\"\$INSTALL_ARGS --install-app fastfree_backend\"
+              bench new-site \"$SITE\" \
+                --mariadb-user-host-login-scope=\"localhost\" \
+                --admin-password=\"$ADMIN_PASSWORD\" \
                 --db-root-username=root \
-                --db-root-password="$DB_PASSWORD" \
-                --install-app erpnext \
-                --install-app fastfree_backend \
-                --set-default || {
-                echo "[setup] bench new-site exited non-zero, checking if site was fully created anyway..."
-                CREATED_DB_NAME=$(sed -n "s/.*\"db_name\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" "$SITE_DIR/site_config.json" 2>/dev/null)
-                if [ -d "$SITE_DIR" ] && [ -n "$CREATED_DB_NAME" ] && mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "SELECT 1 FROM \`$CREATED_DB_NAME\`.tabDocType LIMIT 1" 2>/dev/null | grep -q 1; then
-                  echo "[setup] Site exists with tables, continuing."
-                else
-                  echo "[setup] Dropping partial site and retrying bench new-site once..."
-                  bench drop-site "$FRAPPE_SITE_NAME_HEADER" \
-                    --db-root-username=root \
-                    --db-root-password="$DB_PASSWORD" || true
-                  if [ -n "$CREATED_DB_NAME" ]; then
-                    mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "DROP DATABASE IF EXISTS \`$CREATED_DB_NAME\`" 2>/dev/null || true
-                  fi
-                  rm -rf "$SITE_DIR" || true
-                  bench new-site "$FRAPPE_SITE_NAME_HEADER" \
-                    --mariadb-user-host-login-scope="%" \
-                    --admin-password="$ADMIN_PASSWORD" \
-                    --db-root-username=root \
-                    --db-root-password="$DB_PASSWORD" \
-                    --install-app erpnext \
-                    --install-app fastfree_backend \
-                    --set-default || {
-                    echo "[setup] FATAL: bench new-site retry failed."
-                    exit 1
-                  }
-                fi
-              }
-              echo "[setup] Verifying site $FRAPPE_SITE_NAME_HEADER was created..."
-              if [ ! -d "$SITE_DIR" ]; then
-                echo "[setup] ERROR: Site directory not found after creation."
-                exit 1
-              fi
-              SITE_DB_NAME=$(sed -n "s/.*\"db_name\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" "$SITE_DIR/site_config.json")
-              if [ -z "$SITE_DB_NAME" ] || ! mysql -h host.containers.internal -u root -p"$DB_PASSWORD" -e "SELECT 1 FROM \`$SITE_DB_NAME\`.tabDocType LIMIT 1" 2>/dev/null | grep -q 1; then
-                echo "[setup] ERROR: Database has no tables — site creation incomplete."
-                exit 1
-              fi
-              echo "[setup] Site $FRAPPE_SITE_NAME_HEADER created and verified."
+                --db-root-password=\"$DB_PASSWORD\" \
+                \$INSTALL_ARGS \
+                --set-default || echo '[setup] bench new-site completed with exit code: \$?'
             else
-              echo "[setup] Site $FRAPPE_SITE_NAME_HEADER is healthy, skipping creation."
+              echo '[setup] bench executable not yet installed in env; skipping bench new-site.'
             fi
+          fi
 
-            echo "[setup] Done."
-          '
-        echo "[setup] Setup container finished."
+          # Ensure assets directory is linked or created for Caddy
+          mkdir -p \"$SITES_DIR/assets\"
+          if command -v bench >/dev/null 2>&1; then
+            bench build --force 2>/dev/null || true
+          fi
+        "
+
+        echo "[setup] Done."
       '';
     };
 
-    # ── 6. Backend (Gunicorn) ───────────────────────────────
-    virtualisation.oci-containers.containers.fastfree-backend-app = {
-      image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
-      pull = "always";
-      autoStart = true;
-      extraOptions = [ "--network=fastfree-net" "--add-host=host.containers.internal:host-gateway" ];
-      environment = {
-        GUNICORN_THREADS = "4";
-        GUNICORN_WORKERS = "2";
-        GUNICORN_TIMEOUT = "120";
-      };
-      volumes = [
-        "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
-        "fastfree-backend-logs:/home/frappe/frappe-bench/logs"
-      ];
-    };
-
-    systemd.services."podman-fastfree-backend-app" = {
+    # ── 3. Backend (Gunicorn Web Server on 127.0.0.1:8000) ───
+    systemd.services."fastfree-backend-web" = {
+      description = "FastFree Backend Web (Gunicorn)";
       after = [
-        "fastfree-backend-network.service"
-        "fastfree-backend-db.service"
+        "network.target"
+        "fastfree-backend-setup.service"
         "fastfree-backend-mysql-user.service"
-        "fastfree-backend-setup.service"
-        "podman-fastfree-redis-cache.service"
-        "podman-fastfree-redis-queue.service"
+        "redis-fastfree-redis-cache.service"
       ];
-      requires = [ "mysql.service" "fastfree-backend-setup.service" "fastfree-backend-mysql-user.service" ];
-      serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "5";
-    };
-
-    # ── 7. Frontend (Nginx) ─────────────────────────────────
-    virtualisation.oci-containers.containers.fastfree-backend-frontend = {
-      image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
-      pull = "always";
-      autoStart = true;
-      ports = [ "127.0.0.1:8080:8080" ];
-      extraOptions = [ "--network=fastfree-net" ];
-      cmd = [ "nginx-entrypoint.sh" ];
+      requires = [
+        "fastfree-backend-setup.service"
+      ];
+      wantedBy = [ "multi-user.target" ];
       environment = {
-        BACKEND = "fastfree-backend-app:8000";
-        SOCKETIO = "fastfree-backend-websocket:9000";
-        FRAPPE_SITE_NAME_HEADER = "backend.${config.fastfree.identity.domain}";
-        UPSTREAM_REAL_IP_ADDRESS = "127.0.0.1";
-        UPSTREAM_REAL_IP_HEADER = "X-Forwarded-For";
-        UPSTREAM_REAL_IP_RECURSIVE = "off";
-        PROXY_READ_TIMEOUT = "120";
-        CLIENT_MAX_BODY_SIZE = "50m";
+        FRAPPE_SITE_NAME_HEADER = siteName;
+        PYTHONUNBUFFERED = "1";
       };
-      volumes = [
-        "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
-      ];
+      serviceConfig = {
+        Type = "simple";
+        User = "frappe";
+        Group = "frappe";
+        WorkingDirectory = "/var/lib/frappe/frappe-bench";
+        Restart = "always";
+        RestartSec = "5";
+        ExecStart = ''
+          ${frappeFHS}/bin/frappe-env -c "
+            cd /var/lib/frappe/frappe-bench
+            [ -f env/bin/activate ] && source env/bin/activate
+            if command -v gunicorn >/dev/null 2>&1; then
+              exec gunicorn -b 127.0.0.1:8000 -w 2 -t 120 --threads 4 -e FRAPPE_SITE_NAME_HEADER=${siteName} frappe.app:application --preload
+            else
+              exec bench serve --port 8000
+            fi
+          "
+        '';
+      };
     };
 
-    systemd.services."podman-fastfree-backend-frontend" = {
-      after = [ "fastfree-backend-network.service" "podman-fastfree-backend-app.service" "fastfree-backend-setup.service" ];
-      requires = [ "podman-fastfree-backend-app.service" "fastfree-backend-setup.service" ];
-      serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "5";
-    };
-
-    # ── 8. WebSocket (Socket.IO) ───────────────────────────
-    virtualisation.oci-containers.containers.fastfree-backend-websocket = {
-      image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
-      pull = "always";
-      autoStart = true;
-      extraOptions = [ "--network=fastfree-net" ];
-      cmd = [ "node" "/home/frappe/frappe-bench/apps/frappe/socketio.js" ];
-      volumes = [
-        "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
-      ];
-    };
-
-    systemd.services."podman-fastfree-backend-websocket" = {
-      after = [ 
-        "fastfree-backend-network.service" 
+    # ── 4. WebSocket (SocketIO on 127.0.0.1:9000) ────────────
+    systemd.services."fastfree-backend-websocket" = {
+      description = "FastFree Backend SocketIO Service";
+      after = [
+        "network.target"
         "fastfree-backend-setup.service"
-        "podman-fastfree-backend-app.service"
-        "podman-fastfree-redis-queue.service"
+        "redis-fastfree-redis-queue.service"
       ];
-      requires = [ "fastfree-backend-setup.service" "mysql.service" ];
-      serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "10";
-      serviceConfig.StartLimitIntervalSec = "300";
-      serviceConfig.StartLimitBurst = "10";
-    };
-
-    # ── 9. Queue Short (Celery worker) ─────────────────────
-    virtualisation.oci-containers.containers.fastfree-backend-queue-short = {
-      image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
-      pull = "always";
-      autoStart = true;
-      extraOptions = [ "--network=fastfree-net" ];
-      cmd = [ "bench" "worker" "--queue" "short,default" ];
-      volumes = [
-        "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
-        "fastfree-backend-logs:/home/frappe/frappe-bench/logs"
-      ];
-    };
-
-    systemd.services."podman-fastfree-backend-queue-short" = {
-      after = [ 
-        "fastfree-backend-network.service" 
+      requires = [
         "fastfree-backend-setup.service"
-        "podman-fastfree-redis-queue.service"
       ];
-      requires = [ "mysql.service" "podman-fastfree-redis-queue.service" ];
-      serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "10";
-      serviceConfig.StartLimitIntervalSec = "300";
-      serviceConfig.StartLimitBurst = "10";
+      wantedBy = [ "multi-user.target" ];
+      environment = {
+        NODE_ENV = "production";
+      };
+      serviceConfig = {
+        Type = "simple";
+        User = "frappe";
+        Group = "frappe";
+        WorkingDirectory = "/var/lib/frappe/frappe-bench";
+        Restart = "always";
+        RestartSec = "5";
+        ExecStart = ''
+          ${frappeFHS}/bin/frappe-env -c "
+            cd /var/lib/frappe/frappe-bench
+            exec node apps/frappe/socketio.js
+          "
+        '';
+      };
     };
 
-    # ── 10. Queue Long (Celery worker) ─────────────────────
-    virtualisation.oci-containers.containers.fastfree-backend-queue-long = {
-      image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
-      pull = "always";
-      autoStart = true;
-      extraOptions = [ "--network=fastfree-net" ];
-      cmd = [ "bench" "worker" "--queue" "long,default,short" ];
-      volumes = [
-        "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
-        "fastfree-backend-logs:/home/frappe/frappe-bench/logs"
-      ];
-    };
-
-    systemd.services."podman-fastfree-backend-queue-long" = {
-      after = [ 
-        "fastfree-backend-network.service" 
+    # ── 5. Queue Worker Short ────────────────────────────────
+    systemd.services."fastfree-backend-worker-short" = {
+      description = "FastFree Backend Worker Short";
+      after = [
+        "network.target"
         "fastfree-backend-setup.service"
-        "podman-fastfree-redis-queue.service"
+        "redis-fastfree-redis-queue.service"
       ];
-      requires = [ "mysql.service" "podman-fastfree-redis-queue.service" ];
-      serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "10";
-      serviceConfig.StartLimitIntervalSec = "300";
-      serviceConfig.StartLimitBurst = "10";
-    };
-
-    # ── 11. Scheduler ──────────────────────────────────────
-    virtualisation.oci-containers.containers.fastfree-backend-scheduler = {
-      image = "ghcr.io/${ghAccount}/fastfree_backend:latest";
-      pull = "always";
-      autoStart = true;
-      extraOptions = [ "--network=fastfree-net" ];
-      cmd = [ "bench" "schedule" ];
-      volumes = [
-        "fastfree-backend-sites:/home/frappe/frappe-bench/sites"
-        "fastfree-backend-logs:/home/frappe/frappe-bench/logs"
-      ];
-    };
-
-    systemd.services."podman-fastfree-backend-scheduler" = {
-      after = [ 
-        "fastfree-backend-network.service" 
+      requires = [
         "fastfree-backend-setup.service"
-        "podman-fastfree-redis-queue.service"
       ];
-      requires = [ "mysql.service" "podman-fastfree-redis-queue.service" ];
-      serviceConfig.Restart = "on-failure";
-      serviceConfig.RestartSec = "10";
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "simple";
+        User = "frappe";
+        Group = "frappe";
+        WorkingDirectory = "/var/lib/frappe/frappe-bench";
+        Restart = "always";
+        RestartSec = "10";
+        ExecStart = ''
+          ${frappeFHS}/bin/frappe-env -c "
+            cd /var/lib/frappe/frappe-bench
+            [ -f env/bin/activate ] && source env/bin/activate
+            exec bench worker --queue short,default
+          "
+        '';
+      };
     };
 
-    # ── 12. Backup ──────────────────────────────────────────
-    systemd.tmpfiles.rules = [
-      "d /var/lib/fastfree/backups 0750 root root -"
-    ];
+    # ── 6. Queue Worker Long ─────────────────────────────────
+    systemd.services."fastfree-backend-worker-long" = {
+      description = "FastFree Backend Worker Long";
+      after = [
+        "network.target"
+        "fastfree-backend-setup.service"
+        "redis-fastfree-redis-queue.service"
+      ];
+      requires = [
+        "fastfree-backend-setup.service"
+      ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "simple";
+        User = "frappe";
+        Group = "frappe";
+        WorkingDirectory = "/var/lib/frappe/frappe-bench";
+        Restart = "always";
+        RestartSec = "10";
+        ExecStart = ''
+          ${frappeFHS}/bin/frappe-env -c "
+            cd /var/lib/frappe/frappe-bench
+            [ -f env/bin/activate ] && source env/bin/activate
+            exec bench worker --queue long,default,short
+          "
+        '';
+      };
+    };
 
+    # ── 7. Scheduler ─────────────────────────────────────────
+    systemd.services."fastfree-backend-scheduler" = {
+      description = "FastFree Backend Scheduler";
+      after = [
+        "network.target"
+        "fastfree-backend-setup.service"
+        "redis-fastfree-redis-queue.service"
+      ];
+      requires = [
+        "fastfree-backend-setup.service"
+      ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "simple";
+        User = "frappe";
+        Group = "frappe";
+        WorkingDirectory = "/var/lib/frappe/frappe-bench";
+        Restart = "always";
+        RestartSec = "10";
+        ExecStart = ''
+          ${frappeFHS}/bin/frappe-env -c "
+            cd /var/lib/frappe/frappe-bench
+            [ -f env/bin/activate ] && source env/bin/activate
+            exec bench schedule
+          "
+        '';
+      };
+    };
+
+    # ── 8. Backup ───────────────────────────────────────────
     systemd.services."fastfree-backend-backup" = {
       description = "Automated daily backup of Backend database";
       after = [ "mysql.service" ];
@@ -537,11 +508,11 @@ in {
         MYCNF=$(mktemp /tmp/.my-backend-backup-XXXXXX.cnf)
         chmod 600 "$MYCNF"
         cat > "$MYCNF" << EOF
-        [client]
-        password=$DB_PASS
-        EOF
+[client]
+password=$DB_PASS
+EOF
 
-        mysqldump -h "$DB_HOST" -u "$DB_USER" --defaults-extra-file "$MYCNF" \
+        mysqldump -h "$DB_HOST" -u "$DB_USER" --defaults-extra-file="$MYCNF" \
           --single-transaction --routines --triggers --events \
           --add-drop-table --complete-insert "$DB_NAME" 2>/dev/null \
           | gzip -9 > "$FILEPATH"

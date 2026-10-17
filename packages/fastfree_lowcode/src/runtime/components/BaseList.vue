@@ -50,21 +50,21 @@
 
       <q-card-section class="q-pt-none">
         <q-table
-          :rows="listReturn.filteredRows"
+          :rows="tableRows"
           :columns="computedColumns"
-          :row-key="rowKey"
-          :loading="props.store.loading"
-          :pagination="listReturn.pagination"
+          :row-key="tableRowKey"
+          :loading="tableLoading"
+          :pagination="tablePagination"
           @request="listReturn.onRequest"
-          :filter="listReturn.search"
+          :filter="tableFilter"
           flat
           wrap-cells
           :selection="selectionMode"
-          :selected-rows="listReturn.selectedRows"
+          :selected-rows="tableSelectedRows"
         >
           <template #top-right>
             <q-input
-              v-model="listReturn.search"
+              v-model="tableFilter"
               :placeholder="t('common.search')"
               dense
               outlined
@@ -233,11 +233,25 @@ const computedColumns = computed<QColumn[]>(() => [
   },
 ])
 
-const selectionMode = computed(() => {
+const selectionMode = computed<'none' | 'single' | 'multiple'>(() => {
   if (props.selection === 'multiple') return 'multiple'
   if (props.selection === 'single') return 'single'
-  return false
+  return 'none'
 })
+
+// QTable expects plain values, so unwrap the refs returned by useBaseList.
+const tableRows = computed(() => listReturn.filteredRows.value)
+const tablePagination = computed(() => listReturn.pagination.value)
+const tableFilter = computed({
+  get: () => listReturn.search.value,
+  set: (v: string) => {
+    listReturn.search.value = v
+    listReturn.onFilter()
+  },
+})
+const tableRowKey = computed(() => props.rowKey)
+const tableLoading = computed(() => props.store.loading.value)
+const tableSelectedRows = computed(() => listReturn.selectedRows.value)
 
 const confirmDeleteDialog = ref(false)
 const deleteTarget = ref<Record<string, unknown> | null>(null)
@@ -311,7 +325,11 @@ function handleDefaultAction(action: 'submit' | 'cancel' | 'delete', row: Record
     confirmDeleteDialog.value = true
     return
   }
-  emit(action, row)
+  if (action === 'submit') {
+    emit('submit', row)
+    return
+  }
+  emit('cancel', row)
 }
 
 async function executeDelete(): Promise<void> {
@@ -326,10 +344,15 @@ async function executeDelete(): Promise<void> {
 async function exportData(): Promise<void> {
   try {
     const { useExcelExport } = await import('../composables/useExcelExport')
-    const { exportToExcel } = useExcelExport()
-    const columns = props.columns.map((c) => ({ label: c.label, field: c.name }))
-    await exportToExcel({
-      data: listReturn.filteredRows.value,
+    const { exportTable } = useExcelExport()
+    const columns = props.columns.map((c) => ({
+      name: c.name,
+      label: c.label,
+      field: c.name,
+    }))
+    await exportTable({
+      title: t('common.export'),
+      rows: listReturn.filteredRows.value,
       columns,
       filename: `${props.namespace}_${new Date().toISOString().split('T')[0]}`,
       company: { name: t('common.companyName') },
@@ -344,9 +367,13 @@ async function printData(): Promise<void> {
   try {
     const { usePrint } = await import('../composables/usePrint')
     const { printTable } = usePrint()
-    const columns = props.columns.map((c) => ({ label: c.label, field: c.name }))
+    const columns = props.columns.map((c) => ({
+      name: c.name,
+      label: c.label,
+      field: c.name,
+    }))
     await printTable({
-      data: listReturn.filteredRows.value,
+      rows: listReturn.filteredRows.value,
       columns,
       title: t(props.title),
       company: { name: t('common.companyName') },
@@ -366,8 +393,9 @@ function navigateToAdd(): void {
 async function loadData(): Promise<void> {
   try {
     await props.store.fetchItems()
-    if (props.store.error) {
-      notifyError(props.store.error)
+    const storeError = props.store.error.value
+    if (storeError) {
+      notifyError(storeError)
     }
   } catch {
     notifyError(t('common.error'))

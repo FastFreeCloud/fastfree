@@ -89,6 +89,7 @@
         ./modules/mariadb.nix
         ./modules/caddy.nix
         ./modules/fastfree_backend.nix
+        ./modules/fastfree_panel.nix
         ./modules/fastfree_ledger.nix
         ./modules/fastfree_erp.nix
         ./modules/fastfree_hr.nix
@@ -169,9 +170,9 @@
           '';
         };
 
-        # ── اختبار 3: Podman يشتغل ─────────────────────────────────
-        podman-test = pkgs.testers.runNixOSTest {
-          name = "podman-test";
+        # ── اختبار 3: Redis يشتغل ─────────────────────────────────
+        redis-test = pkgs.testers.runNixOSTest {
+          name = "redis-test";
           nodes.machine = { config, pkgs, ... }: {
             imports = commonModules ++ [
               testDiskSize
@@ -179,15 +180,18 @@
                 fastfree.identity.name = lib.mkForce "test";
                 fastfree.identity.domain = lib.mkForce "test.local";
                 fastfree.apps = { base = true; };
+                services.redis.servers."fastfree-redis-cache" = {
+                  enable = true;
+                  bind = "127.0.0.1";
+                  port = 11000;
+                };
               }
             ];
           };
           testScript = ''
-            machine.wait_for_unit("sockets.target")
-            machine.wait_for_open_unix_socket("/run/podman/podman.sock")
-            machine.sleep(2)
-            machine.wait_until_succeeds("podman info", timeout=30)
-            machine.succeed("podman ps")
+            machine.wait_for_unit("redis-fastfree-redis-cache.service")
+            machine.wait_for_open_port(11000)
+            machine.succeed("redis-cli -p 11000 ping | grep -q PONG")
           '';
         };
 

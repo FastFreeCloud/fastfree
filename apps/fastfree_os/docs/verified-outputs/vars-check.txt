@@ -1,0 +1,7 @@
+warning: Git tree '/home/fastfree/Desktop/fastfree' is dirty
+Check results for machine 'client1': 
+All vars are present and valid.
+Check results for machine 'client2': 
+All vars are present and valid.
+Check results for machine 'client3': 
+All vars are present and valid.

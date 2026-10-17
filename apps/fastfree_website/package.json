@@ -11,6 +11,9 @@
     "clean": "next clean"
   },
   "dependencies": {
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@fontsource/ibm-plex-sans": "5.3.0",
+    "@fontsource/ibm-plex-sans-arabic": "5.3.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "autoprefixer": "^10.4.21",
     "lucide-react": "^0.553.0",
