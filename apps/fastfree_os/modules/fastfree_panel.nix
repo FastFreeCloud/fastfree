@@ -1,14 +1,51 @@
 { config, lib, pkgs, inputs ? {}, ... }:
 
+let
+  spaDir = "/srv/fastfree-panel";
+  backendDir = "/var/lib/fastfree-panel/backend";
+in
 {
   config = lib.mkIf config.fastfree.apps.fastfree_panel {
     environment.etc."clan/clan.nix".source = ../clan.nix;
     environment.etc."clan/flake.nix".source = ../flake.nix;
 
+    systemd.tmpfiles.rules = [
+      "d ${spaDir} 0755 root root -"
+      "d ${backendDir} 0755 root root -"
+    ];
+
+    systemd.services."fastfree-panel-setup" = {
+      description = "Ensure Panel SPA and backend assets are synced";
+      wantedBy = [ "multi-user.target" ];
+      before = [ "fastfree-panel.service" "caddy.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      path = [ pkgs.coreutils ];
+      script = ''
+        mkdir -p "${spaDir}" "${backendDir}"
+        if [ -d "/root/fastfree-source/apps/fastfree_panel/dist/spa" ]; then
+          cp -rf /root/fastfree-source/apps/fastfree_panel/dist/spa/* "${spaDir}/" 2>/dev/null || true
+        fi
+        if [ -d "/root/fastfree-source/apps/fastfree_panel/backend/dist" ]; then
+          mkdir -p "${backendDir}/dist"
+          cp -rf /root/fastfree-source/apps/fastfree_panel/backend/dist/* "${backendDir}/dist/" 2>/dev/null || true
+          cp -f /root/fastfree-source/apps/fastfree_panel/backend/package.json "${backendDir}/" 2>/dev/null || true
+        fi
+        if [ ! -f "${spaDir}/index.html" ]; then
+          cat > "${spaDir}/index.html" << 'EOF'
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>FastFree Clan OS</title></head><body><div id="q-app"><h1>FastFree Clan OS</h1><p>Panel is initializing...</p></div></body></html>
+EOF
+        fi
+        chmod -R 755 "${spaDir}" "${backendDir}" 2>/dev/null || true
+      '';
+    };
+
     systemd.services.fastfree-panel = {
       description = "FastFree Clan Panel Private API Backend";
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
+      after = [ "network-online.target" "fastfree-panel-setup.service" ];
+      wants = [ "network-online.target" "fastfree-panel-setup.service" ];
       wantedBy = [ "multi-user.target" ];
       path = with pkgs; [
         nodejs_22
@@ -22,19 +59,10 @@
         CLAN_DIR = "/etc/clan";
       };
       serviceConfig = {
-        DynamicUser = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectKernelTunables = true;
-        ProtectControlGroups = true;
-        NoNewPrivileges = true;
-        MemoryMax = "256M";
-        CPUQuota = "50%";
         Restart = "on-failure";
-        RestartSec = "3s";
-        ExecStart = "${pkgs.nodejs_22}/bin/node /var/lib/fastfree-panel/backend/dist/server.js";
+        RestartSec = "5s";
+        WorkingDirectory = backendDir;
+        ExecStart = "${pkgs.nodejs_22}/bin/node ${backendDir}/dist/server.js";
       };
     };
   };

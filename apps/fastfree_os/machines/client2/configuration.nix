@@ -38,9 +38,9 @@
   # (double import = conflicting definitions).
   ];
 
-  # sops age key for this machine. Clan uses SSH host key or /var/lib/sops-nix/key.txt.
+  # sops age key for this machine: use the SSH host key directly (zero external file dependency)
   sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-  sops.age.keyFile = lib.mkDefault "/var/lib/sops-nix/key.txt";
+  sops.age.keyFile = lib.mkForce null;
 
   fastfree.identity.name = lib.mkForce "client2";
   fastfree.identity.domain = lib.mkForce "fastfree.cloud";
