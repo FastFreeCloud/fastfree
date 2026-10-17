@@ -13,8 +13,8 @@
     <template #window-clan-deploy>
       <ClanDeployScreen />
     </template>
-    <template #window-clan-herdr>
-      <ClanHerdrScreen />
+    <template #window-clan-build>
+      <ClanImageBuilderScreen />
     </template>
     <template #window-clan-network>
       <ClanNetworkScreen />
@@ -40,7 +40,7 @@ import { DesktopShell, useDesktopStore } from '../lib/lowcode';
 import ClanMachinesScreen from '../screens/ClanMachinesScreen.vue';
 import ClanHealthScreen from '../screens/ClanHealthScreen.vue';
 import ClanDeployScreen from '../screens/ClanDeployScreen.vue';
-import ClanHerdrScreen from '../screens/ClanHerdrScreen.vue';
+import ClanImageBuilderScreen from '../screens/ClanImageBuilderScreen.vue';
 import ClanNetworkScreen from '../screens/ClanNetworkScreen.vue';
 import ClanBackupsScreen from '../screens/ClanBackupsScreen.vue';
 import ClanSecretsScreen from '../screens/ClanSecretsScreen.vue';

@@ -33,11 +33,11 @@ export default defineBoot(() => {
       groupId: 'clan.nixos',
     },
     {
-      type: 'clan-herdr',
-      loader: () => import('../screens/ClanHerdrScreen.vue'),
-      label: 'Herdr Agents · وكلاء Herdr',
-      icon: 'mdi-robot-outline',
-      groupId: 'clan.agents',
+      type: 'clan-build',
+      loader: () => import('../screens/ClanImageBuilderScreen.vue'),
+      label: 'Image Builder · بناء وتحميل الصور',
+      icon: 'mdi-disc',
+      groupId: 'clan.nixos',
     },
     {
       type: 'clan-network',

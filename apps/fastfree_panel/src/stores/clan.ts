@@ -296,6 +296,43 @@ export const useClanStore = defineStore('clan', () => {
     }
   }
 
+  /**
+   * Triggers a machine build (ISO, QCOW2, VHDX, etc.) via API.
+   */
+  async function triggerMachineBuild(
+    machineName: string,
+    format = 'iso',
+    options: Record<string, unknown> = {},
+  ): Promise<Record<string, unknown>> {
+    isDeploying.value = true;
+    deployProgress.value = `Building ${machineName} (${format})...`;
+    begin();
+    try {
+      const response = await fetch(`/api/v1/machines/${encodeURIComponent(machineName)}/build`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ format, ...options }),
+      });
+      const data = (await response.json()) as {
+        ok?: boolean;
+        data?: Record<string, unknown>;
+        error?: { message?: string };
+      };
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error?.message ?? `Failed to build ${machineName}`);
+      }
+      deployProgress.value = 100;
+      clearError();
+      return data.data ?? {};
+    } catch (caught: unknown) {
+      recordFailure(caught);
+      throw caught;
+    } finally {
+      isDeploying.value = false;
+      settle();
+    }
+  }
+
   /** Loads machines, global identity, and health in parallel. Safe to call repeatedly. */
   async function refresh(): Promise<void> {
     if (refreshPending.value) return;
@@ -342,6 +379,7 @@ export const useClanStore = defineStore('clan', () => {
     fetchGlobal,
     fetchHealth,
     triggerMachineUpdate,
+    triggerMachineBuild,
     triggerRollback,
     refresh,
     reset,

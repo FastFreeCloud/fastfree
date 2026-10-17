@@ -24,4 +24,28 @@ machinesRoutes.get('/machines', async (c) => {
         throw error instanceof ApiError ? error : mapClanFailure(error);
     }
 });
+machinesRoutes.post('/machines/:name/build', async (c) => {
+    const name = c.req.param('name');
+    try {
+        const json = (await c.req.json().catch(() => ({})));
+        const { clanService } = await import('../core/clan.service.js');
+        const { clanMachineBuildSchema } = await import('../schemas/clan.schema.js');
+        const parsed = clanMachineBuildSchema.parse({
+            machine: name,
+            format: json.format ?? 'iso',
+            noSecrets: json.noSecrets ?? false,
+            buildHost: json.buildHost,
+            dryRun: json.dryRun ?? false,
+        });
+        const result = await clanService.buildMachine(parsed.machine, parsed.format, {
+            noSecrets: parsed.noSecrets,
+            buildHost: parsed.buildHost,
+            dryRun: parsed.dryRun,
+        });
+        return c.json(ok(result));
+    }
+    catch (error) {
+        throw error instanceof ApiError ? error : mapClanFailure(error);
+    }
+});
 //# sourceMappingURL=machines.js.map

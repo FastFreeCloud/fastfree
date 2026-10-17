@@ -79,3 +79,54 @@ export const clanUpdateResultSchema = z.object({
 });
 
 export type ClanUpdateResult = z.infer<typeof clanUpdateResultSchema>;
+
+/**
+ * Supported build formats in Clan & NixOS.
+ */
+export const clanBuildFormatSchema = z.enum([
+  'toplevel',
+  'iso',
+  'raw',
+  'qcow2',
+  'vhdx',
+  'vmdk',
+  'virtualbox',
+  'amazon',
+  'gce',
+  'azure',
+  'do',
+  'sd-card',
+  'kexec',
+  'tarball',
+]);
+
+export type ClanBuildFormat = z.infer<typeof clanBuildFormatSchema>;
+
+/**
+ * Input schema for building a machine image.
+ */
+export const clanMachineBuildSchema = z.object({
+  machine: machineNameSchema,
+  format: clanBuildFormatSchema.default('iso'),
+  noSecrets: z.boolean().default(false).optional(),
+  buildHost: z.string().trim().optional(),
+  dryRun: z.boolean().default(false).optional(),
+});
+
+export type ClanMachineBuildInput = z.infer<typeof clanMachineBuildSchema>;
+
+/**
+ * Result schema for a machine build operation.
+ */
+export const clanBuildResultSchema = z.object({
+  machine: z.string(),
+  format: z.string(),
+  success: z.boolean(),
+  message: z.string(),
+  artifactPath: z.string().nullable().optional(),
+  downloadUrl: z.string().nullable().optional(),
+  durationMs: z.number().optional(),
+  stdout: z.string().optional(),
+});
+
+export type ClanBuildResult = z.infer<typeof clanBuildResultSchema>;

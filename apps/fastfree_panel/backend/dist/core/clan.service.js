@@ -142,6 +142,50 @@ export class ClanService {
             throw mapClanFailure(error);
         }
     }
+    /**
+     * Build an image or closure for a specific Clan machine.
+     */
+    async buildMachine(name, format = 'iso', options = {}) {
+        const validName = validateMachineName(name);
+        const startTime = Date.now();
+        try {
+            const argv = ['machines', 'build', validName];
+            if (format && format !== 'toplevel') {
+                argv.push('--format', format);
+            }
+            if (options.noSecrets) {
+                argv.push('--no-secrets');
+            }
+            if (options.dryRun) {
+                argv.push('--dry-run');
+            }
+            if (options.buildHost) {
+                argv.push('--build-host', options.buildHost);
+            }
+            // Machine builds may take several minutes
+            const result = await runClan(argv, { timeoutMs: 600_000 });
+            const durationMs = Date.now() - startTime;
+            // Extract output path from stdout or result
+            const match = result.stdout.match(/\/(nix\/store\/[a-z0-9]+-[^\s]+)/i);
+            const artifactPath = match ? match[0] : null;
+            const downloadUrl = artifactPath
+                ? `/api/clan/machines/${encodeURIComponent(validName)}/download?format=${encodeURIComponent(format)}`
+                : null;
+            return {
+                machine: validName,
+                format,
+                success: result.ok,
+                message: `Machine "${validName}" image (${format}) built successfully.`,
+                artifactPath,
+                downloadUrl,
+                durationMs,
+                stdout: result.stdout,
+            };
+        }
+        catch (error) {
+            throw mapClanFailure(error);
+        }
+    }
 }
 export const clanService = new ClanService();
 //# sourceMappingURL=clan.service.js.map

@@ -108,6 +108,18 @@ export function assertAllowed(args) {
             };
         }
     }
+    // Handle parameterized 'machines build <machine>' command
+    if (args[0] === 'machines' && args[1] === 'build') {
+        const machine = args[2];
+        if (!machine || !MACHINE_NAME_PATTERN.test(machine)) {
+            throw ApiError.validation('Invalid machine name for build.', { field: 'name' });
+        }
+        return {
+            id: 'machines.build',
+            argv: Object.freeze([...args]),
+            description: `Build machine image for ${machine}.`,
+        };
+    }
     throw new ApiError('FORBIDDEN', 'This command is not in the allowlist.');
 }
 export function isReadOnlyCommandId(value) {

@@ -25,7 +25,7 @@ export type ReadOnlyCommandId =
   | 'vars.list'
   | 'select.machines';
 
-export type AllowedCommandId = ReadOnlyCommandId | 'machines.update';
+export type AllowedCommandId = ReadOnlyCommandId | 'machines.update' | 'machines.build';
 
 export interface AllowedCommand {
   readonly id: AllowedCommandId;
@@ -173,6 +173,19 @@ export function assertAllowed(args: readonly string[]): AllowedCommand {
         description: `Update Clan machine ${machine} with host-key-check ${args[4]}.`,
       };
     }
+  }
+
+  // Handle parameterized 'machines build <machine>' command
+  if (args[0] === 'machines' && args[1] === 'build') {
+    const machine = args[2];
+    if (!machine || !MACHINE_NAME_PATTERN.test(machine)) {
+      throw ApiError.validation('Invalid machine name for build.', { field: 'name' });
+    }
+    return {
+      id: 'machines.build',
+      argv: Object.freeze([...args]),
+      description: `Build machine image for ${machine}.`,
+    };
   }
 
   throw new ApiError('FORBIDDEN', 'This command is not in the allowlist.');
