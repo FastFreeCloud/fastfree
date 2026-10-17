@@ -375,7 +375,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: linear-gradient(135deg, var(--lc-primary-dark), var(--lc-primary));
+  background: linear-gradient(135deg, var(--lc-primary-dark, #0D47A1), var(--lc-primary, #1565C0));
   min-height: 36px;
   touch-action: manipulation;
 }

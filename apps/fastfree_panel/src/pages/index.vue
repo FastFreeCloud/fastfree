@@ -3,12 +3,33 @@
     title="FastFree Clan OS"
     icon="mdi-shield-crown"
     show-built-in-screens
-  />
+  >
+    <template #window-clan-machines>
+      <ClanMachinesScreen />
+    </template>
+    <template #window-clan-health>
+      <ClanHealthScreen />
+    </template>
+    <template #window-clan-deploy>
+      <ClanDeployScreen />
+    </template>
+    <template #window-clan-herdr>
+      <ClanHerdrScreen />
+    </template>
+    <template #window-clan-network>
+      <ClanNetworkScreen />
+    </template>
+  </DesktopShell>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { DesktopShell, useDesktopStore } from '../lib/lowcode';
+import ClanMachinesScreen from '../screens/ClanMachinesScreen.vue';
+import ClanHealthScreen from '../screens/ClanHealthScreen.vue';
+import ClanDeployScreen from '../screens/ClanDeployScreen.vue';
+import ClanHerdrScreen from '../screens/ClanHerdrScreen.vue';
+import ClanNetworkScreen from '../screens/ClanNetworkScreen.vue';
 
 const desktopStore = useDesktopStore();
 

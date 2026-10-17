@@ -75,6 +75,14 @@ export default defineConfig((ctx) => {
       // The backend stays private on loopback. Production uses the same
       // same-origin split via the reverse proxy (see README.md).
       extendViteConf(viteConf) {
+        const path = require('path');
+        const monorepoRoot = path.resolve(__dirname, '..', '..');
+        viteConf.resolve = viteConf.resolve || {};
+        viteConf.resolve.alias = {
+          ...(viteConf.resolve.alias || {}),
+          '#lc': path.resolve(monorepoRoot, 'packages/fastfree_lowcode/src/runtime'),
+        };
+
         viteConf.server = {
           ...viteConf.server,
           // fastfree_lowcode is consumed as raw source from ../../../packages,

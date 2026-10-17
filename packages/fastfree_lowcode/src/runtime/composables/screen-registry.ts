@@ -11,7 +11,8 @@ export interface ScreenRegistration {
   groupId?: string
 }
 
-const registry = new Map<string, ScreenRegistration>()
+const _g = globalThis as unknown as { __fastfree_screen_registry__?: Map<string, ScreenRegistration> }
+const registry: Map<string, ScreenRegistration> = _g.__fastfree_screen_registry__ ??= new Map<string, ScreenRegistration>()
 
 /**
  * Register a screen component for a given screenType.

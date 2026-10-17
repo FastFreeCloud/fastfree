@@ -345,9 +345,14 @@ export const useThemeStore = defineStore('lc-theme', () => {
     }
     const root = document.documentElement
     const batch: Record<string, string> = {
+      '--lc-primary': colors.primary,
       '--lc-primary-dark': lighten(colors.primary, -15),
       '--lc-primary-light': lighten(colors.primary, 15),
+      '--lc-secondary': colors.secondary,
+      '--lc-secondary-dark': lighten(colors.secondary, -15),
       '--lc-secondary-light': lighten(colors.secondary, 15),
+      '--lc-accent': colors.accent,
+      '--lc-accent-dark': lighten(colors.accent, -15),
       '--lc-accent-light': lighten(colors.accent, 15),
     }
     if (isDarkMode) {
