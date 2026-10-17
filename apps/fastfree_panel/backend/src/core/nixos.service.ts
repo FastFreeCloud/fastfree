@@ -287,6 +287,82 @@ export class NixosService {
       });
     });
   }
+
+  /**
+   * Get all system errors and failed units.
+   */
+  async getSystemDiagnostics(): Promise<{
+    failedUnits: Array<{ unit: string; load: string; active: string; sub: string; description: string }>;
+    criticalErrors: string[];
+    services: Array<{ name: string; active: string; sub: string; description: string }>;
+  }> {
+    const failedUnits: Array<{ unit: string; load: string; active: string; sub: string; description: string }> = [];
+    const criticalErrors: string[] = [];
+    const services: Array<{ name: string; active: string; sub: string; description: string }> = [];
+
+    if (process.platform === 'linux') {
+      try {
+        const { stdout } = await execFileAsync(
+          'systemctl',
+          ['list-units', '--type=service', '--state=failed', '--no-legend', '--plain'],
+          { timeout: 3000 },
+        );
+        for (const line of stdout.split('\n')) {
+          const parts = line.trim().split(/\s+/);
+          if (parts.length >= 5) {
+            failedUnits.push({
+              unit: parts[0] || '',
+              load: parts[1] || '',
+              active: parts[2] || '',
+              sub: parts[3] || '',
+              description: parts.slice(4).join(' '),
+            });
+          }
+        }
+      } catch {
+        // no failed units
+      }
+
+      try {
+        const { stdout } = await execFileAsync(
+          'journalctl',
+          ['-p', '3', '-xb', '-n', '30', '--no-pager'],
+          { timeout: 5000 },
+        );
+        for (const line of stdout.split('\n')) {
+          const trimmed = line.trim();
+          if (trimmed.length > 0 && !trimmed.startsWith('-- Logs begin')) {
+            criticalErrors.push(trimmed);
+          }
+        }
+      } catch {
+        // fallback
+      }
+
+      try {
+        const { stdout } = await execFileAsync(
+          'systemctl',
+          ['list-units', '--type=service', '--all', '--no-legend', '--plain', 'fastfree*', 'caddy*', 'mariadb*', 'redis*', 'sshd*'],
+          { timeout: 3000 },
+        );
+        for (const line of stdout.split('\n')) {
+          const parts = line.trim().split(/\s+/);
+          if (parts.length >= 5) {
+            services.push({
+              name: parts[0] || '',
+              active: parts[2] || '',
+              sub: parts[3] || '',
+              description: parts.slice(4).join(' '),
+            });
+          }
+        }
+      } catch {
+        // fallback
+      }
+    }
+
+    return { failedUnits, criticalErrors, services };
+  }
 }
 
 export const nixosService = new NixosService();

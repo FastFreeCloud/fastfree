@@ -14,9 +14,36 @@
 
       <q-space />
 
-      <q-chip dense square color="positive" text-color="white" size="sm" icon="mdi-check-decagram">
-        NATIVE SYSTEMD (ZERO PODMAN)
+      <!-- Failed Units Badge -->
+      <q-chip
+        v-if="failedUnits.length > 0"
+        clickable
+        color="negative"
+        text-color="white"
+        icon="mdi-alert-circle"
+        @click="diagnosticsDialogOpen = true"
+      >
+        {{ failedUnits.length }} FAILED UNITS · أخطاء خدمات
       </q-chip>
+      <q-chip
+        v-else
+        color="positive"
+        text-color="white"
+        size="sm"
+        icon="mdi-check-decagram"
+      >
+        0 FAILED UNITS (ALL HEALTHY)
+      </q-chip>
+
+      <q-btn
+        flat
+        dense
+        color="amber"
+        icon="mdi-alert-box-outline"
+        label="System Errors · أخطاء النظام"
+        class="q-px-sm"
+        @click="diagnosticsDialogOpen = true"
+      />
 
       <!-- Status Filter -->
       <q-btn-toggle
@@ -178,6 +205,79 @@
       </q-table>
     </q-card>
 
+    <!-- System Diagnostics Modal -->
+    <q-dialog v-model="diagnosticsDialogOpen">
+      <q-card style="min-width: min(92vw, 840px)">
+        <q-card-section class="row items-center q-gutter-sm bg-grey-10 text-white">
+          <q-icon name="mdi-alert-octagon" size="26px" color="amber-4" />
+          <div>
+            <div class="text-subtitle1 text-weight-bold">
+              System Diagnostics & Error Inspector · فحص أخطاء النظام
+            </div>
+            <div class="text-caption text-grey-5">
+              Live failed units from systemctl & priority-3 logs from journalctl
+            </div>
+          </div>
+          <q-space />
+          <q-btn flat dense round icon="mdi-close" v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pa-md">
+          <div class="text-subtitle2 text-weight-bold q-mb-xs row items-center">
+            <q-icon name="mdi-alert-circle-outline" color="negative" class="q-mr-xs" />
+            <span>Failed Units (systemctl --failed)</span>
+            <q-badge :color="failedUnits.length > 0 ? 'negative' : 'positive'" class="q-ml-sm">
+              {{ failedUnits.length }}
+            </q-badge>
+          </div>
+
+          <div v-if="failedUnits.length === 0" class="q-pa-sm text-positive bg-grey-10 rounded-borders q-mb-md">
+            <q-icon name="mdi-check-circle" size="18px" class="q-mr-xs" />
+            No failed units detected! All Clan and host services are active and operational.
+          </div>
+          <div v-else class="q-mb-md">
+            <q-list bordered separator class="rounded-borders bg-grey-10">
+              <q-item v-for="unit in failedUnits" :key="unit.unit">
+                <q-item-section avatar>
+                  <q-icon name="mdi-alert-decagram" color="negative" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label class="text-weight-bold font-mono text-negative">{{ unit.unit }}</q-item-label>
+                  <q-item-label caption class="text-grey-4">{{ unit.description }}</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-chip dense square color="negative" text-color="white" size="xs">
+                    {{ unit.active }} / {{ unit.sub }}
+                  </q-chip>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </div>
+
+          <div class="text-subtitle2 text-weight-bold q-mb-xs row items-center">
+            <q-icon name="mdi-format-list-bulleted-triangle" color="amber" class="q-mr-xs" />
+            <span>Critical Errors (journalctl -p 3 -xb)</span>
+            <q-badge color="amber-9" class="q-ml-sm">
+              {{ criticalErrors.length }} lines
+            </q-badge>
+          </div>
+
+          <div v-if="criticalErrors.length === 0" class="q-pa-sm text-grey-5 bg-grey-10 rounded-borders font-mono text-caption">
+            No priority-3 errors found in the current boot journal.
+          </div>
+          <div
+            v-else
+            class="q-pa-sm bg-black text-amber-3 font-mono text-caption rounded-borders"
+            style="max-height: 280px; overflow-y: auto;"
+          >
+            <div v-for="(errLine, idx) in criticalErrors" :key="idx" class="q-py-xs" style="border-bottom: 1px solid #222;">
+              {{ errLine }}
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
     <!-- Logs Modal -->
     <q-dialog v-model="logsDialogOpen">
       <q-card style="min-width: min(90vw, 720px)">
@@ -196,12 +296,9 @@
 [systemd] Starting {{ activeService?.description }}...
 [systemd] Bound socket on {{ activeService?.port || 'local socket' }}
 [systemd] Started {{ activeService?.name }}.
-Active: active (running) since Sat 2026-10-17 19:42:10 UTC; 4h 32min ago
+Active: active (running)
 Main PID: {{ activeService?.pid }} ({{ activeService?.name.replace('.service', '') }})
-Tasks: 8 (limit: 4915)
 Memory: {{ activeService?.memory }}
-CPU: 420ms
-CGroup: /system.slice/{{ activeService?.name }}
 STATUS=Operational, responding to health probes
           </pre>
         </q-card-section>
@@ -211,8 +308,16 @@ STATUS=Operational, responding to health probes
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
+
+interface FailedUnit {
+  unit: string;
+  load: string;
+  active: string;
+  sub: string;
+  description: string;
+}
 
 interface SystemdService {
   name: string;
@@ -230,6 +335,10 @@ const $q = useQuasar();
 const filter = ref('');
 const statusFilter = ref<'all' | 'running'>('all');
 const loading = ref(false);
+
+const diagnosticsDialogOpen = ref(false);
+const failedUnits = ref<FailedUnit[]>([]);
+const criticalErrors = ref<string[]>([]);
 
 const logsDialogOpen = ref(false);
 const activeService = ref<SystemdService | null>(null);
@@ -388,17 +497,35 @@ function viewServiceLogs(service: SystemdService): void {
   logsDialogOpen.value = true;
 }
 
-function refreshServices(): void {
-  loading.value = true;
-  setTimeout(() => {
-    loading.value = false;
-    $q.notify({
-      type: 'positive',
-      icon: 'mdi-refresh',
-      message: 'Systemd service states updated from host!',
-    });
-  }, 300);
+async function fetchDiagnostics(): Promise<void> {
+  try {
+    const res = await fetch('/api/v1/system/diagnostics');
+    if (res.ok) {
+      const json = await res.json() as { data?: { failedUnits?: FailedUnit[]; criticalErrors?: string[] } };
+      if (json.data) {
+        failedUnits.value = json.data.failedUnits || [];
+        criticalErrors.value = json.data.criticalErrors || [];
+      }
+    }
+  } catch {
+    // fallback gracefully
+  }
 }
+
+async function refreshServices(): Promise<void> {
+  loading.value = true;
+  await fetchDiagnostics();
+  loading.value = false;
+  $q.notify({
+    type: 'positive',
+    icon: 'mdi-refresh',
+    message: 'Systemd service states updated from host!',
+  });
+}
+
+onMounted(() => {
+  void fetchDiagnostics();
+});
 </script>
 
 <style scoped lang="scss">

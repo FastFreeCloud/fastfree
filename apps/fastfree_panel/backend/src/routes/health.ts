@@ -32,3 +32,9 @@ healthRoutes.get('/health', (c) => {
   };
   return c.json(ok(body));
 });
+
+healthRoutes.get('/system/diagnostics', async (c) => {
+  const { nixosService } = await import('../core/nixos.service.js');
+  const diagnostics = await nixosService.getSystemDiagnostics();
+  return c.json(ok(diagnostics));
+});
