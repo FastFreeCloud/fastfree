@@ -15,6 +15,8 @@
     "backend:dev": "pnpm --filter @fastfree/clan-panel-backend run dev",
     "backend:build": "pnpm --filter @fastfree/clan-panel-backend run build",
     "backend:typecheck": "pnpm --filter @fastfree/clan-panel-backend run typecheck",
+    "test:e2e": "cypress run",
+    "test:e2e:open": "cypress open",
     "postinstall": "quasar prepare --silent"
   },
   "dependencies": {
@@ -37,6 +39,7 @@
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.7.0",
     "autoprefixer": "^10.4.27",
+    "cypress": "^14.0.0",
     "eslint": "^10.8.0",
     "eslint-plugin-vue": "^10.8.0",
     "globals": "^17.4.0",

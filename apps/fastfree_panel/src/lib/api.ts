@@ -81,6 +81,11 @@ export interface MachineSummary {
   name: string;
   hostname: string | null;
   isOnline: boolean | null;
+  description?: string | null | undefined;
+  host?: string | null | undefined;
+  tags?: string[] | undefined;
+  roles?: string[] | undefined;
+  reachable?: boolean | undefined;
 }
 
 /** GET /api/v1/machines payload */

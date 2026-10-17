@@ -76,7 +76,7 @@
   fastfree.herdr.package = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default or null;
 
   fastfree.networking = {
-    interface = "eth0";
+    interface = "ens18";
     nameservers = [ "1.1.1.1" "8.8.8.8" ];
     ipv4Address = "76.13.51.10";
     ipv4Gateway = "76.13.51.254";
@@ -92,6 +92,7 @@
   };
   services.qemuGuest.enable = true;
   services.openssh.enable = true;
+  services.nginx.enable = lib.mkForce false;
 
   # ── Password SSH (explicit user preference) ───────────────
   # Clan sshd hardcodes PasswordAuthentication=false; override with HIGHER
@@ -104,13 +105,16 @@
   users.mutableUsers = true;
   users.users.root = {
     initialPassword = "FastFree@2026";
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILvq/DkqsJNIuBkcxc5ttL7N893RU2+xb+ynBTSYYcDR fastfree-panel-windows"
+    ];
   };
 
 
   fastfree.avahi = {
     enable = true;
     reflector = false;
-    interfaces = [ "eth0" "wg0" "wireguard" ];
+    interfaces = [ "ens18" "eth0" "wg0" "wireguard" ];
   };
 
   # MariaDB state lives in modules/mariadb.nix (all mariadb machines).

@@ -68,6 +68,10 @@
   # Herdr CLI from flake input (system-wide binary).
   fastfree.herdr.package = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
+  fastfree.networking = {
+    interface = "eth0";
+  };
+
   # Hyper-V guest disk layout (mirrors flake.nix mkClientModules hyperv branch).
   virtualisation.hypervGuest.enable = true;
   fileSystems."/" = {

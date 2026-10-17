@@ -95,7 +95,7 @@
       interface = lib.mkOption {
         type = lib.types.str;
         default = "ens18";
-        description = "Network interface name for static IP configuration.";
+        description = "Primary network interface name (e.g. ens18 on KVM/Hostinger, eth0 on Hyper-V/AWS). Combined with 'en* eth*' wildcard in systemd-networkd for universal ethernet fallback.";
       };
       ipv4Address = lib.mkOption {
         type = lib.types.str;

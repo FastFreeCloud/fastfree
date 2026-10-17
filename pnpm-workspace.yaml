@@ -18,6 +18,7 @@ allowBuilds:
   '@tailwindcss/oxide': true
   bufferutil: true
   core-js: true
+  cypress: true
   # electron arrives only as a transitive dep of @vue/devtools-electron
   # (fastfree_erp devDep). Its postinstall downloads a ~100 MB binary that
   # nothing here uses, and @vue/devtools falls back to the browser build, so

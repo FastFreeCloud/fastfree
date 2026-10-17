@@ -17,7 +17,7 @@ export default defineConfig((ctx) => {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['i18n', 'fonts'],
+    boot: ['i18n', 'fonts', 'clan-screens'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css
     // The design fonts (IBM Plex Sans + Arabic) are loaded by the `fonts` boot
@@ -100,6 +100,13 @@ export default defineConfig((ctx) => {
               target: `http://${apiHost}:${apiPort}`,
               changeOrigin: false,
               secure: false,
+              ws: true,
+            },
+            '/mcp': {
+              target: `http://${apiHost}:${apiPort}`,
+              changeOrigin: false,
+              secure: false,
+              ws: true,
             },
           },
         };

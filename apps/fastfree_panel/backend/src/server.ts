@@ -17,16 +17,18 @@ import { secureHeaders } from 'hono/secure-headers';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 
+import type { HttpBindings } from '@hono/node-server';
 import { config } from './config.js';
 import { ApiError, statusForCode, toErrorBody } from './http/errors.js';
 import { globalRoutes } from './routes/global.js';
 import { healthRoutes } from './routes/health.js';
 import { machinesRoutes } from './routes/machines.js';
+import { mcpRoutes } from './routes/mcp.js';
 
 const API_PREFIX = '/api/v1';
 
-export function createApp(): Hono {
-  const app = new Hono();
+export function createApp(): Hono<{ Bindings: HttpBindings }> {
+  const app = new Hono<{ Bindings: HttpBindings }>();
 
   app.use('*', logger());
   app.use('*', secureHeaders());
@@ -49,6 +51,10 @@ export function createApp(): Hono {
   app.route(API_PREFIX, healthRoutes);
   app.route(API_PREFIX, machinesRoutes);
   app.route(API_PREFIX, globalRoutes);
+
+  // Mount Web MCP server routes
+  app.route('/mcp', mcpRoutes);
+  app.route(`${API_PREFIX}/mcp`, mcpRoutes);
 
   app.notFound((c) =>
     c.json({ error: { code: 'NOT_FOUND', message: 'No such endpoint.' } }, 404),

@@ -21,14 +21,20 @@ export type ReadOnlyCommandId =
   | 'global.show'
   | 'network.overview'
   | 'network.list'
-  | 'secrets.groups.list';
+  | 'secrets.groups.list'
+  | 'vars.list'
+  | 'select.machines';
 
-export interface ReadOnlyCommand {
-  readonly id: ReadOnlyCommandId;
+export type AllowedCommandId = ReadOnlyCommandId | 'machines.update';
+
+export interface AllowedCommand {
+  readonly id: AllowedCommandId;
   /** Exact argv, without the binary name. Compared token by token. */
   readonly argv: readonly string[];
   readonly description: string;
 }
+
+export type ReadOnlyCommand = AllowedCommand;
 
 function template(
   id: ReadOnlyCommandId,
@@ -64,6 +70,16 @@ export const READ_ONLY_COMMANDS: { readonly [K in ReadOnlyCommandId]: ReadOnlyCo
       'secrets.groups.list',
       ['secrets', 'groups', 'list'],
       'List secret group names only. Never exposes a secret value.',
+    ),
+    'vars.list': template(
+      'vars.list',
+      ['vars', 'list'],
+      'List clan variables and their state.',
+    ),
+    'select.machines': template(
+      'select.machines',
+      ['select', 'machines'],
+      'Query clan machines and metadata.',
     ),
   });
 
@@ -113,6 +129,8 @@ export function denylistMatch(args: readonly string[]): readonly string[] | null
   return null;
 }
 
+const MACHINE_NAME_PATTERN = /^[a-z0-9][a-z0-9-]{0,62}$/i;
+
 /**
  * The single guard every spawn must pass.
  *
@@ -120,7 +138,7 @@ export function denylistMatch(args: readonly string[]): readonly string[] | null
  *         or when it matches a denylist prefix. Never includes the argv itself
  *         in the message.
  */
-export function assertAllowed(args: readonly string[]): ReadOnlyCommand {
+export function assertAllowed(args: readonly string[]): AllowedCommand {
   if (denylistMatch(args) !== null) {
     throw new ApiError('FORBIDDEN', 'This command is permanently disabled.');
   }
@@ -131,7 +149,33 @@ export function assertAllowed(args: readonly string[]): ReadOnlyCommand {
     }
   }
 
-  throw new ApiError('FORBIDDEN', 'This command is not in the read-only allowlist.');
+  // Handle parameterized 'machines update <machine>' command
+  if (args[0] === 'machines' && args[1] === 'update') {
+    const machine = args[2];
+    if (!machine || !MACHINE_NAME_PATTERN.test(machine)) {
+      throw ApiError.validation('Invalid machine name for update.', { field: 'name' });
+    }
+    if (args.length === 3) {
+      return {
+        id: 'machines.update',
+        argv: Object.freeze([...args]),
+        description: `Update Clan machine ${machine}.`,
+      };
+    }
+    if (
+      args.length === 5 &&
+      args[3] === '--host-key-check' &&
+      (args[4] === 'tofu' || args[4] === 'ask')
+    ) {
+      return {
+        id: 'machines.update',
+        argv: Object.freeze([...args]),
+        description: `Update Clan machine ${machine} with host-key-check ${args[4]}.`,
+      };
+    }
+  }
+
+  throw new ApiError('FORBIDDEN', 'This command is not in the allowlist.');
 }
 
 export function isReadOnlyCommandId(value: string): value is ReadOnlyCommandId {

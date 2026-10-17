@@ -141,17 +141,27 @@ in {
           fi
           sleep 1
         done
-        ROOT_PASS=$(cat "${dbRootPassFile}")
-        USER_PASS=$(cat "${dbUserPassFile}")
-        ${config.services.mysql.package}/bin/mysql <<SQL
-          CREATE USER IF NOT EXISTS 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$ROOT_PASS');
-          GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;
-          FLUSH PRIVILEGES;
-          CREATE DATABASE IF NOT EXISTS fastfree_backend;
-          CREATE USER IF NOT EXISTS 'fastfree_backend'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$USER_PASS');
-          GRANT ALL PRIVILEGES ON fastfree_backend.* TO 'fastfree_backend'@'localhost';
-          FLUSH PRIVILEGES;
-        SQL
+        ROOT_PASS=""
+        if [ -f "${dbRootPassFile}" ]; then
+          ROOT_PASS=$(cat "${dbRootPassFile}")
+        fi
+        USER_PASS=""
+        if [ -f "${dbUserPassFile}" ]; then
+          USER_PASS=$(cat "${dbUserPassFile}")
+        fi
+        if [ -n "$ROOT_PASS" ]; then
+          ${config.services.mysql.package}/bin/mysql -u root -e "
+            CREATE USER IF NOT EXISTS 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$ROOT_PASS');
+            GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;
+            FLUSH PRIVILEGES;"
+        fi
+        if [ -n "$USER_PASS" ]; then
+          ${config.services.mysql.package}/bin/mysql -u root -e "
+            CREATE DATABASE IF NOT EXISTS fastfree_backend;
+            CREATE USER IF NOT EXISTS 'fastfree_backend'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$USER_PASS');
+            GRANT ALL PRIVILEGES ON fastfree_backend.* TO 'fastfree_backend'@'localhost';
+            FLUSH PRIVILEGES;"
+        fi
       '';
     };
 

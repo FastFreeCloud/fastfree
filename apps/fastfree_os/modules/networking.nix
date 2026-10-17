@@ -44,9 +44,22 @@ in {
     # VPS/systemd-networkd for servers only (local uses NetworkManager)
     systemd.network = lib.mkIf (!isLocal) {
       enable = true;
+
+      # Prevent systemd-networkd-wait-online from blocking boot if extra NICs are unplugged
+      wait-online = {
+        enable = lib.mkDefault true;
+        anyInterface = true;
+        timeout = 15;
+      };
+
       # DHCP mode (no static IP configured)
       networks."10-wan" = lib.mkIf (config.fastfree.networking.ipv4Address == "") {
-        matchConfig.Name = config.fastfree.networking.interface;
+        matchConfig = {
+          Name = if config.fastfree.networking.interface != ""
+            then "${config.fastfree.networking.interface} en* eth*"
+            else "en* eth*";
+          Type = "ether";
+        };
         networkConfig = {
           DHCP = "yes";
           DNS = config.fastfree.networking.nameservers;
@@ -55,22 +68,31 @@ in {
           UseDNS = true;
         };
       };
-      # Static IP mode
+      # Universal WAN (Static IP with automatic DHCP fallback)
       networks."10-wan-static" = lib.mkIf (config.fastfree.networking.ipv4Address != "") {
-        matchConfig.Name = config.fastfree.networking.interface;
+        matchConfig = {
+          Name = if config.fastfree.networking.interface != ""
+            then "${config.fastfree.networking.interface} en* eth*"
+            else "en* eth*";
+          Type = "ether";
+        };
         networkConfig = {
-          DHCP = "no";
+          DHCP = "yes";
           DNS = config.fastfree.networking.nameservers;
           DNSSEC = "allow-downgrade";
           DNSOverTLS = "opportunistic";
+          IPv6AcceptRA = true;
+        };
+        dhcpConfig = {
+          UseRoutes = true;
+          RouteMetric = 1024;
         };
         address = [ "${config.fastfree.networking.ipv4Address}/${toString config.fastfree.networking.ipv4Prefix}" ];
-        routes = [
-          {
-            Gateway = config.fastfree.networking.ipv4Gateway;
-            GatewayOnLink = true;
-          }
-        ];
+        routes = lib.optional (config.fastfree.networking.ipv4Gateway != "") {
+          Gateway = config.fastfree.networking.ipv4Gateway;
+          GatewayOnLink = true;
+          Metric = 100;
+        };
       };
     };
   };

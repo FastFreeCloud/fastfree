@@ -37,7 +37,7 @@
         # root's key set with client2-deploy alone and lock out every manual
         # `clan machines update` / `clan ssh` run from the workstation.
         "client3-admin" = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGszztIACEpNLDgPR0IH7HdNCU6hEbIP8WG7ssMXKPwg fastfree@client3";
-        "windows-operator" = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDI6UEzJEPLZUnJAqom/CoA0QR7eGrhXz0WQqESQHcgJ fastfree-panel-windows";
+        "windows-operator" = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILvq/DkqsJNIuBkcxc5ttL7N893RU2+xb+ynBTSYYcDR fastfree-panel-windows";
       };
     };
     user-fastfree = {

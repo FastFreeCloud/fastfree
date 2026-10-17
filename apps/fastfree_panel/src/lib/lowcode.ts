@@ -55,5 +55,24 @@ export type { FormatterOptions } from '#lc/utils/formatters';
 
 import DynamicTable from '#lc/components/DynamicTable.vue';
 import EmptyState from '#lc/components/EmptyState.vue';
+import DesktopShell from '#lc/components/DesktopShell.vue';
+import DesktopDock from '#lc/components/DesktopDock.vue';
+import DesktopHeader from '#lc/components/DesktopHeader.vue';
+import WindowPanel from '#lc/components/WindowPanel.vue';
+import GroupWorkspace from '#lc/components/GroupWorkspace.vue';
 
-export { DynamicTable, EmptyState };
+export {
+  DynamicTable,
+  EmptyState,
+  DesktopShell,
+  DesktopDock,
+  DesktopHeader,
+  WindowPanel,
+  GroupWorkspace,
+};
+
+export { useDesktopStore } from '#lc/composables/useDesktopStore';
+export type { WindowInfo } from '#lc/composables/useDesktopStore';
+export { useGroupsStore, registerGroup, registerGroupPage } from '#lc/composables/useGroupsStore';
+export { registerScreen, registerScreens, getScreenComponent } from '#lc/composables/screen-registry';
+export { useLcI18n } from '#lc/i18n';

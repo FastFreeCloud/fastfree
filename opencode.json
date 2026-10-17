@@ -6,6 +6,16 @@
       "type": "remote",
       "url": "https://mcp.context7.com/mcp"
     },
+    "fastfree-panel": {
+      "type": "local",
+      "command": [
+        "node",
+        "C:/Users/FastFree/Desktop/fastfree/apps/fastfree_panel/backend/dist/mcp/stdio.js"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
     "quasar": {
       "type": "local",
       "command": [
@@ -110,6 +120,20 @@
       },
       "enabled": true,
       "timeout": 600000
+    },
+    "herdr": {
+      "type": "local",
+      "command": [
+        "python",
+        "C:/Users/FastFree/AppData/Roaming/herdr/plugins/github-installations/herdr.mcp-227709cb4c00/6428-0/checkout/bin/herdr-mcp",
+        "--stdio"
+      ],
+      "environment": {
+        "HERDR_MCP_DEFAULT_KIND": "opencode"
+      },
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
     }
   },
   "permission": {

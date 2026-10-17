@@ -103,9 +103,11 @@ let
         ${tlsBlock}
         header -Server
         root * /srv/fastfree-panel
-        @api path /api/*
-        handle @api {
-          reverse_proxy 127.0.0.1:9099
+        @backend path /api/* /mcp/*
+        handle @backend {
+          reverse_proxy 127.0.0.1:9099 {
+            flush_interval -1
+          }
         }
         handle {
           try_files {path} /index.html
