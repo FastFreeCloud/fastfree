@@ -51,13 +51,16 @@ import { existsSync } from 'node:fs';
 function readClanDir(): string | null {
   const raw = process.env.CLAN_DIR?.trim();
   if (raw && raw.length > 0 && existsSync(raw)) {
+    if (raw === '/etc/clan' && !existsSync('/etc/clan/.git') && existsSync('/root/fastfree-source/apps/fastfree_os')) {
+      return '/root/fastfree-source/apps/fastfree_os';
+    }
     return resolve(raw);
   }
   const candidates = [
-    '/etc/clan',
     '/root/fastfree-source/apps/fastfree_os',
     resolve(process.cwd(), '../fastfree_os'),
     resolve(process.cwd(), 'apps/fastfree_os'),
+    '/etc/clan',
   ];
   for (const candidate of candidates) {
     if (existsSync(candidate)) {

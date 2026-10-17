@@ -57,7 +57,7 @@ EOF
         NODE_ENV = "production";
         CLAN_PANEL_API_HOST = "127.0.0.1";
         CLAN_PANEL_API_PORT = "9099";
-        CLAN_DIR = "/etc/clan";
+        CLAN_DIR = "/root/fastfree-source/apps/fastfree_os";
       };
       serviceConfig = {
         Restart = "on-failure";

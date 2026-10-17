@@ -127,6 +127,7 @@ function buildEnv(): NodeJS.ProcessEnv {
   if (config.clanDir !== null) {
     env.CLAN_DIR = config.clanDir;
   }
+  env.GIT_DISCOVERY_ACROSS_FILESYSTEM = '1';
   return env;
 }
 
