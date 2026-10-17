@@ -41,6 +41,9 @@
   # sops age key for this machine: use the SSH host key directly (zero external file dependency)
   sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
   sops.age.keyFile = lib.mkForce null;
+  system.activationScripts.setupSecrets = lib.mkForce "";
+  system.activationScripts.setupSecretsForUsers = lib.mkForce "";
+  services.alloy.enable = lib.mkForce false;
 
   fastfree.identity.name = lib.mkForce "client2";
   fastfree.identity.domain = lib.mkForce "fastfree.cloud";

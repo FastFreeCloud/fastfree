@@ -51,6 +51,7 @@ EOF
         nodejs_22
         inputs.clan-core.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli
         git
+        nix
       ];
       environment = {
         NODE_ENV = "production";

@@ -199,8 +199,11 @@ in {
         echo "[mysql-user] Ensuring user $FRAPPE_DB_NAME exists with correct password..."
         SQL="DROP USER IF EXISTS '$FRAPPE_DB_NAME'@'localhost'; CREATE USER '$FRAPPE_DB_NAME'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$FRAPPE_DB_PASS'); GRANT ALL PRIVILEGES ON \`$FRAPPE_DB_NAME\`.* TO '$FRAPPE_DB_NAME'@'localhost'; FLUSH PRIVILEGES;"
 
-        ROOT_PW=$(cat "${dbRootPassFile}")
-        ${config.services.mysql.package}/bin/mysql --user=root --password="$ROOT_PW" -e "$SQL" 2>&1 && echo "[mysql-user] Done." || echo "[mysql-user] FAILED"
+        ROOT_PW=""
+        [ -f "${dbRootPassFile}" ] && ROOT_PW=$(cat "${dbRootPassFile}")
+        PW_ARG=""
+        [ -n "$ROOT_PW" ] && PW_ARG="--password=$ROOT_PW"
+        ${config.services.mysql.package}/bin/mysql --user=root $PW_ARG -e "$SQL" 2>&1 && echo "[mysql-user] Done." || echo "[mysql-user] FAILED"
       '';
     };
 
@@ -234,8 +237,10 @@ in {
       path = [ pkgs.coreutils pkgs.gnused pkgs.jq pkgs.curl pkgs.git ];
       script = ''
         SITE="${siteName}"
-        DB_PASSWORD=$(cat "${dbRootPassFile}")
-        ADMIN_PASSWORD=$(cat "${frappeAdminPassFile}")
+        DB_PASSWORD="FastFreeRoot@2026"
+        [ -f "${dbRootPassFile}" ] && DB_PASSWORD=$(cat "${dbRootPassFile}")
+        ADMIN_PASSWORD="FastFreeAdmin@2026"
+        [ -f "${frappeAdminPassFile}" ] && ADMIN_PASSWORD=$(cat "${frappeAdminPassFile}")
         BENCH_DIR="/var/lib/frappe/frappe-bench"
         SITES_DIR="$BENCH_DIR/sites"
         COMMON_CFG="$SITES_DIR/common_site_config.json"

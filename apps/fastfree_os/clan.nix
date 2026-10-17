@@ -63,35 +63,9 @@
       roles.peer.machines."client1".settings.port = 51821;
       roles.peer.machines."client3".settings.port = 51821;
     };
-    # Backups (docs: guides/backups/intro-to-backups + services/official/borgbackup).
-    # client2 (always-on VPS, SSH on) is the repo server; client1+client2 push to it
-    # (empty client settings = back up to the clan server, keys auto-generated).
-    # client3 keeps SSH OFF by design, so it backs up to a LOCAL borg repo (no SSH needed).
-    # clan.core.state folders are picked up automatically; default schedule 01:00.
-    borgbackup = {
-      module.name = "borgbackup";
-      module.input = "clan-core";
-      roles.server.machines."client2".settings = {
-        address = "fastfree.cloud";
-        directory = "/var/lib/borgbackup";
-      };
-      roles.client.machines."client1" = { };
-      roles.client.machines."client2" = { };
-      roles.client.machines."client3".settings = {
-        destinations.local.repo = "/var/lib/backups/client3";
-      };
-    };
-    # Monitoring (docs: services/official/monitoring) — exactly one server.
-    # client2 (always-on VPS) stores (Loki+Mimir+Grafana); all push to it.
-    monitoring = {
-      module.name = "monitoring";
-      module.input = "clan-core";
-      roles.client.tags = [ "all" ];
-      roles.client.settings.useSSL = false;
-      roles.server.machines."client2".settings = {
-        grafana.enable = true;
-      };
-    };
+    # Backups & Monitoring: Disabled until Clan vars are re-keyed with current server host key.
+    # borgbackup = { ... };
+    # monitoring = { ... };
     # Trusted binary caches (docs: services/official/trusted-nix-caches).
     # Zero settings, zero secrets — speeds up builds on all machines.
     clan-cache = {
