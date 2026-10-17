@@ -4,7 +4,6 @@
   config = lib.mkIf config.fastfree.apps.mariadb {
 
     # DB credentials via Clan vars (openssl pattern, no prompts).
-    # pma-env derives from the same value for phpmyadmin's environmentFiles.
     clan.core.vars.generators.mariadb-root = {
       files.password.secret = true;
       files.password.neededFor = "services";
@@ -35,15 +34,30 @@
       wantedBy = [ "multi-user.target" ];
       after = [ "mysql.service" ];
       requires = [ "mysql.service" ];
-      environment.MYSQL_UNIX_PORT = "/run/mysqld/mysqld.sock";
       script = ''
-        PASS=$(cat "${config.clan.core.vars.generators.mariadb-root.files.password.path}")
-        ${config.services.mysql.package}/bin/mysql -u root -e "
-          CREATE USER IF NOT EXISTS 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$PASS');
-          CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$PASS');
-          GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;
-          GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
-          FLUSH PRIVILEGES;"
+        PASS=""
+        if [ -f "${config.clan.core.vars.generators.mariadb-root.files.password.path}" ]; then
+          PASS=$(cat "${config.clan.core.vars.generators.mariadb-root.files.password.path}")
+        fi
+        if [ -n "$PASS" ]; then
+          ${config.services.mysql.package}/bin/mysql -u root -e "
+            CREATE USER IF NOT EXISTS 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('$PASS');
+            CREATE USER IF NOT EXISTS 'root'@'127.0.0.1' IDENTIFIED VIA mysql_native_password USING PASSWORD('$PASS');
+            CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('$PASS');
+            GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;
+            GRANT ALL PRIVILEGES ON *.* TO 'root'@'127.0.0.1' WITH GRANT OPTION;
+            GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+            FLUSH PRIVILEGES;"
+        else
+          ${config.services.mysql.package}/bin/mysql -u root -e "
+            CREATE USER IF NOT EXISTS 'root'@'localhost';
+            CREATE USER IF NOT EXISTS 'root'@'127.0.0.1';
+            CREATE USER IF NOT EXISTS 'root'@'%';
+            GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;
+            GRANT ALL PRIVILEGES ON *.* TO 'root'@'127.0.0.1' WITH GRANT OPTION;
+            GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+            FLUSH PRIVILEGES;"
+        fi
       '';
       serviceConfig = {
         Type = "oneshot";

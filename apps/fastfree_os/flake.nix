@@ -95,7 +95,7 @@
         ./modules/fastfree_hr.nix
         ./modules/fastfree_pos.nix
         ./modules/fastfree_website.nix
-        ./modules/phpmyadmin.nix
+        ./modules/dbgate.nix
         ./modules/cockpit.nix
         ./modules/desktop.nix
         ./modules/avahi-subdomains.nix

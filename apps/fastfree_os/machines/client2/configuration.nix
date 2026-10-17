@@ -30,7 +30,7 @@
     ../../modules/fastfree_hr.nix
     ../../modules/fastfree_pos.nix
     ../../modules/fastfree_website.nix
-    ../../modules/phpmyadmin.nix
+    ../../modules/dbgate.nix
     ../../modules/cockpit.nix
     ../../modules/opencode.nix
     ../../modules/shortcuts.nix
@@ -64,7 +64,7 @@
     herdr = true;
     mariadb = true;
     caddy = true;
-    phpmyadmin = true;
+    dbgate = true;
     cockpit = true;
     fastfree_backend = true;
     fastfree_panel = true;

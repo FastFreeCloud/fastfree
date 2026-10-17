@@ -114,7 +114,7 @@ let
       }
     ''}
 
-    ${lib.optionalString config.fastfree.apps.phpmyadmin ''
+    ${lib.optionalString config.fastfree.apps.dbgate ''
       ${sd.db}.${domain} {
         ${tlsBlock}
         header -Server
@@ -143,6 +143,9 @@ in {
       serviceConfig = {
         ExecStart = lib.mkForce [
           "" "${pkgs.caddy}/bin/caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"
+        ];
+        ExecReload = lib.mkForce [
+          "" "${pkgs.caddy}/bin/caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile --force"
         ];
       };
     };

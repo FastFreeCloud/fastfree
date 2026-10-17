@@ -47,7 +47,7 @@
       fastfree_hr      = lib.mkEnableOption "FastFree HR (Human Resources + CRM)";
       fastfree_pos     = lib.mkEnableOption "FastFree POS (Point of Sale)";
       fastfree_website = lib.mkEnableOption "FastFree Website (Next.js public website)";
-      phpmyadmin   = lib.mkEnableOption "phpMyAdmin";
+      dbgate       = lib.mkEnableOption "DbGate Database Management Web Interface";
       cockpit      = lib.mkEnableOption "Cockpit web-based server management";
       desktop      = lib.mkEnableOption "COSMIC desktop environment (all machines)";
       remote       = lib.mkEnableOption "xrdp remote desktop (X11 session) for phone/other machines";
@@ -57,7 +57,7 @@
       db = lib.mkOption {
         type = lib.types.str;
         default = "db";
-        description = "phpMyAdmin subdomain prefix.";
+        description = "DbGate database management subdomain prefix.";
       };
       panel = lib.mkOption {
         type = lib.types.str;

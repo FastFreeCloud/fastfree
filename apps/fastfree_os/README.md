@@ -75,7 +75,7 @@ Production-ready NixOS with multi-client architecture, **3 deployment types** (v
 │  │              NixOS VM (Hyper-V / VPS)                       │   │
 │  │                                                          │   │
 │  │  MariaDB ◄──── fastfree_backend.nix (Podman containers)    │   │
-│  │       ◄──── phpmyadmin.nix                              │   │
+│  │       ◄──── dbgate.nix                                  │   │
 │  │                                                          │   │
 │  │  WireGuard mesh ◄── clan.nix (official service)     │   │
 │  │  Avahi mDNS     ◄── avahi-subdomains.nix                │   │
@@ -132,7 +132,7 @@ fastfree_os /
 │  ├── caddy.nix                       # Caddy reverse proxy (conditional sites)
 │  ├── fastfree_backend.nix            # Frappe/ERPNext — Podman containers from GHCR
 │  ├── fastfree_ledger/erp/hr/pos/website.nix  # SPA extractors served via Caddy
-│  ├── phpmyadmin.nix                  # phpMyAdmin container (env from vars)
+│  ├── dbgate.nix                      # DbGate web interface (MariaDB + Redis)
 │  ├── cockpit.nix                     # Cockpit web panel (client2/3)
 │  ├── desktop.nix                     # COSMIC desktop + xkb us/ara + shortcuts
 │  ├── locale.nix                      # Timezone + en_US/ar_EG + Arabic fonts
@@ -277,7 +277,7 @@ git push → GitHub Actions →
 | 443 | Caddy | — | 0.0.0.0 (VPS) |
 | 51821 | WireGuard (Clan mesh) | — | 0.0.0.0 |
 | 8080 | Frappe/ERPNext | fastfree-backend-frontend | Podman |
-| 8082 | phpMyAdmin | phpmyadmin | Podman |
+| 8082 | DbGate | dbgate | Native systemd |
 
 ### Podman Containers
 
@@ -291,14 +291,14 @@ git push → GitHub Actions →
 | `fastfree-backend-scheduler` | `ghcr.io/FastFreeCloud/fastfree_backend` | fastfree-net | Bench scheduler |
 | `fastfree-redis-cache` | `redis:8.6-alpine` | fastfree-net | Redis cache |
 | `fastfree-redis-queue` | `redis:8.6-alpine` | fastfree-net | Redis task queue |
-| `phpmyadmin` | `phpmyadmin:5` | fastfree-net | Database management |
+| `dbgate` | `dbgate-serve` | host | Database management (MariaDB + Redis) |
 
 ### Access URLs
 
 | Service | Local (client3) | Hyper-V (client1) | VPS (client2) |
 |:--------|:----|:--------|:----|
 | Frappe/ERPNext | `https://erp.fastfree.local` | `https://erp.client1.fastfree.local` | `https://erp.fastfree.cloud` |
-| phpMyAdmin | `https://db.fastfree.local` | `https://db.client1.fastfree.local` | `https://db.fastfree.cloud` |
+| DbGate | `https://db.fastfree.local` | `https://db.client1.fastfree.local` | `https://db.fastfree.cloud` |
 | SSH | local login | `ssh root@client1.local` | `ssh root@fastfree.cloud` |
 
 ---
@@ -414,7 +414,7 @@ Each client has its own config in `machines/<name>/` (Clan inventory in `clan.ni
     base             = true;
     mariadb          = true;
     fastfree_backend = true;
-    phpmyadmin       = true;
+    dbgate           = true;
   };
 }
 ```

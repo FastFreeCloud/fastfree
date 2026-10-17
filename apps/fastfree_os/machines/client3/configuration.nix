@@ -36,7 +36,7 @@ in
     ../../modules/fastfree_hr.nix
     ../../modules/fastfree_pos.nix
     ../../modules/fastfree_website.nix
-    ../../modules/phpmyadmin.nix
+    ../../modules/dbgate.nix
     ../../modules/cockpit.nix
     ../../modules/opencode.nix
     ../../modules/shortcuts.nix
@@ -142,7 +142,7 @@ in
     fastfree_hr = true;
     fastfree_pos = true;
     fastfree_website = true;
-    phpmyadmin = true;
+    dbgate = true;
     cockpit = true;
     desktop = true;
     remote = true;

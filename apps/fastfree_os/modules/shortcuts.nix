@@ -28,8 +28,8 @@ in {
         (webEntry "HR" "HR" "http://127.0.0.1:9103") ++
       lib.optional apps.fastfree_pos
         (webEntry "pos" "POS" "http://127.0.0.1:9104") ++
-      lib.optional apps.phpmyadmin
-        (webEntry "db" "Database" "http://127.0.0.1:8082") ++
+      lib.optional apps.dbgate
+        (webEntry "db" "DbGate" "http://127.0.0.1:8082") ++
       lib.optional apps.cockpit
         (webEntry "panel" "Server Panel" "http://127.0.0.1:9090") ++
       lib.optional apps.opencode
@@ -41,7 +41,7 @@ in {
       (lib.mkIf apps.fastfree_ledger { ff-ledger = openAlias "http://127.0.0.1:9102"; })
       (lib.mkIf apps.fastfree_hr { ff-hr = openAlias "http://127.0.0.1:9103"; })
       (lib.mkIf apps.fastfree_pos { ff-pos = openAlias "http://127.0.0.1:9104"; })
-      (lib.mkIf apps.phpmyadmin { ff-db = openAlias "http://127.0.0.1:8082"; })
+      (lib.mkIf apps.dbgate { ff-db = openAlias "http://127.0.0.1:8082"; })
       (lib.mkIf apps.cockpit { ff-panel = openAlias "http://127.0.0.1:9090"; })
       (lib.mkIf apps.opencode { ff-opencode = openAlias "http://127.0.0.1:4096"; })
     ];
