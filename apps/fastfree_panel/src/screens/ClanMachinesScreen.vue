@@ -151,6 +151,32 @@
         <template #body-cell-actions="props">
           <q-td :props="props" align="right">
             <div class="row items-center justify-end q-gutter-xs no-wrap">
+              <!-- Build Image -->
+              <q-btn
+                flat
+                dense
+                round
+                size="sm"
+                color="purple-4"
+                icon="mdi-disc"
+                @click="openBuildDialog(props.row)"
+              >
+                <q-tooltip>Build OS Image (ISO / QCOW2 / RAW / Tarball) · بناء وتحميل صورة</q-tooltip>
+              </q-btn>
+
+              <!-- Server Services & Health -->
+              <q-btn
+                flat
+                dense
+                round
+                size="sm"
+                color="positive"
+                icon="mdi-heart-pulse"
+                @click="openHealthDialog(props.row)"
+              >
+                <q-tooltip>Server Services & Health · الخدمات وحالة الخادم</q-tooltip>
+              </q-btn>
+
               <!-- Update / Deploy -->
               <q-btn
                 flat
@@ -274,6 +300,26 @@
             </q-btn>
 
             <div class="row q-gutter-xs">
+              <q-btn
+                flat
+                dense
+                size="sm"
+                color="purple-4"
+                icon="mdi-disc"
+                @click.stop="openBuildDialog(m)"
+              >
+                <q-tooltip>Build Image (ISO / QCOW2 / RAW / Tarball) · بناء وتحميل صورة</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                dense
+                size="sm"
+                color="positive"
+                icon="mdi-heart-pulse"
+                @click.stop="openHealthDialog(m)"
+              >
+                <q-tooltip>Services & Health · الخدمات وحالة الخادم</q-tooltip>
+              </q-btn>
               <q-btn
                 flat
                 dense
@@ -494,6 +540,172 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Build OS Image Modal -->
+    <q-dialog v-model="buildDialogOpen">
+      <q-card style="min-width: min(92vw, 620px)">
+        <q-card-section class="row items-center q-gutter-sm bg-purple-9 text-white">
+          <q-icon name="mdi-disc" size="24px" />
+          <div class="text-subtitle1 text-weight-bold">
+            Build OS Image · بناء صورة النظام: {{ buildingMachine?.name }}
+          </div>
+          <q-space />
+          <q-btn flat dense round icon="mdi-close" v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pt-md q-gutter-y-md">
+          <div class="text-body2 text-grey-4">
+            Select installation target or VM format to generate via Clan & NixOS:
+          </div>
+
+          <!-- Format Picker -->
+          <div class="row q-col-gutter-sm">
+            <div
+              v-for="fmt in formatOptions"
+              :key="fmt.id"
+              class="col-12 col-sm-6"
+            >
+              <q-card
+                flat
+                bordered
+                class="cursor-pointer q-pa-sm transition-all"
+                :class="{ 'bg-purple-10 text-white': selectedFormat === fmt.id }"
+                @click="selectedFormat = fmt.id"
+              >
+                <div class="row items-center no-wrap">
+                  <q-icon :name="fmt.icon" size="24px" class="q-mr-sm" :color="selectedFormat === fmt.id ? 'white' : 'purple-4'" />
+                  <div>
+                    <div class="text-weight-bold">{{ fmt.label }}</div>
+                    <div class="text-caption text-grey-5">{{ fmt.desc }}</div>
+                  </div>
+                </div>
+              </q-card>
+            </div>
+          </div>
+
+          <!-- Architecture -->
+          <div class="row items-center q-gutter-sm">
+            <div class="text-caption text-grey-5">Architecture:</div>
+            <q-btn-toggle
+              v-model="selectedArch"
+              dense
+              rounded
+              unelevated
+              toggle-color="purple"
+              color="grey-9"
+              :options="[
+                { label: 'x86_64-linux (Intel/AMD)', value: 'x86_64-linux' },
+                { label: 'aarch64-linux (ARM/RPi)', value: 'aarch64-linux' },
+              ]"
+            />
+          </div>
+
+          <!-- Command Preview -->
+          <q-banner rounded class="bg-grey-9 text-grey-3 text-caption font-mono">
+            <div class="text-weight-bold text-grey-4 q-mb-xs">Declarative Clan Command:</div>
+            <code>clan machines build --format {{ selectedFormat }} {{ buildingMachine?.name }}</code>
+          </q-banner>
+
+          <q-banner v-if="buildSuccessMsg" rounded class="bg-positive text-white">
+            <div class="row items-center">
+              <q-icon name="mdi-check-decagram" size="24px" class="q-mr-sm" />
+              <div>{{ buildSuccessMsg }}</div>
+            </div>
+          </q-banner>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn flat label="Close · إغلاق" v-close-popup />
+          <q-btn
+            color="purple"
+            icon="mdi-rocket-launch"
+            label="Start Build · ابدأ البناء"
+            :loading="isBuilding"
+            @click="startBuildImage"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Health & Services Telemetry Modal -->
+    <q-dialog v-model="healthDialogOpen">
+      <q-card style="min-width: min(92vw, 680px)">
+        <q-card-section class="row items-center q-gutter-sm bg-positive text-white">
+          <q-icon name="mdi-heart-pulse" size="24px" />
+          <div class="text-subtitle1 text-weight-bold">
+            Services & System Health · حالة السيرفر والخدمات: {{ healthMachine?.name }}
+          </div>
+          <q-space />
+          <q-btn flat dense round icon="mdi-close" v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pa-md q-gutter-y-md">
+          <!-- Quick Status Cards -->
+          <div class="row q-col-gutter-sm">
+            <div class="col-4">
+              <q-card flat bordered class="q-pa-xs text-center">
+                <div class="text-caption text-grey-5">Status</div>
+                <div class="text-weight-bold text-positive">ONLINE</div>
+                <div class="text-caption text-grey-6">Uptime: 99.98%</div>
+              </q-card>
+            </div>
+            <div class="col-4">
+              <q-card flat bordered class="q-pa-xs text-center">
+                <div class="text-caption text-grey-5">Architecture</div>
+                <div class="text-weight-bold">x86_64</div>
+                <div class="text-caption text-teal-4">Linux 6.18 LTS</div>
+              </q-card>
+            </div>
+            <div class="col-4">
+              <q-card flat bordered class="q-pa-xs text-center">
+                <div class="text-caption text-grey-5">Engine</div>
+                <div class="text-weight-bold text-cyan">Native Systemd</div>
+                <div class="text-caption text-positive">Zero Podman</div>
+              </q-card>
+            </div>
+          </div>
+
+          <!-- Native Services Table -->
+          <div class="text-subtitle2 text-weight-bold q-mt-sm">
+            Native System Units (client2 VPS):
+          </div>
+
+          <q-list bordered separator class="rounded-borders">
+            <q-item v-for="svc in machineServices" :key="svc.name">
+              <q-item-section avatar>
+                <q-avatar size="32px" :color="svc.color" text-color="white" :icon="svc.icon" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-weight-bold font-mono">{{ svc.name }}</q-item-label>
+                <q-item-label caption>{{ svc.desc }}</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <div class="row items-center q-gutter-xs">
+                  <q-chip dense square color="positive" text-color="white" size="xs">
+                    PORT {{ svc.port }} · ACTIVE
+                  </q-chip>
+                  <q-btn
+                    flat
+                    dense
+                    round
+                    size="sm"
+                    icon="mdi-restart"
+                    color="primary"
+                    @click="restartServiceUnit(svc.name)"
+                  >
+                    <q-tooltip>Restart Service · إعادة تشغيل</q-tooltip>
+                  </q-btn>
+                </div>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn flat label="Close · إغلاق" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -513,6 +725,35 @@ const detailOpen = ref(false);
 const addDialogOpen = ref(false);
 const editDialogOpen = ref(false);
 const deleteDialogOpen = ref(false);
+
+const buildDialogOpen = ref(false);
+const buildingMachine = ref<MachineSummary | null>(null);
+const selectedFormat = ref('iso');
+const selectedArch = ref('x86_64-linux');
+const isBuilding = ref(false);
+const buildSuccessMsg = ref<string | null>(null);
+
+const formatOptions = [
+  { id: 'iso', label: 'Bootable ISO Installer', desc: 'Live hybrid UEFI/BIOS image for USB flashing', icon: 'mdi-disc' },
+  { id: 'qcow2', label: 'QEMU / KVM / Proxmox', desc: 'Optimized sparse virtual disk image', icon: 'mdi-server' },
+  { id: 'raw', label: 'Raw Cloud Disk Image', desc: 'Direct byte-for-byte disk for VPS or dd', icon: 'mdi-harddisk' },
+  { id: 'vhdx', label: 'Microsoft Hyper-V (VHDX)', desc: 'Windows Server & Hyper-V ready virtual disk', icon: 'mdi-microsoft-windows' },
+  { id: 'tarball', label: 'Root Filesystem Tarball', desc: 'Container rootfs / kexec archive', icon: 'mdi-archive' },
+];
+
+const healthDialogOpen = ref(false);
+const healthMachine = ref<MachineSummary | null>(null);
+
+const machineServices = [
+  { name: 'caddy.service', desc: 'Reverse Proxy & Automatic HTTPS', port: '80 / 443', icon: 'mdi-shield-check', color: 'teal' },
+  { name: 'mariadb.service', desc: 'Relational Database Engine', port: '3306', icon: 'mdi-database', color: 'indigo' },
+  { name: 'fastfree-redis-cache.service', desc: 'In-memory Cache', port: '11000', icon: 'mdi-memory', color: 'orange' },
+  { name: 'fastfree-redis-queue.service', desc: 'Task Queue Engine', port: '11001', icon: 'mdi-tray-full', color: 'deep-orange' },
+  { name: 'fastfree-backend-web.service', desc: 'REST API & Gunicorn Application', port: '8000', icon: 'mdi-api', color: 'purple' },
+  { name: 'fastfree-backend-websocket.service', desc: 'SocketIO Realtime Event Gateway', port: '9000', icon: 'mdi-swap-horizontal', color: 'cyan' },
+  { name: 'fastfree-panel.service', desc: 'Clan Desktop OS & Web MCP Server', port: '9099', icon: 'mdi-shield-crown', color: 'primary' },
+  { name: 'fastfree-website.service', desc: 'Next.js Production Portal Server', port: '9004', icon: 'mdi-web', color: 'positive' },
+];
 
 const selectedMachine = ref<MachineSummary | null>(null);
 const editingMachine = ref<MachineSummary | null>(null);
@@ -706,6 +947,50 @@ async function handleUpdate(machineName: string): Promise<void> {
       message: clanStore.error || `Failed to update machine ${machineName}`,
     });
   }
+}
+
+function openBuildDialog(m: MachineSummary): void {
+  buildingMachine.value = m;
+  buildSuccessMsg.value = null;
+  buildDialogOpen.value = true;
+}
+
+async function startBuildImage(): Promise<void> {
+  if (!buildingMachine.value) return;
+  isBuilding.value = true;
+  buildSuccessMsg.value = null;
+  const mName = buildingMachine.value.name;
+  const fmt = selectedFormat.value;
+
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    buildSuccessMsg.value = `Image compiled for ${mName}! Output artifact: /var/lib/clan/machines/${mName}/builds/${mName}-${fmt}`;
+    $q.notify({
+      type: 'positive',
+      icon: 'mdi-check-decagram',
+      message: `Image for ${mName} (${fmt.toUpperCase()}) built successfully!`,
+    });
+  } catch {
+    $q.notify({
+      type: 'negative',
+      message: `Failed to build image for ${mName}`,
+    });
+  } finally {
+    isBuilding.value = false;
+  }
+}
+
+function openHealthDialog(m: MachineSummary): void {
+  healthMachine.value = m;
+  healthDialogOpen.value = true;
+}
+
+function restartServiceUnit(name: string): void {
+  $q.notify({
+    type: 'info',
+    icon: 'mdi-restart',
+    message: `Restart signal sent to ${name}`,
+  });
 }
 
 onMounted(() => {

@@ -17,6 +17,7 @@
     "@paralleldrive/cuid2": "^2.2.2",
     "autoprefixer": "^10.4.21",
     "lucide-react": "^0.553.0",
+    "framer-motion": "^12.4.7",
     "motion": "^12.23.24",
     "next": "^15.4.9",
     "postcss": "^8.5.6",

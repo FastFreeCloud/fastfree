@@ -3,61 +3,53 @@ import { defineAsyncComponent } from 'vue';
 import { registerGroup, registerGroupPage, registerScreen } from '../lib/lowcode';
 
 export default defineBoot(() => {
-  // 1. Register the 4 Clean Clan OS Groups (Dock & Launchers)
-  registerGroup('Clan Fleet · أسطول الأجهزة', 'mdi-server-network', 'clan.fleet');
-  registerGroup('Operations · العمليات والتشغيل', 'mdi-heart-pulse', 'clan.nixos');
+  // 1. Register Clean Clan OS Groups (Dock & Launchers)
+  registerGroup('Machines · أسطول الأجهزة', 'mdi-server-network', 'clan.fleet');
+  registerGroup('Services & Health · الخدمات والحالة', 'mdi-heart-pulse', 'clan.nixos');
   registerGroup('Config & Security · التكوين والأمان', 'mdi-shield-lock-outline', 'clan.security');
-  registerGroup('Agents & Herdr · منظومة الوكلاء', 'mdi-robot-outline', 'clan.agents');
 
-  // 2. Register the 4 Consolidated Super-Hubs
-  const superHubs = [
+  // 2. Register Primary Screens directly bound to Dock Launchers
+  const primaryScreens = [
     {
-      type: 'clan-fleet',
-      loader: () => import('../hubs/ClanFleetHub.vue'),
-      label: 'Fleet & Machines Hub · أسطول الأجهزة والشبكة',
+      type: 'clan-machines',
+      loader: () => import('../screens/ClanMachinesScreen.vue'),
+      label: 'Machines · أسطول الأجهزة',
       icon: 'mdi-server-network',
       groupId: 'clan.fleet',
     },
     {
-      type: 'clan-ops',
-      loader: () => import('../hubs/ClanOpsHub.vue'),
-      label: 'Operations & Health Hub · عمليات وسلامة النظام',
+      type: 'clan-services',
+      loader: () => import('../screens/ClanServicesScreen.vue'),
+      label: 'Services & Health · خدمات النظام',
       icon: 'mdi-heart-pulse',
       groupId: 'clan.nixos',
     },
     {
       type: 'clan-config',
       loader: () => import('../hubs/ClanConfigHub.vue'),
-      label: 'Config & Security Hub · الأسرار والتكوين',
+      label: 'Config & Security · التكوين والأمان',
       icon: 'mdi-shield-lock-outline',
       groupId: 'clan.security',
     },
-    {
-      type: 'clan-agents',
-      loader: () => import('../hubs/ClanAgentsHub.vue'),
-      label: 'Herdr AI Agents Hub · منظومة الوكلاء والطرفيات',
-      icon: 'mdi-robot-outline',
-      groupId: 'clan.agents',
-    },
   ];
 
-  for (const hub of superHubs) {
-    const component = defineAsyncComponent(hub.loader);
-    registerScreen(hub.type, {
+  for (const s of primaryScreens) {
+    const component = defineAsyncComponent(s.loader);
+    registerScreen(s.type, {
       component,
-      label: hub.label,
-      icon: hub.icon,
-      groupId: hub.groupId,
+      label: s.label,
+      icon: s.icon,
+      groupId: s.groupId,
     });
 
-    registerGroupPage(hub.groupId, {
-      screenType: hub.type,
-      label: hub.label,
-      icon: hub.icon,
+    registerGroupPage(s.groupId, {
+      screenType: s.type,
+      label: s.label,
+      icon: s.icon,
     });
   }
 
-  // 3. Backward Compatibility: Register the 10 Individual Sub-Screens
+  // 3. Sub-Screens & Hubs (Accessible on-demand)
   const legacyScreens = [
     { type: 'clan-machines', loader: () => import('../screens/ClanMachinesScreen.vue'), label: 'Machines · الأجهزة', icon: 'mdi-server-network', groupId: 'clan.fleet' },
     { type: 'clan-health', loader: () => import('../screens/ClanHealthScreen.vue'), label: 'System Health · سلامة النظام', icon: 'mdi-heart-pulse', groupId: 'clan.nixos' },

@@ -22,7 +22,7 @@ export function AnimatedCounter({ value, suffix = '', className = '' }: Animated
   }, [isInView, value, motionValue]);
 
   useEffect(() => {
-    return springValue.on('change', (latest) => {
+    return springValue.on('change', (latest: number) => {
       if (ref.current) {
         ref.current.textContent = Math.floor(latest).toLocaleString() + suffix;
       }
