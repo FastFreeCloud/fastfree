@@ -7,8 +7,9 @@ export default defineBoot(() => {
   registerGroup('Clan Fleet · أسطول الأجهزة', 'mdi-server-network', 'clan.fleet');
   registerGroup('NixOS & Systems · أنظمة NixOS', 'mdi-nix', 'clan.nixos');
   registerGroup('Agents & Herdr · الوكلاء والطرفيات', 'mdi-robot-outline', 'clan.agents');
+  registerGroup('Security & Data · الأمان والبيانات', 'mdi-shield-lock-outline', 'clan.security');
 
-  // Register the 5 Clan screens
+  // Register the 9 Clan screens (Complete 1-to-1 parity with Clan 26.05 specification)
   const screens = [
     {
       type: 'clan-machines',
@@ -44,6 +45,34 @@ export default defineBoot(() => {
       label: 'Network Mesh · الشبكة',
       icon: 'mdi-lan',
       groupId: 'clan.fleet',
+    },
+    {
+      type: 'clan-backups',
+      loader: () => import('../screens/ClanBackupsScreen.vue'),
+      label: 'Backups · النسخ الاحتياطي',
+      icon: 'mdi-backup-restore',
+      groupId: 'clan.security',
+    },
+    {
+      type: 'clan-secrets',
+      loader: () => import('../screens/ClanSecretsScreen.vue'),
+      label: 'Secrets · الأسرار والتشفير',
+      icon: 'mdi-shield-key',
+      groupId: 'clan.security',
+    },
+    {
+      type: 'clan-vars',
+      loader: () => import('../screens/ClanVarsScreen.vue'),
+      label: 'Vars & State · المتغيرات والحالة',
+      icon: 'mdi-code-braces',
+      groupId: 'clan.fleet',
+    },
+    {
+      type: 'clan-services',
+      loader: () => import('../screens/ClanServicesScreen.vue'),
+      label: 'Services · الخدمات والعمليات',
+      icon: 'mdi-cogs',
+      groupId: 'clan.nixos',
     },
   ];
 

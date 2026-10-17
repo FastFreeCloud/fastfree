@@ -19,6 +19,18 @@
     <template #window-clan-network>
       <ClanNetworkScreen />
     </template>
+    <template #window-clan-backups>
+      <ClanBackupsScreen />
+    </template>
+    <template #window-clan-secrets>
+      <ClanSecretsScreen />
+    </template>
+    <template #window-clan-vars>
+      <ClanVarsScreen />
+    </template>
+    <template #window-clan-services>
+      <ClanServicesScreen />
+    </template>
   </DesktopShell>
 </template>
 
@@ -30,6 +42,10 @@ import ClanHealthScreen from '../screens/ClanHealthScreen.vue';
 import ClanDeployScreen from '../screens/ClanDeployScreen.vue';
 import ClanHerdrScreen from '../screens/ClanHerdrScreen.vue';
 import ClanNetworkScreen from '../screens/ClanNetworkScreen.vue';
+import ClanBackupsScreen from '../screens/ClanBackupsScreen.vue';
+import ClanSecretsScreen from '../screens/ClanSecretsScreen.vue';
+import ClanVarsScreen from '../screens/ClanVarsScreen.vue';
+import ClanServicesScreen from '../screens/ClanServicesScreen.vue';
 
 const desktopStore = useDesktopStore();
 
