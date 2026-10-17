@@ -203,7 +203,7 @@ export function createDesktopStore(options?: DesktopStoreOptions) {
         icon,
         ...(iconColor !== undefined ? { iconColor } : {}),
         isMinimized: false,
-        isMaximized: screenCfg?.maximizeOnOpen ?? false,
+        isMaximized: screenCfg?.maximizeOnOpen ?? (typeof window !== 'undefined' && window.innerWidth < 1024),
         width: clampedW,
         height: clampedH,
         left,

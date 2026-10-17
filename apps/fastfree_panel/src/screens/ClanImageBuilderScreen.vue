@@ -334,7 +334,7 @@
 
     <!-- Flash Guide Dialog -->
     <q-dialog v-model="showFlashGuide">
-      <q-card style="min-width: 500px">
+      <q-card style="min-width: min(92vw, 540px)">
         <q-card-section class="row items-center justify-between bg-primary text-white q-py-sm">
           <div class="text-subtitle1 text-weight-bold row items-center q-gutter-x-sm">
             <q-icon name="mdi-flash" />

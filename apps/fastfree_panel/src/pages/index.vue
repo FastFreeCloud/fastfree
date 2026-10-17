@@ -4,6 +4,21 @@
     icon="mdi-shield-crown"
     show-built-in-screens
   >
+    <!-- The 4 Consolidated Super-Hubs -->
+    <template #window-clan-fleet>
+      <ClanFleetHub />
+    </template>
+    <template #window-clan-ops>
+      <ClanOpsHub />
+    </template>
+    <template #window-clan-config>
+      <ClanConfigHub />
+    </template>
+    <template #window-clan-agents>
+      <ClanAgentsHub />
+    </template>
+
+    <!-- Legacy Sub-Screen Slots (Backward Compatibility) -->
     <template #window-clan-machines>
       <ClanMachinesScreen />
     </template>
@@ -31,12 +46,23 @@
     <template #window-clan-services>
       <ClanServicesScreen />
     </template>
+    <template #window-clan-herdr>
+      <ClanHerdrScreen />
+    </template>
   </DesktopShell>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { DesktopShell, useDesktopStore } from '../lib/lowcode';
+
+// The 4 Super-Hubs
+import ClanFleetHub from '../hubs/ClanFleetHub.vue';
+import ClanOpsHub from '../hubs/ClanOpsHub.vue';
+import ClanConfigHub from '../hubs/ClanConfigHub.vue';
+import ClanAgentsHub from '../hubs/ClanAgentsHub.vue';
+
+// Legacy Individual Screens
 import ClanMachinesScreen from '../screens/ClanMachinesScreen.vue';
 import ClanHealthScreen from '../screens/ClanHealthScreen.vue';
 import ClanDeployScreen from '../screens/ClanDeployScreen.vue';
@@ -46,24 +72,25 @@ import ClanBackupsScreen from '../screens/ClanBackupsScreen.vue';
 import ClanSecretsScreen from '../screens/ClanSecretsScreen.vue';
 import ClanVarsScreen from '../screens/ClanVarsScreen.vue';
 import ClanServicesScreen from '../screens/ClanServicesScreen.vue';
+import ClanHerdrScreen from '../screens/ClanHerdrScreen.vue';
 
 const desktopStore = useDesktopStore();
 
 onMounted(() => {
-  const existingMachines = desktopStore.getWindowsByType('clan-machines');
-  const existingHealth = desktopStore.getWindowsByType('clan-health');
+  const existingFleet = desktopStore.getWindowsByType('clan-fleet');
+  const existingOps = desktopStore.getWindowsByType('clan-ops');
 
-  let id1 = existingMachines[0]?.id;
+  let id1 = existingFleet[0]?.id;
   if (!id1) {
-    id1 = desktopStore.openWindow('clan-machines', 'Machines · الأجهزة', 'mdi-server-network');
+    id1 = desktopStore.openWindow('clan-fleet', 'Fleet & Machines Hub · أسطول الأجهزة', 'mdi-server-network');
   }
 
-  let id2 = existingHealth[0]?.id;
+  let id2 = existingOps[0]?.id;
   if (!id2) {
-    id2 = desktopStore.openWindow('clan-health', 'System Health · سلامة النظام', 'mdi-heart-pulse');
+    id2 = desktopStore.openWindow('clan-ops', 'Operations & Health Hub · عمليات النظام', 'mdi-heart-pulse');
   }
 
-  // Arrange side-by-side on wide screens for immediate dual-pane workflow
+  // Arrange side-by-side on wide desktop displays (>= 1024px)
   if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
     const headerH = 56;
     const dockH = 80;
