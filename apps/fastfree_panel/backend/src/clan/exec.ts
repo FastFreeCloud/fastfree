@@ -133,6 +133,7 @@ function buildEnv(): NodeJS.ProcessEnv {
 function spawnClan(argv: readonly string[], timeoutMs: number): Promise<ClanResult> {
   return new Promise<ClanResult>((resolve, reject) => {
     const options: ExecFileOptions = {
+      cwd: config.clanDir ?? undefined,
       env: buildEnv(),
       timeout: timeoutMs,
       killSignal: 'SIGTERM',
@@ -163,6 +164,9 @@ function spawnClan(argv: readonly string[], timeoutMs: number): Promise<ClanResu
         console.error(
           `[clan] ${argv.join(' ')} failed (code=${String(failure.code ?? 'null')}, timeout=${timedOut}, overflow=${overflowed})`,
         );
+        if (stderrText.length > 0) {
+          console.error(`[clan stderr] ${stderrText.trim()}`);
+        }
       }
 
       if (overflowed) {

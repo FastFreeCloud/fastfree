@@ -95,6 +95,7 @@ function buildEnv() {
 function spawnClan(argv, timeoutMs) {
     return new Promise((resolve, reject) => {
         const options = {
+            cwd: config.clanDir ?? undefined,
             env: buildEnv(),
             timeout: timeoutMs,
             killSignal: 'SIGTERM',
@@ -120,6 +121,9 @@ function spawnClan(argv, timeoutMs) {
             // Server-side diagnostics only: never the argv, stderr, or any path.
             if (failure !== null && exitCode !== 0) {
                 console.error(`[clan] ${argv.join(' ')} failed (code=${String(failure.code ?? 'null')}, timeout=${timedOut}, overflow=${overflowed})`);
+                if (stderrText.length > 0) {
+                    console.error(`[clan stderr] ${stderrText.trim()}`);
+                }
             }
             if (overflowed) {
                 reject(new ApiError('UPSTREAM_ERROR', 'Clan command produced too much output.'));
