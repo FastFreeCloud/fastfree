@@ -24,7 +24,9 @@ result-*/
 # Keep VPN extension dist & Clan Panel dist
 !packages/fastfree_vpn/ae/dist/
 !apps/fastfree_panel/backend/dist/
+!apps/fastfree_panel/dist/
 !apps/fastfree_panel/dist/spa/
+!apps/fastfree_panel/dist/spa/**
 
 # Logs
 *.log

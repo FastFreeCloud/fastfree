@@ -27,15 +27,7 @@ export default defineConfig((ctx) => {
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
-      // 'ionicons-v4',
-      // 'mdi-v7',
-      // 'fontawesome-v7',
-      // 'eva-icons',
-      // 'themify',
-      // 'line-awesome',
-
-      // 'material-icons', // optional, you are not bound to it
-      // Reused from fastfree_lowcode components (LcSmartFilter, DynamicTable, …)
+      'material-icons',
       'mdi-v7',
     ],
 
