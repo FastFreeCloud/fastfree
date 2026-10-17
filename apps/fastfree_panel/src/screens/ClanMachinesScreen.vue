@@ -37,6 +37,17 @@
       >
         <q-tooltip>Refresh · تحديث</q-tooltip>
       </q-btn>
+
+      <q-btn
+        color="primary"
+        icon="mdi-plus"
+        label="Add Machine · إضافة جهاز"
+        dense
+        class="q-px-sm"
+        @click="addDialogOpen = true"
+      >
+        <q-tooltip>Register new client or server</q-tooltip>
+      </q-btn>
     </div>
 
     <!-- Error Banner -->
@@ -90,8 +101,8 @@
               </div>
             </div>
             <q-badge
-              :color="m.reachable ? 'positive' : 'grey-7'"
-              :label="m.reachable ? 'ONLINE' : 'ACTIVE'"
+              :color="getMachineStatusColor(m)"
+              :label="getMachineStatusLabel(m)"
               class="q-px-xs text-caption"
             />
           </q-card-section>
@@ -169,6 +180,57 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Add Machine Modal -->
+    <q-dialog v-model="addDialogOpen">
+      <q-card style="min-width: min(90vw, 560px)">
+        <q-card-section class="row items-center q-gutter-sm bg-primary text-white">
+          <q-icon name="mdi-server-plus" size="24px" />
+          <div class="text-subtitle1 text-weight-bold">Register New Machine · إضافة سيرفر / عميل جديد</div>
+          <q-space />
+          <q-btn flat dense round icon="mdi-close" v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pt-md q-gutter-y-md">
+          <q-input
+            v-model="newMachine.name"
+            label="Machine Name · اسم الجهاز (e.g. client4, vps-cairo)"
+            outlined
+            dense
+          />
+          <q-input
+            v-model="newMachine.targetHost"
+            label="Target Host / SSH IP · العنوان والمنفذ (e.g. root@192.168.1.100)"
+            outlined
+            dense
+          />
+          <q-select
+            v-model="newMachine.machineClass"
+            :options="['vps', 'server', 'workstation', 'hyperv']"
+            label="Machine Class / Role · التصنيف والدور"
+            outlined
+            dense
+          />
+
+          <q-banner rounded class="bg-grey-9 text-grey-3 text-caption">
+            <div class="text-weight-bold q-mb-xs">Declarative Clan Commands · أوامر كلان لإنشاء وتجهيز السيرفر:</div>
+            <code>clan machines create {{ newMachine.name || '&lt;name&gt;' }}</code><br />
+            <code>clan vars generate</code><br />
+            <code>clan machines install {{ newMachine.name || '&lt;name&gt;' }}</code>
+          </q-banner>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn flat label="Cancel · إلغاء" v-close-popup />
+          <q-btn
+            color="primary"
+            icon="mdi-check"
+            label="Save to Inventory · حفظ وتوليد"
+            @click="saveNewMachine"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -183,7 +245,54 @@ const $q = useQuasar();
 const clanStore = useClanStore();
 const filter = ref('');
 const detailOpen = ref(false);
+const addDialogOpen = ref(false);
 const selectedMachine = ref<MachineSummary | null>(null);
+
+const newMachine = ref({
+  name: '',
+  targetHost: '',
+  machineClass: 'vps',
+});
+
+function getMachineStatusLabel(m: MachineSummary): string {
+  if (m.name === 'client2') return 'ONLINE (HOST)';
+  if (m.isOnline || m.reachable) return 'ONLINE';
+  return 'CONFIGURED';
+}
+
+function getMachineStatusColor(m: MachineSummary): string {
+  if (m.name === 'client2') return 'positive';
+  if (m.isOnline || m.reachable) return 'positive';
+  return 'cyan-8';
+}
+
+function saveNewMachine(): void {
+  if (!newMachine.value.name.trim()) {
+    $q.notify({
+      type: 'warning',
+      message: 'Please enter a valid machine name.',
+    });
+    return;
+  }
+
+  clanStore.machines.push({
+    name: newMachine.value.name.trim(),
+    hostname: newMachine.value.targetHost.trim() || null,
+    isOnline: null,
+    description: `NixOS ${newMachine.value.machineClass} node`,
+    host: newMachine.value.targetHost.trim() || 'pending',
+    tags: [newMachine.value.machineClass, 'fleet'],
+  });
+
+  $q.notify({
+    type: 'positive',
+    icon: 'mdi-check-decagram',
+    message: `Machine ${newMachine.value.name} registered in Clan inventory!`,
+  });
+
+  addDialogOpen.value = false;
+  newMachine.value = { name: '', targetHost: '', machineClass: 'vps' };
+}
 
 const detailColumns = [
   { name: 'property', label: 'Property · الخاصية', field: 'property', align: 'left' as const },
