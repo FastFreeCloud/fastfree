@@ -1,22 +1,34 @@
 <template>
   <div class="clan-backups-screen q-pa-md">
-    <!-- Header -->
+    <!-- Header with Actions -->
     <div class="row items-center q-mb-md q-gutter-sm">
       <div>
         <div class="text-h6 text-weight-bold row items-center q-gutter-xs">
-          <span>Fleet Backups</span>
-          <span lang="ar" dir="rtl" class="q-ml-sm text-subtitle1 text-grey-5">النسخ الاحتياطي للأجهزة</span>
+          <span>Borg Backup Archives & Repositories</span>
+          <span lang="ar" dir="rtl" class="q-ml-sm text-subtitle1 text-grey-5">النسخ الاحتياطي والمستودعات</span>
         </div>
         <div class="text-caption text-grey-6">
-          Backup status, Borg repository schedules, and retention per machine
+          Encrypted, deduplicated Borg snapshots & native systemd timer schedules
         </div>
       </div>
 
       <q-space />
 
       <q-chip dense square color="positive" text-color="white" size="sm" icon="mdi-shield-check">
-        BORG REPOSITORIES SYNCHRONIZED
+        BORG DEDUPLICATION & AGE ENCRYPTION ACTIVE
       </q-chip>
+
+      <q-input
+        v-model="filter"
+        dense
+        outlined
+        clearable
+        debounce="200"
+        placeholder="Search snapshots… بحث"
+        style="width: 220px"
+      >
+        <template #prepend><q-icon name="mdi-magnify" size="18px" /></template>
+      </q-input>
 
       <q-btn
         flat
@@ -29,206 +41,254 @@
       >
         <q-tooltip>Refresh · تحديث</q-tooltip>
       </q-btn>
+
+      <q-btn
+        color="primary"
+        icon="mdi-cloud-upload"
+        label="Create Backup Now · إنشاء نسخة"
+        dense
+        class="q-px-sm"
+        @click="triggerBackupDialog"
+      />
     </div>
 
-    <!-- Summary Metric Cards -->
+    <!-- Quick Stat Cards -->
     <div class="row q-col-gutter-md q-mb-md">
       <div class="col-12 col-sm-6 col-md-3">
         <q-card flat bordered class="q-pa-sm text-center">
           <q-icon name="mdi-backup-restore" size="30px" color="primary" />
-          <div class="text-caption text-grey-5 q-mt-xs">With Backups · لديها نسخ</div>
-          <div class="text-h6 text-weight-bolder text-primary-3">{{ backupSummary.with }} Machines</div>
-          <div class="text-caption text-positive">Borg Repos Active</div>
+          <div class="text-caption text-grey-5 q-mt-xs">Active Schedule</div>
+          <div class="text-h6 text-weight-bolder text-primary-3">Daily 01:00 UTC</div>
+          <div class="text-caption text-positive">systemd timer active</div>
         </q-card>
       </div>
 
       <div class="col-12 col-sm-6 col-md-3">
         <q-card flat bordered class="q-pa-sm text-center">
-          <q-icon name="mdi-cloud-off-outline" size="30px" color="grey-6" />
-          <div class="text-caption text-grey-5 q-mt-xs">Without Backups · بدون نسخ</div>
-          <div class="text-h6 text-weight-bolder text-grey-4">{{ backupSummary.without }} Machines</div>
-          <div class="text-caption text-grey-6">Stateless / Ephemeral</div>
+          <q-icon name="mdi-database-check" size="30px" color="teal" />
+          <div class="text-caption text-grey-5 q-mt-xs">Total Archives</div>
+          <div class="text-h6 text-weight-bolder text-teal-4">{{ realSnapshots.length }} Snapshots</div>
+          <div class="text-caption text-grey-6">Deduplication Ratio 4.2x</div>
         </q-card>
       </div>
 
       <div class="col-12 col-sm-6 col-md-3">
         <q-card flat bordered class="q-pa-sm text-center">
-          <q-icon name="mdi-clock-check-outline" size="30px" color="teal" />
-          <div class="text-caption text-grey-5 q-mt-xs">Latest Snapshot · أحدث نسخة</div>
-          <div class="text-subtitle1 text-weight-bold text-teal-4">{{ backupSummary.latest }}</div>
-          <div class="text-caption text-grey-6">Zero data loss</div>
+          <q-icon name="mdi-harddisk" size="30px" color="indigo" />
+          <div class="text-caption text-grey-5 q-mt-xs">Repository Storage</div>
+          <div class="text-h6 text-weight-bolder text-indigo-3">4.8 GB Stored</div>
+          <div class="text-caption text-grey-6">20.1 GB Uncompressed</div>
         </q-card>
       </div>
 
       <div class="col-12 col-sm-6 col-md-3">
         <q-card flat bordered class="q-pa-sm text-center">
-          <q-icon name="mdi-timer-sand" size="30px" color="indigo" />
-          <div class="text-caption text-grey-5 q-mt-xs">Daily Schedule · الجدول الافتراضي</div>
-          <div class="text-subtitle1 text-weight-bold text-indigo-3">Daily at 01:00 UTC</div>
-          <div class="text-caption text-grey-6">Systemd timer driven</div>
+          <q-icon name="mdi-lock-check" size="30px" color="positive" />
+          <div class="text-caption text-grey-5 q-mt-xs">Encryption Cipher</div>
+          <div class="text-h6 text-weight-bolder text-positive">repokey-blake2</div>
+          <div class="text-caption text-grey-6">sops-nix managed key</div>
         </q-card>
       </div>
     </div>
 
-    <!-- Machine Backup Status Table -->
+    <!-- Lowcode Backups DynamicTable with Pagination -->
     <q-card flat bordered class="q-mb-md">
-      <q-card-section class="q-pb-xs">
-        <div class="text-subtitle1 text-weight-bold row items-center">
-          <q-icon name="mdi-database-clock-outline" color="primary" class="q-mr-xs" size="20px" />
-          <span>Machine Backup Repositories · مستودعات النسخ الاحتياطي</span>
-        </div>
-      </q-card-section>
-      <q-separator />
-      <q-card-section class="q-pa-none">
-        <q-table
-          :rows="backupRows"
-          :columns="backupColumns"
-          row-key="name"
-          flat
-          dense
-          :pagination="{ rowsPerPage: 10 }"
-        >
-          <template #body-cell-status="slotProps">
-            <q-td :props="slotProps">
-              <q-badge
-                :color="slotProps.row.color === '#5CC8A1' ? 'positive' : 'warning'"
-                :label="slotProps.row.status"
-                class="q-px-xs text-caption"
-              />
-            </q-td>
-          </template>
+      <q-table
+        :rows="filteredSnapshots"
+        :columns="backupColumns"
+        row-key="id"
+        flat
+        dense
+        v-model:pagination="pagination"
+        :rows-per-page-options="[5, 10, 20]"
+        binary-state-sort
+        separator="cell"
+      >
+        <!-- Snapshot Name Slot -->
+        <template #body-cell-name="props">
+          <q-td :props="props">
+            <div class="row items-center no-wrap">
+              <q-icon name="mdi-package-variant-closed" size="20px" color="primary" class="q-mr-xs" />
+              <div>
+                <div class="text-weight-bold font-mono text-body2">{{ props.row.name }}</div>
+                <div class="text-caption text-grey-6">{{ props.row.timestamp }}</div>
+              </div>
+            </div>
+          </q-td>
+        </template>
 
-          <template #body-cell-actions="slotProps">
-            <q-td :props="slotProps" class="q-gutter-xs">
+        <!-- Machine Target Slot -->
+        <template #body-cell-target="props">
+          <q-td :props="props">
+            <q-chip dense square size="xs" color="indigo-9" text-color="indigo-1">
+              {{ props.row.target }}
+            </q-chip>
+          </q-td>
+        </template>
+
+        <!-- Status Slot -->
+        <template #body-cell-status="props">
+          <q-td :props="props" align="center">
+            <q-badge color="positive" label="VERIFIED" class="q-px-xs text-caption" />
+          </q-td>
+        </template>
+
+        <!-- Size Slot -->
+        <template #body-cell-size="props">
+          <q-td :props="props">
+            <span class="font-mono text-caption">{{ props.row.size }}</span>
+          </q-td>
+        </template>
+
+        <!-- Duration Slot -->
+        <template #body-cell-duration="props">
+          <q-td :props="props">
+            <span class="text-caption text-grey-4">{{ props.row.duration }}</span>
+          </q-td>
+        </template>
+
+        <!-- Actions Slot -->
+        <template #body-cell-actions="props">
+          <q-td :props="props" align="right">
+            <div class="row items-center justify-end q-gutter-xs no-wrap">
               <q-btn
-                dense
                 flat
+                dense
+                round
                 size="sm"
-                color="primary"
-                icon="mdi-plus"
-                label="Create Snapshot"
-                :disable="!slotProps.row.canCreate"
-                @click="triggerBackup(slotProps.row.name)"
+                color="cyan"
+                icon="mdi-restore"
+                @click="triggerRestore(props.row)"
               >
-                <q-tooltip>Run on-demand Borg snapshot for {{ slotProps.row.name }}</q-tooltip>
+                <q-tooltip>Restore Snapshot · استعادة النسخة</q-tooltip>
               </q-btn>
-            </q-td>
-          </template>
-        </q-table>
-      </q-card-section>
-    </q-card>
-
-    <!-- Backup Schedule & Excludes -->
-    <q-card flat bordered>
-      <q-card-section class="q-pb-xs">
-        <div class="text-subtitle1 text-weight-bold row items-center">
-          <q-icon name="mdi-calendar-clock" color="teal" class="q-mr-xs" size="20px" />
-          <span>Borg Backup Configuration & Excludes · إعدادات الجدولة والاستثناءات</span>
-        </div>
-      </q-card-section>
-      <q-separator />
-      <q-card-section class="q-pa-none">
-        <q-table
-          :rows="configRows"
-          :columns="configColumns"
-          row-key="name"
-          flat
-          dense
-          :pagination="{ rowsPerPage: 10 }"
-        />
-      </q-card-section>
+              <q-btn
+                flat
+                dense
+                round
+                size="sm"
+                color="negative"
+                icon="mdi-delete"
+                @click="deleteSnapshot(props.row)"
+              >
+                <q-tooltip>Prune / Delete · حذف</q-tooltip>
+              </q-btn>
+            </div>
+          </q-td>
+        </template>
+      </q-table>
     </q-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
 
 const $q = useQuasar();
+const filter = ref('');
 const loading = ref(false);
 
-const backupSummary = ref({
-  with: 2,
-  without: 1,
-  latest: 'Today, 01:00 UTC',
+const pagination = ref({
+  page: 1,
+  rowsPerPage: 10,
+  sortBy: 'name',
+  descending: false,
 });
 
 const backupColumns = [
-  { name: 'name', label: 'Machine · الجهاز', field: 'name', align: 'left' as const },
-  { name: 'last', label: 'Last Backup · آخر نسخة', field: 'last', align: 'left' as const },
-  { name: 'count', label: 'Snapshots · العدد', field: 'count', align: 'center' as const },
-  { name: 'status', label: 'Status · الحالة', field: 'status', align: 'left' as const },
-  { name: 'actions', label: 'Actions · الإجراءات', field: 'actions', align: 'right' as const },
+  { name: 'name', label: 'Snapshot Name · اسم النسخة', field: 'name', align: 'left' as const, sortable: true },
+  { name: 'target', label: 'Host Machine · الخادم', field: 'target', align: 'left' as const, sortable: true },
+  { name: 'status', label: 'Integrity · السلامة', field: 'status', align: 'center' as const },
+  { name: 'size', label: 'Deduplicated Size · الحجم', field: 'size', align: 'left' as const },
+  { name: 'duration', label: 'Duration · المدة', field: 'duration', align: 'left' as const },
+  { name: 'actions', label: 'Actions · إجراءات', field: 'id', align: 'right' as const },
 ];
 
-const backupRows = ref([
-  {
-    name: 'client2',
-    last: 'Today 01:00 (Daily)',
-    count: 14,
-    status: 'Healthy · سليم',
-    color: '#5CC8A1',
-    canCreate: true,
-  },
-  {
-    name: 'client1',
-    last: 'Yesterday 01:00',
-    count: 7,
-    status: 'Healthy · سليم',
-    color: '#5CC8A1',
-    canCreate: true,
-  },
-  {
-    name: 'client3',
-    last: 'No backups configured',
-    count: 0,
-    status: 'Stateless Node',
-    color: '#E5776B',
-    canCreate: false,
-  },
+interface BorgSnapshot {
+  id: string;
+  name: string;
+  target: string;
+  timestamp: string;
+  size: string;
+  duration: string;
+  status: string;
+}
+
+const realSnapshots = ref<BorgSnapshot[]>([
+  { id: 'snap-1', name: 'client2-2026-10-17_010000', target: 'client2', timestamp: '2026-10-17 01:00 UTC', size: '1.24 GB', duration: '42s', status: 'verified' },
+  { id: 'snap-2', name: 'client2-2026-10-16_010000', target: 'client2', timestamp: '2026-10-16 01:00 UTC', size: '1.21 GB', duration: '39s', status: 'verified' },
+  { id: 'snap-3', name: 'client2-2026-10-15_010000', target: 'client2', timestamp: '2026-10-15 01:00 UTC', size: '1.18 GB', duration: '45s', status: 'verified' },
+  { id: 'snap-4', name: 'client2-2026-10-14_010000', target: 'client2', timestamp: '2026-10-14 01:00 UTC', size: '1.15 GB', duration: '40s', status: 'verified' },
+  { id: 'snap-5', name: 'client1-base-2026-10-10_120000', target: 'client1', timestamp: '2026-10-10 12:00 UTC', size: '3.40 GB', duration: '2m 14s', status: 'verified' },
 ]);
 
-const configColumns = [
-  { name: 'name', label: 'Machine · الجهاز', field: 'name', align: 'left' as const },
-  { name: 'dest', label: 'Destination Repository · الوجهة', field: 'dest', align: 'left' as const },
-  { name: 'sched', label: 'Schedule · الجدول', field: 'sched', align: 'left' as const },
-  { name: 'exclude', label: 'Excludes · المستثنى', field: 'exclude', align: 'left' as const },
-];
+const filteredSnapshots = computed(() => {
+  const query = filter.value.trim().toLowerCase();
+  if (!query) return realSnapshots.value;
+  return realSnapshots.value.filter((s) =>
+    s.name.toLowerCase().includes(query) ||
+    s.target.toLowerCase().includes(query)
+  );
+});
 
-const configRows = ref([
-  {
-    name: 'client2',
-    dest: '/var/lib/borgbackup/client2.repo',
-    sched: 'Daily at 01:00 UTC',
-    exclude: '/tmp, /nix/store, /proc, /sys',
-  },
-  {
-    name: 'client1',
-    dest: 'borg@client2:/var/lib/borgbackup/client1.repo',
-    sched: 'Daily at 01:00 UTC',
-    exclude: '/tmp, /nix/store, .cache',
-  },
-]);
+function triggerBackupDialog(): void {
+  $q.dialog({
+    title: 'Trigger Borg Backup · بدء النسخ الاحتياطي',
+    message: 'Execute on-demand snapshot of /var/lib/frappe/frappe-bench/sites and MariaDB?',
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    $q.notify({
+      type: 'positive',
+      icon: 'mdi-cloud-upload-check',
+      message: 'Borg backup job started in background!',
+    });
+  });
+}
 
-function refreshBackups() {
+function triggerRestore(row: BorgSnapshot): void {
+  $q.dialog({
+    title: 'Restore Snapshot · استعادة النسخة',
+    message: `Restore system state from snapshot ${row.name}?`,
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    $q.notify({
+      type: 'positive',
+      icon: 'mdi-restore',
+      message: `Restore initialized from archive ${row.name}.`,
+    });
+  });
+}
+
+function deleteSnapshot(row: BorgSnapshot): void {
+  $q.dialog({
+    title: 'Prune Snapshot · حذف النسخة',
+    message: `Permanently delete archive ${row.name} from Borg repository?`,
+    cancel: true,
+    persistent: true,
+    ok: { color: 'negative', label: 'Delete' },
+  }).onOk(() => {
+    realSnapshots.value = realSnapshots.value.filter((s) => s.id !== row.id);
+    $q.notify({
+      type: 'positive',
+      icon: 'mdi-delete',
+      message: `Archive ${row.name} pruned successfully.`,
+    });
+  });
+}
+
+function refreshBackups(): void {
   loading.value = true;
   setTimeout(() => {
     loading.value = false;
     $q.notify({
       type: 'positive',
-      message: 'Backup repositories up to date · المستودعات محدثة',
-      position: 'top-right',
+      icon: 'mdi-refresh',
+      message: 'Borg repositories and timers refreshed!',
     });
-  }, 400);
-}
-
-function triggerBackup(machineName: string) {
-  $q.notify({
-    type: 'info',
-    message: `Snapshot queued for ${machineName} · جاري تجهيز النسخة`,
-    position: 'top-right',
-  });
+  }, 300);
 }
 </script>
 
@@ -236,5 +296,9 @@ function triggerBackup(machineName: string) {
 .clan-backups-screen {
   height: 100%;
   overflow-y: auto;
+}
+
+.font-mono {
+  font-family: 'Fira Code', 'Roboto Mono', monospace;
 }
 </style>

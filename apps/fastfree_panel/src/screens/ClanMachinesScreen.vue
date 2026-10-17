@@ -1,18 +1,34 @@
 <template>
   <div class="clan-machines-screen q-pa-md">
-    <!-- Header with Search & Actions -->
+    <!-- Header with Search, View Toggle & Actions -->
     <div class="row items-center q-mb-md q-gutter-sm">
       <div>
-        <div class="text-h6 text-weight-bold">
+        <div class="text-h6 text-weight-bold row items-center q-gutter-xs">
           <span>Machines</span>
-          <span lang="ar" dir="rtl" class="q-ml-sm text-subtitle1 text-grey-5">الأجهزة</span>
+          <span lang="ar" dir="rtl" class="q-ml-sm text-subtitle1 text-grey-5">أسطول الأجهزة</span>
         </div>
         <div class="text-caption text-grey-6">
-          Managed by Clan & NixOS · مُدارة بواسطة كلان
+          Managed by Clan & NixOS · CRUD & Fleet Orchestration
         </div>
       </div>
 
       <q-space />
+
+      <!-- View Mode Toggle (Table / Grid) -->
+      <q-btn-toggle
+        v-model="viewMode"
+        dense
+        rounded
+        unelevated
+        toggle-color="primary"
+        color="grey-9"
+        text-color="grey-4"
+        :options="[
+          { label: 'Table (CRUD)', value: 'table', icon: 'mdi-table' },
+          { label: 'Grid', value: 'grid', icon: 'mdi-view-grid' },
+        ]"
+        class="q-mr-xs"
+      />
 
       <q-input
         v-model="filter"
@@ -21,7 +37,7 @@
         clearable
         debounce="200"
         placeholder="Search machines… بحث"
-        style="width: 240px"
+        style="width: 220px"
       >
         <template #prepend><q-icon name="mdi-magnify" size="18px" /></template>
       </q-input>
@@ -73,10 +89,131 @@
       message="No machines are currently registered or matched the filter."
     />
 
-    <!-- Machines Grid -->
+    <!-- VIEW 1: LOWCODE TABLE VIEW WITH FULL CRUD & PAGINATION -->
+    <q-card v-else-if="viewMode === 'table'" flat bordered class="q-mb-md">
+      <q-table
+        :rows="filteredMachines"
+        :columns="tableColumns"
+        row-key="name"
+        flat
+        dense
+        v-model:pagination="tablePagination"
+        :rows-per-page-options="[5, 10, 20, 50]"
+        binary-state-sort
+        separator="cell"
+      >
+        <!-- Machine Name Slot -->
+        <template #body-cell-name="props">
+          <q-td :props="props">
+            <div class="row items-center no-wrap">
+              <q-avatar
+                :icon="getMachineIcon(props.row)"
+                :color="getMachineColor(props.row)"
+                text-color="white"
+                size="28px"
+                class="q-mr-sm"
+              />
+              <span class="text-weight-bold text-body2">{{ props.row.name }}</span>
+            </div>
+          </q-td>
+        </template>
+
+        <!-- Status Slot -->
+        <template #body-cell-status="props">
+          <q-td :props="props">
+            <q-badge
+              :color="getMachineStatusColor(props.row)"
+              :label="getMachineStatusLabel(props.row)"
+              class="q-px-xs text-caption"
+            />
+          </q-td>
+        </template>
+
+        <!-- Tags Slot -->
+        <template #body-cell-tags="props">
+          <q-td :props="props">
+            <div class="row q-gutter-xs">
+              <q-chip
+                v-for="tag in props.row.tags || []"
+                :key="tag"
+                dense
+                square
+                size="xs"
+                color="grey-8"
+                text-color="grey-3"
+                :label="tag"
+              />
+            </div>
+          </q-td>
+        </template>
+
+        <!-- CRUD Actions Slot -->
+        <template #body-cell-actions="props">
+          <q-td :props="props" align="right">
+            <div class="row items-center justify-end q-gutter-xs no-wrap">
+              <!-- Update / Deploy -->
+              <q-btn
+                flat
+                dense
+                round
+                size="sm"
+                color="primary"
+                icon="mdi-cloud-sync"
+                :loading="clanStore.isDeploying"
+                @click="handleUpdate(props.row.name)"
+              >
+                <q-tooltip>Trigger Machine Deploy · تحديث الجهاز</q-tooltip>
+              </q-btn>
+
+              <!-- Edit Machine -->
+              <q-btn
+                flat
+                dense
+                round
+                size="sm"
+                color="warning"
+                icon="mdi-pencil"
+                @click="openEditDialog(props.row)"
+              >
+                <q-tooltip>Edit Machine Settings · تعديل البيانات</q-tooltip>
+              </q-btn>
+
+              <!-- View Details -->
+              <q-btn
+                flat
+                dense
+                round
+                size="sm"
+                color="cyan"
+                icon="mdi-eye"
+                @click="openDetail(props.row)"
+              >
+                <q-tooltip>Inspect Details · عرض التفاصيل</q-tooltip>
+              </q-btn>
+
+              <!-- Delete Machine -->
+              <q-btn
+                flat
+                dense
+                round
+                size="sm"
+                color="negative"
+                icon="mdi-delete"
+                :disable="props.row.name === 'client2'"
+                @click="confirmDelete(props.row)"
+              >
+                <q-tooltip>{{ props.row.name === 'client2' ? 'Cannot delete current host' : 'Remove from Fleet · حذف' }}</q-tooltip>
+              </q-btn>
+            </div>
+          </q-td>
+        </template>
+      </q-table>
+    </q-card>
+
+    <!-- VIEW 2: GRID CARDS VIEW -->
     <div v-else class="row q-col-gutter-md">
       <div
-        v-for="m in filteredMachines"
+        v-for="m in paginatedGridMachines"
         :key="m.name"
         class="col-12 col-sm-6 col-md-4"
       >
@@ -135,17 +272,55 @@
             >
               <q-tooltip>Run clan machines update {{ m.name }}</q-tooltip>
             </q-btn>
-            <q-btn
-              flat
-              dense
-              size="sm"
-              color="grey-5"
-              icon="mdi-information-outline"
-              label="Details"
-              @click.stop="openDetail(m)"
-            />
+
+            <div class="row q-gutter-xs">
+              <q-btn
+                flat
+                dense
+                size="sm"
+                color="warning"
+                icon="mdi-pencil"
+                @click.stop="openEditDialog(m)"
+              >
+                <q-tooltip>Edit</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                dense
+                size="sm"
+                color="grey-5"
+                icon="mdi-information-outline"
+                @click.stop="openDetail(m)"
+              >
+                <q-tooltip>Details</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                dense
+                size="sm"
+                color="negative"
+                icon="mdi-delete"
+                :disable="m.name === 'client2'"
+                @click.stop="confirmDelete(m)"
+              >
+                <q-tooltip>Delete</q-tooltip>
+              </q-btn>
+            </div>
           </q-card-actions>
         </q-card>
+      </div>
+
+      <!-- Grid Pagination -->
+      <div class="col-12 row items-center justify-center q-mt-md">
+        <q-pagination
+          v-model="gridPage"
+          :max="gridTotalPages"
+          :max-pages="5"
+          boundary-links
+          direction-links
+          color="primary"
+          size="sm"
+        />
       </div>
     </div>
 
@@ -181,7 +356,7 @@
       </q-card>
     </q-dialog>
 
-    <!-- Add Machine Modal -->
+    <!-- Add Machine Modal (Create) -->
     <q-dialog v-model="addDialogOpen">
       <q-card style="min-width: min(90vw, 560px)">
         <q-card-section class="row items-center q-gutter-sm bg-primary text-white">
@@ -211,6 +386,12 @@
             outlined
             dense
           />
+          <q-input
+            v-model="newMachine.tagsString"
+            label="Tags · الوسوم (comma-separated, e.g. production, cairo)"
+            outlined
+            dense
+          />
 
           <q-banner rounded class="bg-grey-9 text-grey-3 text-caption">
             <div class="text-weight-bold q-mb-xs">Declarative Clan Commands · أوامر كلان لإنشاء وتجهيز السيرفر:</div>
@@ -231,6 +412,88 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Edit Machine Modal (Update) -->
+    <q-dialog v-model="editDialogOpen">
+      <q-card style="min-width: min(90vw, 560px)">
+        <q-card-section class="row items-center q-gutter-sm bg-warning text-dark">
+          <q-icon name="mdi-pencil" size="24px" />
+          <div class="text-subtitle1 text-weight-bold">Edit Machine · تعديل بيانات الخادم</div>
+          <q-space />
+          <q-btn flat dense round icon="mdi-close" v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pt-md q-gutter-y-md" v-if="editingMachine">
+          <q-input
+            :model-value="editingMachine.name"
+            label="Machine Name (Fixed identifier)"
+            outlined
+            dense
+            readonly
+          />
+          <q-input
+            v-model="editingMachine.host"
+            label="Target Host / SSH IP"
+            outlined
+            dense
+          />
+          <q-input
+            v-model="editingMachine.description"
+            label="Description"
+            outlined
+            dense
+          />
+          <q-input
+            v-model="editTagsString"
+            label="Tags (comma-separated)"
+            outlined
+            dense
+          />
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn flat label="Cancel · إلغاء" v-close-popup />
+          <q-btn
+            color="warning"
+            text-color="dark"
+            icon="mdi-content-save"
+            label="Update Settings · حفظ التعديل"
+            @click="saveEditMachine"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Delete Confirmation Modal -->
+    <q-dialog v-model="deleteDialogOpen">
+      <q-card style="min-width: min(90vw, 420px)">
+        <q-card-section class="row items-center q-gutter-sm bg-negative text-white">
+          <q-icon name="mdi-alert" size="24px" />
+          <div class="text-subtitle1 text-weight-bold">Delete Machine · حذف الجهاز</div>
+          <q-space />
+          <q-btn flat dense round icon="mdi-close" v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pa-md">
+          <p class="text-body1">
+            Are you sure you want to remove machine <strong>{{ machineToDelete?.name }}</strong> from Clan fleet inventory?
+          </p>
+          <p class="text-caption text-grey-5">
+            This will remove its record from the active inventory.
+          </p>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn flat label="Cancel · إلغاء" v-close-popup />
+          <q-btn
+            color="negative"
+            icon="mdi-delete"
+            label="Delete Permanently · تأكيد الحذف"
+            @click="executeDelete"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -244,55 +507,44 @@ import { DynamicTable, EmptyState } from '../lib/lowcode';
 const $q = useQuasar();
 const clanStore = useClanStore();
 const filter = ref('');
+const viewMode = ref<'table' | 'grid'>('table');
+
 const detailOpen = ref(false);
 const addDialogOpen = ref(false);
+const editDialogOpen = ref(false);
+const deleteDialogOpen = ref(false);
+
 const selectedMachine = ref<MachineSummary | null>(null);
+const editingMachine = ref<MachineSummary | null>(null);
+const machineToDelete = ref<MachineSummary | null>(null);
+const editTagsString = ref('');
 
 const newMachine = ref({
   name: '',
   targetHost: '',
   machineClass: 'vps',
+  tagsString: 'vps, fleet',
 });
 
-function getMachineStatusLabel(m: MachineSummary): string {
-  if (m.name === 'client2') return 'ONLINE (HOST)';
-  if (m.isOnline || m.reachable) return 'ONLINE';
-  return 'CONFIGURED';
-}
+// Table Pagination state
+const tablePagination = ref({
+  page: 1,
+  rowsPerPage: 10,
+  sortBy: 'name',
+  descending: false,
+});
 
-function getMachineStatusColor(m: MachineSummary): string {
-  if (m.name === 'client2') return 'positive';
-  if (m.isOnline || m.reachable) return 'positive';
-  return 'cyan-8';
-}
+// Grid Pagination state
+const gridPage = ref(1);
+const gridRowsPerPage = 6;
 
-function saveNewMachine(): void {
-  if (!newMachine.value.name.trim()) {
-    $q.notify({
-      type: 'warning',
-      message: 'Please enter a valid machine name.',
-    });
-    return;
-  }
-
-  clanStore.machines.push({
-    name: newMachine.value.name.trim(),
-    hostname: newMachine.value.targetHost.trim() || null,
-    isOnline: null,
-    description: `NixOS ${newMachine.value.machineClass} node`,
-    host: newMachine.value.targetHost.trim() || 'pending',
-    tags: [newMachine.value.machineClass, 'fleet'],
-  });
-
-  $q.notify({
-    type: 'positive',
-    icon: 'mdi-check-decagram',
-    message: `Machine ${newMachine.value.name} registered in Clan inventory!`,
-  });
-
-  addDialogOpen.value = false;
-  newMachine.value = { name: '', targetHost: '', machineClass: 'vps' };
-}
+const tableColumns = [
+  { name: 'name', label: 'Machine · الجهاز', field: 'name', align: 'left' as const, sortable: true },
+  { name: 'status', label: 'Status · الحالة', field: 'reachable', align: 'center' as const, sortable: true },
+  { name: 'host', label: 'Target Host / IP', field: (row: MachineSummary) => row.host || row.hostname || '127.0.0.1', align: 'left' as const, sortable: true },
+  { name: 'tags', label: 'Roles & Tags · الوسوم', field: 'tags', align: 'left' as const },
+  { name: 'actions', label: 'Actions · الإجراءات', field: 'name', align: 'right' as const },
+];
 
 const detailColumns = [
   { name: 'property', label: 'Property · الخاصية', field: 'property', align: 'left' as const },
@@ -309,17 +561,38 @@ const filteredMachines = computed(() => {
   );
 });
 
+const gridTotalPages = computed(() => {
+  return Math.max(1, Math.ceil(filteredMachines.value.length / gridRowsPerPage));
+});
+
+const paginatedGridMachines = computed(() => {
+  const start = (gridPage.value - 1) * gridRowsPerPage;
+  return filteredMachines.value.slice(start, start + gridRowsPerPage);
+});
+
 const detailRows = computed(() => {
   if (!selectedMachine.value) return [];
   const m = selectedMachine.value;
   return [
     { key: 'name', property: 'Machine Name', value: m.name },
-    { key: 'host', property: 'Target Host / IP', value: m.host || '127.0.0.1' },
+    { key: 'host', property: 'Target Host / IP', value: m.host || m.hostname || '127.0.0.1' },
     { key: 'description', property: 'Description', value: m.description || 'Clan managed NixOS host' },
     { key: 'tags', property: 'Assigned Tags', value: m.tags?.join(', ') || 'production, vps' },
-    { key: 'reachable', property: 'Network Status', value: m.reachable ? 'Online (Ping OK)' : 'Configured' },
+    { key: 'reachable', property: 'Network Status', value: m.name === 'client2' ? 'ONLINE (Current Production Host)' : 'Configured Fleet Member' },
   ];
 });
+
+function getMachineStatusLabel(m: MachineSummary): string {
+  if (m.name === 'client2') return 'ONLINE (HOST)';
+  if (m.isOnline || m.reachable) return 'ONLINE';
+  return 'CONFIGURED';
+}
+
+function getMachineStatusColor(m: MachineSummary): string {
+  if (m.name === 'client2') return 'positive';
+  if (m.isOnline || m.reachable) return 'positive';
+  return 'cyan-8';
+}
 
 function getMachineIcon(m: MachineSummary): string {
   if (m.name.includes('vps') || m.name.includes('client2')) return 'mdi-cloud-outline';
@@ -335,6 +608,86 @@ function getMachineColor(m: MachineSummary): string {
 function openDetail(m: MachineSummary): void {
   selectedMachine.value = m;
   detailOpen.value = true;
+}
+
+function openEditDialog(m: MachineSummary): void {
+  editingMachine.value = { ...m };
+  editTagsString.value = m.tags?.join(', ') || '';
+  editDialogOpen.value = true;
+}
+
+function saveEditMachine(): void {
+  if (!editingMachine.value) return;
+  const index = clanStore.machines.findIndex((m) => m.name === editingMachine.value?.name);
+  if (index >= 0) {
+    const updatedTags = editTagsString.value
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
+
+    clanStore.machines[index] = {
+      ...editingMachine.value,
+      tags: updatedTags,
+    };
+
+    $q.notify({
+      type: 'positive',
+      icon: 'mdi-check-decagram',
+      message: `Machine ${editingMachine.value.name} updated successfully!`,
+    });
+  }
+  editDialogOpen.value = false;
+}
+
+function confirmDelete(m: MachineSummary): void {
+  machineToDelete.value = m;
+  deleteDialogOpen.value = true;
+}
+
+function executeDelete(): void {
+  if (!machineToDelete.value) return;
+  const name = machineToDelete.value.name;
+  clanStore.machines = clanStore.machines.filter((m) => m.name !== name);
+  $q.notify({
+    type: 'positive',
+    icon: 'mdi-delete',
+    message: `Machine ${name} removed from fleet inventory.`,
+  });
+  deleteDialogOpen.value = false;
+  machineToDelete.value = null;
+}
+
+function saveNewMachine(): void {
+  if (!newMachine.value.name.trim()) {
+    $q.notify({
+      type: 'warning',
+      message: 'Please enter a valid machine name.',
+    });
+    return;
+  }
+
+  const tags = newMachine.value.tagsString
+    .split(',')
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+
+  clanStore.machines.push({
+    name: newMachine.value.name.trim(),
+    hostname: newMachine.value.targetHost.trim() || null,
+    isOnline: null,
+    description: `NixOS ${newMachine.value.machineClass} node`,
+    host: newMachine.value.targetHost.trim() || 'pending',
+    tags,
+  });
+
+  $q.notify({
+    type: 'positive',
+    icon: 'mdi-check-decagram',
+    message: `Machine ${newMachine.value.name} registered in Clan inventory!`,
+  });
+
+  addDialogOpen.value = false;
+  newMachine.value = { name: '', targetHost: '', machineClass: 'vps', tagsString: 'vps, fleet' };
 }
 
 async function handleUpdate(machineName: string): Promise<void> {
