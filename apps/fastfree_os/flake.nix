@@ -82,7 +82,6 @@
         ./modules/integration.nix
         ./modules/shell.nix
         ./modules/herdr.nix
-        ./modules/opencode.nix
         ./modules/tunnel.nix
         ./modules/mariadb.nix
         ./modules/caddy.nix
