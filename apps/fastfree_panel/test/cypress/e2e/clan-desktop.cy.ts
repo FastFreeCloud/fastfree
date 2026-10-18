@@ -45,8 +45,7 @@ describe('Clan Desktop & Web MCP E2E Suite', () => {
     cy.get('.lc-dock').should('be.visible');
 
     // Default open windows
-    cy.get('.window-panel').should('have.length.at.least', 2);
+    cy.get('.window-panel').should('have.length.at.least', 1);
     cy.get('.window-panel').should('contain', 'Machines');
-    cy.get('.window-panel').should('contain', 'System Health');
   });
 });

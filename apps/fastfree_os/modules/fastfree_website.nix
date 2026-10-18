@@ -202,7 +202,20 @@ server.listen(9004, '127.0.0.1', () => {
 EOF
           fi
         '';
-        ExecStart = "${pkgs.nodejs_22}/bin/node /srv/fastfree-website/server.js";
+        ExecStart = pkgs.writeShellScript "fastfree-website-start" ''
+          if [ -d "/root/fastfree-source/apps/fastfree_website/.next" ] && [ -f "/root/fastfree-source/apps/fastfree_website/node_modules/next/dist/bin/next" ]; then
+            echo "[fastfree-website] Starting Next.js production server on 127.0.0.1:9004..."
+            cd /root/fastfree-source/apps/fastfree_website
+            exec ${pkgs.nodejs_22}/bin/node node_modules/next/dist/bin/next start -p 9004 -H 127.0.0.1
+          elif [ -f "/srv/fastfree-website/server.js" ]; then
+            echo "[fastfree-website] Starting native portal fallback on 127.0.0.1:9004..."
+            cd /srv/fastfree-website
+            exec ${pkgs.nodejs_22}/bin/node /srv/fastfree-website/server.js
+          else
+            echo "[fastfree-website] Error: No server file available!"
+            exit 1
+          fi
+        '';
       };
     };
   };

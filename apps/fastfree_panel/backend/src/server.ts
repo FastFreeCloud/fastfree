@@ -49,12 +49,16 @@ export function createApp(): Hono<{ Bindings: HttpBindings }> {
   }
 
   app.route(API_PREFIX, healthRoutes);
+  app.route('/api', healthRoutes);
   app.route(API_PREFIX, machinesRoutes);
+  app.route('/api', machinesRoutes);
   app.route(API_PREFIX, globalRoutes);
+  app.route('/api', globalRoutes);
 
   // Mount Web MCP server routes
   app.route('/mcp', mcpRoutes);
   app.route(`${API_PREFIX}/mcp`, mcpRoutes);
+  app.route('/api/mcp', mcpRoutes);
 
   app.notFound((c) =>
     c.json({ error: { code: 'NOT_FOUND', message: 'No such endpoint.' } }, 404),
