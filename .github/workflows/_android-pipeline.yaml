@@ -44,7 +44,7 @@ env:
 jobs:
   build-and-publish:
     name: "Build & Publish: ${{ inputs.app_name }}"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
     permissions:
       contents: write
@@ -135,7 +135,7 @@ jobs:
 
       - name: "16. Authenticate to Google Cloud via WIF (Keyless)"
         id: google-auth
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: "projects/639480735306/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
           service_account: "fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.com"
