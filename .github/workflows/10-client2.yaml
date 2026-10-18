@@ -131,13 +131,16 @@ jobs:
       - name: "3. Setup SSH deploy key"
         run: |
           mkdir -p ~/.ssh
-          printf '%s' "${{ secrets.CLIENT2_DEPLOY_KEY }}" > ~/.ssh/client2
+          printf '%s\n' "${{ secrets.CLIENT2_DEPLOY_KEY }}" | tr -d '\r' > ~/.ssh/client2
           chmod 600 ~/.ssh/client2
+          cp ~/.ssh/client2 ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           cat > ~/.ssh/config <<'CFG'
-          Host client2
+          Host client2 ${{ secrets.CLIENT2_IP }} *
             HostName ${{ secrets.CLIENT2_IP }}
             User root
             IdentityFile ~/.ssh/client2
+            IdentityFile ~/.ssh/id_ed25519
             StrictHostKeyChecking accept-new
             ServerAliveInterval 60
           CFG
@@ -190,14 +193,18 @@ jobs:
       - name: "1. Setup SSH deploy key"
         run: |
           mkdir -p ~/.ssh
-          printf '%s' "${{ secrets.CLIENT2_DEPLOY_KEY }}" > ~/.ssh/client2
+          printf '%s\n' "${{ secrets.CLIENT2_DEPLOY_KEY }}" | tr -d '\r' > ~/.ssh/client2
           chmod 600 ~/.ssh/client2
+          cp ~/.ssh/client2 ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           cat > ~/.ssh/config <<'CFG'
-          Host client2
+          Host client2 ${{ secrets.CLIENT2_IP }} *
             HostName ${{ secrets.CLIENT2_IP }}
             User root
             IdentityFile ~/.ssh/client2
+            IdentityFile ~/.ssh/id_ed25519
             StrictHostKeyChecking accept-new
+            ServerAliveInterval 60
           CFG
 
       - name: "2. Run full diagnostic"
