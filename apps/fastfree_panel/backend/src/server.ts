@@ -24,6 +24,7 @@ import { globalRoutes } from './routes/global.js';
 import { healthRoutes } from './routes/health.js';
 import { machinesRoutes } from './routes/machines.js';
 import { mcpRoutes } from './routes/mcp.js';
+import { herdrRoutes } from './routes/herdr.js';
 
 const API_PREFIX = '/api/v1';
 
@@ -54,6 +55,8 @@ export function createApp(): Hono<{ Bindings: HttpBindings }> {
   app.route('/api', machinesRoutes);
   app.route(API_PREFIX, globalRoutes);
   app.route('/api', globalRoutes);
+  app.route(API_PREFIX, herdrRoutes);
+  app.route('/api', herdrRoutes);
 
   // Mount Web MCP server routes
   app.route('/mcp', mcpRoutes);

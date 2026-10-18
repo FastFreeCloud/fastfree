@@ -259,3 +259,55 @@ export function apiMachines(timeoutMs?: number): Promise<MachinesData> {
 export function apiGlobalShow(timeoutMs?: number): Promise<GlobalSummary> {
   return apiRequest<GlobalSummary>('/global/show', timeoutMs === undefined ? {} : { timeoutMs });
 }
+
+export type HerdrAgentStatus = 'idle' | 'blocked' | 'done' | 'working' | 'unknown';
+
+export interface LiveHerdrAgent {
+  name: string;
+  agent: string;
+  status: HerdrAgentStatus;
+  workspace_id: string;
+  tab_id: string;
+  pane_id: string;
+  cwd?: string;
+  focused?: boolean;
+}
+
+export interface HerdrStatusData {
+  running: boolean;
+  connected: boolean;
+  source: 'live' | 'snapshot_cache' | 'fallback';
+  socketPath: string;
+  workspace: string;
+  activeLeadAgent: string;
+  focusedPane: string;
+  counts: {
+    all: number;
+    blocked: number;
+    idle: number;
+    done: number;
+    working: number;
+  };
+  agents: LiveHerdrAgent[];
+  message?: string;
+}
+
+export interface HerdrPromptResult {
+  success: boolean;
+  message: string;
+  code?: string;
+}
+
+/** `GET /api/v1/herdr/status` — live Herdr session and agent telemetry. */
+export function apiHerdrStatus(timeoutMs?: number): Promise<HerdrStatusData> {
+  return apiRequest<HerdrStatusData>('/herdr/status', timeoutMs === undefined ? {} : { timeoutMs });
+}
+
+/** `POST /api/v1/herdr/prompt` — submit an instruction or command prompt to a target agent. */
+export function apiHerdrPrompt(target: string, text: string, timeoutMs?: number): Promise<HerdrPromptResult> {
+  return apiRequest<HerdrPromptResult>('/herdr/prompt', {
+    method: 'POST',
+    body: { target, text },
+    ...(timeoutMs !== undefined ? { timeoutMs } : {}),
+  });
+}

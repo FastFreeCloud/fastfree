@@ -13,8 +13,10 @@ import { z } from 'zod';
 
 import { clanService } from '../core/clan.service.js';
 import { nixosService } from '../core/nixos.service.js';
+import { herdrService } from '../core/herdr.service.js';
 import { clanMachineUpdateSchema } from '../schemas/clan.schema.js';
 import { nixosRollbackSchema } from '../schemas/nixos.schema.js';
+import { herdrAgentPromptSchema } from '../schemas/herdr.schema.js';
 import { ApiError } from '../http/errors.js';
 
 export interface McpSession {
@@ -142,6 +144,95 @@ export function createFastfreeMcpServer(): McpServer {
     },
   );
 
+  // Tool 5: herdr_status
+  server.tool(
+    'herdr_status',
+    'Condensed snapshot of the whole Herdr session: focused ids, counts by status, and every live agent with its location.',
+    {
+      workspace_id: z.string().optional().describe('Optional workspace id to restrict agents to'),
+    },
+    async () => {
+      try {
+        const status = await herdrService.getHerdrStatus();
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(status, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to collect Herdr status';
+        return {
+          content: [{ type: 'text', text: `Error collecting Herdr status: ${message}` }],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  // Tool 6: herdr_agents
+  server.tool(
+    'herdr_agents',
+    'List live agents recognised by Herdr.',
+    async () => {
+      try {
+        const status = await herdrService.getHerdrStatus();
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(status.agents, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to list agents';
+        return {
+          content: [{ type: 'text', text: `Error listing agents: ${message}` }],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  // Tool 7: herdr_agent_prompt
+  server.tool(
+    'herdr_agent_prompt',
+    'Submit a prompt to a live agent. Returns once submitted.',
+    {
+      target: z.string().describe('Live agent name or pane id'),
+      text: z.string().describe('Prompt text'),
+      wait: z.boolean().optional().describe('Wait for a settled state before returning'),
+      timeout_ms: z.number().optional().describe('Wait timeout in milliseconds'),
+    },
+    async (args) => {
+      try {
+        const result = await herdrService.dispatchPrompt({
+          target: args.target,
+          text: args.text,
+          wait: args.wait,
+          timeout_ms: args.timeout_ms,
+        });
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to dispatch prompt';
+        return {
+          content: [{ type: 'text', text: `Error dispatching prompt: ${message}` }],
+          isError: true,
+        };
+      }
+    },
+  );
+
   return server;
 }
 
@@ -224,8 +315,22 @@ export async function executeDirectToolCall(
       return await nixosService.rollback(parsed);
     }
 
+    case 'herdr_status': {
+      return await herdrService.getHerdrStatus();
+    }
+
+    case 'herdr_agents': {
+      const status = await herdrService.getHerdrStatus();
+      return status.agents;
+    }
+
+    case 'herdr_agent_prompt': {
+      const parsed = herdrAgentPromptSchema.parse(rawArgs);
+      return await herdrService.dispatchPrompt(parsed);
+    }
+
     default:
-      throw ApiError.validation(`Unknown MCP tool: "${toolName}". Supported tools: clan_machines_list, clan_machines_update, nixos_health, nixos_rollback.`, {
+      throw ApiError.validation(`Unknown MCP tool: "${toolName}". Supported tools: clan_machines_list, clan_machines_update, nixos_health, nixos_rollback, herdr_status, herdr_agents, herdr_agent_prompt.`, {
         field: 'tool',
       });
   }

@@ -1,23 +1,7 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "jsx": "preserve",
-    "jsxImportSource": "vue"
-  },
+  "extends": "../../tsconfig.json",
   "include": [
+    "../../shims.d.ts",
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.vue"
