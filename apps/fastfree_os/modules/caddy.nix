@@ -62,11 +62,6 @@ let
       header -Server
       ${if config.fastfree.apps.fastfree_website then ''
         reverse_proxy 127.0.0.1:9004
-        handle_errors {
-          root * /srv/fastfree-panel
-          rewrite * /index.html
-          file_server
-        }
       '' else ''
         redir https://panel.${domain}{uri} permanent
       ''}
