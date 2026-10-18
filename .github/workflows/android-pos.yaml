@@ -1,0 +1,27 @@
+name: "Android: FastFree POS"
+
+on:
+  push:
+    tags:
+      - 'pos-v*'
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Google Play Track'
+        required: false
+        type: choice
+        default: 'internal'
+        options:
+          - 'internal'
+          - 'production'
+
+jobs:
+  android:
+    uses: ./.github/workflows/_android-pipeline.yaml
+    with:
+      app_name: 'FastFree POS'
+      app_key: 'pos'
+      app_dir: 'apps/fastfree_pos'
+      package_id: 'com.fastfree.pos'
+      track: ${{ inputs.track || 'internal' }}
+    secrets: inherit

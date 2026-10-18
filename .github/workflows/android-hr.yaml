@@ -1,0 +1,27 @@
+name: "Android: FastFree HR"
+
+on:
+  push:
+    tags:
+      - 'hr-v*'
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Google Play Track'
+        required: false
+        type: choice
+        default: 'internal'
+        options:
+          - 'internal'
+          - 'production'
+
+jobs:
+  android:
+    uses: ./.github/workflows/_android-pipeline.yaml
+    with:
+      app_name: 'FastFree HR'
+      app_key: 'hr'
+      app_dir: 'apps/fastfree_hr'
+      package_id: 'com.fastfree.hr'
+      track: ${{ inputs.track || 'internal' }}
+    secrets: inherit

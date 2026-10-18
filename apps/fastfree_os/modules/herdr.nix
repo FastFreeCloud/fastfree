@@ -75,7 +75,6 @@ in {
         jq
         nodejs_22
         python311
-        git
         curl
         tmux
       ]);

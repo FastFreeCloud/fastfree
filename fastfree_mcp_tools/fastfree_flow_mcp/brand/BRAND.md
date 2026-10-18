@@ -42,6 +42,19 @@ The three are one ramp. **Never introduce a fourth blue.** Two of these were har
 
 Status colour always comes from the shared `useStatusHelpers` helper, never chosen by hand.
 
+### Ecosystem Application Palettes
+
+Each application in the FastFree ecosystem expresses its specialized commercial domain through targeted dual-tone colors while retaining the Master Infinity Mark:
+
+| Application | Primary | Secondary / Accent | Domain Focus |
+|---|---|---|---|
+| **FastFree Website** | `#2563EB` (Electric Azure) | `#1D4ED8` (Royal Blue) & `#00F0FF` | Marketing & SaaS Portal |
+| **FastFree Panel** | `#4F46E5` (Cyber Indigo) | `#3730A3` (Deep Violet) & `#818CF8` | Clan DevOps & Fleet Control |
+| **FastFree Ledger** | `#0D9488` (Emerald Mint) | `#047857` (Jade Pine) & `#34D399` | Accounting, Sales & Inventory |
+| **FastFree ERP** | `#D97706` (Titanium Bronze) | `#B45309` (Amber Gold) & `#F59E0B` | Enterprise Operations & Supply Chain |
+| **FastFree POS** | `#E11D48` (High-Energy Coral) | `#9F1239` (Crimson Blaze) & `#FB7185` | Point of Sale & Retail Counter |
+| **FastFree HR** | `#0284C7` (Sapphire Sky) | `#7C3AED` (Royal Amethyst) & `#C084FC` | Human Resources & Payroll |
+
 ### Neutrals
 
 - `border` `#e5e7eb` — table rows, input outlines, card edges

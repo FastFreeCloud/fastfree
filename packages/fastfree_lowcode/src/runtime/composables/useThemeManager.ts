@@ -25,5 +25,6 @@ export function useThemeManager() {
     resetToDefaults: store.resetToDefaults,
     exportTheme: store.exportConfig,
     importTheme: store.importConfig,
+    setAppSignature: store.setAppSignature,
   }
 }

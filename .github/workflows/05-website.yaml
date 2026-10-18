@@ -32,40 +32,39 @@ jobs:
         run: git config --global safe.directory '*'
 
       - name: "2. Checkout"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
-      - name: "3. Install Flox"
-        uses: flox/install-flox-action@v2
+      - name: "3. Setup Node.js 22"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: 'apps/fastfree_website/package-lock.json'
 
       - name: "4. Install dependencies"
-        uses: flox/activate-action@v1
-        with:
-          dir: .
-          command: cd apps/fastfree_website && npm install --legacy-peer-deps --ignore-scripts
+        run: |
+          cd apps/fastfree_website
+          npm install --legacy-peer-deps --ignore-scripts
 
       - name: "5. TypeScript check"
-        uses: flox/activate-action@v1
-        with:
-          dir: .
-          command: cd apps/fastfree_website && npx tsc --noEmit
+        run: |
+          cd apps/fastfree_website
+          npx tsc --noEmit
 
       - name: "6. Lint check"
-        uses: flox/activate-action@v1
-        with:
-          dir: .
-          command: cd apps/fastfree_website && npm run lint
+        run: |
+          cd apps/fastfree_website
+          npm run lint
 
       - name: "7. Build Next.js app"
-        uses: flox/activate-action@v1
-        with:
-          dir: .
-          command: cd apps/fastfree_website && npm run build
+        run: |
+          cd apps/fastfree_website
+          npm run build
 
       - name: "8. Package Website Tarball"
-        uses: flox/activate-action@v1
-        with:
-          dir: .
-          command: cd apps/fastfree_website && tar -czf ../../fastfree-website.tar.gz .next public package.json
+        run: |
+          cd apps/fastfree_website
+          tar -czf ../../fastfree-website.tar.gz .next public package.json
 
       - name: "9. Upload artifact"
         uses: actions/upload-artifact@v4
@@ -86,7 +85,7 @@ jobs:
         run: git config --global safe.directory '*'
 
       - name: "2. Checkout"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -98,33 +97,28 @@ jobs:
       - name: "4. Compute next version"
         id: version
         run: |
-          LATEST_TAG=$(git tag -l "website-v1.0.*" --sort=-v:refname | head -n1)
+          LATEST_TAG=$(git tag -l "website-v*" --sort=-v:refname | head -n1)
           if [ -z "$LATEST_TAG" ]; then
-            NEXT=1
+            NEXT_TAG="website-v1.0.0"
           else
-            CURR=${LATEST_TAG#website-v1.0.}
-            NEXT=$((CURR + 1))
+            VERSION="${LATEST_TAG#website-v}"
+            MAJOR=$(echo "$VERSION" | cut -d. -f1)
+            MINOR=$(echo "$VERSION" | cut -d. -f2)
+            PATCH=$(echo "$VERSION" | cut -d. -f3)
+            NEXT_PATCH=$((PATCH + 1))
+            NEXT_TAG="website-v${MAJOR}.${MINOR}.${NEXT_PATCH}"
           fi
-          echo "tag=website-v1.0.$NEXT" >> "$GITHUB_OUTPUT"
-          echo "Version: website-v1.0.$NEXT"
+          echo "tag=${NEXT_TAG}" >> $GITHUB_OUTPUT
+          echo "Next release tag: ${NEXT_TAG}"
 
-      - name: "5. Create tag and push"
-        run: |
-          TAG="${{ steps.version.outputs.tag }}"
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists, skipping"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG" -m "Release $TAG"
-          git push origin "$TAG"
-          echo "Tag $TAG created and pushed"
-
-      - name: "6. Create GitHub Release"
-        uses: softprops/action-gh-release@v3
+      - name: "5. Create GitHub Release with Tarball"
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: ${{ steps.version.outputs.tag }}
+          name: "FastFree Website ${{ steps.version.outputs.tag }}"
+          draft: false
+          prerelease: false
           files: fastfree-website.tar.gz
           generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -14,9 +14,17 @@
 
 <script setup lang="ts">
 import { ref, inject, watch } from 'vue'
-import { LcErrorBoundary } from 'quasar-app-extension-fastfree-lowcode'
+import { setCssVar, Dark } from 'quasar'
+import { LcErrorBoundary, getThemeStore } from 'quasar-app-extension-fastfree-lowcode'
 import { APP_UPDATE_KEY } from 'quasar-app-extension-fastfree_update/src/runtime/types'
 import type { AppUpdateApi } from 'quasar-app-extension-fastfree_update/src/runtime/useAppUpdate'
+
+Dark.set(false)
+setCssVar('primary', '#D97706')
+
+const themeStore = getThemeStore()
+themeStore.setMode('light')
+themeStore.setAppSignature('#D97706')
 
 const appUpdate = inject<AppUpdateApi>(APP_UPDATE_KEY)
 const updateAvailable = ref(false)

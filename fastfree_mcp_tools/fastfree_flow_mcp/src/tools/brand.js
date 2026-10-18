@@ -9,7 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   buildPrompt, cleanForFlow, RATIOS,
-  colors, identity, sourceFile, logoFiles,
+  colors, appColors, identity, sourceFile, logoFiles,
 } from '../../brand/brand.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -22,6 +22,7 @@ export function brandRead() {
     company: identity.company,
     tagline: identity.tagline,
     colors,
+    appColors,
     typography: identity.fonts,
     icons: identity.icons,
     logos: logoFiles(),
@@ -55,6 +56,7 @@ export function brandPrompt({ request, kind = 'illustration', ratio = '1:1', exc
 export function brandTokens({ group = 'all' } = {}) {
   const map = {
     colors,
+    appColors,
     typography: identity.fonts,
     icons: identity.icons,
     socialRatios: identity.ratios,

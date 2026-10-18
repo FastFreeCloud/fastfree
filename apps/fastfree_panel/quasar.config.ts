@@ -17,7 +17,7 @@ export default defineConfig((ctx) => {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['i18n', 'fonts', 'clan-screens'],
+    boot: ['brand-theme', 'i18n', 'fonts', 'clan-screens'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css
     // The design fonts (IBM Plex Sans + Arabic) are loaded by the `fonts` boot
@@ -157,7 +157,12 @@ export default defineConfig((ctx) => {
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
     framework: {
-      config: {},
+      config: {
+        brand: {
+          primary: '#4F46E5',
+        },
+        dark: false,
+      },
 
       // Required by the fastfree_lowcode components we reuse (DynamicTable
       // calls Notify.create() directly; useNotify/useConfirmDialog need both).

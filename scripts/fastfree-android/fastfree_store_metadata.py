@@ -111,7 +111,13 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.app:
-        selected = [a for a in APPS if a["name"] == args.app or a["slug"].startswith(args.app)]
+        selected = [
+            a for a in APPS
+            if a["name"] == args.app
+            or a["name"] == f"fastfree_{args.app}"
+            or a["slug"].startswith(args.app)
+            or a["slug"].startswith(f"fastfree-{args.app}")
+        ]
         if not selected:
             LOG.error("No app matched --app=%s", args.app)
             return 1

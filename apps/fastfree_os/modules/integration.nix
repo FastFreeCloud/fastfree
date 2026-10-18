@@ -4,8 +4,7 @@
   config = lib.mkIf config.fastfree.apps.base {
 
     # ── Packages ──────────────────────────────────────────
-    environment.systemPackages = with pkgs; [
-      git
+    environment.systemPackages = [
       (pkgs.writeShellScriptBin "fastfree" (builtins.readFile ../cli.sh))
     ];
 

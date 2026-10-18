@@ -7,7 +7,7 @@ name: 01-apps
 #   - fastfree_pos
 #
 # Validates types, lints, and builds native SPA distribution artifacts.
-# Eliminates obsolete Podman / Docker Buildx / GHCR image push overhead.
+# Fast, clean, hermetic Node.js 22 + pnpm pipeline.
 
 on:
   push:
@@ -53,7 +53,7 @@ jobs:
   validate-and-build:
     name: "SPA: ${{ matrix.app }}"
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     permissions:
       contents: read
     strategy:
@@ -67,61 +67,72 @@ jobs:
 
       - name: "2. Checkout"
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.app == 'all' || inputs.app == matrix.app }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
-      - name: "3. Install Flox"
+      - name: "3. Setup Node.js 22"
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.app == 'all' || inputs.app == matrix.app }}
-        uses: flox/install-flox-action@v2
-
-      - name: "4. Install workspace dependencies"
-        if: ${{ github.event_name != 'workflow_dispatch' || inputs.app == 'all' || inputs.app == matrix.app }}
-        uses: flox/activate-action@v1
+        uses: actions/setup-node@v4
         with:
-          dir: .
-          command: pnpm install --no-frozen-lockfile --ignore-scripts
+          node-version: 22
 
-      - name: "5. Install Capacitor dependencies"
+      - name: "4. Setup pnpm"
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.app == 'all' || inputs.app == matrix.app }}
-        uses: flox/activate-action@v1
+        uses: pnpm/action-setup@v4
         with:
-          dir: .
-          command: |
-            if [ -d "apps/fastfree_${{ matrix.app }}/src-capacitor" ]; then
-              cd "apps/fastfree_${{ matrix.app }}/src-capacitor" && npm install
-            fi
+          version: 10
+          run_install: false
 
-      - name: "6. Prepare Quasar"
+      - name: "5. Get pnpm store directory"
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.app == 'all' || inputs.app == matrix.app }}
-        uses: flox/activate-action@v1
-        with:
-          dir: .
-          command: |
-            cd "apps/fastfree_${{ matrix.app }}"
-            mkdir -p .quasar && echo '{"compilerOptions":{}}' > .quasar/tsconfig.json
-            pnpm exec quasar prepare --silent
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-      - name: "7. TypeScript check"
+      - name: "6. Setup pnpm cache"
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.app == 'all' || inputs.app == matrix.app }}
-        uses: flox/activate-action@v1
+        uses: actions/cache@v4
         with:
-          dir: .
-          command: cd "apps/fastfree_${{ matrix.app }}" && pnpm exec vue-tsc --noEmit
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
-      - name: "8. Lint check"
+      - name: "7. Install dependencies"
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.app == 'all' || inputs.app == matrix.app }}
-        uses: flox/activate-action@v1
-        with:
-          dir: .
-          command: cd "apps/fastfree_${{ matrix.app }}" && pnpm exec eslint -c ./eslint.config.js "./src*/**/*.{ts,js,cjs,mjs,vue}"
+        run: pnpm install --no-frozen-lockfile --ignore-scripts
 
-      - name: "9. Build Quasar SPA"
+      - name: "8. Install Capacitor dependencies"
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.app == 'all' || inputs.app == matrix.app }}
-        uses: flox/activate-action@v1
-        with:
-          dir: .
-          command: cd "apps/fastfree_${{ matrix.app }}" && pnpm exec quasar build
+        run: |
+          if [ -d "apps/fastfree_${{ matrix.app }}/src-capacitor" ]; then
+            cd "apps/fastfree_${{ matrix.app }}/src-capacitor" && npm install
+          fi
 
-      - name: "10. Upload SPA Artifact"
+      - name: "9. Prepare Quasar"
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.app == 'all' || inputs.app == matrix.app }}
+        run: |
+          cd "apps/fastfree_${{ matrix.app }}"
+          pnpm exec quasar prepare
+
+      - name: "10. TypeScript check"
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.app == 'all' || inputs.app == matrix.app }}
+        run: |
+          cd "apps/fastfree_${{ matrix.app }}"
+          pnpm exec vue-tsc --noEmit
+
+      - name: "11. Lint check"
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.app == 'all' || inputs.app == matrix.app }}
+        run: |
+          cd "apps/fastfree_${{ matrix.app }}"
+          pnpm exec eslint -c ./eslint.config.js "./src*/**/*.{ts,js,cjs,mjs,vue}"
+
+      - name: "12. Build Quasar SPA"
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.app == 'all' || inputs.app == matrix.app }}
+        run: |
+          cd "apps/fastfree_${{ matrix.app }}"
+          pnpm exec quasar build
+
+      - name: "13. Upload SPA Artifact"
         if: ${{ (github.event_name != 'workflow_dispatch' || inputs.app == 'all' || inputs.app == matrix.app) && success() }}
         uses: actions/upload-artifact@v4
         with:
