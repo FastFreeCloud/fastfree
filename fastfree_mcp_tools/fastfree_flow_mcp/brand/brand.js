@@ -47,6 +47,15 @@ export const colors = {
   textSecondary: pick('#6b7280'),
 };
 
+export const appColors = {
+  website: { primary: '#2563EB', secondary: '#1D4ED8', accent: '#00F0FF' },
+  panel: { primary: '#4F46E5', secondary: '#3730A3', accent: '#818CF8' },
+  ledger: { primary: '#0D9488', secondary: '#047857', accent: '#34D399' },
+  erp: { primary: '#D97706', secondary: '#B45309', accent: '#F59E0B' },
+  pos: { primary: '#E11D48', secondary: '#9F1239', accent: '#FB7185' },
+  hr: { primary: '#0284C7', secondary: '#7C3AED', accent: '#C084FC' },
+};
+
 export const brandPalette = [
   colors.primary,
   colors.primaryDark,

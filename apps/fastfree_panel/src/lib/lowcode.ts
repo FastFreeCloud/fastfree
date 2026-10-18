@@ -76,3 +76,4 @@ export type { WindowInfo } from '#lc/composables/useDesktopStore';
 export { useGroupsStore, registerGroup, registerGroupPage } from '#lc/composables/useGroupsStore';
 export { registerScreen, registerScreens, getScreenComponent } from '#lc/composables/screen-registry';
 export { useLcI18n } from '#lc/i18n';
+export { useThemeStore, getThemeStore } from '#lc/composables/useThemeStore';

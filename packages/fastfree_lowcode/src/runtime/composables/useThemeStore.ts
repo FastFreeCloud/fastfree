@@ -22,6 +22,9 @@ export interface BrandColors {
 export interface ThemePreset {
   name: string
   label: string
+  description?: string
+  icon?: string
+  badge?: string
   light: BrandColors
   dark: BrandColors
 }
@@ -33,230 +36,92 @@ export interface ThemeConfig {
   customDark: Partial<BrandColors>
 }
 
+export const DEFAULT_CONFIG: ThemeConfig = {
+  mode: 'light',
+  preset: 'lite',
+  customLight: {},
+  customDark: {},
+}
+
 const BRAND_NAMES: (keyof BrandColors)[] = [
   'primary', 'secondary', 'accent',
   'positive', 'negative', 'info', 'warning',
 ]
 
-const PRESETS: ThemePreset[] = [
+export const PRESETS: ThemePreset[] = [
   {
-    name: 'ocean',
-    label: 'Ocean',
+    name: 'lite',
+    label: 'Native Lite',
+    description: 'Clean, crisp enterprise light mode with signature primary color',
+    icon: 'mdi-weather-sunny',
+    badge: 'Default',
     light: {
-      primary: '#1565C0',
-      secondary: '#00897B',
-      accent: '#7E57C2',
-      positive: '#21BA45',
-      negative: '#C10015',
-      info: '#31CCEC',
-      warning: '#F2C037',
+      primary: '#2563EB',
+      secondary: '#0D9488',
+      accent: '#6366F1',
+      positive: '#10B981',
+      negative: '#EF4444',
+      info: '#0284C7',
+      warning: '#F59E0B',
     },
     dark: {
-      primary: '#42A5F5',
-      secondary: '#00897B',
-      accent: '#5C6BC0',
-      positive: '#21BA45',
-      negative: '#C10015',
-      info: '#31CCEC',
-      warning: '#F2C037',
+      primary: '#3B82F6',
+      secondary: '#14B8A6',
+      accent: '#818CF8',
+      positive: '#10B981',
+      negative: '#EF4444',
+      info: '#38BDF8',
+      warning: '#F59E0B',
     },
   },
   {
-    name: 'quasar',
-    label: 'Quasar Default',
+    name: 'dark',
+    label: 'Deep Dark',
+    description: 'Sleek dark palette with 14:1 contrast and vibrant accents',
+    icon: 'mdi-weather-night',
+    badge: 'Night',
     light: {
-      primary: '#1976D2',
-      secondary: '#26A69A',
-      accent: '#9C27B0',
-      positive: '#21BA45',
-      negative: '#C10015',
-      info: '#31CCEC',
-      warning: '#F2C037',
+      primary: '#1D4ED8',
+      secondary: '#0F766E',
+      accent: '#4F46E5',
+      positive: '#059669',
+      negative: '#DC2626',
+      info: '#0284C7',
+      warning: '#D97706',
     },
     dark: {
-      primary: '#42A5F5',
-      secondary: '#26A69A',
-      accent: '#CE93D8',
-      positive: '#21BA45',
-      negative: '#C10015',
-      info: '#31CCEC',
-      warning: '#F2C037',
+      primary: '#3B82F6',
+      secondary: '#14B8A6',
+      accent: '#8B5CF6',
+      positive: '#10B981',
+      negative: '#F43F5E',
+      info: '#38BDF8',
+      warning: '#FBBF24',
     },
   },
   {
-    name: 'forest',
-    label: 'Forest',
+    name: 'executive',
+    label: 'Executive',
+    description: 'High-contrast mode tailored for data density, financial tables, and analytical clarity',
+    icon: 'mdi-chart-box-outline',
+    badge: 'Contrast',
     light: {
-      primary: '#2E7D32',
-      secondary: '#00695C',
-      accent: '#4527A0',
-      positive: '#21BA45',
-      negative: '#C10015',
-      info: '#00ACC1',
-      warning: '#F9A825',
+      primary: '#1E40AF',
+      secondary: '#0E7490',
+      accent: '#7E22CE',
+      positive: '#047857',
+      negative: '#B91C1C',
+      info: '#0369A1',
+      warning: '#B45309',
     },
     dark: {
-      primary: '#4CAF50',
-      secondary: '#00897B',
-      accent: '#5C6BC0',
-      positive: '#66BB6A',
-      negative: '#EF5350',
-      info: '#00ACC1',
-      warning: '#F57F17',
-    },
-  },
-  {
-    name: 'sunset',
-    label: 'Sunset',
-    light: {
-      primary: '#E65100',
-      secondary: '#BF360C',
-      accent: '#6A1B9A',
-      positive: '#21BA45',
-      negative: '#C10015',
-      info: '#00838F',
-      warning: '#F9A825',
-    },
-    dark: {
-      primary: '#FF7043',
-      secondary: '#E64A19',
-      accent: '#7E57C2',
-      positive: '#66BB6A',
-      negative: '#EF5350',
-      info: '#00ACC1',
-      warning: '#F57F17',
-    },
-  },
-  {
-    name: 'midnight',
-    label: 'Midnight',
-    light: {
-      primary: '#37474F',
-      secondary: '#455A64',
-      accent: '#5E35B1',
-      positive: '#2E7D32',
-      negative: '#C62828',
-      info: '#0277BD',
-      warning: '#F57F17',
-    },
-    dark: {
-      primary: '#78909C',
-      secondary: '#90A4AE',
-      accent: '#9575CD',
-      positive: '#66BB6A',
-      negative: '#EF5350',
-      info: '#4FC3F7',
-      warning: '#FFB74D',
-    },
-  },
-  {
-    name: 'gold',
-    label: 'Gold',
-    light: {
-      primary: '#5D4037',
-      secondary: '#8D6E63',
-      accent: '#BF360C',
-      positive: '#2E7D32',
-      negative: '#C62828',
-      info: '#00838F',
-      warning: '#F9A825',
-    },
-    dark: {
-      primary: '#FFB300',
-      secondary: '#FF8F00',
-      accent: '#CE93D8',
-      positive: '#66BB6A',
-      negative: '#EF5350',
-      info: '#00ACC1',
-      warning: '#FFCA28',
-    },
-  },
-  {
-    name: 'lavender',
-    label: 'Lavender',
-    light: {
-      primary: '#5E35B1',
-      secondary: '#3949AB',
-      accent: '#D81B60',
-      positive: '#2E7D32',
-      negative: '#C62828',
-      info: '#0277BD',
-      warning: '#F57F17',
-    },
-    dark: {
-      primary: '#7E57C2',
-      secondary: '#5C6BC0',
-      accent: '#F06292',
-      positive: '#66BB6A',
-      negative: '#EF5350',
-      info: '#4FC3F7',
-      warning: '#FFB74D',
-    },
-  },
-  {
-    name: 'crimson',
-    label: 'Crimson',
-    light: {
-      primary: '#C62828',
-      secondary: '#AD1457',
-      accent: '#4527A0',
-      positive: '#2E7D32',
-      negative: '#B71C1C',
-      info: '#00838F',
-      warning: '#F57F17',
-    },
-    dark: {
-      primary: '#EF5350',
-      secondary: '#D81B60',
-      accent: '#7E57C2',
-      positive: '#66BB6A',
-      negative: '#E53935',
-      info: '#00ACC1',
-      warning: '#FFB74D',
-    },
-  },
-  {
-    name: 'mint',
-    label: 'Mint',
-    light: {
-      primary: '#00796B',
-      secondary: '#2E7D32',
-      accent: '#7B1FA2',
-      positive: '#2E7D32',
-      negative: '#C62828',
-      info: '#0097A7',
-      warning: '#F57F17',
-    },
-    dark: {
-      primary: '#26A69A',
-      secondary: '#66BB6A',
-      accent: '#CE93D8',
-      positive: '#66BB6A',
-      negative: '#EF5350',
-      info: '#4DD0E1',
-      warning: '#FFCA28',
-    },
-  },
-  {
-    name: 'arctic',
-    label: 'Arctic',
-    light: {
-      primary: '#0277BD',
-      secondary: '#00838F',
-      accent: '#5C6BC0',
-      positive: '#2E7D32',
-      negative: '#C62828',
-      info: '#00ACC1',
-      warning: '#F57F17',
-    },
-    dark: {
-      primary: '#4FC3F7',
-      secondary: '#4DD0E1',
-      accent: '#7986CB',
-      positive: '#66BB6A',
-      negative: '#EF5350',
-      info: '#4DD0E1',
-      warning: '#FFCA28',
+      primary: '#2563EB',
+      secondary: '#06B6D4',
+      accent: '#A855F7',
+      positive: '#10B981',
+      negative: '#F43F5E',
+      info: '#00E5FF',
+      warning: '#FACC15',
     },
   },
 ]
@@ -306,10 +171,32 @@ function resolveBrandColors(config: ThemeConfig, resolvedMode?: 'light' | 'dark'
 }
 
 export const useThemeStore = defineStore('lc-theme', () => {
-  const mode = ref<'light' | 'dark' | 'system'>('system')
-  const presetName = ref<string>('ocean')
+  const mode = ref<'light' | 'dark' | 'system'>(DEFAULT_CONFIG.mode)
+  const presetName = ref<string>(DEFAULT_CONFIG.preset)
   const customLight = ref<Partial<BrandColors>>({})
   const customDark = ref<Partial<BrandColors>>({})
+  const appSignature = ref<{ primary: string; secondary?: string | undefined } | null>(null)
+
+  const computedPresets = computed<ThemePreset[]>(() => {
+    if (!appSignature.value) return PRESETS
+    return PRESETS.map(p => ({
+      ...p,
+      light: {
+        ...p.light,
+        primary: appSignature.value!.primary,
+        ...(appSignature.value!.secondary ? { secondary: appSignature.value!.secondary } : {}),
+      },
+      dark: {
+        ...p.dark,
+        primary: appSignature.value!.primary,
+        ...(appSignature.value!.secondary ? { secondary: appSignature.value!.secondary } : {}),
+      },
+    }))
+  })
+
+  function getPreset(name: string): ThemePreset | undefined {
+    return computedPresets.value.find(p => p.name === name) ?? PRESETS.find(p => p.name === name)
+  }
 
   const getResolvedMode = computed<'light' | 'dark'>(() => {
     if (mode.value === 'system') return getSystemMode()
@@ -318,13 +205,18 @@ export const useThemeStore = defineStore('lc-theme', () => {
 
   const isDark = computed(() => getResolvedMode.value === 'dark')
   const isSystem = computed(() => mode.value === 'system')
-  const currentPreset = computed(() => getPreset(presetName.value) || null)
+  const currentPreset = computed(() => getPreset(presetName.value) || computedPresets.value[0] || PRESETS[0]!)
   const isCustom = computed(() => presetName.value === 'custom')
 
   const activeColors = computed<BrandColors>(() => {
     const resolved = getResolvedMode.value
     const preset = currentPreset.value
-    const defaults = preset ? preset[resolved] : PRESETS[0]![resolved]
+    const basePalette = preset ? preset[resolved] : PRESETS[0]![resolved]
+    const defaults: BrandColors = {
+      ...basePalette,
+      ...(appSignature.value?.primary ? { primary: appSignature.value.primary } : {}),
+      ...(appSignature.value?.secondary ? { secondary: appSignature.value.secondary } : {}),
+    }
     const overrides = resolved === 'light' ? customLight.value : customDark.value
     const result = { ...defaults }
     for (const name of BRAND_NAMES) {
@@ -335,16 +227,38 @@ export const useThemeStore = defineStore('lc-theme', () => {
     return result
   })
 
+  function setAppSignature(primaryColor: string, secondaryColor?: string) {
+    appSignature.value = secondaryColor
+      ? { primary: primaryColor, secondary: secondaryColor }
+      : { primary: primaryColor }
+    if (customLight.value.primary) customLight.value.primary = primaryColor
+    if (customDark.value.primary) customDark.value.primary = primaryColor
+    if (secondaryColor) {
+      if (customLight.value.secondary) customLight.value.secondary = secondaryColor
+      if (customDark.value.secondary) customDark.value.secondary = secondaryColor
+    }
+    apply()
+  }
+
   function apply() {
     if (isServer) return
     const colors = activeColors.value
     const isDarkMode = getResolvedMode.value === 'dark'
+    const isExecutive = presetName.value === 'executive' && isDarkMode
+
     Dark.set(isDarkMode)
-    for (const name of BRAND_NAMES) {
-      setCssVar(name, colors[name])
-    }
-    setCssVar('dark', isDarkMode ? '#1a1a28' : '#1d1d1d')
-    setCssVar('dark-page', isDarkMode ? '#0e1216' : '#ffffff')
+
+    // Synchronize Quasar CSS variables
+    setCssVar('primary', colors.primary)
+    setCssVar('secondary', colors.secondary)
+    setCssVar('accent', colors.accent)
+    setCssVar('positive', colors.positive)
+    setCssVar('negative', colors.negative)
+    setCssVar('info', colors.info)
+    setCssVar('warning', colors.warning)
+    setCssVar('dark', isExecutive ? '#090d16' : (isDarkMode ? '#111827' : '#1e293b'))
+    setCssVar('dark-page', isExecutive ? '#030712' : (isDarkMode ? '#0b101b' : '#ffffff'))
+
     const root = document.documentElement
     const batch: Record<string, string> = {
       '--lc-primary': colors.primary,
@@ -360,36 +274,84 @@ export const useThemeStore = defineStore('lc-theme', () => {
       '--lc-negative': colors.negative,
       '--lc-warning': colors.warning,
       '--lc-info': colors.info,
+      '--lc-dark': isExecutive ? '#090d16' : (isDarkMode ? '#111827' : '#1e293b'),
+      '--active-brand-color': colors.primary,
+
+      // Quasar CSS var fallbacks on root
+      '--q-primary': colors.primary,
+      '--q-secondary': colors.secondary,
+      '--q-accent': colors.accent,
+      '--q-positive': colors.positive,
+      '--q-negative': colors.negative,
+      '--q-info': colors.info,
+      '--q-warning': colors.warning,
+      '--q-dark': isExecutive ? '#090d16' : (isDarkMode ? '#111827' : '#1e293b'),
+      '--q-dark-page': isExecutive ? '#030712' : (isDarkMode ? '#0b101b' : '#ffffff'),
     }
-    if (isDarkMode) {
+
+    if (isExecutive) {
+      // Executive / High-Contrast Mode (Theme 3 from fastfree-apps-showcase.html)
       Object.assign(batch, {
-        '--lc-surface': '#1a1a28',
-        '--lc-surface-alt': '#212134',
-        '--lc-surface-container': '#25253b',
-        '--lc-surface-container-low': '#161623',
-        '--lc-surface-container-lowest': '#111119',
-        '--lc-on-surface': '#f1f5f9',
+        '--lc-surface': '#090d16',
+        '--lc-surface-alt': '#030712',
+        '--lc-surface-container': '#0f172a',
+        '--lc-surface-container-low': '#030712',
+        '--lc-surface-container-lowest': '#000000',
+        '--lc-on-surface': '#ffffff',
+        '--lc-on-surface-variant': '#f1f5f9',
+        '--lc-surface-variant': '#0f172a',
+        '--lc-outline-variant': 'rgba(255, 255, 255, 0.3)',
+        '--lc-on-surface-muted': '#cbd5e1',
+        '--lc-border': 'rgba(255, 255, 255, 0.2)',
+        '--lc-border-light': 'rgba(255, 255, 255, 0.1)',
+        '--lc-bg-primary': '#030712',
+        '--lc-on-primary': '#ffffff',
+        '--lc-scrollbar-thumb': 'rgba(255, 255, 255, 0.35)',
+        '--lc-scrollbar-thumb-hover': 'rgba(255, 255, 255, 0.55)',
+        '--lc-table-header-text': '#ffffff',
+        '--lc-table-cell-border': 'rgba(255, 255, 255, 0.1)',
+        '--lc-table-row-hover': 'rgba(37, 99, 235, 0.15)',
+        '--lc-dock-bg': '#030712',
+        '--lc-dock-border': colors.primary,
+        '--lc-card-bg': '#090d16',
+        '--lc-card-border': 'rgba(255, 255, 255, 0.2)',
+        '--lc-titlebar-bg': '#000000',
+        '--lc-titlebar-border': colors.primary,
+      })
+    } else if (isDarkMode) {
+      // Deep Dark Night Mode (Theme 2 from fastfree-apps-showcase.html)
+      Object.assign(batch, {
+        '--lc-surface': '#111827',
+        '--lc-surface-alt': '#0b101b',
+        '--lc-surface-container': '#1e293b',
+        '--lc-surface-container-low': '#0e1524',
+        '--lc-surface-container-lowest': '#0b101b',
+        '--lc-on-surface': '#f8fafc',
         '--lc-on-surface-variant': '#cbd5e1',
-        '--lc-surface-variant': '#2a2a44',
+        '--lc-surface-variant': '#1e293b',
         '--lc-outline-variant': 'rgba(255, 255, 255, 0.12)',
         '--lc-on-surface-muted': '#94a3b8',
-        '--lc-border': 'rgba(255, 255, 255, 0.14)',
-        '--lc-border-light': 'rgba(255, 255, 255, 0.08)',
-        '--lc-bg-primary': '#0e1216',
+        '--lc-border': 'rgba(255, 255, 255, 0.08)',
+        '--lc-border-light': 'rgba(255, 255, 255, 0.04)',
+        '--lc-bg-primary': '#0b101b',
         '--lc-on-primary': '#ffffff',
         '--lc-scrollbar-thumb': 'rgba(255, 255, 255, 0.22)',
         '--lc-scrollbar-thumb-hover': 'rgba(255, 255, 255, 0.38)',
-        '--lc-table-header-text': '#f1f5f9',
-        '--lc-table-cell-border': 'rgba(255, 255, 255, 0.08)',
-        '--lc-table-row-hover': 'rgba(255, 255, 255, 0.05)',
-        '--lc-dock-bg': 'rgba(20, 20, 32, 0.88)',
-        '--lc-dock-border': 'rgba(255, 255, 255, 0.14)',
+        '--lc-table-header-text': '#cbd5e1',
+        '--lc-table-cell-border': 'rgba(255, 255, 255, 0.04)',
+        '--lc-table-row-hover': 'rgba(255, 255, 255, 0.04)',
+        '--lc-dock-bg': 'rgba(17, 24, 39, 0.85)',
+        '--lc-dock-border': 'rgba(255, 255, 255, 0.1)',
+        '--lc-card-bg': '#111827',
+        '--lc-card-border': 'rgba(255, 255, 255, 0.07)',
+        '--lc-titlebar-bg': '#111827',
+        '--lc-titlebar-border': 'rgba(255, 255, 255, 0.08)',
       })
     } else {
-      const surfaceAlt = '#f8fafc'
+      // Native Lite Corporate Mode (Theme 1 from fastfree-apps-showcase.html - Default)
       Object.assign(batch, {
         '--lc-surface': '#ffffff',
-        '--lc-surface-alt': surfaceAlt,
+        '--lc-surface-alt': '#f8fafc',
         '--lc-surface-container': '#f1f5f9',
         '--lc-surface-container-low': '#f8fafc',
         '--lc-surface-container-lowest': '#ffffff',
@@ -398,19 +360,24 @@ export const useThemeStore = defineStore('lc-theme', () => {
         '--lc-surface-variant': '#e2e8f0',
         '--lc-outline-variant': '#cbd5e1',
         '--lc-on-surface-muted': '#64748b',
-        '--lc-border': 'rgba(0, 0, 0, 0.12)',
-        '--lc-border-light': 'rgba(0, 0, 0, 0.06)',
-        '--lc-bg-primary': '#f1f5f9',
+        '--lc-border': '#e2e8f0',
+        '--lc-border-light': '#f1f5f9',
+        '--lc-bg-primary': '#f8fafc',
         '--lc-on-primary': '#ffffff',
         '--lc-scrollbar-thumb': 'rgba(0, 0, 0, 0.2)',
         '--lc-scrollbar-thumb-hover': 'rgba(0, 0, 0, 0.35)',
-        '--lc-table-header-text': '#0f172a',
-        '--lc-table-cell-border': '#e2e8f0',
+        '--lc-table-header-text': '#475569',
+        '--lc-table-cell-border': '#f1f5f9',
         '--lc-table-row-hover': '#f0f4ff',
-        '--lc-dock-bg': 'rgba(255, 255, 255, 0.88)',
-        '--lc-dock-border': 'rgba(0, 0, 0, 0.12)',
+        '--lc-dock-bg': 'rgba(255, 255, 255, 0.95)',
+        '--lc-dock-border': '#e2e8f0',
+        '--lc-card-bg': '#ffffff',
+        '--lc-card-border': '#e2e8f0',
+        '--lc-titlebar-bg': '#ffffff',
+        '--lc-titlebar-border': '#e2e8f0',
       })
     }
+
     batch['--lc-transition-duration'] = '0.3s'
     batch['--lc-transition-easing'] = 'ease'
     for (const [key, value] of Object.entries(batch)) {
@@ -419,14 +386,20 @@ export const useThemeStore = defineStore('lc-theme', () => {
   }
 
   function toggleMode() {
-    if (mode.value === 'light') mode.value = 'dark'
-    else if (mode.value === 'dark') mode.value = 'system'
-    else mode.value = 'light'
-    apply()
+    if (mode.value === 'light') {
+      setMode('dark')
+    } else {
+      setMode('light')
+    }
   }
 
   function setMode(m: 'light' | 'dark' | 'system') {
     mode.value = m
+    if (m === 'light' && presetName.value === 'dark') {
+      presetName.value = 'lite'
+    } else if (m === 'dark' && presetName.value === 'lite') {
+      presetName.value = 'dark'
+    }
     apply()
   }
 
@@ -437,6 +410,11 @@ export const useThemeStore = defineStore('lc-theme', () => {
       if (!window.confirm(msg)) return
     }
     presetName.value = name
+    if (name === 'lite') {
+      mode.value = 'light'
+    } else if (name === 'dark' || name === 'executive') {
+      mode.value = 'dark'
+    }
     customLight.value = {}
     customDark.value = {}
     apply()
@@ -458,8 +436,8 @@ export const useThemeStore = defineStore('lc-theme', () => {
   }
 
   function resetToDefaults() {
-    mode.value = 'system'
-    presetName.value = 'ocean'
+    mode.value = DEFAULT_CONFIG.mode
+    presetName.value = DEFAULT_CONFIG.preset
     customLight.value = {}
     customDark.value = {}
     apply()
@@ -478,7 +456,7 @@ export const useThemeStore = defineStore('lc-theme', () => {
     try {
       const data = JSON.parse(json)
       if (!data || typeof data !== 'object') return false
-      const pn = typeof data.preset === 'string' && getPreset(data.preset) ? data.preset : 'custom'
+      const pn = typeof data.preset === 'string' && getPreset(data.preset) ? data.preset : DEFAULT_CONFIG.preset
       mode.value = data.mode === 'dark' ? 'dark' : data.mode === 'system' ? 'system' : 'light'
       presetName.value = pn
       customLight.value = typeof data.customLight === 'object' ? { ...data.customLight } : {}
@@ -521,8 +499,8 @@ export const useThemeStore = defineStore('lc-theme', () => {
     try {
       const saved = await getThemeConfig<ThemeConfig>(STORAGE_KEY)
       if (saved) {
-        mode.value = (VALID_MODES as readonly string[]).includes(saved.mode) ? saved.mode : 'system'
-        presetName.value = typeof saved.preset === 'string' ? saved.preset : 'ocean'
+        mode.value = (VALID_MODES as readonly string[]).includes(saved.mode) ? saved.mode : DEFAULT_CONFIG.mode
+        presetName.value = typeof saved.preset === 'string' && getPreset(saved.preset) ? saved.preset : DEFAULT_CONFIG.preset
         customLight.value = typeof saved.customLight === 'object' ? saved.customLight : {}
         customDark.value = typeof saved.customDark === 'object' ? saved.customDark : {}
         apply()
@@ -565,19 +543,22 @@ export const useThemeStore = defineStore('lc-theme', () => {
     presetName,
     customLight,
     customDark,
+    appSignature,
     getResolvedMode,
     isDark,
     isSystem,
     isCustom,
     activeColors,
     currentPreset,
-    PRESETS,
+    PRESETS: computedPresets,
     BRAND_NAMES,
+    DEFAULT_CONFIG,
     toggleMode,
     setMode,
     selectPreset,
     setBrandColor,
     getBrandColor,
+    setAppSignature,
     resetToDefaults,
     exportConfig,
     importConfig,

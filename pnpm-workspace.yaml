@@ -9,7 +9,7 @@ packages:
   - 'apps/*'
   # The MCP server that renders documentation HTML. A workspace member so its
   # @modelcontextprotocol/sdk stays pinned in the shared lockfile and is
-  # installed by `flox activate -- pnpm install` at the repo root.
+  # installed by `pnpm install` at the repo root.
   - 'tools/*'
 allowBuilds:
   '@parcel/watcher': true

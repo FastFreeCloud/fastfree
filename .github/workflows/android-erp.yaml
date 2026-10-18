@@ -1,0 +1,27 @@
+name: "Android: FastFree ERP"
+
+on:
+  push:
+    tags:
+      - 'erp-v*'
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Google Play Track'
+        required: false
+        type: choice
+        default: 'internal'
+        options:
+          - 'internal'
+          - 'production'
+
+jobs:
+  android:
+    uses: ./.github/workflows/_android-pipeline.yaml
+    with:
+      app_name: 'FastFree ERP'
+      app_key: 'erp'
+      app_dir: 'apps/fastfree_erp'
+      package_id: 'com.fastfree.erp'
+      track: ${{ inputs.track || 'internal' }}
+    secrets: inherit

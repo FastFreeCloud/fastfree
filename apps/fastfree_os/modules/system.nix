@@ -13,8 +13,13 @@ in {
     hardware.enableRedistributableFirmware       = lib.mkIf (!isLocal) (lib.mkForce false);
     hardware.firmware                            = lib.mkIf (!isLocal) (lib.mkForce []);
     services.xserver.enable                      = lib.mkIf (!isLocal) false;
-    services.libinput.enable                     = lib.mkIf (!isLocal) false;
     system.stateVersion = "26.05";
+
+    # ── Git System Configuration ──────────────────────────
+    programs.git = {
+      enable = true;
+      package = pkgs.git;
+    };
 
     # ── Size Reduction ────────────────────────────────────
     documentation.enable              = false;

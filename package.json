@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "android:verify": "python scripts/fastfree-android/fastfree_android_keystore.py --verify",
+    "android:metadata": "python scripts/fastfree-android/fastfree_store_metadata.py",
+    "android:graphics": "python scripts/fastfree-android/fastfree_store_graphics.py"
   },
   "keywords": [],
   "author": "",

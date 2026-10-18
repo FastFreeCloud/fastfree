@@ -59,8 +59,8 @@ env:
   NIX_CONFIG: |
     experimental-features = nix-command flakes
     accept-flake-config = true
-    extra-substituters = https://cache.nixos.org https://cache.flox.dev https://nix-community.cachix.org
-    extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= flox-cache-public-1:7F4OyH7ZCnFhcze3fJdfyXYLQw/aV7GEed86nQ7IsOs= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
+    extra-substituters = https://cache.nixos.org https://nix-community.cachix.org
+    extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
     max-jobs = auto
     keep-outputs = true
 
@@ -83,7 +83,7 @@ jobs:
     steps:
       # ======================= 1. التجهيز =======================
       - name: "سحب الكود"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       # الـ runner المجاني فيه ~14GB بس، وإعدادات NixOS الكبيرة ممكن تاخد 10-15GB
       - name: "تفريغ مساحة على الـ runner"

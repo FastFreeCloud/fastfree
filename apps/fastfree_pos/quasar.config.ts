@@ -8,6 +8,7 @@ import { defineConfig } from '#q-app'
 export default defineConfig((ctx) => {
   return {
     boot: [
+      'brand-theme',
       'fastfree-auth-init',
       'fastfree-accounting-init',
       'fastfree-inventory-init',
@@ -40,6 +41,15 @@ export default defineConfig((ctx) => {
             '../../../packages/fastfree_lowcode/src/runtime/index.ts',
           ]
           tsConfig.compilerOptions.paths['quasar-app-extension-fastfree-lowcode/src/runtime/*'] = [
+            '../../../packages/fastfree_lowcode/src/runtime/*',
+          ]
+          tsConfig.compilerOptions.paths['quasar-app-extension-fastfree-lowcode'] = [
+            '../../../packages/fastfree_lowcode/src/runtime/index.ts',
+          ]
+          tsConfig.compilerOptions.paths['quasar-app-extension-fastfree-lowcode/runtime'] = [
+            '../../../packages/fastfree_lowcode/src/runtime/index.ts',
+          ]
+          tsConfig.compilerOptions.paths['quasar-app-extension-fastfree-lowcode/*'] = [
             '../../../packages/fastfree_lowcode/src/runtime/*',
           ]
           tsConfig.compilerOptions.paths['fastfree-auth'] = [
@@ -129,7 +139,12 @@ export default defineConfig((ctx) => {
     },
 
     framework: {
-      config: {},
+      config: {
+        brand: {
+          primary: '#E11D48',
+        },
+        dark: false,
+      },
       plugins: ['Loading'],
     },
 

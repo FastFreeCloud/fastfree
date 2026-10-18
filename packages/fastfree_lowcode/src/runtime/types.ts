@@ -171,6 +171,12 @@ export interface LcMessages {
   "settings.saved": string;
   "settings.customize": string;
   "settings.presets": string;
+  "settings.themeLite": string;
+  "settings.themeLiteDesc": string;
+  "settings.themeDark": string;
+  "settings.themeDarkDesc": string;
+  "settings.themeExecutive": string;
+  "settings.themeExecutiveDesc": string;
   "settings.colorPrimary": string;
   "settings.colorSecondary": string;
   "settings.colorAccent": string;
