@@ -223,13 +223,15 @@ in {
         "redis-fastfree-redis-queue.service"
       ];
       wantedBy = [ "multi-user.target" ];
+      unitConfig = {
+        StartLimitIntervalSec = "300";
+        StartLimitBurst = "5";
+      };
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
         Restart = "on-failure";
         RestartSec = "15";
-        StartLimitIntervalSec = "300";
-        StartLimitBurst = "5";
         User = "frappe";
         Group = "frappe";
         WorkingDirectory = "/var/lib/frappe/frappe-bench";
@@ -367,16 +369,19 @@ EOF
         WorkingDirectory = "/var/lib/frappe/frappe-bench";
         Restart = "always";
         RestartSec = "5";
-        ExecStart = ''
-          ${frappeFHS}/bin/frappe-env -c "
+        ExecStart = pkgs.writeShellScript "fastfree-backend-web-start" ''
+          exec ${frappeFHS}/bin/frappe-env -c '
             cd /var/lib/frappe/frappe-bench
             [ -f env/bin/activate ] && source env/bin/activate
-            if command -v gunicorn >/dev/null 2>&1; then
+            if command -v gunicorn >/dev/null 2>&1 && [ -f sites/${siteName}/site_config.json ]; then
               exec gunicorn -b 127.0.0.1:8000 -w 2 -t 120 --threads 4 -e FRAPPE_SITE_NAME_HEADER=${siteName} frappe.app:application --preload
-            else
+            elif command -v bench >/dev/null 2>&1 && [ -f sites/${siteName}/site_config.json ]; then
               exec bench serve --port 8000
+            else
+              echo "[backend-web] Bench/Site not initialized yet; serving initialization landing page"
+              exec ${pkgs.nodejs_22}/bin/node -e "const http = require(\"http\"); http.createServer((q,s)=>{ s.writeHead(200,{\"Content-Type\":\"application/json\"}); s.end(JSON.stringify({status:\"initializing\",app:\"fastfree-backend\",site:\"${siteName}\"})); }).listen(8000,\"127.0.0.1\");"
             fi
-          "
+          '
         '';
       };
     };
@@ -403,11 +408,16 @@ EOF
         WorkingDirectory = "/var/lib/frappe/frappe-bench";
         Restart = "always";
         RestartSec = "5";
-        ExecStart = ''
-          ${frappeFHS}/bin/frappe-env -c "
+        ExecStart = pkgs.writeShellScript "fastfree-backend-websocket-start" ''
+          exec ${frappeFHS}/bin/frappe-env -c '
             cd /var/lib/frappe/frappe-bench
-            exec node apps/frappe/socketio.js
-          "
+            if [ -f apps/frappe/socketio.js ]; then
+              exec node apps/frappe/socketio.js
+            else
+              echo "[websocket] socketio.js not found yet; serving fallback"
+              exec ${pkgs.nodejs_22}/bin/node -e "const http = require(\"http\"); http.createServer((q,s)=>{ s.writeHead(200); s.end(\"socketio initializing\"); }).listen(9000,\"127.0.0.1\");"
+            fi
+          '
         '';
       };
     };
@@ -431,12 +441,17 @@ EOF
         WorkingDirectory = "/var/lib/frappe/frappe-bench";
         Restart = "always";
         RestartSec = "10";
-        ExecStart = ''
-          ${frappeFHS}/bin/frappe-env -c "
+        ExecStart = pkgs.writeShellScript "fastfree-backend-worker-short-start" ''
+          exec ${frappeFHS}/bin/frappe-env -c '
             cd /var/lib/frappe/frappe-bench
             [ -f env/bin/activate ] && source env/bin/activate
-            exec bench worker --queue short,default
-          "
+            if command -v bench >/dev/null 2>&1 && [ -f sites/${siteName}/site_config.json ]; then
+              exec bench worker --queue short,default
+            else
+              echo "[worker-short] Bench/Site not ready yet"
+              exec sleep 30
+            fi
+          '
         '';
       };
     };
@@ -460,12 +475,17 @@ EOF
         WorkingDirectory = "/var/lib/frappe/frappe-bench";
         Restart = "always";
         RestartSec = "10";
-        ExecStart = ''
-          ${frappeFHS}/bin/frappe-env -c "
+        ExecStart = pkgs.writeShellScript "fastfree-backend-worker-long-start" ''
+          exec ${frappeFHS}/bin/frappe-env -c '
             cd /var/lib/frappe/frappe-bench
             [ -f env/bin/activate ] && source env/bin/activate
-            exec bench worker --queue long,default,short
-          "
+            if command -v bench >/dev/null 2>&1 && [ -f sites/${siteName}/site_config.json ]; then
+              exec bench worker --queue long,default,short
+            else
+              echo "[worker-long] Bench/Site not ready yet"
+              exec sleep 30
+            fi
+          '
         '';
       };
     };
@@ -489,12 +509,17 @@ EOF
         WorkingDirectory = "/var/lib/frappe/frappe-bench";
         Restart = "always";
         RestartSec = "10";
-        ExecStart = ''
-          ${frappeFHS}/bin/frappe-env -c "
+        ExecStart = pkgs.writeShellScript "fastfree-backend-scheduler-start" ''
+          exec ${frappeFHS}/bin/frappe-env -c '
             cd /var/lib/frappe/frappe-bench
             [ -f env/bin/activate ] && source env/bin/activate
-            exec bench schedule
-          "
+            if command -v bench >/dev/null 2>&1 && [ -f sites/${siteName}/site_config.json ]; then
+              exec bench schedule
+            else
+              echo "[scheduler] Bench/Site not ready yet"
+              exec sleep 30
+            fi
+          '
         '';
       };
     };
