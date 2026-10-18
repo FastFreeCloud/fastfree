@@ -21,6 +21,7 @@ import { globalRoutes } from './routes/global.js';
 import { healthRoutes } from './routes/health.js';
 import { machinesRoutes } from './routes/machines.js';
 import { mcpRoutes } from './routes/mcp.js';
+import { herdrRoutes } from './routes/herdr.js';
 const API_PREFIX = '/api/v1';
 export function createApp() {
     const app = new Hono();
@@ -38,11 +39,17 @@ export function createApp() {
         }));
     }
     app.route(API_PREFIX, healthRoutes);
+    app.route('/api', healthRoutes);
     app.route(API_PREFIX, machinesRoutes);
+    app.route('/api', machinesRoutes);
     app.route(API_PREFIX, globalRoutes);
+    app.route('/api', globalRoutes);
+    app.route(API_PREFIX, herdrRoutes);
+    app.route('/api', herdrRoutes);
     // Mount Web MCP server routes
     app.route('/mcp', mcpRoutes);
     app.route(`${API_PREFIX}/mcp`, mcpRoutes);
+    app.route('/api/mcp', mcpRoutes);
     app.notFound((c) => c.json({ error: { code: 'NOT_FOUND', message: 'No such endpoint.' } }, 404));
     // Single global error boundary: never leak raw stderr, stack traces or paths.
     app.onError((error, c) => {

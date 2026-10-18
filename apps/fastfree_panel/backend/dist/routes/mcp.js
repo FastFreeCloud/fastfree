@@ -102,6 +102,33 @@ mcpRoutes.post('/call', async (c) => {
                                 properties: { targetHost: { type: 'string', description: 'Optional target host' } },
                             },
                         },
+                        {
+                            name: 'herdr_status',
+                            description: 'Condensed snapshot of the whole Herdr session: focused ids, counts by status, and every live agent with its location.',
+                            inputSchema: {
+                                type: 'object',
+                                properties: { workspace_id: { type: 'string', description: 'Optional workspace id' } },
+                            },
+                        },
+                        {
+                            name: 'herdr_agents',
+                            description: 'List live agents recognised by Herdr.',
+                            inputSchema: { type: 'object', properties: {} },
+                        },
+                        {
+                            name: 'herdr_agent_prompt',
+                            description: 'Submit a prompt to a live agent. Returns once submitted.',
+                            inputSchema: {
+                                type: 'object',
+                                properties: {
+                                    target: { type: 'string', description: 'Live agent name or pane id' },
+                                    text: { type: 'string', description: 'Prompt text' },
+                                    wait: { type: 'boolean', description: 'Wait for settled state' },
+                                    timeout_ms: { type: 'integer', description: 'Wait timeout in ms' },
+                                },
+                                required: ['target', 'text'],
+                            },
+                        },
                     ],
                 },
             });

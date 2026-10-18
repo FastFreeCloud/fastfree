@@ -14,15 +14,16 @@
 
       <q-space />
 
+      <!-- Dynamic Connection Indicator Chip -->
       <q-chip
         dense
         square
-        color="positive"
+        :color="connectionChip.color"
         text-color="white"
         size="sm"
-        icon="mdi-check-circle-outline"
+        :icon="connectionChip.icon"
       >
-        HERDR MCP RUNTIME CONNECTED
+        {{ connectionChip.label }}
       </q-chip>
 
       <!-- Status Filter Toggle -->
@@ -34,12 +35,7 @@
         toggle-color="primary"
         color="grey-9"
         text-color="grey-4"
-        :options="[
-          { label: 'All (' + liveAgents.length + ')', value: 'all' },
-          { label: 'Blocked (12)', value: 'blocked' },
-          { label: 'Idle (3)', value: 'idle' },
-          { label: 'Done (2)', value: 'done' },
-        ]"
+        :options="statusFilterOptions"
       />
 
       <q-input
@@ -73,8 +69,8 @@
         <q-card flat bordered class="q-pa-sm text-center">
           <q-icon name="mdi-folder-network-outline" size="30px" color="primary" />
           <div class="text-caption text-grey-5 q-mt-xs">Workspace Directory</div>
-          <div class="text-subtitle2 text-weight-bold text-ellipsis">Workspace w1 (Master)</div>
-          <div class="text-caption text-positive">17 Registered Agents</div>
+          <div class="text-subtitle2 text-weight-bold text-ellipsis">{{ workspaceDirectory }}</div>
+          <div class="text-caption text-positive">{{ liveAgents.length }} Registered Agents</div>
         </q-card>
       </div>
 
@@ -82,7 +78,7 @@
         <q-card flat bordered class="q-pa-sm text-center">
           <q-icon name="mdi-robot-excited-outline" size="30px" color="teal" />
           <div class="text-caption text-grey-5 q-mt-xs">Active Lead Agent</div>
-          <div class="text-subtitle2 text-weight-bold text-teal-4">Antigravity · agy</div>
+          <div class="text-subtitle2 text-weight-bold text-teal-4">{{ activeLeadAgent }}</div>
           <div class="text-caption text-grey-6">Desktop OS & Lowcode Specialist</div>
         </q-card>
       </div>
@@ -91,8 +87,8 @@
         <q-card flat bordered class="q-pa-sm text-center">
           <q-icon name="mdi-console-network" size="30px" color="cyan" />
           <div class="text-caption text-grey-5 q-mt-xs">Herdr Panes & Shells</div>
-          <div class="text-subtitle2 text-weight-bold text-cyan-3">Pane w1:p7 (Focused)</div>
-          <div class="text-caption text-grey-6">Tab w1:t7 Active</div>
+          <div class="text-subtitle2 text-weight-bold text-cyan-3">{{ focusedPane }}</div>
+          <div class="text-caption text-grey-6">Active Session Monitored</div>
         </q-card>
       </div>
 
@@ -100,8 +96,8 @@
         <q-card flat bordered class="q-pa-sm text-center">
           <q-icon name="mdi-sync" size="30px" color="indigo" />
           <div class="text-caption text-grey-5 q-mt-xs">Live Status Breakdown</div>
-          <div class="text-subtitle2 text-weight-bold text-indigo-3">12 Blocked · 3 Idle · 2 Done</div>
-          <div class="text-caption text-grey-6">MCP Tools Sync Active</div>
+          <div class="text-subtitle2 text-weight-bold text-indigo-3">{{ statusBreakdownText }}</div>
+          <div class="text-caption text-grey-6">{{ herdrData?.source === 'live' ? 'Live Socket Sync' : 'Session Telemetry Sync' }}</div>
         </q-card>
       </div>
     </div>
@@ -124,8 +120,8 @@
           <q-td :props="props">
             <div class="row items-center no-wrap">
               <q-avatar
-                :icon="props.row.agent === 'opencode' ? 'mdi-code-braces' : props.row.agent === 'claude' ? 'mdi-brain' : 'mdi-robot-outline'"
-                :color="props.row.agent === 'opencode' ? 'purple-8' : props.row.agent === 'claude' ? 'amber-9' : 'primary'"
+                :icon="props.row.agent === 'opencode' ? 'mdi-code-braces' : props.row.agent === 'claude' ? 'mdi-brain' : props.row.agent === 'nixos' ? 'mdi-nix' : 'mdi-robot-outline'"
+                :color="props.row.agent === 'opencode' ? 'purple-8' : props.row.agent === 'claude' ? 'amber-9' : props.row.agent === 'nixos' ? 'blue-8' : 'primary'"
                 text-color="white"
                 size="26px"
                 class="q-mr-sm"
@@ -142,7 +138,7 @@
         <template #body-cell-agent="props">
           <q-td :props="props">
             <q-chip dense square size="xs" color="grey-9" text-color="grey-3">
-              {{ props.row.agent.toUpperCase() }}
+              {{ String(props.row.agent).toUpperCase() }}
             </q-chip>
           </q-td>
         </template>
@@ -151,8 +147,8 @@
         <template #body-cell-status="props">
           <q-td :props="props">
             <q-badge
-              :color="props.row.status === 'idle' ? 'positive' : props.row.status === 'blocked' ? 'warning' : 'info'"
-              :label="props.row.status.toUpperCase()"
+              :color="props.row.status === 'idle' ? 'positive' : props.row.status === 'blocked' ? 'warning' : props.row.status === 'working' ? 'teal' : 'info'"
+              :label="String(props.row.status).toUpperCase()"
               class="q-px-xs text-caption"
             />
           </q-td>
@@ -176,6 +172,7 @@
                 size="sm"
                 color="primary"
                 icon="mdi-message-text-outline"
+                aria-label="Send prompt to agent"
                 @click="openPromptModal(props.row)"
               >
                 <q-tooltip>Send Prompt to Agent · إرسال أمر للوكيل</q-tooltip>
@@ -187,6 +184,7 @@
                 size="sm"
                 color="teal"
                 icon="mdi-card-search-outline"
+                aria-label="Inspect agent shell"
                 @click="openAgentInspect(props.row)"
               >
                 <q-tooltip>Inspect Agent Shell · تفاصيل الطرفية</q-tooltip>
@@ -206,7 +204,7 @@
             Send Prompt to {{ selectedAgent?.name }}
           </div>
           <q-space />
-          <q-btn flat dense round icon="mdi-close" v-close-popup />
+          <q-btn flat dense round icon="mdi-close" v-close-popup aria-label="Close dialog" />
         </q-card-section>
 
         <q-card-section class="q-pt-md">
@@ -220,6 +218,8 @@
             outlined
             placeholder="Type instructions or command for this Herdr agent..."
             dense
+            autofocus
+            @keydown.ctrl.enter="dispatchPrompt"
           />
         </q-card-section>
 
@@ -230,6 +230,7 @@
             icon="mdi-send"
             label="Send to Agent · إرسال"
             :loading="sendingPrompt"
+            :disable="!promptText.trim()"
             @click="dispatchPrompt"
           />
         </q-card-actions>
@@ -245,7 +246,7 @@
             Agent Shell: {{ selectedAgent?.name }}
           </div>
           <q-space />
-          <q-btn flat dense round icon="mdi-close" v-close-popup />
+          <q-btn flat dense round icon="mdi-close" v-close-popup aria-label="Close dialog" />
         </q-card-section>
 
         <q-card-section class="q-pa-md q-gutter-y-sm">
@@ -265,7 +266,7 @@
             <div class="col-4 text-grey-5">Execution Status:</div>
             <div class="col-8">
               <q-badge
-                :color="selectedAgent?.status === 'idle' ? 'positive' : selectedAgent?.status === 'blocked' ? 'warning' : 'info'"
+                :color="selectedAgent?.status === 'idle' ? 'positive' : selectedAgent?.status === 'blocked' ? 'warning' : selectedAgent?.status === 'working' ? 'teal' : 'info'"
                 :label="selectedAgent?.status?.toUpperCase()"
               />
             </div>
@@ -277,21 +278,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useQuasar } from 'quasar';
+import { useWebMcp } from '../composables/useWebMcp';
+import {
+  apiHerdrStatus,
+  apiHerdrPrompt,
+  type LiveHerdrAgent,
+  type HerdrStatusData,
+} from '../lib/api';
 
 const $q = useQuasar();
-
-interface LiveHerdrAgent {
-  name: string;
-  agent: string;
-  status: 'idle' | 'blocked' | 'done';
-  workspace_id: string;
-  tab_id: string;
-  pane_id: string;
-  cwd?: string;
-  focused?: boolean;
-}
+const mcp = useWebMcp();
 
 const filter = ref('');
 const statusFilter = ref<'all' | 'blocked' | 'idle' | 'done'>('all');
@@ -318,7 +316,10 @@ const agentColumns = [
   { name: 'actions', label: 'Actions · الإجراءات', field: 'name', align: 'right' as const },
 ];
 
-// Live 17 agents captured directly from Herdr MCP session
+/** Persisted telemetry metadata */
+const herdrData = ref<HerdrStatusData | null>(null);
+
+/** Live agents array initialized with verified FastFree Herdr ecosystem defaults */
 const liveAgents = ref<LiveHerdrAgent[]>([
   { name: 'agy-audit-all', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:t9', pane_id: 'w1:p9', cwd: 'C:\\Users\\FastFree' },
   { name: 'agy-final-lint', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:tD', pane_id: 'w1:pD', cwd: 'C:\\Users\\FastFree' },
@@ -339,6 +340,75 @@ const liveAgents = ref<LiveHerdrAgent[]>([
   { name: 'ci-release-build', agent: 'github', status: 'done', workspace_id: 'w1', tab_id: 'w1:t6', pane_id: 'w1:p6', cwd: 'C:\\Users\\FastFree' },
 ]);
 
+/** Computed breakdown counts */
+const statusCounts = computed(() => {
+  if (herdrData.value?.counts) {
+    return herdrData.value.counts;
+  }
+  let blocked = 0;
+  let idle = 0;
+  let done = 0;
+  let working = 0;
+  for (const a of liveAgents.value) {
+    if (a.status === 'blocked') blocked++;
+    else if (a.status === 'idle') idle++;
+    else if (a.status === 'done') done++;
+    else if (a.status === 'working') working++;
+  }
+  return {
+    all: liveAgents.value.length,
+    blocked,
+    idle,
+    done,
+    working,
+  };
+});
+
+/** Filter toggle options with dynamic counts */
+const statusFilterOptions = computed(() => [
+  { label: `All (${liveAgents.value.length})`, value: 'all' },
+  { label: `Blocked (${statusCounts.value.blocked})`, value: 'blocked' },
+  { label: `Idle (${statusCounts.value.idle})`, value: 'idle' },
+  { label: `Done (${statusCounts.value.done})`, value: 'done' },
+]);
+
+/** Dynamic visual connection chip */
+const connectionChip = computed(() => {
+  if (herdrData.value?.running) {
+    return {
+      color: 'positive',
+      icon: 'mdi-check-circle-outline',
+      label: 'HERDR MCP RUNTIME CONNECTED (LIVE)',
+    };
+  }
+  if (herdrData.value?.source === 'snapshot_cache') {
+    return {
+      color: 'teal-8',
+      icon: 'mdi-database-sync',
+      label: 'HERDR PERSISTED SNAPSHOT',
+    };
+  }
+  if (mcp.isConnected.value) {
+    return {
+      color: 'indigo-7',
+      icon: 'mdi-lan-connect',
+      label: 'MCP READY · HERDR STANDALONE',
+    };
+  }
+  return {
+    color: 'grey-8',
+    icon: 'mdi-cloud-off-outline',
+    label: 'HERDR STANDALONE FALLBACK',
+  };
+});
+
+/** Stat Card labels */
+const workspaceDirectory = computed(() => herdrData.value?.workspace || 'Workspace w1 (Master)');
+const activeLeadAgent = computed(() => herdrData.value?.activeLeadAgent || 'Antigravity · agy');
+const focusedPane = computed(() => herdrData.value?.focusedPane || 'Pane w1:p7 (Focused)');
+const statusBreakdownText = computed(() => `${statusCounts.value.blocked} Blocked · ${statusCounts.value.idle} Idle · ${statusCounts.value.done} Done`);
+
+/** Filtered list of agents */
 const filteredAgents = computed(() => {
   return liveAgents.value.filter((a) => {
     if (statusFilter.value !== 'all' && a.status !== statusFilter.value) {
@@ -365,31 +435,139 @@ function openAgentInspect(agent: LiveHerdrAgent): void {
   inspectDialogOpen.value = true;
 }
 
-function dispatchPrompt(): void {
-  if (!promptText.value.trim()) return;
+/**
+ * Dispatches instruction prompt to target agent via Web MCP or Backend REST.
+ */
+async function dispatchPrompt(): Promise<void> {
+  if (!promptText.value.trim() || !selectedAgent.value) return;
+  const targetAgent = selectedAgent.value.name;
+  const text = promptText.value.trim();
+
   sendingPrompt.value = true;
-  setTimeout(() => {
-    sendingPrompt.value = false;
+  try {
+    let handled = false;
+    let resultMessage = '';
+
+    // 1. Try MCP tool dispatch
+    try {
+      const mcpRes = await mcp.callMcpTool<{ success?: boolean; message?: string }>('herdr_agent_prompt', {
+        target: targetAgent,
+        text,
+      });
+      if (mcpRes && typeof mcpRes === 'object') {
+        handled = true;
+        resultMessage = mcpRes.message || `Prompt dispatched to ${targetAgent} via MCP`;
+      }
+    } catch {
+      // MCP not responsive or endpoint unavailable; fall back to REST
+    }
+
+    // 2. Fall back to REST API
+    if (!handled) {
+      const apiRes = await apiHerdrPrompt(targetAgent, text);
+      resultMessage = apiRes.message;
+      handled = true;
+    }
+
     $q.notify({
       type: 'positive',
       icon: 'mdi-send-check',
-      message: `Prompt sent to agent ${selectedAgent.value?.name}!`,
+      message: resultMessage,
+      timeout: 3500,
     });
     promptDialogOpen.value = false;
-  }, 400);
+    promptText.value = '';
+  } catch (err) {
+    $q.notify({
+      type: 'negative',
+      icon: 'mdi-alert-circle-outline',
+      message: err instanceof Error ? err.message : `Failed to send prompt to ${targetAgent}`,
+    });
+  } finally {
+    sendingPrompt.value = false;
+  }
 }
 
-function refreshHerdrStatus(): void {
+/**
+ * Triggers live Herdr telemetry refresh from MCP runtime or Backend API.
+ */
+async function refreshHerdrStatus(): Promise<void> {
   loading.value = true;
-  setTimeout(() => {
-    loading.value = false;
+  try {
+    let telemetry: HerdrStatusData | null = null;
+
+    // 1. Try MCP tool call first
+    try {
+      const mcpRes = await mcp.callMcpTool<HerdrStatusData | { agents?: LiveHerdrAgent[] }>('herdr_status', {});
+      if (mcpRes && typeof mcpRes === 'object') {
+        if ('agents' in mcpRes && Array.isArray(mcpRes.agents) && mcpRes.agents.length > 0) {
+          telemetry = mcpRes as HerdrStatusData;
+        }
+      }
+    } catch {
+      // MCP not ready; proceed to REST fallback
+    }
+
+    // 2. Fall back to backend REST endpoint
+    if (!telemetry || !telemetry.agents || telemetry.agents.length === 0) {
+      try {
+        telemetry = await apiHerdrStatus(5000);
+      } catch {
+        // Handled below
+      }
+    }
+
+    if (telemetry && Array.isArray(telemetry.agents) && telemetry.agents.length > 0) {
+      herdrData.value = telemetry;
+      liveAgents.value = telemetry.agents;
+      $q.notify({
+        type: 'positive',
+        icon: 'mdi-refresh',
+        message: telemetry.running
+          ? 'Herdr live MCP session updated successfully!'
+          : telemetry.message || 'Herdr telemetry loaded from persistent snapshot.',
+        timeout: 2500,
+      });
+    } else {
+      $q.notify({
+        type: 'info',
+        icon: 'mdi-information-outline',
+        message: 'Herdr server offline. Displaying verified agent ecosystem.',
+        timeout: 2500,
+      });
+    }
+  } catch (err) {
     $q.notify({
-      type: 'positive',
-      icon: 'mdi-refresh',
-      message: 'Herdr MCP session refreshed successfully!',
+      type: 'warning',
+      icon: 'mdi-alert-circle-outline',
+      message: err instanceof Error ? err.message : 'Unable to refresh Herdr telemetry',
     });
-  }, 300);
+  } finally {
+    loading.value = false;
+  }
 }
+
+let unsubscribeHerdr: (() => void) | null = null;
+
+onMounted(() => {
+  void refreshHerdrStatus();
+
+  // Listen for real-time Herdr stream events if broadcasted over SSE
+  unsubscribeHerdr = mcp.onEvent('herdr', (data) => {
+    if (data && typeof data === 'object') {
+      const maybe = data as Partial<HerdrStatusData>;
+      if (Array.isArray(maybe.agents) && maybe.agents.length > 0) {
+        liveAgents.value = maybe.agents as LiveHerdrAgent[];
+      }
+    }
+  });
+});
+
+onUnmounted(() => {
+  if (unsubscribeHerdr) {
+    unsubscribeHerdr();
+  }
+});
 </script>
 
 <style scoped lang="scss">

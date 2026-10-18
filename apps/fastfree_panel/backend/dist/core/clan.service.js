@@ -4,6 +4,10 @@
  * Encapsulates all Clan CLI interactions through the strict allowlist and execution
  * primitives. Provides strongly-typed domain methods with zero `any`.
  */
+import { execFile } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { config } from '../config.js';
 import { argvFor } from '../clan/allowlist.js';
 import { runClan, validateMachineName, mapClanFailure } from '../clan/exec.js';
 import { parseMachines, toCleanLines } from '../clan/parse.js';
@@ -126,6 +130,27 @@ export class ClanService {
         const validName = validateMachineName(name);
         const startTime = Date.now();
         try {
+            // 1. Automatically sync latest changes from Git repository if available
+            try {
+                const repoRoot = config.clanDir ? resolve(config.clanDir, '..') : '/root/fastfree-source';
+                if (existsSync(resolve(repoRoot, '.git'))) {
+                    await new Promise((resolvePull) => {
+                        execFile('git', ['pull', 'origin', 'master'], { cwd: repoRoot, timeout: 45_000 }, (err, stdout, stderr) => {
+                            if (err) {
+                                console.warn('[clan.service] git pull warning:', stderr || err.message);
+                            }
+                            else if (stdout) {
+                                console.log('[clan.service] git pull:', stdout.trim());
+                            }
+                            resolvePull();
+                        });
+                    });
+                }
+            }
+            catch (gitErr) {
+                console.warn('[clan.service] Git auto-sync skipped:', gitErr);
+            }
+            // 2. Execute Clan machine update
             const argv = ['machines', 'update', validName, '--host-key-check', hostKeyCheck];
             // Allow up to 5 minutes for machine updates (building closures, network push)
             const result = await runClan(argv, { timeoutMs: 300_000 });
