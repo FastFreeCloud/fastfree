@@ -20,6 +20,12 @@
 name: 10-client2
 
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'apps/fastfree_os/**'
+      - '.github/workflows/10-client2.yaml'
   workflow_dispatch:
     inputs:
       action:
@@ -99,16 +105,20 @@ jobs:
         env:
           SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
         run: |
-          printf '%s' "$SOPS_AGE_KEY" > /tmp/age.key
-          chmod 600 /tmp/age.key
-          export SOPS_AGE_KEY_FILE=/tmp/age.key
-          nix develop --command clan vars check client2
+          if [ -n "$SOPS_AGE_KEY" ]; then
+            printf '%s' "$SOPS_AGE_KEY" > /tmp/age.key
+            chmod 600 /tmp/age.key
+            export SOPS_AGE_KEY_FILE=/tmp/age.key
+            nix develop --command clan vars check client2
+          else
+            echo "SOPS_AGE_KEY secret not set, skipping vars decrypt check"
+          fi
         shell: bash
 
   deploy:
     name: "2. Deploy client2 via Clan"
     needs: validate
-    if: ${{ inputs.action == 'deploy' }}
+    if: ${{ github.event_name == 'push' || inputs.action == 'deploy' }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
@@ -138,9 +148,11 @@ jobs:
 
       - name: "4. Setup sops age identity"
         run: |
-          printf '%s' "${{ secrets.SOPS_AGE_KEY }}" > /tmp/age.key
-          chmod 600 /tmp/age.key
-          echo "SOPS_AGE_KEY_FILE=/tmp/age.key" >> "$GITHUB_ENV"
+          if [ -n "${{ secrets.SOPS_AGE_KEY }}" ]; then
+            printf '%s' "${{ secrets.SOPS_AGE_KEY }}" > /tmp/age.key
+            chmod 600 /tmp/age.key
+            echo "SOPS_AGE_KEY_FILE=/tmp/age.key" >> "$GITHUB_ENV"
+          fi
 
       - name: "5. Build closure on runner"
         working-directory: apps/fastfree_os
@@ -174,7 +186,7 @@ jobs:
   diagnose:
     name: "3. Diagnostic — client2"
     needs: [deploy]
-    if: ${{ always() && inputs.action == 'deploy' }}
+    if: ${{ always() && (github.event_name == 'push' || inputs.action == 'deploy') }}
     permissions: {}
     runs-on: ubuntu-latest
     timeout-minutes: 15
