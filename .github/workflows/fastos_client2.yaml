@@ -5,7 +5,7 @@
 #   1. البناء بيتم على سيرفرات GitHub (مش على الـ VPS).
 #   2. النتيجة بتتنقل للـ VPS عبر SSH ويتم تفعيلها.
 #   3. الـ VPS مفيهوش كود مصدري ولا Git ولا بيعمل compile.
-#   4. بعد النشر: فحص صحة الخدمات والنطاقات (في نفس الـ job).
+#   4. بعد النشر: مرحلة منفصلة لفحص صحة الخدمات والنطاقات.
 #
 # الأسرار المطلوبة (Settings → Secrets and variables → Actions → Secrets):
 #   CLIENT2_IP          عنوان IP للسيرفر
@@ -17,7 +17,7 @@
 #
 # مكان التعديلات الشائعة:
 #   - اسم الجهاز / مجلد المشروع ........ قسم env (MACHINE, SOURCE_DIR)
-#   - إضافة نطاق للفحص ................. خطوة "فحص الصحة" (قائمة DOMAINS)
+#   - إضافة نطاق للفحص ................. مرحلة "فحص الصحة" (قائمة DOMAINS)
 #   - إعدادات الـ cache ................ خطوة "cache" و NIX_CONFIG
 ###############################################################################
 
@@ -65,6 +65,10 @@ env:
     keep-outputs = true
 
 jobs:
+  # =========================================================================
+  # المرحلة 1: فحص + بناء + نشر
+  # (مجمّعة في job واحد عشان ما نثبّت Nix ونحمّل الحزم مرتين)
+  # =========================================================================
   deploy:
     name: "فحص وبناء ونشر client2"
     runs-on: ubuntu-24.04
@@ -118,7 +122,6 @@ jobs:
 
       # إعداد SSH بنكتبه مرة واحدة هنا ونستخدمه في النشر والفحص
       - name: "إعداد SSH"
-        id: ssh
         env:
           DEPLOY_KEY: ${{ secrets.CLIENT2_DEPLOY_KEY }}
           DEPLOY_HOST: ${{ secrets.CLIENT2_IP }}
@@ -231,12 +234,56 @@ jobs:
           fi
           echo "النظام الشغال على السيرفر هو اللي اتبنى الآن"
 
-      # ======================= 5. فحص الصحة =======================
-      # بيشتغل حتى لو النشر فشل (عشان نعرف حالة السيرفر)، بشرط إن SSH اتجهز.
-      # لإضافة نطاق للفحص: ضيفه في قائمة DOMAINS.
+      # ======================= 5. التنظيف =======================
+      - name: "حذف المفاتيح المؤقتة"
+        if: always()
+        run: rm -f "$RUNNER_TEMP/age.key" ~/.ssh/deploy_key
+
+  # ===========================================================================
+  # المرحلة 2: فحص الصحة بعد النشر
+  # job منفصل عشان تظهر كمرحلة مستقلة في الـ graph. مش محتاج Nix فبيخلص بسرعة.
+  # بيشتغل حتى لو النشر فشل (عشان نعرف حالة السيرفر)، ما عدا لو اتلغى.
+  # ===========================================================================
+  diagnose:
+    name: "فحص الصحة"
+    needs: deploy
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: "إعداد SSH"
+        env:
+          DEPLOY_KEY: ${{ secrets.CLIENT2_DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ secrets.CLIENT2_IP }}
+        run: |
+          set -euo pipefail
+          if [ -z "$DEPLOY_KEY" ] || [ -z "$DEPLOY_HOST" ]; then
+            echo "::error::السر CLIENT2_DEPLOY_KEY أو CLIENT2_IP فاضي. راجع Settings → Secrets."
+            exit 1
+          fi
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          {
+            printf 'Host %s %s\n' "$MACHINE" "$DEPLOY_HOST"
+            printf '  HostName %s\n' "$DEPLOY_HOST"
+            printf '  User root\n'
+            printf '  IdentityFile ~/.ssh/deploy_key\n'
+            printf '  IdentitiesOnly yes\n'
+            printf '  StrictHostKeyChecking accept-new\n'
+            printf '  ServerAliveInterval 60\n'
+          } > ~/.ssh/config
+          chmod 600 ~/.ssh/config
+
+            # لإضافة نطاق للفحص: ضيفه في قائمة DOMAINS.
       # لجعل الخطوة تفشل لو نطاق وقع: غيّر STRICT إلى "1".
       - name: "فحص الصحة بعد النشر"
-        if: ${{ !cancelled() && steps.ssh.outcome == 'success' }}
         env:
           STRICT: "0"
         run: |
@@ -314,7 +361,6 @@ jobs:
             exit 1
           fi
 
-      # ======================= 6. التنظيف =======================
       - name: "حذف المفاتيح المؤقتة"
         if: always()
-        run: rm -f "$RUNNER_TEMP/age.key" ~/.ssh/deploy_key
+        run: rm -f ~/.ssh/deploy_key
