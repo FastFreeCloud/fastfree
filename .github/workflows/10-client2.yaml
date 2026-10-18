@@ -153,13 +153,14 @@ jobs:
             --print-build-logs --no-link $EXTRA
         shell: bash
 
-      - name: "Push closures and activate system via Clan"
+      - name: "Push closures and activate system on target host"
         working-directory: apps/fastfree_os
         run: |
-          nix develop --command clan machines update client2 \
-            --build-host localhost \
-            --target-host "root@${{ secrets.CLIENT2_IP }}" \
-            --host-key-check accept-new
+          TOPLEVEL=$(nix path-info ".#nixosConfigurations.client2.config.system.build.toplevel")
+          echo "Syncing system closure: $TOPLEVEL to client2..."
+          nix copy --to "ssh://client2" "$TOPLEVEL"
+          echo "Activating new system generation on client2..."
+          ssh client2 "$TOPLEVEL/bin/switch-to-configuration switch"
         shell: bash
 
       - name: "Verify activation and uptime"
@@ -201,7 +202,6 @@ jobs:
 
       - name: "Run live fleet health diagnostic"
         run: |
-          set -e
           R="ssh client2"
 
           echo "================================================================"
