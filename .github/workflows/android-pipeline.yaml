@@ -115,6 +115,23 @@ jobs:
         run: |
           chmod +x "${{ inputs.app_dir }}/src-capacitor/android/gradlew"
 
+      - name: "13b. Bump versionCode and versionName in build.gradle"
+        run: |
+          BUILD_GRADLE="${{ inputs.app_dir }}/src-capacitor/android/app/build.gradle"
+          DATE_CODE=$(date +%Y%m%d)
+          DATE_NAME=$(date +%Y.%m.%d)
+          RUN_NUM=${{ github.run_number }}
+          VERSION_CODE=$((DATE_CODE * 100 + RUN_NUM))
+          VERSION_NAME="$DATE_NAME"
+          echo "Setting versionCode=$VERSION_CODE versionName=$VERSION_NAME in $BUILD_GRADLE"
+          if [ -f "$BUILD_GRADLE" ]; then
+            sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/" "$BUILD_GRADLE"
+            sed -i "s/versionName \".*\"/versionName \"$VERSION_NAME\"/" "$BUILD_GRADLE"
+            sed -i "s/versionName '.*'/versionName \"$VERSION_NAME\"/" "$BUILD_GRADLE"
+            grep -E "versionCode|versionName" "$BUILD_GRADLE" || true
+          fi
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+
       - name: "14. Build Android Release AAB & APK"
         run: |
           cd "${{ inputs.app_dir }}/src-capacitor/android"
