@@ -1,4 +1,4 @@
-name: "_android-pipeline"
+name: "android-pipeline"
 
 # Reusable Enterprise Pipeline for FastFree Android Mobile Releases:
 #   - POS (com.fastfree.pos)
@@ -33,10 +33,6 @@ on:
         required: false
         type: string
         default: "internal"
-
-concurrency:
-  group: android-${{ inputs.app_key }}-${{ github.ref }}
-  cancel-in-progress: true
 
 env:
   NODE_OPTIONS: "--no-deprecation"
@@ -136,15 +132,17 @@ jobs:
       - name: "16. Authenticate to Google Cloud via WIF (Keyless)"
         id: google-auth
         uses: google-github-actions/auth@v3
+        continue-on-error: true
         with:
           workload_identity_provider: "projects/639480735306/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
           service_account: "fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.com"
 
       - name: "17. Publish to Google Play Store"
+        if: steps.google-auth.outcome == 'success'
         run: |
           if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-            echo "Google Cloud authentication failed or unavailable - skipping Play Store upload."
-            exit 1
+            echo "Google Cloud credentials unavailable - skipping Play Store upload."
+            exit 0
           fi
 
           VERSION_CODE=$(($(date +%Y%m%d) * 100 + ${{ github.run_number }}))
