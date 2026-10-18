@@ -28,18 +28,6 @@ on:
       - '.github/workflows/10-client2.yaml'
   workflow_dispatch:
     inputs:
-      action:
-        description: "What to do"
-        required: true
-        type: choice
-        default: deploy
-        options:
-          - deploy
-          - install
-      confirm:
-        description: "Type INSTALL to wipe and install the VPS (install only)"
-        required: false
-        default: ""
       force_build:
         description: "Ignore binary cache / rebuild everything (slow)"
         required: false
@@ -319,44 +307,4 @@ jobs:
           echo "  Diagnostic Complete"
           echo "================================================================"
 
-  install:
-    name: "4. Wipe & install client2 via nixos-anywhere"
-    needs: validate
-    if: ${{ inputs.action == 'install' && inputs.confirm == 'INSTALL' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
-    permissions:
-      contents: read
-    steps:
-      - name: "1. Checkout"
-        uses: actions/checkout@v6
 
-      - name: "2. Install Nix"
-        uses: DeterminateSystems/determinate-nix-action@v3
-
-      - name: "3. nixos-anywhere install"
-        run: |
-          nix run github:nix-community/nixos-anywhere -- \
-            --flake ./apps/fastfree_os#client2 \
-            --target-host root@${{ secrets.CLIENT2_IP }} \
-            --build-on github-hosted \
-            --env-password
-
-      - name: "4. Verify (SSH key)"
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s' "${{ secrets.CLIENT2_DEPLOY_KEY }}" > ~/.ssh/client2
-          chmod 600 ~/.ssh/client2
-          ssh -o StrictHostKeyChecking=accept-new -i ~/.ssh/client2 \
-            root@${{ secrets.CLIENT2_IP }} "nixos-version && hostname && echo DEPLOY_OK"
-
-  guard-install:
-    name: "5. Guard install confirmation"
-    needs: validate
-    if: ${{ inputs.action == 'install' && inputs.confirm != 'INSTALL' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: "1. Fail on missing confirmation"
-        run: |
-          echo "ERROR: action=install requires confirm exactly 'INSTALL' - nothing was executed" >&2
-          exit 1
