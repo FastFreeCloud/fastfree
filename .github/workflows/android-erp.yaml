@@ -15,13 +15,17 @@ on:
           - 'internal'
           - 'production'
 
+concurrency:
+  group: android-erp-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   android:
-    uses: ./.github/workflows/_android-pipeline.yaml
+    uses: ./.github/workflows/android-pipeline.yaml
     with:
       app_name: 'FastFree ERP'
       app_key: 'erp'
       app_dir: 'apps/fastfree_erp'
       package_id: 'com.fastfree.erp'
-      track: ${{ inputs.track || 'internal' }}
+      track: ${{ inputs.track }}
     secrets: inherit

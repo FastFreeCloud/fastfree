@@ -15,13 +15,17 @@ on:
           - 'internal'
           - 'production'
 
+concurrency:
+  group: android-pos-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   android:
-    uses: ./.github/workflows/_android-pipeline.yaml
+    uses: ./.github/workflows/android-pipeline.yaml
     with:
       app_name: 'FastFree POS'
       app_key: 'pos'
       app_dir: 'apps/fastfree_pos'
       package_id: 'com.fastfree.pos'
-      track: ${{ inputs.track || 'internal' }}
+      track: ${{ inputs.track }}
     secrets: inherit
