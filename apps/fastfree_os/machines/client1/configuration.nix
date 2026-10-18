@@ -31,7 +31,6 @@
     ../../modules/fastfree_website.nix
     ../../modules/dbgate.nix
     ../../modules/cockpit.nix
-    ../../modules/opencode.nix
     ../../modules/avahi-subdomains.nix
     (modulesPath + "/virtualisation/hyperv-guest.nix")
   ];

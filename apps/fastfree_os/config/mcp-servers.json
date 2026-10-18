@@ -1,0 +1,79 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": true,
+  "mcp": {
+    "herdr": {
+      "type": "local",
+      "command": [
+        "python3",
+        "-m",
+        "herdr_mcp.server",
+        "--stdio"
+      ],
+      "environment": {
+        "HERDR_MCP_DEFAULT_KIND": "opencode"
+      },
+      "enabled": true,
+      "timeout": 300000
+    },
+    "fastfree-panel": {
+      "type": "remote",
+      "url": "https://panel.fastfree.cloud/mcp/sse",
+      "enabled": true,
+      "timeout": 300000
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "grep": {
+      "type": "remote",
+      "url": "https://mcp.grep.app"
+    },
+    "exa": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp"
+    },
+    "nixos": {
+      "type": "local",
+      "command": [
+        "sh",
+        "-c",
+        "command -v mcp-nixos >/dev/null 2>&1 && exec mcp-nixos || exec nix run github:utensils/mcp-nixos --"
+      ],
+      "enabled": true,
+      "timeout": 120000
+    },
+    "quasar": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@quasar/mcp@latest"
+      ],
+      "enabled": true,
+      "timeout": 300000
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking@0.6.2"
+      ],
+      "timeout": 300000
+    },
+    "firecrawl-mcp": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "firecrawl-mcp"
+      ],
+      "environment": {
+        "FIRECRAWL_API_KEY": "fc-a6393086cab440e48a0f9fc3311bb2c2"
+      },
+      "timeout": 300000
+    }
+  }
+}
