@@ -1,8 +1,5 @@
-d591edd fix(website): eliminate portal.js fallback and serve real Next.js production server with release tarball
-77ca0df chore: remove dead generate.js and clean up residual lint artifacts
-67c1991 feat(herdr): integrate live herdr mcp & telemetry in panel, mirror skills for opencode, and align tsconfigs
-7569047 fix(os): remove deleted opencode.nix imports, integrate official herdr-mcp and shared mcp-servers config
-12aad21 feat(os): consolidate herdr, opencode, and hermes agents into unified herdr module
-9bfd675 fix(os): wrap backend ExecStart scripts, fix website portal fallback, and enable Magic Nix Cache
-6b86818 Refactor deployment workflow comments and steps
-4c4ead2 Refactor fastos_client2.yaml with Arabic comments
+Comprehensive POS improvements:
+- Enhanced touch screen and barcode scanner support
+- Instant sales and stock synchronization
+- Faster performance and printing responsiveness
+- Stability fixes and overall usability enhancements

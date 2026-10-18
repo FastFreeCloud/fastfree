@@ -276,7 +276,7 @@ def main() -> int:
                 if text:
                     LOG.warning("No changelog %s.txt for %s, using default.txt", version_code, locale)
             if text:
-                notes.append({"language": locale, "text": text})
+                notes.append({"language": locale, "text": text[:500].strip()})
             elif version_code:
                 LOG.warning("No changelog for %s (release will have no notes)", locale)
 

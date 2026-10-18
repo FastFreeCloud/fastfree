@@ -156,7 +156,7 @@ def main() -> int:
                 print(f"[{app['name']}/{locale}] title: {truncate(title, 30)}")
             else:
                 print(f"[{app['name']}/{locale}] slug {app['slug']} not found, skipping text.")
-            write_text(out_dir / "changelogs" / f"{version_code}.txt", changelog)
+            write_text(out_dir / "changelogs" / f"{version_code}.txt", truncate(changelog, 500))
             print(f"[{app['name']}/{locale}] changelogs/{version_code}.txt written.")
             icon_src = app_dir / "public" / "icons" / "icon-512x512.png"
             if icon_src.exists():
