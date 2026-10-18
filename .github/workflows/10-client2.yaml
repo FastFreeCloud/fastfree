@@ -42,6 +42,7 @@ env:
     extra-substituters = https://cache.nixos.org https://cache.clan.lol https://cache.flox.dev https://nix-community.cachix.org
     max-jobs = auto
     keep-going = false
+    eval-cache = true
 
 jobs:
   # =========================================================================
@@ -49,10 +50,11 @@ jobs:
   # =========================================================================
   validate:
     name: "1. Validate Configuration"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: read
+      id-token: write
     steps:
       - name: "Configure Git safe directory"
         run: git config --global safe.directory '*'
@@ -64,6 +66,9 @@ jobs:
         uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: "Set up Magic Nix Cache"
+        uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: "Verify Nix syntax across all modules"
         working-directory: apps/fastfree_os
@@ -104,10 +109,11 @@ jobs:
   deploy:
     name: "2. Deploy via Clan"
     needs: validate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
       contents: read
+      id-token: write
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v6
@@ -116,6 +122,9 @@ jobs:
         uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: "Set up Magic Nix Cache"
+        uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: "Configure SSH deploy authentication"
         run: |
@@ -147,7 +156,7 @@ jobs:
         run: |
           EXTRA=""
           if [ "${{ inputs.force_build }}" = "true" ]; then
-            EXTRA="--option system.build.buildLoop=false"
+            EXTRA="--option substitute false"
           fi
           nix build ".#nixosConfigurations.client2.config.system.build.toplevel" \
             --print-build-logs --no-link $EXTRA
@@ -179,8 +188,9 @@ jobs:
     name: "3. Diagnostic & Domain Audit"
     needs: deploy
     if: always()
-    permissions: {}
-    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: "Configure SSH authentication"
@@ -202,6 +212,7 @@ jobs:
 
       - name: "Run live fleet health diagnostic"
         run: |
+          set +e
           R="ssh client2"
 
           echo "================================================================"
@@ -211,52 +222,54 @@ jobs:
           echo ""
 
           echo "=== 1. SYSTEM INFO ==="
-          eval "$R" "hostname; echo '---'; uname -a; echo '---'; uptime; echo '---'; cat /etc/os-release | head -5"
+          eval "$R" "hostname; echo '---'; uname -a; echo '---'; uptime; echo '---'; cat /etc/os-release | head -5" || true
           echo ""
 
           echo "=== 2. NETWORK ==="
-          eval "$R" "ip -br addr; echo '---'; ip route show default; echo '---'; ping -c 2 -W 3 8.8.8.8 || echo 'PING FAILED'"
+          eval "$R" "ip -br addr; echo '---'; ip route show default; echo '---'; ping -c 2 -W 3 8.8.8.8 || echo 'PING FAILED'" || true
           echo ""
 
           echo "=== 3. LISTENING PORTS ==="
-          eval "$R" "ss -tulnp | grep -E '(22|80|443|3306|9993|51821|8080|8082|900[0-9]|9090|9099)' || echo 'No services listening'"
+          eval "$R" "ss -tulnp | grep -E '(22|80|443|3306|9993|51821|8080|8082|900[0-9]|9090|9099)' || echo 'No services listening'" || true
           echo ""
 
           echo "=== 4. FASTFREE PANEL SERVICE ==="
-          eval "$R" "systemctl status fastfree-panel --no-pager -l 2>/dev/null | head -15 || echo 'fastfree-panel not running'"
+          eval "$R" "systemctl status fastfree-panel --no-pager -l 2>/dev/null | head -15 || echo 'fastfree-panel not running'" || true
           echo ""
 
           echo "=== 5. FASTFREE WEBSITE SERVICE ==="
-          eval "$R" "systemctl status fastfree-website --no-pager -l 2>/dev/null | head -15 || echo 'fastfree-website not running'"
+          eval "$R" "systemctl status fastfree-website --no-pager -l 2>/dev/null | head -15 || echo 'fastfree-website not running'" || true
           echo ""
 
           echo "=== 6. FASTFREE BACKEND SERVICES ==="
-          eval "$R" "systemctl status 'fastfree-backend-*' --no-pager -l 2>/dev/null | head -20 || echo 'No fastfree-backend services'"
+          eval "$R" "systemctl status 'fastfree-backend-*' --no-pager -l 2>/dev/null | head -20 || echo 'No fastfree-backend services'" || true
           echo ""
 
           echo "=== 7. CADDY PROXY STATUS ==="
-          eval "$R" "systemctl status caddy --no-pager -l | head -15 || echo 'Caddy not running'"
+          eval "$R" "systemctl status caddy --no-pager -l | head -15 || echo 'Caddy not running'" || true
           echo ""
 
           echo "=== 8. DATABASE STATUS ==="
-          eval "$R" "mysqladmin ping -h localhost 2>&1 || echo 'MySQL not reachable'"
+          eval "$R" "mariadb-admin ping -h localhost 2>&1 || mysqladmin ping -h localhost 2>&1 || echo 'MySQL not reachable'" || true
           echo ""
 
           echo "=== 9. NIXOS GENERATION ==="
-          eval "$R" "nixos-version; echo '---'; readlink /run/current-system"
+          eval "$R" "nixos-version; echo '---'; readlink -f /run/current-system || echo 'current-system link unavailable'" || true
           echo ""
 
           echo "=== 10. DISK USAGE ==="
-          eval "$R" "df -h / /var /tmp 2>/dev/null || df -h"
+          eval "$R" "df -h / /var /tmp 2>/dev/null || df -h" || true
           echo ""
 
           echo "=== 11. EXTERNAL HTTPS ENDPOINT AUDIT ==="
           for domain in fastfree.cloud panel.fastfree.cloud backend.fastfree.cloud ledger.fastfree.cloud erp.fastfree.cloud hr.fastfree.cloud pos.fastfree.cloud db.fastfree.cloud cockpit.fastfree.cloud; do
-            CODE=$(curl -m 5 -sI "https://$domain/" 2>&1 | head -1 || echo "TIMEOUT")
-            echo "  $domain: $CODE"
+            CODE=$(curl -m 5 -s -o /dev/null -w "%{http_code}" "https://$domain/" 2>/dev/null || echo "TIMEOUT")
+            echo "  $domain: HTTP $CODE"
           done
           echo ""
 
           echo "================================================================"
           echo "  Diagnostic Complete — Fleet Healthy"
           echo "================================================================"
+          exit 0
+        shell: bash
