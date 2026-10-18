@@ -71,7 +71,7 @@ permissions: {}
 jobs:
   create-app:
     name: "1. 🏗️ إنشاء التطبيق بـ bench"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: write
