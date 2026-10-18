@@ -9,6 +9,10 @@ in
     environment.etc."clan/clan.nix".source = ../clan.nix;
     environment.etc."clan/flake.nix".source = ../flake.nix;
 
+    environment.systemPackages = [
+      inputs.clan-core.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli
+    ];
+
     systemd.tmpfiles.rules = [
       "d ${spaDir} 0755 root root -"
       "d ${backendDir} 0755 root root -"
