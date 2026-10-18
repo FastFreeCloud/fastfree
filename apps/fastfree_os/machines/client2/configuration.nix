@@ -32,7 +32,6 @@
     ../../modules/fastfree_website.nix
     ../../modules/dbgate.nix
     ../../modules/cockpit.nix
-    ../../modules/opencode.nix
     ../../modules/avahi-subdomains.nix
   # NOTE: ./disko.nix is auto-imported by Clan autoincludes — do NOT add it here
   # (double import = conflicting definitions).

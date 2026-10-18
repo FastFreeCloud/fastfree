@@ -118,6 +118,7 @@ in {
 
     # ── Local CLI reference + quick start ───────────────────
     environment.etc."herdr/cli-reference.md".source = ../docs/herdr-cli.md;
+    environment.etc."fastfree/mcp-servers.json".source = ../config/mcp-servers.json;
     environment.etc."herdr/README".text = ''
       FastFree OS — Herdr AI Multi-Agent Environment
       Included Agents:
@@ -162,9 +163,9 @@ in {
       fi
     '';
 
-    # ── Auto-integrations for Herdr (OpenCode & Hermes) ──────
+    # ── Auto-integrations for Herdr (OpenCode, Hermes & Official MCP) ──
     system.activationScripts.herdr-integrations = ''
-      export PATH="${pkgs.coreutils}/bin:${pkgs.sudo}/bin:$PATH"
+      export PATH="${pkgs.coreutils}/bin:${pkgs.sudo}/bin:${pkgs.git}/bin:${pkgs.python311}/bin:$PATH"
       HERDR_BIN=""
       if [ -x "${cfg.package}/bin/herdr" ]; then
         HERDR_BIN="${cfg.package}/bin/herdr"
@@ -182,6 +183,15 @@ in {
           "$HERDR_BIN" integration install hermes >/dev/null 2>&1 || true
         ''}
 
+        # Install official Herdr MCP plugin from herdr.dev marketplace
+        "$HERDR_BIN" plugin install thomasfossum/herdr-mcp --ref v0.3.1 --yes >/dev/null 2>&1 || true
+
+        # Distribute shared MCP config to OpenCode
+        if [ -f "/etc/fastfree/mcp-servers.json" ]; then
+          mkdir -p /root/.config/opencode
+          cp -f /etc/fastfree/mcp-servers.json /root/.config/opencode/opencode.json
+        fi
+
         # Install integrations for all human users in /home
         for home in /home/*; do
           [ -d "$home" ] || continue
@@ -189,12 +199,13 @@ in {
           id "$user" >/dev/null 2>&1 || continue
           ${lib.optionalString cfg.enableOpenCode ''
             mkdir -p "$home/.config/opencode"
-            chown "$user" "$home/.config/opencode"
+            cp -f /etc/fastfree/mcp-servers.json "$home/.config/opencode/opencode.json" 2>/dev/null || true
+            chown -R "$user" "$home/.config/opencode"
             sudo -u "$user" HOME="$home" "$HERDR_BIN" integration install opencode >/dev/null 2>&1 || true
           ''}
           ${lib.optionalString cfg.enableHermes ''
             mkdir -p "$home/.hermes"
-            chown "$user" "$home/.hermes"
+            chown -R "$user" "$home/.hermes"
             sudo -u "$user" HOME="$home" "$HERDR_BIN" integration install hermes >/dev/null 2>&1 || true
           ''}
         done

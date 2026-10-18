@@ -38,7 +38,6 @@ in
     ../../modules/fastfree_website.nix
     ../../modules/dbgate.nix
     ../../modules/cockpit.nix
-    ../../modules/opencode.nix
     ../../modules/tunnel.nix
     ../../modules/avahi-subdomains.nix
   # NOTE: ./hardware-configuration.nix is auto-imported by Clan autoincludes —
