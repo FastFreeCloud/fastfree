@@ -36,7 +36,7 @@
       jq
       pciutils
       nodejs_22
-      nodePackages.pnpm
+      pnpm
     ];
 
     programs.fzf.keybindings = true;
