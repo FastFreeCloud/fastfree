@@ -38,6 +38,7 @@
         # `clan machines update` / `clan ssh` run from the workstation.
         "client3-admin" = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGszztIACEpNLDgPR0IH7HdNCU6hEbIP8WG7ssMXKPwg fastfree@client3";
         "windows-operator" = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILvq/DkqsJNIuBkcxc5ttL7N893RU2+xb+ynBTSYYcDR fastfree-panel-windows";
+        "fastfree-ci-deploy" = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDVLRiAODxPOXtmU4fVllww02sx6hI21IrLTCAUp+gOk fastfree-ci-deploy";
       };
     };
     user-fastfree = {
