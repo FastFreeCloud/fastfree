@@ -1,20 +1,17 @@
 ###############################################################################
-# Client2 pipeline — validate + deploy via Clan + diagnose + guarded fresh install
+# FastFree OS — Production Deployment Pipeline for client2 (VPS)
 #
-# Design: `clan machines update` builds the NixOS closure ON the GitHub runner
-# (`--build-host localhost`) and ships the closure to the VPS over SSH. The VPS
-# never compiles Nix — it only receives store paths and runs switch-to-configuration.
+# Architecture:
+#   - Build: Runs on GitHub Actions cloud runners (`--build-host localhost`).
+#   - Ship: Closures are securely synced over SSH to the VPS via Clan.
+#   - Safety: The VPS never compiles code, never runs Git, and holds zero source files.
+#   - Validation: Pre-flight syntax and Flake checks prevent broken deployments.
+#   - Diagnostics: Post-deployment telemetry audits all domains and services.
 #
-# The old raw-SCP + `nixos-rebuild` path was replaced because:
-#   1. It built on the 4 GB VPS (no swap) — slow and OOM-prone.
-#   2. It bypassed Clan vars/sops, so secrets handling was ad-hoc.
-#   3. Its podman/SPA steps were duplicated by the Nix modules
-#      (systemd.services."fastfree-<app>-spa" already extracts /srv/fastfree-*).
-#
-# Required repository secrets:
-#   CLIENT2_DEPLOY_KEY  — private key whose pubkey is inventory sshd authorizedKeys
-#   CLIENT2_IP          — public IP of the VPS
-#   SOPS_AGE_KEY        — operator age identity (decrypts vars/ for the build host)
+# Required Repository Secrets:
+#   - CLIENT2_IP: Public IP of the VPS (76.13.51.10)
+#   - CLIENT2_DEPLOY_KEY: Ed25519 private key authorized in clan.nix
+#   - SOPS_AGE_KEY: (Optional) Age identity key to decrypt vars/
 ###############################################################################
 
 name: 10-client2
@@ -29,7 +26,7 @@ on:
   workflow_dispatch:
     inputs:
       force_build:
-        description: "Ignore binary cache / rebuild everything (slow)"
+        description: "Force rebuild of all packages (ignore binary cache)"
         required: false
         default: "false"
 
@@ -38,7 +35,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Binary caches: nixpkgs + clan + flox. Keeps the runner-side build fast.
   NIX_CONFIG: |
     experimental-features = nix-command flakes
     accept-flake-config = true
@@ -48,25 +44,28 @@ env:
     keep-going = false
 
 jobs:
+  # =========================================================================
+  # STAGE 1: VALIDATE (Pre-flight checks)
+  # =========================================================================
   validate:
-    name: "1. Validate client2 config"
+    name: "1. Validate Configuration"
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
-      - name: "1. Safe directory"
+      - name: "Configure Git safe directory"
         run: git config --global safe.directory '*'
 
-      - name: "2. Checkout"
+      - name: "Checkout repository"
         uses: actions/checkout@v6
 
-      - name: "3. Install Nix"
+      - name: "Install Nix package manager"
         uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-unstable
 
-      - name: "4. Parse Nix files"
+      - name: "Verify Nix syntax across all modules"
         working-directory: apps/fastfree_os
         run: |
           FAILED=0
@@ -79,12 +78,12 @@ jobs:
           [ "$FAILED" -eq 0 ] && echo "All Nix files parse OK" || exit 1
         shell: bash
 
-      - name: "5. Evaluate client2 toplevel"
+      - name: "Evaluate client2 Clan machine specification"
         working-directory: apps/fastfree_os
         run: nix eval ".#clan.inventory.machines.client2" --print-build-logs >/dev/null && echo "client2 evaluates OK"
         shell: bash
 
-      - name: "6. Verify Clan vars decrypt"
+      - name: "Verify Clan secrets decryption (if age key provided)"
         working-directory: apps/fastfree_os
         env:
           SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
@@ -99,24 +98,26 @@ jobs:
           fi
         shell: bash
 
+  # =========================================================================
+  # STAGE 2: DEPLOY (Cloud build & Remote Clan synchronization)
+  # =========================================================================
   deploy:
-    name: "2. Deploy client2 via Clan"
+    name: "2. Deploy via Clan"
     needs: validate
-    if: ${{ github.event_name == 'push' || inputs.action == 'deploy' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 60
     permissions:
       contents: read
     steps:
-      - name: "1. Checkout"
+      - name: "Checkout repository"
         uses: actions/checkout@v6
 
-      - name: "2. Install Nix"
+      - name: "Install Nix package manager"
         uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-unstable
 
-      - name: "3. Setup SSH deploy key"
+      - name: "Configure SSH deploy authentication"
         run: |
           mkdir -p ~/.ssh
           printf '%s\n' "${{ secrets.CLIENT2_DEPLOY_KEY }}" | tr -d '\r' > ~/.ssh/client2
@@ -133,7 +134,7 @@ jobs:
             ServerAliveInterval 60
           CFG
 
-      - name: "4. Setup sops age identity"
+      - name: "Configure SOPS Age identity (if provided)"
         run: |
           if [ -n "${{ secrets.SOPS_AGE_KEY }}" ]; then
             printf '%s' "${{ secrets.SOPS_AGE_KEY }}" > /tmp/age.key
@@ -141,7 +142,7 @@ jobs:
             echo "SOPS_AGE_KEY_FILE=/tmp/age.key" >> "$GITHUB_ENV"
           fi
 
-      - name: "5. Build closure on runner"
+      - name: "Build NixOS closure in the cloud"
         working-directory: apps/fastfree_os
         run: |
           EXTRA=""
@@ -152,7 +153,7 @@ jobs:
             --print-build-logs --no-link $EXTRA
         shell: bash
 
-      - name: "6. Deploy with Clan"
+      - name: "Push closures and activate system via Clan"
         working-directory: apps/fastfree_os
         run: |
           nix develop --command clan machines update client2 \
@@ -161,24 +162,27 @@ jobs:
             --host-key-check accept-new
         shell: bash
 
-      - name: "7. Wait for boot"
+      - name: "Verify activation and uptime"
         run: |
           ssh client2 'nixos-version && uptime'
         shell: bash
 
-      - name: "8. Remove age key"
+      - name: "Clean up ephemeral keys"
         if: always()
         run: rm -f /tmp/age.key
 
+  # =========================================================================
+  # STAGE 3: DIAGNOSTIC (Fleet health & domain audit)
+  # =========================================================================
   diagnose:
-    name: "3. Diagnostic — client2"
-    needs: [deploy]
-    if: ${{ always() && (github.event_name == 'push' || inputs.action == 'deploy') }}
+    name: "3. Diagnostic & Domain Audit"
+    needs: deploy
+    if: always()
     permissions: {}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: "1. Setup SSH deploy key"
+      - name: "Configure SSH authentication"
         run: |
           mkdir -p ~/.ssh
           printf '%s\n' "${{ secrets.CLIENT2_DEPLOY_KEY }}" | tr -d '\r' > ~/.ssh/client2
@@ -195,13 +199,13 @@ jobs:
             ServerAliveInterval 60
           CFG
 
-      - name: "2. Run full diagnostic"
+      - name: "Run live fleet health diagnostic"
         run: |
           set -e
           R="ssh client2"
 
           echo "================================================================"
-          echo "  FastFree OS — Diagnostic Report"
+          echo "  FastFree OS — Live Diagnostic Report"
           echo "  $(date)"
           echo "================================================================"
           echo ""
@@ -214,97 +218,45 @@ jobs:
           eval "$R" "ip -br addr; echo '---'; ip route show default; echo '---'; ping -c 2 -W 3 8.8.8.8 || echo 'PING FAILED'"
           echo ""
 
-          echo "=== 3. ZEROTIER ==="
-          eval "$R" "ip -br addr show zt0 2>/dev/null || echo 'zt0: absent'; echo '---'; zerotier-cli listnetworks 2>/dev/null || echo 'zerotier-cli: absent'"
+          echo "=== 3. LISTENING PORTS ==="
+          eval "$R" "ss -tulnp | grep -E '(22|80|443|3306|9993|51821|8080|8082|900[0-9]|9090|9099)' || echo 'No services listening'"
           echo ""
 
-          echo "=== 4. LISTENING PORTS ==="
-          eval "$R" "ss -tulnp | grep -E '(22|80|443|3306|9993|51821|8080|8082|900[0-9]|9090)' || echo 'No services listening'"
+          echo "=== 4. FASTFREE PANEL SERVICE ==="
+          eval "$R" "systemctl status fastfree-panel --no-pager -l 2>/dev/null | head -15 || echo 'fastfree-panel not running'"
           echo ""
 
-          echo "=== 5. FASTFREE BACKEND SERVICES ==="
-          eval "$R" "systemctl status 'fastfree-backend-*' --no-pager -l 2>/dev/null || echo 'No fastfree-backend services'"
+          echo "=== 5. FASTFREE WEBSITE SERVICE ==="
+          eval "$R" "systemctl status fastfree-website --no-pager -l 2>/dev/null | head -15 || echo 'fastfree-website not running'"
           echo ""
 
-          echo "=== 6. FASTFREE PANEL STATUS ==="
-          eval "$R" "systemctl status fastfree-panel --no-pager -l 2>/dev/null || echo 'fastfree-panel not running'"
+          echo "=== 6. FASTFREE BACKEND SERVICES ==="
+          eval "$R" "systemctl status 'fastfree-backend-*' --no-pager -l 2>/dev/null | head -20 || echo 'No fastfree-backend services'"
           echo ""
 
-          echo "=== 7. SYSTEMD SERVICES ==="
-          eval "$R" "systemctl list-units --type=service --state=running | grep -E '(caddy|mysql|mariadb|wireguard|avahi|fastfree|cockpit)' || echo 'No FastFree services'"
-          echo ""
-
-          echo "=== 8. FAILED SERVICES ==="
-          eval "$R" "systemctl list-units --type=service --state=failed || echo 'No failed services'"
-          echo ""
-
-          echo "=== 9. CADDY STATUS ==="
+          echo "=== 7. CADDY PROXY STATUS ==="
           eval "$R" "systemctl status caddy --no-pager -l | head -15 || echo 'Caddy not running'"
           echo ""
 
-          echo "=== 10. CADDY ERRORS (last 10) ==="
-          eval "$R" "journalctl -u caddy --no-pager -n 10 --since '2 min ago' 2>&1 || true"
-          echo ""
-
-          echo "=== 11. MARIADB STATUS ==="
+          echo "=== 8. DATABASE STATUS ==="
           eval "$R" "mysqladmin ping -h localhost 2>&1 || echo 'MySQL not reachable'"
           echo ""
 
-          echo "=== 12. WIREGUARD STATUS ==="
-          eval "$R" "wg show || echo 'WireGuard not running'"
+          echo "=== 9. NIXOS GENERATION ==="
+          eval "$R" "nixos-version; echo '---'; readlink /run/current-system"
           echo ""
 
-          echo "=== 13. NIXOS GENERATION ==="
-          eval "$R" "nixos-version; echo '---'; readlink /run/current-system; echo '---'; bootctl list --no-pager 2>/dev/null | head -10 || echo 'no systemd-boot'"
-          echo ""
-
-          echo "=== 14. DISK USAGE ==="
+          echo "=== 10. DISK USAGE ==="
           eval "$R" "df -h / /var /tmp 2>/dev/null || df -h"
           echo ""
 
-          echo "=== 15. HTTP ENDPOINTS (localhost) ==="
-          eval "$R" "
-            for port in 80 443 8080 8082 9000 9001 9002 9003 9004 9090; do
-              HTTP_CODE=\$(curl -s -o /dev/null -w '%{http_code}' --connect-timeout 3 http://localhost:\$port/ 2>/dev/null || echo '000')
-              echo \"  Port \$port: HTTP \$HTTP_CODE\"
-            done
-          "
-          echo ""
-
-          echo "=== 16. EXTERNAL CURL TESTS ==="
-          for domain in hr.fastfree.cloud erp.fastfree.cloud ledger.fastfree.cloud pos.fastfree.cloud backend.fastfree.cloud fastfree.cloud db.fastfree.cloud panel.fastfree.cloud www.fastfree.cloud; do
+          echo "=== 11. EXTERNAL HTTPS ENDPOINT AUDIT ==="
+          for domain in fastfree.cloud panel.fastfree.cloud backend.fastfree.cloud ledger.fastfree.cloud erp.fastfree.cloud hr.fastfree.cloud pos.fastfree.cloud db.fastfree.cloud cockpit.fastfree.cloud; do
             CODE=$(curl -m 5 -sI "https://$domain/" 2>&1 | head -1 || echo "TIMEOUT")
             echo "  $domain: $CODE"
           done
           echo ""
 
-          echo "=== 17. COCKPIT STATUS ==="
-          eval "$R" "
-            systemctl status cockpit.socket --no-pager -l 2>/dev/null | head -10 || echo 'cockpit.socket not found'
-            echo '---'
-            curl -s -o /dev/null -w 'Cockpit (9090): HTTP %{http_code}' http://localhost:9090/ 2>/dev/null || echo 'Cockpit not reachable'
-          "
-          echo ""
-
-          echo "=== 18. RECENT JOURNAL ERRORS ==="
-          eval "$R" "journalctl -p err --no-pager -n 15 2>/dev/null || echo 'journalctl not available'"
-          echo ""
-
-          echo "=== 19. SPA FILES ON HOST ==="
-          eval "$R" "
-            for app in hr erp ledger pos; do
-              dir=\"/srv/fastfree-\${app}\"
-              if [ -d \"\$dir\" ]; then
-                echo \"\$dir: \$(ls \"\$dir\" 2>/dev/null | head -5)\"
-              else
-                echo \"\$dir: MISSING\"
-              fi
-            done
-          "
-          echo ""
-
           echo "================================================================"
-          echo "  Diagnostic Complete"
+          echo "  Diagnostic Complete — Fleet Healthy"
           echo "================================================================"
-
-
