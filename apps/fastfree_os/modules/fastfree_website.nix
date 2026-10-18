@@ -18,6 +18,7 @@
         NODE_ENV = "production";
         PORT = "9004";
         HOSTNAME = "127.0.0.1";
+        NODE_PATH = "/srv/fastfree-website/node_modules:/root/fastfree-source/apps/fastfree_website/node_modules";
       };
       serviceConfig = {
         DynamicUser = false;
