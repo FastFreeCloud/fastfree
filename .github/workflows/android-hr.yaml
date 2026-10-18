@@ -15,6 +15,10 @@ on:
           - 'internal'
           - 'production'
 
+permissions:
+  contents: write
+  id-token: write
+
 concurrency:
   group: android-hr-${{ github.ref }}
   cancel-in-progress: true
