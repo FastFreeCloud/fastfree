@@ -87,8 +87,8 @@ jobs:
         run: |
           FAILED=0
           while IFS= read -r -d '' file; do
-            if ! nix-instantiate --parse "$file" >/dev/null 2>&1; then
-              echo "SYNTAX ERROR: $file"
+            if ! err=$(nix-instantiate --parse "$file" 2>&1); then
+              echo "SYNTAX ERROR in $file: $err"
               FAILED=1
             fi
           done < <(find . -name "*.nix" -not -path "./.git/*" -print0 | sort -z)
