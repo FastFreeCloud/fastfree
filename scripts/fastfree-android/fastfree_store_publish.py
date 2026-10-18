@@ -132,7 +132,12 @@ def main() -> int:
         print(f"Creating edit for {package}...")
         # NOTE: edits.insert takes no body fields in androidpublisher v3
         # (changesNotSentForReview was rejected with 400 Unknown field).
-        edit_id = edits.insert(body={}, packageName=package).execute()["id"]
+        edit_res = _execute(
+            lambda: edits.insert(body={}, packageName=package),
+            "edits.insert",
+            tries=5,
+        )
+        edit_id = edit_res["id"]
         print(f"Edit created: {edit_id}")
 
         for locale in locales:
@@ -306,7 +311,11 @@ def main() -> int:
             raise RuntimeError("refusing to commit an edit with no release on track")
 
         print("Committing edit...")
-        edits.commit(packageName=package, editId=edit_id).execute()
+        _execute(
+            lambda: edits.commit(packageName=package, editId=edit_id),
+            "edits.commit",
+            tries=5,
+        )
 
         print("\n=== SUCCESS ===")
         print(f"Edit ID:       {edit_id}")
