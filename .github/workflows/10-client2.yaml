@@ -54,11 +54,7 @@ env:
   NIX_CONFIG: |
     experimental-features = nix-command flakes
     accept-flake-config = true
-    extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
-      cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
-      clan.cachix.org-1:mB9FShHNQzw3BKnWpuMQdjrQbymxUFDCVR1a1FYGV6M=
-      flox-cache-public-1:7F4OyH7ZCnFhcze3fJdfyXYLQw/aV7GEed86nQ7IsOs=
-      nix-community.cachix.org-1:mB9FShHNQzw3BKnWpuMQdjrQbymxUFDCVR1a1FYGV6M=
+    extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= clan.cachix.org-1:mB9FShHNQzw3BKnWpuMQdjrQbymxUFDCVR1a1FYGV6M= flox-cache-public-1:7F4OyH7ZCnFhcze3fJdfyXYLQw/aV7GEed86nQ7IsOs= nix-community.cachix.org-1:mB9FShHNQzw3BKnWpuMQdjrQbymxUFDCVR1a1FYGV6M=
     extra-substituters = https://cache.nixos.org https://cache.clan.lol https://cache.flox.dev https://nix-community.cachix.org
     max-jobs = auto
     keep-going = false
