@@ -29,8 +29,7 @@
         RestartSec = "5s";
         ExecStartPre = pkgs.writeShellScript "fastfree-website-prestart" ''
           mkdir -p /srv/fastfree-website
-          if [ ! -f /srv/fastfree-website/server.js ]; then
-            cat > /srv/fastfree-website/server.js << 'EOF'
+          cat > /srv/fastfree-website/portal.js << 'EOF'
 const http = require('http');
 
 const HTML = `<!DOCTYPE html>
@@ -200,6 +199,12 @@ server.listen(9004, '127.0.0.1', () => {
   console.log('FastFree Website listening on http://127.0.0.1:9004');
 });
 EOF
+          if [ -f /srv/fastfree-website/server.js ] && grep -q "require('next')" /srv/fastfree-website/server.js 2>/dev/null; then
+            echo "[fastfree-website-prestart] Replacing broken Next.js standalone file with native portal..."
+            cp /srv/fastfree-website/portal.js /srv/fastfree-website/server.js
+          fi
+          if [ ! -f /srv/fastfree-website/server.js ]; then
+            cp /srv/fastfree-website/portal.js /srv/fastfree-website/server.js
           fi
         '';
         ExecStart = pkgs.writeShellScript "fastfree-website-start" ''
@@ -207,8 +212,12 @@ EOF
             echo "[fastfree-website] Starting Next.js production server on 127.0.0.1:9004..."
             cd /root/fastfree-source/apps/fastfree_website
             exec ${pkgs.nodejs_22}/bin/node node_modules/next/dist/bin/next start -p 9004 -H 127.0.0.1
+          elif [ -f "/srv/fastfree-website/portal.js" ]; then
+            echo "[fastfree-website] Starting native portal server on 127.0.0.1:9004..."
+            cd /srv/fastfree-website
+            exec ${pkgs.nodejs_22}/bin/node /srv/fastfree-website/portal.js
           elif [ -f "/srv/fastfree-website/server.js" ]; then
-            echo "[fastfree-website] Starting native portal fallback on 127.0.0.1:9004..."
+            echo "[fastfree-website] Starting portal fallback on 127.0.0.1:9004..."
             cd /srv/fastfree-website
             exec ${pkgs.nodejs_22}/bin/node /srv/fastfree-website/server.js
           else
