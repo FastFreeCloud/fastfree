@@ -35,6 +35,8 @@
       starship
       jq
       pciutils
+      nodejs_22
+      nodePackages.pnpm
     ];
 
     programs.fzf.keybindings = true;
