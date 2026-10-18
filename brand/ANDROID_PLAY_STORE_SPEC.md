@@ -77,8 +77,8 @@
 | المتغير | القيمة | الملف المسؤول | الملاحظة |
 | :--- | :--- | :--- | :--- |
 | **targetSdkVersion** | **36** | `variables.gradle` | **إلزامي لـ Google Play لعام 2026** (Android 16 API 36) |
-| **compileSdkVersion** | **35** | `variables.gradle` | متوافق ومستقر مع Capacitor 7 و AGP 8.7 |
-| **minSdkVersion** | **23** | `variables.gradle` | يدعم Android 6.0 وما فوق (أكثر من 99% من الأجهزة) |
+| **compileSdkVersion** | **36** | `variables.gradle` | متوافق ومستقر مع Capacitor 7 و Android 16 API 36 |
+| **minSdkVersion** | **24** | `variables.gradle` | **إلزامي لحماية Google Play التلقائية Play Automatic Protection** (Android 7.0+) |
 | **versionCode** | مثل `2026101801` | `build.gradle` | رقم إصدار تصاعدي بصيغة تاريخ (YYYYMMDDNN) |
 
 ---
