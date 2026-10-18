@@ -47,7 +47,9 @@ CANONICAL_FILE_SHA256 = (
     "7C462200AA611C7C9BC3DC5857075F570036A3A20EC56AB72F2DF32B384FAF76"
 )
 
+MIN_SDK = 24
 TARGET_SDK = 36
+COMPILE_SDK = 36
 
 APPS_REGISTRY = {
     "erp": {
@@ -349,15 +351,17 @@ def pin_target_sdk(app_dir: str | None) -> int:
         LOG.error("variables.gradle not found: %s", variables)
         return 1
     text = variables.read_text(encoding="utf-8")
-    updated, count = re.subn(r"targetSdkVersion\s*=\s*\d+", f"targetSdkVersion = {TARGET_SDK}", text)
-    if count == 0:
-        LOG.error("targetSdkVersion key not found in %s", variables)
+    updated, c_target = re.subn(r"targetSdkVersion\s*=\s*\d+", f"targetSdkVersion = {TARGET_SDK}", text)
+    updated, c_min = re.subn(r"minSdkVersion\s*=\s*\d+", f"minSdkVersion = {MIN_SDK}", updated)
+    updated, c_compile = re.subn(r"compileSdkVersion\s*=\s*\d+", f"compileSdkVersion = {COMPILE_SDK}", updated)
+    if c_target == 0 and c_min == 0:
+        LOG.error("targetSdkVersion or minSdkVersion key not found in %s", variables)
         return 1
     if updated != text:
         variables.write_text(updated, encoding="utf-8")
-        LOG.info("pinned targetSdkVersion=%d: %s", TARGET_SDK, variables)
+        LOG.info("pinned targetSdkVersion=%d, minSdkVersion=%d, compileSdkVersion=%d in %s", TARGET_SDK, MIN_SDK, COMPILE_SDK, variables)
     else:
-        LOG.info("targetSdkVersion already %d: %s", TARGET_SDK, variables)
+        LOG.info("targetSdkVersion=%d and minSdkVersion=%d already configured: %s", TARGET_SDK, MIN_SDK, variables)
     return 0
 
 
