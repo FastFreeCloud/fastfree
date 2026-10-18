@@ -195,6 +195,23 @@ def get_canonical_keystore() -> Path | None:
             if h == CANONICAL_FILE_SHA256:
                 return candidate
             LOG.warning("Keystore candidate %s exists but hash %s != canonical %s", candidate, h, CANONICAL_FILE_SHA256)
+
+    # If file not present on runner, restore from environment secret
+    b64_env = os.environ.get("ANDROID_KEYSTORE_BASE64", "").strip()
+    if b64_env:
+        try:
+            raw = base64.b64decode(b64_env)
+            h = hashlib.sha256(raw).hexdigest().upper()
+            if h == CANONICAL_FILE_SHA256:
+                DEFAULT_OUT.parent.mkdir(parents=True, exist_ok=True)
+                DEFAULT_OUT.write_bytes(raw)
+                LOG.info("Restored canonical release.jks from ANDROID_KEYSTORE_BASE64 environment secret.")
+                return DEFAULT_OUT
+            else:
+                LOG.warning("ANDROID_KEYSTORE_BASE64 decoded hash %s != canonical %s", h, CANONICAL_FILE_SHA256)
+        except Exception as err:
+            LOG.warning("Failed to decode ANDROID_KEYSTORE_BASE64: %s", err)
+
     return None
 
 
