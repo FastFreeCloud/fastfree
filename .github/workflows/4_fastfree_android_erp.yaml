@@ -264,12 +264,10 @@ jobs:
 
       # ======================= 12. رفع الحزم إلى Google Play Console =======================
       - name: "12. رفع الحزم إلى Google Play Console"
-        if: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON != '' }}
         uses: r0adkll/upload-google-play@v1
         continue-on-error: true
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          service_account_json_plaintext: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: ${{ env.PACKAGE_ID }}
           releaseFiles: ${{ env.APP_DIR }}/src-capacitor/android/app/build/outputs/bundle/release/*.aab
           track: ${{ inputs.track }}
