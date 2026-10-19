@@ -1,0 +1,38 @@
+{
+  "name": "FastFree Panel",
+  "tagline": "Server and infrastructure control center",
+  "domain": "server management NixOS infrastructure monitoring",
+  "colors": {
+    "primary": "#4F46E5",
+    "secondary": "#3730A3",
+    "accent": "#818CF8"
+  },
+  "imageryHints": [
+    "server rack with blinking lights",
+    "monitoring dashboard with system metrics",
+    "terminal with command output",
+    "infrastructure topology map",
+    "network diagram with nodes",
+    "CPU and memory usage graphs"
+  ],
+  "promptHints": [
+    "clean flat UI illustration",
+    "light background",
+    "cyber indigo color palette",
+    "room for text overlay"
+  ],
+  "negativeHints": [
+    "realistic human hands",
+    "cluttered background",
+    "gradients",
+    "3D glossy renders"
+  ],
+  "features": [
+    "NixOS server fleet management",
+    "real-time system monitoring (CPU, memory, disk)",
+    "Clan deployment orchestration",
+    "WireGuard and ZeroTier VPN management",
+    "BorgBackup backup status",
+    "terminal access to remote servers"
+  ]
+}

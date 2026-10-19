@@ -1,0 +1,38 @@
+{
+  "name": "FastFree ERP",
+  "tagline": "Enterprise operations for fast-moving businesses",
+  "domain": "enterprise operations supply chain manufacturing",
+  "colors": {
+    "primary": "#D97706",
+    "secondary": "#B45309",
+    "accent": "#F59E0B"
+  },
+  "imageryHints": [
+    "factory floor with assembly line",
+    "supply chain dashboard with flow diagram",
+    "warehouse with organized shelves",
+    "inventory management grid",
+    "production planning board",
+    "logistics and shipping containers"
+  ],
+  "promptHints": [
+    "clean flat UI illustration",
+    "light background",
+    "bronze amber color palette",
+    "room for text overlay"
+  ],
+  "negativeHints": [
+    "realistic human hands",
+    "cluttered background",
+    "gradients",
+    "3D glossy renders"
+  ],
+  "features": [
+    "full ERP suite (accounting, inventory, sales, purchase, HR, CRM)",
+    "supply chain management",
+    "manufacturing workflow",
+    "procurement and purchase orders",
+    "multi-branch operations",
+    "real-time analytics dashboard"
+  ]
+}

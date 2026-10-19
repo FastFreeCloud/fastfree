@@ -1,0 +1,38 @@
+{
+  "name": "FastFree HR",
+  "tagline": "Human resources and payroll simplified",
+  "domain": "human resources payroll employee management",
+  "colors": {
+    "primary": "#0284C7",
+    "secondary": "#7C3AED",
+    "accent": "#C084FC"
+  },
+  "imageryHints": [
+    "employee directory with profile cards",
+    "payroll dashboard with salary table",
+    "team org chart",
+    "attendance tracking calendar",
+    "leave management board",
+    "recruitment pipeline"
+  ],
+  "promptHints": [
+    "clean flat UI illustration",
+    "light background",
+    "sapphire sky color palette",
+    "room for text overlay"
+  ],
+  "negativeHints": [
+    "realistic human hands",
+    "cluttered background",
+    "gradients",
+    "3D glossy renders"
+  ],
+  "features": [
+    "employee records and profiles",
+    "payroll processing",
+    "attendance and leave management",
+    "department and designation structure",
+    "performance tracking",
+    "holiday calendar"
+  ]
+}
