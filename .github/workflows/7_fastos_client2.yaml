@@ -78,7 +78,7 @@ jobs:
     steps:
       # ======================= 1. التجهيز =======================
       - name: "سحب الكود"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # الـ runner المجاني فيه ~14GB بس، وإعدادات NixOS الكبيرة ممكن تاخد 10-15GB
       - name: "تفريغ مساحة على الـ runner"
