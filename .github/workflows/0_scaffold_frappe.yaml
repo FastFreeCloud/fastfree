@@ -81,15 +81,16 @@ jobs:
       # ║  المرحلة 1: التحقق من جاهزية الـ Repo  ║
       # ╚═══════════════════════════════════════╝
 
-      - name: "1. 1️⃣ تحميل الـ Repo"
+      - name: "1. تهيئة بيئة Git الآمنة"
+        run: |
+          git config --global safe.directory '*'
+          git config --global init.defaultBranch master
+
+      - name: "2. 1️⃣ تحميل الـ Repo"
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - name: "2. Safe directory"
-        run: |
-          git config --global safe.directory '*'
-          git config --global init.defaultBranch master
       # ╔═══════════════════════════════════════╗
       # ║  المرحلة 0.4: تعيين القيم الافتراضية  ║
       # ╚═══════════════════════════════════════╝
