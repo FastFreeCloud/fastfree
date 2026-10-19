@@ -81,6 +81,7 @@ jobs:
         run: |
           echo "تهيئة الصلاحيات الآمنة لـ Git داخل بيئة العمل..."
           git config --global safe.directory '*'
+          git config --global init.defaultBranch master
 
       # ======================= 2. استدعاء الكود المصدري =======================
       - name: "2. استدعاء الكود المصدري"
@@ -90,7 +91,7 @@ jobs:
 
       # ======================= 3. إعداد Node.js 22 =======================
       - name: "3. إعداد Node.js 22"
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           package-manager-cache: false
