@@ -1,0 +1,36 @@
+name: "Web: FastFree HR"
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'apps/fastfree_hr/**'
+      - 'packages/**'
+      - '.github/workflows/web-hr.yaml'
+      - '.github/workflows/web-pipeline.yaml'
+    tags:
+      - 'hr-v*'
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'apps/fastfree_hr/**'
+      - 'packages/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: web-hr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    uses: ./.github/workflows/web-pipeline.yaml
+    with:
+      app_name: 'FastFree HR'
+      app_key: 'hr'
+      app_dir: 'apps/fastfree_hr'
+      has_backend: false
+      tarball_name: 'fastfree-hr.tar.gz'
+    secrets: inherit
