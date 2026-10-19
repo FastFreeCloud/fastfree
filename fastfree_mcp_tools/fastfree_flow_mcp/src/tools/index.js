@@ -8,6 +8,7 @@
  *  - `ok` is derived from something observed, never from "it did not throw".
  */
 import path from 'node:path';
+import fs from 'node:fs';
 import {
   withSession, ensureBrowser, launchBrowser, openFlow, sessionState, waitForMedia,
   submitPrompt, currentModel, countMedia, cdpAlive, selectRatio, waitForCdp, collectMedia, capture, onFlow,
@@ -19,10 +20,24 @@ import { config } from '../config.js';
 
 const NOT_REQUESTED = { requested: null, applied: false, reason: 'not requested' };
 
+/** Ratios Flow does not support natively, mapped to the closest supported ratio. */
+const RATIO_FALLBACKS = {
+  '1.91:1': '16:9',
+};
+
 function assertRatio(ratio) {
   if (ratio && !config.ratios.includes(ratio)) {
     throw new Error(`Unsupported ratio "${ratio}". Use one of: ${config.ratios.join(', ')}`);
   }
+}
+
+/** Resolve a ratio to a supported one, returning the fallback info when it changed. */
+function resolveRatio(ratio) {
+  if (!ratio) return { ratio: null, fallback: null };
+  if (config.ratios.includes(ratio)) return { ratio, fallback: null };
+  const mapped = RATIO_FALLBACKS[ratio];
+  if (mapped) return { ratio: mapped, fallback: `Flow does not support ${ratio}; used ${mapped} instead.` };
+  return { ratio, fallback: null };
 }
 
 function assertDuration(duration) {
@@ -42,6 +57,94 @@ function clampLimit(limit, fallback = 20, max = 200) {
 async function shot(page, file) {
   const r = await capture(page, file);
   return r.ok ? r.file : null;
+}
+
+/** Read credit/quota info from the Flow page, or null when not found. */
+async function readCredits(page) {
+  try {
+    return await page.evaluate(() => {
+      const txt = (el) => (el?.innerText || el?.textContent || '').trim().replace(/\s+/g, ' ');
+
+      const candidates = [
+        ...document.querySelectorAll('[aria-label*="credit" i], [aria-label*="quota" i], [data-testid*="credit" i]'),
+        ...document.querySelectorAll('[class*="credit" i], [class*="quota" i]'),
+      ];
+
+      for (const el of candidates) {
+        const t = txt(el);
+        if (!t) continue;
+        const m = t.match(/(\d[\d,]*)\s*[\/of]\s*(\d[\d,]*)/i);
+        if (m) {
+          const remaining = parseInt(m[1].replace(/,/g, ''), 10);
+          const total = parseInt(m[2].replace(/,/g, ''), 10);
+          if (remaining >= 0 && total > 0) return { remaining, total, raw: t };
+        }
+      }
+      return null;
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function generateSingleImage(page, prompt, ratio) {
+  const resolved = resolveRatio(ratio);
+  const effectiveRatio = resolved.ratio;
+
+  await openFlow(page, { newProject: true });
+
+  const baseline = await countMedia(page, 'image');
+  const ratioResult = effectiveRatio ? await selectRatio(page, effectiveRatio) : NOT_REQUESTED;
+
+  const sent = await submitPrompt(page, prompt);
+  if (!sent.submitted) {
+    return {
+      ok: false,
+      prompt,
+      reason: 'The send button could not be pressed, so nothing was submitted.',
+      ratioApplied: ratioResult.applied,
+      ratioFallback: resolved.fallback,
+      hint: 'Run flow_discover_ui to see the current controls, then retry.',
+    };
+  }
+
+  const model = await currentModel(page);
+  const result = await waitForMedia(page, 'image', baseline);
+
+  const dir = dayDir();
+  const base = runBase(prompt);
+  const preview = await shot(page, path.join(dir, `${base}-preview.png`));
+
+  const media = await collectMedia(page, 'image');
+  const { saved, skipped } = await saveFromUrls(media.urls, base, 'jpg');
+  const ok = saved.length > 0;
+
+  return {
+    ok,
+    prompt,
+    model,
+    ratio: ratioResult.applied ? effectiveRatio : 'default',
+    ratioApplied: ratioResult.applied,
+    ratioDetail: ratioResult.reason || ratioResult.via || null,
+    ratioFallback: resolved.fallback,
+    settled: result.settled,
+    fresh: result.fresh,
+    reusedOnly: result.reusedOnly,
+    polls: result.polls,
+    count: saved.length,
+    files: saved.map((s) => s.file),
+    sizes: saved.map((s) => `${s.kb} KB`),
+    preview,
+    variantsDropped: media.dropped,
+    skipped,
+    note: ok
+      ? 'Commas are stripped by the Flow editor - write prompts without commas.'
+      : 'No file was saved. ' +
+        (result.reusedOnly
+          ? 'Flow reused the existing image instead of generating a new one.'
+          : 'Generation did not produce a downloadable file.') +
+        ' Try flow_discover_ui, then flow_download_latest.',
+  };
 }
 
 /* ------------------------------------------------------------------ */

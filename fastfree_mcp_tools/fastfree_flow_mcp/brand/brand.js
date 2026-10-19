@@ -3,6 +3,8 @@
  *
  * BRAND.md is the single source of truth. This module reads the hex
  * values and labels out of it so nothing has to be duplicated.
+ *
+ * Prompt anatomy: [Subject] + [Surface/Background] + [Light] + [Framing] + [Aesthetic anchor] + [Negative]
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -10,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const mdPath = path.join(here, 'BRAND.md');
+const appsDir = path.join(here, '..', 'apps');
 
 export const sourceFile = mdPath;
 
@@ -88,35 +91,156 @@ export const RATIOS = {
   '3:4': '3:4 portrait',
 };
 
-const KIND_HINTS = {
-  logo: 'minimal vector logo mark. geometric and flat. no gradients no shadows no 3d. strong silhouette readable at small size. balanced negative space',
-  icon: 'single app icon with square rounded corners. bold simple glyph. centered composition. readable at 48px',
-  illustration: 'clean flat vector illustration. light background generous whitespace. soft subtle shadows. limited to the brand palette',
-  post: 'social media graphic. clear focal subject. strong contrast on small screens. room for text overlay without crowding',
-  screenshot: 'high fidelity product UI screenshot. dense but organised data tables and cards. brand colours only',
+// ─── Kind-Specific Prompt Templates ───────────────────────────────────────────
+
+const KIND_TEMPLATES = {
+  logo: {
+    framing: 'centered composition with balanced negative space',
+    aesthetic: 'flat geometric mark legible at 24px solid background',
+    negative: ['no gradients', 'no shadows', 'no 3D effects', 'no text', 'no watermark', 'no logo'],
+  },
+  icon: {
+    framing: 'centered single glyph app tile format clean silhouette',
+    aesthetic: 'bold simple shape readable at 48px rounded square container',
+    negative: ['no gradients', 'no shadows', 'no 3D effects', 'no text', 'no watermark', 'no logo'],
+  },
+  illustration: {
+    framing: 'hero art with generous whitespace flat UI style',
+    aesthetic: 'clean vector illustration with soft diffused lighting from upper left',
+    negative: ['no photorealism', 'no stock photo style', 'no text', 'no watermark', 'no logo'],
+  },
+  post: {
+    framing: 'social media graphic with clear focal subject and room for text overlay',
+    aesthetic: 'strong contrast balanced composition with whitespace on one side',
+    negative: ['no realistic hands', 'no cluttered background', 'no text', 'no watermark', 'no logo'],
+  },
+  screenshot: {
+    framing: 'high-density application interface with tables and cards in dashboard layout',
+    aesthetic: 'organized data display with clear visual hierarchy and brand-consistent UI elements',
+    negative: ['no realistic hands', 'no cluttered background', 'no text', 'no watermark', 'no logo'],
+  },
 };
 
-/** Turn a short request into an on-brand, comma-free Flow prompt. */
-export function buildPrompt(request, { kind = 'illustration', ratio = '1:1', exclude = [] } = {}) {
-  const hints = KIND_HINTS[kind] || KIND_HINTS.illustration;
+// ─── App Context Loader ───────────────────────────────────────────────────────
+
+/**
+ * Load app-specific context from apps/{app}.json.
+ * Returns null if the file does not exist or cannot be parsed.
+ */
+function loadAppContext(app) {
+  if (!app) return null;
+  const appPath = path.join(appsDir, `${app}.json`);
+  if (!fs.existsSync(appPath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(appPath, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Build a comma-free palette string from app context or fallback to brand palette.
+ */
+function buildPaletteString(appCtx) {
+  if (appCtx && appCtx.colors) {
+    const c = appCtx.colors;
+    const parts = [c.primary, c.secondary, c.accent].filter(Boolean);
+    if (parts.length) return parts.join(' and ');
+  }
+  return brandPalette.join(' and ');
+}
+
+/**
+ * Build the negative prompt array based on kind and app context.
+ */
+function buildNegativeParts(kind, appCtx) {
+  const template = KIND_TEMPLATES[kind] || KIND_TEMPLATES.illustration;
+  const negatives = [...template.negative];
+
+  if (appCtx && appCtx.negativeHints && Array.isArray(appCtx.negativeHints)) {
+    for (const hint of appCtx.negativeHints) {
+      if (!negatives.includes(hint)) negatives.push(hint);
+    }
+  }
+
+  return negatives;
+}
+
+/**
+ * Build the aesthetic anchor string from app context.
+ */
+function buildAestheticAnchor(kind, appCtx) {
+  const template = KIND_TEMPLATES[kind] || KIND_TEMPLATES.illustration;
+  let anchor = template.aesthetic;
+
+  if (appCtx && appCtx.promptHints && Array.isArray(appCtx.promptHints)) {
+    anchor = `${anchor} ${appCtx.promptHints.join(' ')}`;
+  }
+
+  return anchor;
+}
+
+/**
+ * Build the surface/background string from app context.
+ */
+function buildSurfaceString(appCtx) {
+  if (appCtx && appCtx.imageryHints && Array.isArray(appCtx.imageryHints)) {
+    return appCtx.imageryHints.join(' ');
+  }
+  return 'light white background with generous whitespace';
+}
+
+// ─── Main Prompt Builder ──────────────────────────────────────────────────────
+
+/**
+ * Turn a short request into an on-brand, comma-free Flow prompt.
+ *
+ * Prompt anatomy: [Subject] + [Surface/Background] + [Light] + [Framing] + [Aesthetic anchor] + [Negative]
+ *
+ * @param {string} request - Short description of what to create
+ * @param {object} opts
+ * @param {string} [opts.kind='illustration'] - logo | icon | illustration | post | screenshot
+ * @param {string} [opts.ratio='1:1'] - 16:9 | 1.91:1 | 1:1 | 9:16 | 4:3 | 3:4
+ * @param {string[]} [opts.exclude=[]] - Additional things to avoid
+ * @param {string} [opts.app] - Optional app context key (e.g. "pos", "erp", "ledger", "panel", "hr", "website")
+ * @returns {string} Comma-free prompt ready for Flow
+ */
+export function buildPrompt(request, { kind = 'illustration', ratio = '1:1', exclude = [], app = null } = {}) {
+  const template = KIND_TEMPLATES[kind] || KIND_TEMPLATES.illustration;
   const size = RATIOS[ratio];
   if (!size) {
-    // Fail loudly instead of silently substituting 1:1 and handing the
-    // agent a prompt for an aspect ratio it never asked for.
     throw new Error(
       `Unsupported ratio "${ratio}". Use one of: ${Object.keys(RATIOS).join(', ')}`,
     );
   }
-  const palette = brandPalette.join(' and ');
 
+  const appCtx = loadAppContext(app);
+  const palette = buildPaletteString(appCtx);
+  const surface = buildSurfaceString(appCtx);
+  const light = 'soft diffused lighting from upper left';
+  const framing = template.framing;
+  const aesthetic = buildAestheticAnchor(kind, appCtx);
+  const negatives = buildNegativeParts(kind, appCtx);
+
+  // Merge user excludes
+  for (const ex of exclude) {
+    const normalized = ex.trim();
+    if (normalized && !negatives.includes(normalized)) {
+      negatives.push(normalized);
+    }
+  }
+
+  // Build prompt following anatomy: Subject + Surface + Light + Framing + Aesthetic + Negative
   const parts = [
     request.replace(/,/g, ''),
-    hints,
-    palette ? `colour palette strictly ${palette}` : null,
+    surface,
+    light,
+    framing,
+    aesthetic,
+    palette ? `colour palette ${palette}` : null,
     size,
     `${identity.imagery} ${identity.voice}`,
-    identity.avoid,
-    exclude.length ? `avoid ${exclude.join(' and ')}` : null,
+    negatives.join(' and '),
   ];
 
   return parts.filter(Boolean).join('. ');

@@ -17,6 +17,179 @@ import { config } from './config.js';
 const CLOSE_GRACE_MS = 5000;
 
 /* ------------------------------------------------------------------ */
+/* Resilience: retry, selector fallbacks, health, logging              */
+/* ------------------------------------------------------------------ */
+
+/** Promise-based delay. */
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Structured logging, off by default. Set FLOW_DEBUG=1 to see it on stderr.
+ * One JSON object per line so a log shipper can parse it without extra work.
+ */
+export function log(level, message, meta = {}) {
+  const ts = new Date().toISOString();
+  const entry = { ts, level, message, ...meta };
+  if (process.env.FLOW_DEBUG) {
+    console.error(JSON.stringify(entry));
+  }
+}
+
+/**
+ * Run `fn`, retrying transient failures with linear backoff.
+ *
+ * Opt-in: callers decide which operations are worth retrying. The wrapper
+ * never swallows the last error, so callers keep the original failure mode.
+ */
+export async function withRetry(fn, { retries = 2, backoffMs = 1000, label = 'operation' } = {}) {
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt < retries) {
+        log('warn', `Retrying ${label}`, { attempt: attempt + 1, retries, error: err.message });
+        await sleep(backoffMs * (attempt + 1));
+      }
+    }
+  }
+  throw lastError;
+}
+
+/**
+ * Selector registry with fallbacks. Flow's DOM changes between builds, so a
+ * single hard-coded selector is one deploy away from breaking a tool. Each
+ * name maps to an ordered list; the first selector that matches wins.
+ */
+const SELECTOR_FALLBACKS = {
+  sendButton: [
+    '[aria-label*="arrow_forward"]',
+    'button:has-text("arrow_forward")',
+    '[data-testid="send-button"]',
+  ],
+  promptInput: [
+    '[contenteditable="true"]',
+    '[role="textbox"]',
+    'textarea',
+  ],
+  settingsTrigger: [
+    '[aria-label="Settings trigger"]',
+    '.settings-trigger-button',
+    '[aria-label*="settings" i]',
+  ],
+  newProject: [
+    'text=New project',
+    'button:has-text("New project")',
+    '[data-testid*="new-project" i]',
+  ],
+  scenesNav: [
+    'text=Scenes',
+    '[aria-label*="Scenes" i]',
+    '[data-testid*="scene" i]',
+  ],
+  charactersNav: [
+    'text=Characters',
+    '[aria-label*="Characters" i]',
+    '[data-testid*="character" i]',
+  ],
+  toolsNav: [
+    'text=Tools',
+    '[aria-label*="Tools" i]',
+    '[data-testid*="tools" i]',
+  ],
+};
+
+/**
+ * Resolve a logical control name to a locator, trying each fallback in turn.
+ * An unknown name is treated as a literal selector so callers can still pass
+ * ad-hoc selectors without a registry entry.
+ */
+export async function queryWithFallbacks(page, selectorName, { timeout = 5000 } = {}) {
+  const selectors = SELECTOR_FALLBACKS[selectorName];
+  if (!selectors) return page.locator(selectorName);
+
+  for (const sel of selectors) {
+    const loc = page.locator(sel).first();
+    try {
+      await loc.waitFor({ timeout: 1000 });
+      if (await loc.count()) return loc;
+    } catch {
+      /* try next fallback */
+    }
+  }
+  throw new Error(`No fallback selector matched for ${selectorName}`);
+}
+
+/**
+ * Quick liveness probe. A page that is closed, on a devtools:// target, or
+ * otherwise unresponsive is reported unhealthy instead of hanging a tool.
+ */
+export async function ensureSessionHealth(page) {
+  try {
+    const url = page.url();
+    if (!url || url.startsWith('devtools://')) {
+      return { healthy: false, reason: 'Invalid page URL' };
+    }
+    await page.evaluate(() => document.title);
+    return { healthy: true };
+  } catch {
+    return { healthy: false, reason: 'Page not responsive' };
+  }
+}
+
+/**
+ * Look for visible error indicators on the page.
+ *
+ * Returns { detected, messages } so the caller can decide what to do. This is
+ * deliberately conservative: only visible role="alert" nodes and short leaf
+ * lines that contain a real policy/error keyword are reported, so help text
+ * and footer links do not trip it.
+ */
+async function detectFlowError(page) {
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const style = window.getComputedStyle(el);
+        return (
+          style.display !== 'none' &&
+          style.visibility !== 'hidden' &&
+          (el.offsetParent !== null || el.getClientRects().length > 0)
+        );
+      };
+
+      const messages = [];
+      const push = (text) => {
+        const clean = (text || '').replace(/\s+/g, ' ').trim();
+        if (clean && clean.length <= 200 && !messages.includes(clean)) messages.push(clean);
+      };
+
+      for (const el of document.querySelectorAll('[role="alert"], [role="alertdialog"], [aria-live="assertive"]')) {
+        if (visible(el)) push(el.innerText || el.textContent);
+      }
+
+      // "policy" alone is too weak (footer links), so it must appear with
+      // violation context; the rest are strong enough on their own.
+      const keywords =
+        /(error|violation|blocked|not allowed|couldn't generate|unable to generate|can't generate|content policy|policy violation|violates? .{0,20}policy)/i;
+
+      for (const el of document.querySelectorAll('p, span, div, li')) {
+        if (!visible(el) || el.children.length) continue;
+        const text = (el.innerText || el.textContent || '').trim();
+        if (text && text.length <= 200 && keywords.test(text)) push(text);
+        if (messages.length >= 5) break;
+      }
+
+      return { detected: messages.length > 0, messages };
+    });
+  } catch {
+    return { detected: false, messages: [] };
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* CDP availability                                                    */
 /* ------------------------------------------------------------------ */
 
@@ -246,8 +419,18 @@ async function closeQuietly(browser) {
 }
 
 async function runSession(fn) {
+  log('info', 'Starting browser session');
   await ensureBrowser();
   const { browser, page } = await connect();
+
+  // Fail fast on a dead or devtools:// page instead of letting every later
+  // call hang on a page that can never answer.
+  const health = await ensureSessionHealth(page);
+  if (!health.healthy) {
+    log('error', 'Browser session is unhealthy', { reason: health.reason });
+    await closeQuietly(browser);
+    throw new Error(`Browser session is not healthy: ${health.reason}`);
+  }
 
   // The MCP-level timeout cannot cancel a Playwright call, and this session
   // holds the serialization chain. Dropping the connection is what actually
@@ -285,7 +468,12 @@ export function withSession(fn) {
 }
 
 export async function openFlow(page, { newProject = false } = {}) {
-  await page.goto(config.flowUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  log('info', 'Opening Flow', { url: config.flowUrl, newProject });
+
+  await withRetry(
+    () => page.goto(config.flowUrl, { waitUntil: 'domcontentloaded', timeout: 60000 }),
+    { retries: 2, backoffMs: 1500, label: 'navigate to Flow' },
+  );
   await page.waitForTimeout(5000);
 
   // Optional project lock
@@ -403,6 +591,8 @@ export async function countMedia(page, kind = 'image') {
  * the count never grows - so a stable count settles too and `reusedOnly`
  * tells the caller the result may be stale.
  */
+const ERROR_CHECK_INTERVAL_MS = 5000;
+
 export async function waitForMedia(page, kind = 'image', baseline) {
   if (baseline == null) {
     throw new Error('waitForMedia needs the baseline count captured before submitting');
@@ -411,9 +601,29 @@ export async function waitForMedia(page, kind = 'image', baseline) {
   let prev = -1;
   let stable = 0;
   let last = baseline;
+  let lastErrorCheck = 0;
 
   for (let i = 0; i < config.maxPolls; i++) {
     await page.waitForTimeout(config.pollIntervalMs);
+
+    // A content-policy rejection never produces media, so without this check
+    // the poll would run its full ~3 minutes before giving up.
+    if (Date.now() - lastErrorCheck >= ERROR_CHECK_INTERVAL_MS) {
+      lastErrorCheck = Date.now();
+      const err = await detectFlowError(page);
+      if (err.detected) {
+        log('warn', 'Flow reported an error while waiting for media', { messages: err.messages });
+        return {
+          settled: false,
+          error: true,
+          message: `Error detected: ${err.messages[0]}`,
+          fresh: 0,
+          reusedOnly: false,
+          polls: i + 1,
+        };
+      }
+    }
+
     const { total } = await collectMedia(page, kind, Number.MAX_SAFE_INTEGER);
     last = total;
 
@@ -448,6 +658,8 @@ export async function waitForMedia(page, kind = 'image', baseline) {
  * how flow_setup_video avoids starting a paid render.
  */
 export async function submitPrompt(page, prompt, { submit = true } = {}) {
+  log('info', 'Typing prompt', { submit, length: prompt.length });
+
   await page.waitForSelector('[contenteditable="true"]', { timeout: 30000 });
 
   const box = page.locator('[contenteditable="true"]').first();
@@ -457,16 +669,30 @@ export async function submitPrompt(page, prompt, { submit = true } = {}) {
 
   if (!submit) return { typed: true, submitted: false, via: null };
 
-  const send = page
-    .locator('[aria-label*="arrow_forward"], button:has-text("arrow_forward")')
-    .first();
+  // Try the registry first, then the legacy combined selector, so a Flow UI
+  // change that drops one selector does not lose the send button entirely.
+  let send = null;
+  try {
+    send = await queryWithFallbacks(page, 'sendButton', { timeout: 5000 });
+  } catch {
+    send = page.locator('[aria-label*="arrow_forward"], button:has-text("arrow_forward")').first();
+  }
 
   if (await send.count()) {
-    const clicked = await send.click({ timeout: 5000 }).then(() => true).catch(() => false);
+    const clicked = await withRetry(() => send.click({ timeout: 5000 }), {
+      retries: 2,
+      backoffMs: 1000,
+      label: 'click send button',
+    })
+      .then(() => true)
+      .catch(() => false);
+
+    if (clicked) log('info', 'Prompt submitted via send button');
     return { typed: true, submitted: clicked, via: 'button' };
   }
 
   await page.keyboard.press('Enter');
+  log('info', 'Prompt submitted via Enter key');
   return { typed: true, submitted: true, via: 'enter' };
 }
 
@@ -513,8 +739,11 @@ export async function selectRatio(page, ratio) {
     };
   }
 
-  const opened = await trigger
-    .click({ timeout: 6000 })
+  const opened = await withRetry(() => trigger.click({ timeout: 6000 }), {
+    retries: 2,
+    backoffMs: 1000,
+    label: 'open composer settings menu',
+  })
     .then(() => true)
     .catch(() => false);
 

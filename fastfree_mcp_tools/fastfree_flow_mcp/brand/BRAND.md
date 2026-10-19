@@ -143,3 +143,54 @@ Kinds map to intent:
 3. Check on light, dark, and brand-colour backgrounds
 4. Save the winner with `flow_brand_add_logo`
 5. Update `brand.json` → `logo.primaryFile`
+
+## App Context System
+
+The prompt builder accepts an optional `app` parameter that injects app-specific context into generated prompts.
+
+### Usage
+
+Pass the `app` key when calling `flow_brand_prompt`:
+
+```
+flow_brand_prompt({ request: "dashboard hero", kind: "illustration", app: "pos" })
+```
+
+### Supported App Keys
+
+| Key | Description |
+|---|---|
+| `pos` | Point of Sale & Retail Counter |
+| `erp` | Enterprise Operations & Supply Chain |
+| `ledger` | Accounting, Sales & Inventory |
+| `panel` | Clan DevOps & Fleet Control |
+| `hr` | Human Resources & Payroll |
+| `website` | Marketing & SaaS Portal |
+
+### App JSON Files
+
+Each app has a corresponding `apps/{app}.json` file containing:
+
+```json
+{
+  "colors": { "primary": "#hex", "secondary": "#hex", "accent": "#hex" },
+  "imageryHints": ["hint1", "hint2"],
+  "promptHints": ["hint1", "hint2"],
+  "negativeHints": ["hint1", "hint2"]
+}
+```
+
+- **colors** — Overrides the generic brand palette
+- **imageryHints** — Injected into the surface/background section
+- **promptHints** — Injected into the aesthetic anchor section
+- **negativeHints** — Added to the negative prompt
+
+### Prompt Anatomy
+
+Every generated prompt follows this structure:
+
+```
+[Subject] + [Surface/Background] + [Light] + [Framing] + [Aesthetic anchor] + [Negative]
+```
+
+When `app` is specified, the surface, aesthetic, palette, and negative sections are enriched with app-specific context from the JSON file.
