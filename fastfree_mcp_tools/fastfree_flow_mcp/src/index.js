@@ -42,6 +42,7 @@ const TOOL_DEFS = [
       type: 'object',
       properties: {
         request: { type: 'string', description: 'What you want, e.g. "a logo for FastFree" or "a facebook post about inventory"' },
+        app: { type: 'string', description: 'Optional app context key (pos, erp, ledger, panel, hr, website) to inject brand colours and imagery hints.' },
         kind: { type: 'string', enum: ['logo', 'icon', 'illustration', 'post', 'screenshot'], description: 'What type of visual' },
         ratio: { type: 'string', enum: config.ratios, description: `One of: ${config.ratios.join(' / ')}` },
         exclude: { type: 'array', items: { type: 'string' }, description: 'Things to avoid, e.g. ["gradients","people"]' },
@@ -116,7 +117,8 @@ const TOOL_DEFS = [
       'Generate images with Google Flow (Nano Banana Pro / Nano Banana 2 / Imagen 4) using the signed-in Google session. ' +
       'IMPORTANT: commas are stripped by the Flow editor - write the prompt with spaces or "and" instead. ' +
       'Consumes Flow credits; the daily free allowance is set by Google and is not read by this tool. ' +
-      'ratio is applied to the composer when the control is found; the result reports ratioApplied either way.',
+      'ratio is applied to the composer when the control is found; the result reports ratioApplied either way. ' +
+      'Use flow_brand_prompt with an app key first to bake brand colours into the prompt.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -129,6 +131,42 @@ const TOOL_DEFS = [
       },
       required: ['prompt'],
     },
+  },
+  {
+    name: 'flow_generate_batch',
+    group: 'Images',
+    description:
+      'Generate multiple images in one batch. Each prompt consumes Flow credits. ' +
+      'One failed prompt does not abort the rest. Max 5 prompts per batch. ' +
+      'IMPORTANT: commas are stripped by the Flow editor.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        prompts: {
+          type: 'array',
+          items: { type: 'string' },
+          minItems: 1,
+          maxItems: 5,
+          description: 'List of prompts to generate, each without commas.',
+        },
+        app: {
+          type: 'string',
+          description: 'Optional app context key applied to every prompt in the batch.',
+        },
+        ratio: {
+          type: 'string',
+          enum: config.ratios,
+          description: `Aspect ratio. One of: ${config.ratios.join(' / ')}`,
+        },
+      },
+      required: ['prompts'],
+    },
+  },
+  {
+    name: 'flow_list_apps',
+    group: 'Apps',
+    description: 'List all apps registered in the app knowledge base (apps/ directory) with their brand colours and domain hints. Use this to discover which app key to pass to flow_generate_image.',
+    inputSchema: { type: 'object', properties: {} },
   },
   {
     name: 'flow_download_latest',
@@ -228,6 +266,8 @@ const HANDLERS = {
   flow_screenshot: (a) => tools.flowScreenshot(a),
   flow_discover_ui: () => tools.flowDiscoverUi(),
   flow_generate_image: (a) => tools.flowGenerateImage(a),
+  flow_generate_batch: (a) => tools.flowGenerateBatch(a),
+  flow_list_apps: () => tools.flowListApps(),
   flow_download_latest: () => tools.flowDownloadLatest(),
   flow_list_output: (a) => tools.flowListOutput(a),
   flow_setup_video: (a) => tools.flowSetupVideo(a),
