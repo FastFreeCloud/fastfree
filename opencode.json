@@ -153,6 +153,18 @@
       "rm -rf *": "deny"
     }
   },
+  "agent": {
+    "build": {
+      "permission": {
+        "bash": {
+          "*": "allow",
+          "rm -rf /": "deny",
+          "rm -rf C:": "deny",
+          "rm -rf *": "ask"
+        }
+      }
+    }
+  },
   "plugin": [
     "opencode-browser",
     "opencode-wakatime"
