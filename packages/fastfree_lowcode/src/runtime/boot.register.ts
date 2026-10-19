@@ -20,6 +20,7 @@ import LcErrorBoundary from './components/LcErrorBoundary.vue'
 
 import { createDesktopStore } from './composables/useDesktopStore'
 import { LC_CONFIG_KEY, mergeConfig } from './config'
+import type { LcConfig } from './types'
 import { setSharedConfig } from './shared-config'
 import { getLanguageInfo } from './languages'
 import { getLcI18nStore } from './composables/useLcI18nStore'
@@ -31,10 +32,23 @@ import enLang from 'quasar/lang/en-US'
 
 export { createDesktopStore }
 
+declare global {
+  interface Window {
+    __LC_CONFIG__?: Partial<LcConfig>
+  }
+}
+
 export default function ({ app }: { app: { provide: (key: string | symbol, value: unknown) => void; component: (name: string, component: unknown) => void; config: { globalProperties: Record<string, unknown>; errorHandler?: (err: unknown, instance: unknown, info: string) => void; warnHandler?: (msg: string, instance: unknown, trace: string) => void } } }) {
-  // TODO: Pass user config to mergeConfig() — e.g. mergeConfig(window.__LC_CONFIG__)
-  // The global __LC_CONFIG__ or a meta tag can be used to supply custom configuration
-  const config = mergeConfig()
+  let userConfig: Partial<LcConfig> = {}
+  if (typeof window !== 'undefined') {
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="lc-config"]')
+    if (meta?.content) {
+      try { userConfig = JSON.parse(meta.content) } catch { /* ignore */ }
+    } else if (window.__LC_CONFIG__) {
+      userConfig = window.__LC_CONFIG__
+    }
+  }
+  const config = mergeConfig(userConfig)
   setSharedConfig(config)
 
   app.provide(LC_CONFIG_KEY, config)

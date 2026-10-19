@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FastFree POS — منشور الإطلاق</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pos-primary: #E11D48;
+    --pos-secondary: #9F1239;
+    --pos-accent: #FB7185;
+    --pos-dark: #18040A;
+    --surface: #FFFFFF;
+    --surface-alt: #FFF5F6;
+    --text: #1E293B;
+    --text-secondary: #64748B;
+    --border: #FECDD3;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Cairo', 'Segoe UI', sans-serif;
+    background: linear-gradient(160deg, #FFF5F6 0%, #FFFFFF 40%, #FFF0F2 100%);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 64px;
+  }
+
+  .brand-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+    width: 100%;
+    max-width: 680px;
+  }
+  .brand-header img { height: 40px; width: auto; }
+  .brand-header .brand-name {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--text);
+  }
+  .brand-header .brand-name span { color: var(--pos-primary); }
+
+  .post-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 680px;
+    box-shadow: 0 20px 60px -20px rgba(159, 18, 57, 0.18);
+  }
+
+  .post-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .post-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--pos-primary);
+    flex-shrink: 0;
+    background: var(--pos-dark);
+  }
+  .post-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .post-meta .post-author {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .post-meta .post-author .verified {
+    width: 18px; height: 18px;
+    background: var(--pos-primary);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+  }
+  .post-meta .post-date {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .post-body { padding: 20px 24px; }
+  .post-text {
+    font-size: 17px;
+    line-height: 1.9;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  .post-text strong { color: var(--pos-primary); }
+  .post-text .highlight {
+    background: linear-gradient(90deg, var(--pos-primary), var(--pos-secondary));
+    color: #fff;
+    padding: 2px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+  }
+  .post-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px 0;
+  }
+  .post-features li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .post-features li .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pos-primary), var(--pos-accent));
+    flex-shrink: 0;
+  }
+  .post-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    background: linear-gradient(135deg, var(--pos-primary), var(--pos-secondary));
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: transform 0.15s ease;
+  }
+  .post-cta:hover { transform: translateY(-2px); }
+  .post-tags {
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--pos-primary);
+    font-weight: 600;
+  }
+
+  .post-image {
+    width: 100%;
+    display: block;
+  }
+  .post-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .post-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 14px 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .post-footer .action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+  .post-footer .action:hover { color: var(--pos-primary); }
+
+  .page-footer {
+    margin-top: 28px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .page-footer a {
+    color: var(--pos-primary);
+    font-weight: 700;
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+
+  <div class="brand-header">
+    <img src="brand/assets/logo/fastfree-brand-logo-dark.svg" alt="FastFree">
+    <div class="brand-name">Fast<span>Free</span> — منشور إطلاق POS</div>
+  </div>
+
+  <div class="post-card">
+    <div class="post-header">
+      <div class="post-avatar">
+        <img src="brand/assets/icons/icon-pos.svg" alt="FastFree POS">
+      </div>
+      <div class="post-meta">
+        <div class="post-author">FastFree <span class="verified">✓</span></div>
+        <div class="post-date">19 أكتوبر 2026 · إعلان جديد</div>
+      </div>
+    </div>
+
+    <div class="post-body">
+      <div class="post-text">
+        🚀 <span class="highlight">FastFree POS</span> اتطلق رسمياً!
+
+        نظام نقاط البيع اللي بيجمع كل حاجة في مكان واحد — كاشير سريع، فواتير لحظية، ومخزون أول بأول.
+      </div>
+
+      <ul class="post-features">
+        <li><span class="dot"></span> واجهة كاشير سريعة مصممة للسرعة</li>
+        <li><span class="dot"></span> فواتير ومبيعات لحظية</li>
+        <li><span class="dot"></span> إدارة العملاء والمخزون</li>
+        <li><span class="dot"></span> تقارير أداء فورية</li>
+        <li><span class="dot"></span> يعمل على الويب والأدرويد</li>
+        <li><span class="dot"></span> متكامل مع منظومة FastFree ERP الكاملة</li>
+      </ul>
+
+      <a class="post-cta" href="https://pos.fastfree.cloud">جرّبه الآن مجاناً ←</a>
+
+      <div class="post-tags">#FastFree #POS #نقاط_البيع #ERP</div>
+    </div>
+
+    <div class="post-image">
+      <img src="brand/assets/fastfree-pos-launch.jpg" alt="FastFree POS Launch">
+    </div>
+
+    <div class="post-footer">
+      <div class="action">👍 إعجاب</div>
+      <div class="action">💬 تعليق</div>
+      <div class="action">↪️ مشاركة</div>
+      <div class="action">🔖 حفظ</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    مولّد بواسطة <a href="https://flow.google.com">Google Flow</a> · FastFree POS © 2026
+  </div>
+
+</body>
+</html>

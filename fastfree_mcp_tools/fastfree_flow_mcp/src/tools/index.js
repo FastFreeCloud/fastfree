@@ -155,6 +155,7 @@ export async function flowStatus() {
   return withSession(async (page) => {
     await openFlow(page);
     const s = await sessionState(page);
+    const credits = await readCredits(page);
 
     return {
       ok: s.authenticated,
@@ -163,6 +164,7 @@ export async function flowStatus() {
       accountWarning: s.accountWarning || null,
       url: s.url,
       cdpPort: config.cdpPort,
+      credits,
       models: config.models.image,
       ratios: config.ratios,
       durations: config.durations,
@@ -347,6 +349,95 @@ export async function flowDownloadLatest() {
       note: 'Saved the newest image from the currently open Flow view.',
     };
   });
+}
+
+/* ------------------------------------------------------------------ */
+/* Batch image generation                                             */
+/* ------------------------------------------------------------------ */
+
+export async function flowGenerateBatch({ prompts, ratio }) {
+  if (!Array.isArray(prompts) || prompts.length === 0) {
+    throw new Error('prompts must be a non-empty array');
+  }
+  if (prompts.length > 5) {
+    throw new Error('prompts must have at most 5 items per batch');
+  }
+  for (const p of prompts) {
+    if (!p?.trim()) throw new Error('every prompt in the batch must be a non-empty string');
+  }
+  assertRatio(ratio);
+
+  const results = [];
+  let totalGenerated = 0;
+
+  return withSession(async (page) => {
+    for (const prompt of prompts) {
+      try {
+        const result = await generateSingleImage(page, prompt, ratio);
+        results.push({
+          prompt,
+          ok: result.ok,
+          files: result.files || [],
+          model: result.model || null,
+          reason: result.reason || null,
+        });
+        if (result.ok) totalGenerated += result.files.length;
+      } catch (err) {
+        results.push({
+          prompt,
+          ok: false,
+          files: [],
+          model: null,
+          reason: err.message,
+        });
+      }
+    }
+
+    return {
+      ok: results.some((r) => r.ok),
+      totalGenerated,
+      results,
+      note: totalGenerated
+        ? `${totalGenerated} image(s) generated across ${results.length} prompt(s).`
+        : 'No images were generated. See each result.reason for details.',
+    };
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* App knowledge base                                                 */
+/* ------------------------------------------------------------------ */
+
+export async function flowListApps() {
+  const appsDir = path.resolve(config.outputDir, '..', 'apps');
+  const apps = [];
+
+  try {
+    for (const entry of fs.readdirSync(appsDir, { withFileTypes: true })) {
+      if (!entry.isFile() || !entry.name.endsWith('.json')) continue;
+      try {
+        const json = JSON.parse(fs.readFileSync(path.join(appsDir, entry.name), 'utf8'));
+        apps.push({
+          id: entry.name.replace(/\.json$/, ''),
+          name: json.name || entry.name,
+          tagline: json.tagline || null,
+          domain: json.domain || null,
+          colors: json.colors || null,
+        });
+      } catch {
+        /* skip unreadable app files */
+      }
+    }
+  } catch {
+    return { ok: false, apps: [], note: 'apps/ directory not found.' };
+  }
+
+  return {
+    ok: true,
+    apps,
+    count: apps.length,
+    note: apps.length ? null : 'No app context files found in apps/.',
+  };
 }
 
 /* ------------------------------------------------------------------ */
