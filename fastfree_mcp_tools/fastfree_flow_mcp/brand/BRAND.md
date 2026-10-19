@@ -194,3 +194,90 @@ Every generated prompt follows this structure:
 ```
 
 When `app` is specified, the surface, aesthetic, palette, and negative sections are enriched with app-specific context from the JSON file.
+
+## App Context System — Detail
+
+### What the apps/ directory is for
+
+The `apps/` directory holds read-only reference data for each FastFree application. Each app has a corresponding `apps/{app}.json` file that describes its visual identity, domain context, and prompt-generation hints. These files are consumed by `flow_brand_prompt` when the optional `app` parameter is supplied, allowing generated prompts to be scoped to a specific product domain instead of the generic master brand.
+
+### Registered apps
+
+Each app is registered with: name, tagline, domain, primary/secondary/accent colors, imagery hints, prompt hints, negative hints.
+
+| App key | Name | Tagline | Domain | Primary | Secondary | Accent |
+|---|---|---|---|---|---|---|
+| `pos` | FastFree POS | Point of Sale for fast stores | retail checkout cashier barcode scanner | #E11D48 | #9F1239 | #FB7185 |
+| `erp` | FastFree ERP | Enterprise operations for fast-moving businesses | enterprise operations supply chain manufacturing | #D97706 | #B45309 | #F59E0B |
+| `ledger` | FastFree Ledger | Accounting and finance made simple | accounting finance bookkeeping reports | #0D9488 | #047857 | #34D399 |
+| `panel` | FastFree Panel | Server and infrastructure control center | server management NixOS infrastructure monitoring | #4F46E5 | #3730A3 | #818CF8 |
+| `hr` | FastFree HR | Human resources and payroll simplified | human resources payroll employee management | #0284C7 | #7C3AED | #C084FC |
+| `website` | FastFree Website | Fast ERP for fast-moving businesses | company website marketing landing page | #2563EB | #1D4ED8 | #00F0FF |
+
+### App JSON file structure
+
+Each `apps/{app}.json` contains:
+
+```json
+{
+  "name": "FastFree POS",
+  "tagline": "Point of Sale for fast stores",
+  "domain": "retail checkout cashier barcode scanner",
+  "colors": { "primary": "#hex", "secondary": "#hex", "accent": "#hex" },
+  "imageryHints": ["hint1", "hint2"],
+  "promptHints": ["hint1", "hint2"],
+  "negativeHints": ["hint1", "hint2"]
+}
+```
+
+- **colors** — Overrides the generic brand palette
+- **imageryHints** — Injected into the surface/background section
+- **promptHints** — Injected into the aesthetic anchor section
+- **negativeHints** — Added to the negative prompt
+
+### How flow_brand_prompt uses the app parameter
+
+`flow_brand_prompt` accepts an optional `app` parameter. When supplied, it loads `apps/{app}.json` and injects app-specific context into the generated prompt: the surface section picks up `imageryHints`, the aesthetic anchor picks up `promptHints`, and the negative section appends `negativeHints`. The app's `colors` override the generic brand palette in the prompt.
+
+### Example usage
+
+POS app (app-specific):
+
+```
+flow_brand_prompt({ request: "dashboard hero", kind: "illustration", app: "pos" })
+```
+
+Produces a comma-free prompt enriched with POS imagery (cashier counter, barcode scanner, receipt printer), POS prompt hints (clean flat UI illustration, light background, crimson coral color palette, room for text overlay), POS colors (#E11D48 primary, #9F1239 secondary, #FB7185 accent), and POS negative hints (realistic human hands, cluttered background, gradients, 3D glossy renders).
+
+Generic brand (no app parameter):
+
+```
+flow_brand_prompt({ request: "dashboard hero", kind: "illustration" })
+```
+
+Produces a comma-free prompt using only the master FastFree brand palette (#1976d2 primary blue, #26a69a secondary teal, #9c27b0 accent purple) and generic brand imagery/voice guidance.
+
+### Brand colors per app table
+
+| App | Primary | Secondary | Accent |
+|---|---|---|---|
+| POS | #E11D48 | #9F1239 | #FB7185 |
+| ERP | #D97706 | #B45309 | #F59E0B |
+| Ledger | #0D9488 | #047857 | #34D399 |
+| Panel | #4F46E5 | #3730A3 | #818CF8 |
+| HR | #0284C7 | #7C3AED | #C084FC |
+| Website | #2563EB | #1D4ED8 | #00F0FF |
+
+### Prompt anatomy reminder
+
+Every generated prompt follows this structure:
+
+```
+[Subject] + [Surface/Background] + [Light] + [Framing] + [Aesthetic anchor] + [Negative]
+```
+
+When `app` is specified, the surface, aesthetic, palette, and negative sections are enriched with app-specific context from the JSON file.
+
+### Comma-free prompts
+
+**Flow strips commas.** Prompts must be comma-free. `flow_brand_prompt` already returns a comma-free string — pass it through unchanged to `flow_generate_image`.

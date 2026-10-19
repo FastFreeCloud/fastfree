@@ -22,22 +22,22 @@ in {
       path = [ pkgs.coreutils pkgs.curl pkgs.gnutar pkgs.gzip pkgs.jq ];
       script = ''
         mkdir -p "${spaDir}"
-        RELEASE_TAG=""
-        if RELEASE_JSON=$(curl -fsSL --max-time 30 "https://api.github.com/repos/${ghAccount}/fastfree/releases?per_page=100" 2>/dev/null); then
-          RELEASE_TAG=$(printf '%s' "\${RELEASE_JSON}" | jq -r --arg a "fastfree-ledger.tar.gz" \
+        ''${RELEASE_TAG}=""
+        if ''${RELEASE_JSON}=$(curl -fsSL --max-time 30 "https://api.github.com/repos/${ghAccount}/fastfree/releases?per_page=100" 2>/dev/null); then
+          ''${RELEASE_TAG}=$(printf '%s' "''${RELEASE_JSON}" | jq -r --arg a "fastfree-ledger.tar.gz" \
             '[.[] | select(any(.assets[]?; .name == $a))] | sort_by(.published_at // .created_at // "") | last | .tag_name // ""' 2>/dev/null || true)
         fi
-        if [ -n "\${RELEASE_TAG}" ]; then
-          TARBALL_URL="https://github.com/${ghAccount}/fastfree/releases/download/\${RELEASE_TAG}/fastfree-ledger.tar.gz"
+        if [ -n "''${RELEASE_TAG}" ]; then
+          ''${TARBALL_URL}="https://github.com/${ghAccount}/fastfree/releases/download/''${RELEASE_TAG}/fastfree-ledger.tar.gz"
           rm -rf "${spaDir}.new"; mkdir -p "${spaDir}.new"
-          if curl -fsSL --max-time 30 "\${TARBALL_URL}" -o /tmp/fastfree-ledger.tar.gz 2>/dev/null \
+          if curl -fsSL --max-time 30 "''${TARBALL_URL}" -o /tmp/fastfree-ledger.tar.gz 2>/dev/null \
              && tar -xzf /tmp/fastfree-ledger.tar.gz -C "${spaDir}.new" \
              && [ -f "${spaDir}.new/index.html" ]; then
             rm -f /tmp/fastfree-ledger.tar.gz
             mv "${spaDir}" "${spaDir}.old" 2>/dev/null || true
             if mv "${spaDir}.new" "${spaDir}"; then
               rm -rf "${spaDir}.old"
-              echo "Ledger SPA extracted from release tarball \${RELEASE_TAG}."
+              echo "Ledger SPA extracted from release tarball ''${RELEASE_TAG}."
             else
               mv "${spaDir}.old" "${spaDir}" 2>/dev/null || true
               rm -rf "${spaDir}.new"

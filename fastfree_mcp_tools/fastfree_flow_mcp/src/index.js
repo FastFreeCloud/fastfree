@@ -118,7 +118,8 @@ const TOOL_DEFS = [
       'IMPORTANT: commas are stripped by the Flow editor - write the prompt with spaces or "and" instead. ' +
       'Consumes Flow credits; the daily free allowance is set by Google and is not read by this tool. ' +
       'ratio is applied to the composer when the control is found; the result reports ratioApplied either way. ' +
-      'Use flow_brand_prompt with an app key first to bake brand colours into the prompt.',
+      'Optionally pass app to inject that app brand colours into the prompt subtly. ' +
+      'Use flow_list_apps to see valid app keys.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -128,6 +129,7 @@ const TOOL_DEFS = [
           enum: config.ratios,
           description: `Aspect ratio. One of: ${config.ratios.join(' / ')}`,
         },
+        app: { type: 'string', description: 'Optional app context key (pos, erp, ledger, panel, hr, website) to inject brand colours into the prompt.' },
       },
       required: ['prompt'],
     },

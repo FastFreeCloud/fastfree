@@ -17,6 +17,7 @@ import {
   dayDir, runBase, saveFromUrls, listOutput, safeFileName,
 } from '../files.js';
 import { config } from '../config.js';
+import { appColors } from '../../brand/brand.js';
 
 const NOT_REQUESTED = { requested: null, applied: false, reason: 'not requested' };
 
@@ -260,9 +261,17 @@ export async function flowDiscoverUi() {
 /* Image generation                                                    */
 /* ------------------------------------------------------------------ */
 
-export async function flowGenerateImage({ prompt, ratio }) {
+export async function flowGenerateImage({ prompt, ratio, app }) {
   if (!prompt?.trim()) throw new Error('prompt is required');
   assertRatio(ratio);
+
+  // Optional app colour palette injected subtly without overriding the user's prompt.
+  let appPalette = null;
+  if (app) {
+    const colors = appColors[app];
+    if (!colors) throw new Error(`Unknown app key "${app}". Use flow_list_apps to see valid keys.`);
+    appPalette = `${colors.primary} and ${colors.secondary} and ${colors.accent}`;
+  }
 
   return withSession(async (page) => {
     await openFlow(page, { newProject: true });
@@ -272,11 +281,16 @@ export async function flowGenerateImage({ prompt, ratio }) {
     const baseline = await countMedia(page, 'image');
     const ratioResult = ratio ? await selectRatio(page, ratio) : NOT_REQUESTED;
 
-    const sent = await submitPrompt(page, prompt);
+    const finalPrompt = appPalette
+      ? `${prompt}. colour palette ${appPalette}`
+      : prompt;
+
+    const sent = await submitPrompt(page, finalPrompt);
     if (!sent.submitted) {
       return {
         ok: false,
         prompt,
+        app,
         reason: 'The send button could not be pressed, so nothing was submitted.',
         ratioApplied: ratioResult.applied,
         hint: 'Run flow_discover_ui to see the current controls, then retry.',
@@ -297,6 +311,7 @@ export async function flowGenerateImage({ prompt, ratio }) {
     return {
       ok,
       prompt,
+      app,
       model,
       // Never echo the requested ratio as if it had been applied.
       ratio: ratioResult.applied ? ratio : 'default',
@@ -313,7 +328,7 @@ export async function flowGenerateImage({ prompt, ratio }) {
       variantsDropped: media.dropped,
       skipped,
       note: ok
-        ? 'Commas are stripped by the Flow editor - write prompts without them.'
+        ? `Commas are stripped by the Flow editor - write prompts without them.${appPalette ? ` App colour palette injected: ${appPalette}.` : ''}`
         : 'No file was saved. ' +
           (result.reusedOnly
             ? 'Flow reused the existing image instead of generating a new one.'

@@ -36,25 +36,25 @@ in
         # Clean up any legacy fallback portal files
         rm -f "${siteDir}/portal.js"
 
-        rm -f "${tarball}"
+        rm -f "''${tarball}"
         RELEASE_TAG=""
         ASSET_NAME="${assetName}"
         if RELEASE_JSON=$(curl -fsSL --max-time 30 "https://api.github.com/repos/${ghAccount}/fastfree/releases?per_page=100" 2>/dev/null); then
-          RELEASE_TAG=$(printf '%s' "\${RELEASE_JSON}" | ${pkgs.jq}/bin/jq -r --arg a "\${ASSET_NAME}" '[.[] | select(any(.assets[]?; .name == $a))] | sort_by(.published_at // .created_at // "") | last | .tag_name // ""' 2>/dev/null || true)
+          RELEASE_TAG=$(printf '%s' "''${RELEASE_JSON}" | ${pkgs.jq}/bin/jq -r --arg a "''${ASSET_NAME}" '[.[] | select(any(.assets[]?; .name == $a))] | sort_by(.published_at // .created_at // "") | last | .tag_name // ""' 2>/dev/null || true)
         fi
 
         download_ok=0
-        if [ -n "\${RELEASE_TAG}" ]; then
-          TARBALL_URL="https://github.com/${ghAccount}/fastfree/releases/download/\${RELEASE_TAG}/\${ASSET_NAME}"
-          echo "[fastfree-website] Downloading release \${RELEASE_TAG} ..."
-          if curl -fsSL --max-time 120 "\${TARBALL_URL}" -o "${tarball}" 2>/dev/null; then
+        if [ -n "''${RELEASE_TAG}" ]; then
+          TARBALL_URL="https://github.com/${ghAccount}/fastfree/releases/download/''${RELEASE_TAG}/''${ASSET_NAME}"
+          echo "[fastfree-website] Downloading release ''${RELEASE_TAG} ..."
+          if curl -fsSL --max-time 120 "''${TARBALL_URL}" -o "''${tarball}" 2>/dev/null; then
             download_ok=1
           else
-            echo "[fastfree-website] Download failed for tag \${RELEASE_TAG}"
-            rm -f "${tarball}"
+            echo "[fastfree-website] Download failed for tag ''${RELEASE_TAG}"
+            rm -f "''${tarball}"
           fi
         else
-          echo "[fastfree-website] No release carrying \${ASSET_NAME} found via GitHub API"
+          echo "[fastfree-website] No release carrying ''${ASSET_NAME} found via GitHub API"
         fi
 
         # A working previous version always beats a placeholder.
@@ -63,14 +63,14 @@ in
           valid_local=1
         fi
 
-        if [ "\${download_ok}" -eq 1 ]; then
+        if [ "''${download_ok}" -eq 1 ]; then
           # Extract atomically into a staging dir adjacent to the live dir (same filesystem),
           # validate, then swap. On any failure the staging dir is removed and the live copy
           # stays untouched.
           rm -rf "${siteDir}.new"; mkdir -p "${siteDir}.new"
-          if tar -xzf "${tarball}" -C "${siteDir}.new"; then
+          if tar -xzf "''${tarball}" -C "${siteDir}.new"; then
             if [ -d "${siteDir}.new/.next" ] && [ -f "${siteDir}.new/package.json" ]; then
-              rm -f "${tarball}"
+              rm -f "''${tarball}"
               # Park the live dir, then promote the new one. If the promote fails we put
               # the previous copy back instead of leaving the site with no files.
               rm -rf "${siteDir}.old"
@@ -97,7 +97,7 @@ in
           fi
         fi
 
-        if [ "\${valid_local}" -eq 0 ]; then
+        if [ "''${valid_local}" -eq 0 ]; then
           # No valid copy: fall back to local source, then placeholder.
           echo "[fastfree-website] No valid local copy. Checking local build source..."
           if [ -d "${sourceDir}/.next" ]; then
@@ -111,7 +111,7 @@ in
           fi
         fi
 
-        if [ "\${valid_local}" -eq 0 ]; then
+        if [ "''${valid_local}" -eq 0 ]; then
           echo "[fastfree-website] Writing placeholder (no release, no local source)."
           printf '%s\n' 'const http = require("http");' 'const port = Number(process.env.PORT || 9004);' 'const server = http.createServer((req, res) => {' '  res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });' '  res.end("<h1>FastFree Website</h1><p>Initializing... awaiting release bundle.</p>");' '});' 'server.listen(port, "127.0.0.1", () => console.log("[fastfree-website] placeholder server on " + port));' > "${siteDir}/server.js"
         fi
