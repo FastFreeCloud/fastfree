@@ -77,6 +77,11 @@ jobs:
 
     steps:
       # ======================= 1. التجهيز =======================
+      - name: "تهيئة بيئة Git الآمنة"
+        run: |
+          git config --global safe.directory '*'
+          git config --global init.defaultBranch master
+
       - name: "سحب الكود"
         uses: actions/checkout@v5
 
