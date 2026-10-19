@@ -43,21 +43,21 @@ in
         RELEASE_TAG=""
         ASSET_NAME="${assetName}"
         if RELEASE_JSON=$(curl -fsSL --max-time 30 "https://api.github.com/repos/${ghAccount}/fastfree/releases?per_page=100" 2>/dev/null); then
-          RELEASE_TAG=$(printf '%s' "\${RELEASE_JSON}" | ${pkgs.jq}/bin/jq -r --arg a "\${ASSET_NAME}" '[.[] | select(any(.assets[]?; .name == $a))] | sort_by(.published_at // .created_at // "") | last | .tag_name // ""' 2>/dev/null || true)
+          RELEASE_TAG=$(printf '%s' "''${RELEASE_JSON}" | ${pkgs.jq}/bin/jq -r --arg a "''${ASSET_NAME}" '[.[] | select(any(.assets[]?; .name == $a))] | sort_by(.published_at // .created_at // "") | last | .tag_name // ""' 2>/dev/null || true)
         fi
 
         download_ok=0
-        if [ -n "\${RELEASE_TAG}" ]; then
-          TARBALL_URL="https://github.com/${ghAccount}/fastfree/releases/download/\${RELEASE_TAG}/\${ASSET_NAME}"
-          echo "[fastfree-panel] Downloading release \${RELEASE_TAG} ..."
-          if curl -fsSL --max-time 120 "\${TARBALL_URL}" -o "${tarball}" 2>/dev/null; then
+        if [ -n "''${RELEASE_TAG}" ]; then
+          TARBALL_URL="https://github.com/${ghAccount}/fastfree/releases/download/''${RELEASE_TAG}/''${ASSET_NAME}"
+          echo "[fastfree-panel] Downloading release ''${RELEASE_TAG} ..."
+          if curl -fsSL --max-time 120 "''${TARBALL_URL}" -o "${tarball}" 2>/dev/null; then
             download_ok=1
           else
-            echo "[fastfree-panel] Download failed for tag \${RELEASE_TAG}"
+            echo "[fastfree-panel] Download failed for tag ''${RELEASE_TAG}"
             rm -f "${tarball}"
           fi
         else
-          echo "[fastfree-panel] No release carrying \${ASSET_NAME} found via GitHub API"
+          echo "[fastfree-panel] No release carrying ''${ASSET_NAME} found via GitHub API"
         fi
 
         # A working previous version always beats a placeholder.
@@ -66,7 +66,7 @@ in
           valid_local=1
         fi
 
-        if [ "\${download_ok}" -eq 1 ]; then
+        if [ "''${download_ok}" -eq 1 ]; then
           # Extract into /tmp staging, validate, then move the new content to .new dirs
           # ADJACENT to the live dirs (same filesystem) while the old dirs are still intact.
           # Only then do the atomic same-filesystem rename swap. On any failure the live
@@ -99,7 +99,7 @@ in
               swap_dir "${spaDir}" "${stagingRoot}/spa" || swap_ok=0
               swap_dir "${backendDir}" "${stagingRoot}/backend" || swap_ok=0
               rm -rf "${stagingRoot}"
-              if [ "\${swap_ok}" -eq 1 ]; then
+              if [ "''${swap_ok}" -eq 1 ]; then
                 echo "[fastfree-panel] Swapped in release tarball (atomically)."
                 valid_local=1
               else
@@ -118,7 +118,7 @@ in
           fi
         fi
 
-        if [ "\${valid_local}" -eq 0 ]; then
+        if [ "''${valid_local}" -eq 0 ]; then
           # Fallback to local source copy.
           echo "[fastfree-panel] No valid local copy. Checking local build source..."
           if [ -d "${sourceDir}/dist/spa" ]; then
@@ -135,7 +135,7 @@ in
           fi
         fi
 
-        if [ "\${valid_local}" -eq 0 ]; then
+        if [ "''${valid_local}" -eq 0 ]; then
           echo "[fastfree-panel] Writing placeholder (no release, no local source)."
           if [ ! -f "${spaDir}/index.html" ]; then
             printf '%s\n' '<!DOCTYPE html>' '<html><head><meta charset="utf-8"><title>FastFree Clan OS</title></head>' '<body><div id="q-app"><h1>FastFree Clan OS</h1><p>Panel is initializing...</p></div></body></html>' > "${spaDir}/index.html"
