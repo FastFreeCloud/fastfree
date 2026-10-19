@@ -87,8 +87,9 @@ jobs:
           fetch-depth: 0
 
       - name: "2. Safe directory"
-        run: git config --global safe.directory '*'
-
+        run: |
+          git config --global safe.directory '*'
+          git config --global init.defaultBranch master
       # ╔═══════════════════════════════════════╗
       # ║  المرحلة 0.4: تعيين القيم الافتراضية  ║
       # ╚═══════════════════════════════════════╝
@@ -231,7 +232,7 @@ jobs:
 
       - name: "7. 4️⃣ إعداد Node.js"
         if: steps.check.outputs.should_create == 'true'
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           package-manager-cache: false
