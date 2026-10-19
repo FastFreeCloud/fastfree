@@ -84,15 +84,16 @@ jobs:
 
       # ======================= 2. استدعاء الكود المصدري =======================
       - name: "2. استدعاء الكود المصدري"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       # ======================= 3. إعداد Node.js 22 =======================
       - name: "3. إعداد Node.js 22"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
+          package-manager-cache: false
 
       # ======================= 4. إعداد Java 21 =======================
       - name: "4. إعداد Java 21"
@@ -103,7 +104,7 @@ jobs:
 
       # ======================= 5. تثبيت حزم Android SDK 36 =======================
       - name: "5. تثبيت حزم Android SDK 36"
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           packages: "cmdline-tools;latest platforms;android-36 build-tools;36.0.0"
 
@@ -277,7 +278,7 @@ jobs:
 
       # ======================= 13. إنشاء Release رسمي على GitHub =======================
       - name: "13. إنشاء Release رسمي على GitHub"
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           name: "${{ env.APP_NAME }} — v${{ env.VERSION_NAME }} (بناء رقم ${{ env.VERSION_CODE }})"

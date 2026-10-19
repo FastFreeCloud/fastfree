@@ -82,7 +82,7 @@ jobs:
       # ╚═══════════════════════════════════════╝
 
       - name: "1. 1️⃣ تحميل الـ Repo"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -225,19 +225,20 @@ jobs:
 
       - name: "6. 3️⃣ إعداد Python"
         if: steps.check.outputs.should_create == 'true'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
       - name: "7. 4️⃣ إعداد Node.js"
         if: steps.check.outputs.should_create == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
+          package-manager-cache: false
 
       - name: "8. 5️⃣ تخزين مؤقت لـ pip"
         if: steps.check.outputs.should_create == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-frappe-bench
@@ -517,7 +518,7 @@ jobs:
 
       - name: "16. 1️⃣3️⃣ إنشاء GitHub Release"
         if: steps.check.outputs.should_create == 'true' && env.CREATE_RELEASE == 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: app-v1.0.${{ steps.tag_version.outputs.next }}
           name: "app-v1.0.${{ steps.tag_version.outputs.next }}"
