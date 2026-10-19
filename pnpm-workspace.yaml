@@ -7,6 +7,7 @@ packages:
   # needs @quasar/cli in its own node_modules/.bin.
   - 'packages/fastfree_update/playground'
   - 'apps/*'
+  - 'apps/*/backend'
   # The MCP server that renders documentation HTML. A workspace member so its
   # @modelcontextprotocol/sdk stays pinned in the shared lockfile and is
   # installed by `pnpm install` at the repo root.

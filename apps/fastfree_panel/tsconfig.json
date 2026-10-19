@@ -1,3 +1,9 @@
 {
-  "extends": "./.quasar/tsconfig.json"
+  "extends": "./.quasar/tsconfig.json",
+  "exclude": [
+    "backend",
+    "dist",
+    "node_modules",
+    "test"
+  ]
 }
