@@ -1,11 +1,12 @@
 ###############################################################################
-# FastFree OS — نشر سيرفر client2 (VPS) تلقائياً   [ملف واحد]
+# FastFree OS — نشر سيرفر client2 (VPS) يدوياً (7_fastos_client2)   [ملف واحد]
 #
 # طريقة العمل:
 #   1. البناء بيتم على سيرفرات GitHub (مش على الـ VPS).
 #   2. النتيجة بتتنقل للـ VPS عبر SSH ويتم تفعيلها.
 #   3. الـ VPS مفيهوش كود مصدري ولا Git ولا بيعمل compile.
 #   4. بعد النشر: مرحلة منفصلة لفحص صحة الخدمات والنطاقات.
+#   5. التشغيل يدوي فقط (workflow_dispatch) لمنع أي بناء تلقائي.
 #
 # الأسرار المطلوبة (Settings → Secrets and variables → Actions → Secrets):
 #   CLIENT2_IP          عنوان IP للسيرفر
@@ -21,15 +22,9 @@
 #   - إعدادات الـ cache ................ خطوة "cache" و NIX_CONFIG
 ###############################################################################
 
-name: fastos_client2
+name: 7_fastos_client2
 
-on:
-  push:
-    branches:
-      - master
-    paths:
-      - 'apps/fastfree_os/**'
-      - '.github/workflows/fastos_client2.yaml'
+"on":
   workflow_dispatch:
     inputs:
       force_build:
@@ -40,7 +35,7 @@ on:
 # النشر بيتنفذ بالدور: لو في نشر شغال، الجديد يستنى ولا يلغيه
 # (إلغاء نشر في نص التفعيل ممكن يسيب السيرفر في حالة غير مكتملة)
 concurrency:
-  group: fastos_client2-${{ github.ref }}
+  group: 7_fastos_client2-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:

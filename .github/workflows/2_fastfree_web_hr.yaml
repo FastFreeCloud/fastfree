@@ -1,0 +1,161 @@
+###############################################################################
+#  ███████╗ █████╗ ███████╗████████╗███████╗██████╗ ███████╗███████╗
+#  ██╔════╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██╔══██╗██╔════╝██╔════╝
+#  █████╗  ███████║███████╗   ██║   █████╗  ██████╔╝█████╗  █████╗  
+#  ██╔══╝  ██╔══██║╚════██║   ██║   ██╔══╝  ██╔══██╗██╔══╝  ██╔══╝  
+#  ██║     ██║  ██║███████║   ██║   ██║     ██║  ██║███████╗███████╗
+#  ╚═╝     ╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝
+#
+#       FastFree Web Pipeline — FastFree HR (الموارد البشرية)
+# ─────────────────────────────────────────────────────────────────────────────
+#  • التطبيق:             نظام الموارد البشرية وإدارة الموظفين (FastFree HR)
+#  • مجلد المصدر:         apps/fastfree_hr
+#  • تقنية الواجهة:       Quasar Framework (Vue 3 + Vite SPA)
+#  • المنفذ المحلي:        http://127.0.0.1:9103
+#  • النطاق والـ Caddy:    https://hr.<domain>
+#  • مسار النشر (NixOS):  /srv/fastfree-hr
+#  • ملف الـ Tarball:     fastfree-hr.tar.gz
+#  • رابط التحميل:        https://github.com/${{ github.repository }}/releases/latest/download/fastfree-hr.tar.gz
+#  • نمط الـ Tag الدلالي: hr-v* (مثال: hr-v1.0.0)
+#
+#  آلية العمل:
+#    1. التشغيل يدوي فقط (Manual Trigger عبر workflow_dispatch) لضمان التحكم الكامل.
+#    2. التحقق الدقيق من الأنواع TypeScript (vue-tsc) وخلو الأكواد من الأخطاء (ESLint).
+#    3. بناء نسخة إنتاجية ثابتة ومحسنة Quasar SPA جاهزة للخدمة بواسطة Caddy.
+#    4. أرشفة ملف الـ Tarball وحساب رقم الإصدار الدلالي وإنشاء Release رسمي مع المرفقات.
+###############################################################################
+
+name: "2_fastfree_web_hr"
+
+"on":
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: "إنشاء Release رسمي على GitHub مع حزمة Tarball؟"
+        type: boolean
+        default: true
+
+concurrency:
+  group: fastfree-web-hr-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: "بناء ونشر FastFree HR"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: "1. إعداد بيئة Git الآمنة"
+        run: git config --global safe.directory '*'
+
+      - name: "2. استدعاء الكود المصدري"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "3. إعداد بيئة Node.js 22"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: "4. إعداد وتفعيل pnpm 10"
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: "5. تفعيل الكاش السحابي للـ dependencies"
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/pnpm/store
+            ~/.cache/pnpm
+            ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: "6. تثبيت الحزم والمكتبات"
+        run: |
+          pnpm install --no-frozen-lockfile --ignore-scripts
+          if [ -d "apps/fastfree_hr/src-capacitor" ]; then
+            cd "apps/fastfree_hr/src-capacitor" && npm install
+          fi
+
+      - name: "7. تجهيز Quasar"
+        run: |
+          cd apps/fastfree_hr
+          pnpm exec quasar prepare
+
+      - name: "8. فحص الأنواع TypeScript (vue-tsc)"
+        run: |
+          cd apps/fastfree_hr
+          pnpm exec vue-tsc --noEmit
+
+      - name: "9. فحص الجودة والتنسيق ESLint"
+        run: |
+          cd apps/fastfree_hr
+          pnpm exec eslint -c ./eslint.config.js "./src*/**/*.{ts,js,cjs,mjs,vue}"
+
+      - name: "10. بناء كود الإنتاج المستقل Quasar SPA"
+        run: |
+          cd apps/fastfree_hr
+          pnpm exec quasar build
+
+      - name: "11. حزم ملف الـ Tarball للإنتاج"
+        run: |
+          cd apps/fastfree_hr/dist/spa
+          tar -czf "$GITHUB_WORKSPACE/fastfree-hr.tar.gz" .
+
+      - name: "12. رفع الحزمة كـ Artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: fastfree-hr-tarball
+          path: fastfree-hr.tar.gz
+          retention-days: 7
+
+      - name: "13. حساب رقم الإصدار الدلالي القادم"
+        id: version
+        if: ${{ inputs.create_release }}
+        shell: bash
+        run: |
+          APP_KEY="hr"
+          if [[ "$GITHUB_REF" == refs/tags/${APP_KEY}-v* ]]; then
+            NEXT_TAG="${GITHUB_REF#refs/tags/}"
+          else
+            RAW_TAGS=$(git tag -l "${APP_KEY}-v*" || true)
+            if [ -z "$RAW_TAGS" ]; then
+              LATEST_TAG=""
+            else
+              LATEST_TAG=$(echo "$RAW_TAGS" | grep -E "^${APP_KEY}-v[0-9]+\.[0-9]+\.[0-9]+$" | sort -V | tail -n1 || true)
+            fi
+
+            if [ -z "$LATEST_TAG" ]; then
+              NEXT_TAG="${APP_KEY}-v1.0.0"
+            else
+              VERSION="${LATEST_TAG#${APP_KEY}-v}"
+              MAJOR=$(echo "$VERSION" | cut -d. -f1)
+              MINOR=$(echo "$VERSION" | cut -d. -f2)
+              PATCH=$(echo "$VERSION" | cut -d. -f3)
+              NEXT_PATCH=$((PATCH + 1))
+              NEXT_TAG="${APP_KEY}-v${MAJOR}.${MINOR}.${NEXT_PATCH}"
+            fi
+          fi
+          echo "tag=${NEXT_TAG}" >> $GITHUB_OUTPUT
+          echo "Next release tag: ${NEXT_TAG}"
+
+      - name: "14. نشر Release رسمي على GitHub مع ملف الـ Tarball"
+        if: ${{ inputs.create_release }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "FastFree HR ${{ steps.version.outputs.tag }}"
+          draft: false
+          prerelease: false
+          files: fastfree-hr.tar.gz
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
