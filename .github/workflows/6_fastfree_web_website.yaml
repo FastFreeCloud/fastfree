@@ -1,0 +1,160 @@
+###############################################################################
+#  ███████╗ █████╗ ███████╗████████╗███████╗██████╗ ███████╗███████╗
+#  ██╔════╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██╔══██╗██╔════╝██╔════╝
+#  █████╗  ███████║███████╗   ██║   █████╗  ██████╔╝█████╗  █████╗  
+#  ██╔══╝  ██╔══██║╚════██║   ██║   ██╔══╝  ██╔══██╗██╔══╝  ██╔══╝  
+#  ██║     ██║  ██║███████║   ██║   ██║     ██║  ██║███████╗███████╗
+#  ╚═╝     ╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝
+#
+#       FastFree Web Pipeline — FastFree Website (الموقع التعريفي والتوثيق)
+# ─────────────────────────────────────────────────────────────────────────────
+#  • التطبيق:             الموقع التعريفي والتوثيق الرسمي لمنظومة FastFree
+#  • مجلد المصدر:         apps/fastfree_website
+#  • تقنية الواجهة:       Next.js 15 (React 19 + Tailwind CSS v4 Standalone)
+#  • المنفذ المحلي:        http://127.0.0.1:9004
+#  • النطاق والـ Caddy:    https://<domain> (الواجهة الرئيسية والنطاق الجذري)
+#  • مسار النشر (NixOS):  /srv/fastfree-website
+#  • ملف الـ Tarball:     fastfree-website.tar.gz (.next + public + package.json)
+#  • رابط التحميل:        https://github.com/${{ github.repository }}/releases/latest/download/fastfree-website.tar.gz
+#  • نمط الـ Tag الدلالي: website-v* (مثال: website-v1.0.0)
+#
+#  آلية العمل:
+#    1. التشغيل يدوي فقط (Manual Trigger عبر workflow_dispatch) لضمان التحكم الكامل.
+#    2. التحقق الدقيق من الأنواع TypeScript (tsc) وخلو الأكواد من أخطاء التنسيق (ESLint).
+#    3. بناء نسخة إنتاجية مستقلة Next.js Standalone مجهزة للعمل على سيرفر الـ VPS.
+#    4. أرشفة ملف الـ Tarball وحساب رقم الإصدار الدلالي وإنشاء Release رسمي مع المرفقات.
+###############################################################################
+
+name: "6_fastfree_web_website"
+
+"on":
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: "إنشاء Release رسمي على GitHub مع حزمة Tarball؟"
+        type: boolean
+        default: true
+
+concurrency:
+  group: fastfree-web-website-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: "بناء ونشر FastFree Website"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: "1. إعداد بيئة Git الآمنة"
+        run: git config --global safe.directory '*'
+
+      - name: "2. استدعاء الكود المصدري"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "3. إعداد بيئة Node.js 22"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: 'apps/fastfree_website/package-lock.json'
+
+      - name: "4. إعداد وتفعيل pnpm 10"
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: "5. تفعيل الكاش السحابي للـ dependencies"
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ~/.local/share/pnpm/store
+            ~/.cache/pnpm
+          key: ${{ runner.os }}-npm-website-${{ hashFiles('apps/fastfree_website/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-website-
+
+      - name: "6. تثبيت الحزم والمكتبات"
+        run: |
+          cd apps/fastfree_website
+          npm install --legacy-peer-deps --ignore-scripts
+
+      - name: "7. تجهيز Quasar"
+        run: |
+          echo "Next.js standalone target ready: apps/fastfree_website"
+
+      - name: "8. فحص الأنواع TypeScript (vue-tsc)"
+        run: |
+          cd apps/fastfree_website
+          npx tsc --noEmit
+
+      - name: "9. فحص الجودة والتنسيق ESLint"
+        run: |
+          cd apps/fastfree_website
+          npm run lint
+
+      - name: "10. بناء كود الإنتاج المستقل Quasar SPA"
+        run: |
+          cd apps/fastfree_website
+          npm run build
+
+      - name: "11. حزم ملف الـ Tarball للإنتاج"
+        run: |
+          cd apps/fastfree_website
+          tar -czf "$GITHUB_WORKSPACE/fastfree-website.tar.gz" .next public package.json
+
+      - name: "12. رفع الحزمة كـ Artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: fastfree-website-tarball
+          path: fastfree-website.tar.gz
+          retention-days: 7
+
+      - name: "13. حساب رقم الإصدار الدلالي القادم"
+        id: version
+        if: ${{ inputs.create_release }}
+        shell: bash
+        run: |
+          APP_KEY="website"
+          if [[ "$GITHUB_REF" == refs/tags/${APP_KEY}-v* ]]; then
+            NEXT_TAG="${GITHUB_REF#refs/tags/}"
+          else
+            RAW_TAGS=$(git tag -l "${APP_KEY}-v*" || true)
+            if [ -z "$RAW_TAGS" ]; then
+              LATEST_TAG=""
+            else
+              LATEST_TAG=$(echo "$RAW_TAGS" | grep -E "^${APP_KEY}-v[0-9]+\.[0-9]+\.[0-9]+$" | sort -V | tail -n1 || true)
+            fi
+
+            if [ -z "$LATEST_TAG" ]; then
+              NEXT_TAG="${APP_KEY}-v1.0.0"
+            else
+              VERSION="${LATEST_TAG#${APP_KEY}-v}"
+              MAJOR=$(echo "$VERSION" | cut -d. -f1)
+              MINOR=$(echo "$VERSION" | cut -d. -f2)
+              PATCH=$(echo "$VERSION" | cut -d. -f3)
+              NEXT_PATCH=$((PATCH + 1))
+              NEXT_TAG="${APP_KEY}-v${MAJOR}.${MINOR}.${NEXT_PATCH}"
+            fi
+          fi
+          echo "tag=${NEXT_TAG}" >> $GITHUB_OUTPUT
+          echo "Next release tag: ${NEXT_TAG}"
+
+      - name: "14. نشر Release رسمي على GitHub مع ملف الـ Tarball"
+        if: ${{ inputs.create_release }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "FastFree Website ${{ steps.version.outputs.tag }}"
+          draft: false
+          prerelease: false
+          files: fastfree-website.tar.gz
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
