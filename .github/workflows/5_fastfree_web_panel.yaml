@@ -28,7 +28,7 @@
 
 name: "5_fastfree_web_panel"
 
-"on":
+on:
   workflow_dispatch:
     inputs:
       create_release:

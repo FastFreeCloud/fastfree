@@ -27,7 +27,7 @@
 
 name: "1_fastfree_web_pos"
 
-"on":
+on:
   workflow_dispatch:
     inputs:
       create_release:
