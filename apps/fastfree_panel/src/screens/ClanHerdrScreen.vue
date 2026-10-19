@@ -557,7 +557,7 @@ onMounted(() => {
     if (data && typeof data === 'object') {
       const maybe = data as Partial<HerdrStatusData>;
       if (Array.isArray(maybe.agents) && maybe.agents.length > 0) {
-        liveAgents.value = maybe.agents as LiveHerdrAgent[];
+        liveAgents.value = maybe.agents;
       }
     }
   });
