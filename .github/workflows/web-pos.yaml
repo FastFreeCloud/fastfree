@@ -1,0 +1,36 @@
+name: "Web: FastFree POS"
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'apps/fastfree_pos/**'
+      - 'packages/**'
+      - '.github/workflows/web-pos.yaml'
+      - '.github/workflows/web-pipeline.yaml'
+    tags:
+      - 'pos-v*'
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'apps/fastfree_pos/**'
+      - 'packages/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: web-pos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    uses: ./.github/workflows/web-pipeline.yaml
+    with:
+      app_name: 'FastFree POS'
+      app_key: 'pos'
+      app_dir: 'apps/fastfree_pos'
+      has_backend: false
+      tarball_name: 'fastfree-pos.tar.gz'
+    secrets: inherit

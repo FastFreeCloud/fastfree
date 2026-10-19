@@ -1,0 +1,36 @@
+name: "Web: FastFree Ledger"
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'apps/fastfree_ledger/**'
+      - 'packages/**'
+      - '.github/workflows/web-ledger.yaml'
+      - '.github/workflows/web-pipeline.yaml'
+    tags:
+      - 'ledger-v*'
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'apps/fastfree_ledger/**'
+      - 'packages/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: web-ledger-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    uses: ./.github/workflows/web-pipeline.yaml
+    with:
+      app_name: 'FastFree Ledger'
+      app_key: 'ledger'
+      app_dir: 'apps/fastfree_ledger'
+      has_backend: false
+      tarball_name: 'fastfree-ledger.tar.gz'
+    secrets: inherit

@@ -1,0 +1,194 @@
+name: "Web Reusable Pipeline"
+
+# ═══════════════════════════════════════════════════════════
+#   FastFree Reusable Web Pipeline (Quasar SPA + Node.js)
+#   ─────────────────────────────────────────────────────────
+#   • Typecheck (vue-tsc --noEmit)
+#   • Lint (eslint)
+#   • Build Production Quasar SPA (dist/spa) & optional backend
+#   • Package Standalone Tarball (fastfree-<app>.tar.gz)
+#   • Automated Semantic Versioning & GitHub Release
+# ═══════════════════════════════════════════════════════════
+
+on:
+  workflow_call:
+    inputs:
+      app_name:
+        description: "Application Display Name (e.g. FastFree Ledger)"
+        required: true
+        type: string
+      app_key:
+        description: "Application key identifier (e.g. ledger, panel, erp, pos, hr)"
+        required: true
+        type: string
+      app_dir:
+        description: "Path to application directory (e.g. apps/fastfree_ledger)"
+        required: true
+        type: string
+      has_backend:
+        description: "Whether the app includes a backend build (e.g. fastfree_panel)"
+        required: false
+        type: boolean
+        default: false
+      tarball_name:
+        description: "Filename for release tarball (e.g. fastfree-ledger.tar.gz)"
+        required: true
+        type: string
+
+jobs:
+  validate-and-build:
+    name: "1. Build: ${{ inputs.app_name }}"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: "1. Safe directory"
+        run: git config --global safe.directory '*'
+
+      - name: "2. Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "3. Setup Node.js 22"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: "4. Setup pnpm"
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: "5. Get pnpm store directory"
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: "6. Setup pnpm cache"
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: "7. Install dependencies"
+        run: pnpm install --no-frozen-lockfile --ignore-scripts
+
+      - name: "8. Install Capacitor dependencies (if exists)"
+        run: |
+          if [ -d "${{ inputs.app_dir }}/src-capacitor" ]; then
+            cd "${{ inputs.app_dir }}/src-capacitor" && npm install
+          fi
+
+      - name: "9. Prepare Quasar"
+        run: |
+          cd "${{ inputs.app_dir }}"
+          pnpm exec quasar prepare
+
+      - name: "10. TypeScript check (Frontend)"
+        run: |
+          cd "${{ inputs.app_dir }}"
+          pnpm exec vue-tsc --noEmit
+
+      - name: "11. TypeScript check (Backend)"
+        if: ${{ inputs.has_backend }}
+        run: |
+          cd "${{ inputs.app_dir }}/backend"
+          pnpm exec tsc -p tsconfig.json --noEmit
+
+      - name: "12. Lint check"
+        run: |
+          cd "${{ inputs.app_dir }}"
+          pnpm exec eslint -c ./eslint.config.js "./src*/**/*.{ts,js,cjs,mjs,vue}"
+
+      - name: "13. Build Quasar SPA"
+        run: |
+          cd "${{ inputs.app_dir }}"
+          pnpm exec quasar build
+
+      - name: "14. Build Backend"
+        if: ${{ inputs.has_backend }}
+        run: |
+          cd "${{ inputs.app_dir }}/backend"
+          pnpm exec tsc -p tsconfig.json
+
+      - name: "15. Package Standalone Tarball"
+        run: |
+          if [ "${{ inputs.has_backend }}" = "true" ]; then
+            mkdir -p /tmp/panel-bundle/spa /tmp/panel-bundle/backend/dist
+            cp -r "${{ inputs.app_dir }}/dist/spa/"* /tmp/panel-bundle/spa/
+            cp -r "${{ inputs.app_dir }}/backend/dist/"* /tmp/panel-bundle/backend/dist/
+            cp "${{ inputs.app_dir }}/backend/package.json" /tmp/panel-bundle/backend/
+            cd /tmp/panel-bundle
+            tar -czf "$GITHUB_WORKSPACE/${{ inputs.tarball_name }}" .
+          else
+            cd "${{ inputs.app_dir }}/dist/spa"
+            tar -czf "$GITHUB_WORKSPACE/${{ inputs.tarball_name }}" .
+          fi
+
+      - name: "16. Upload Tarball Artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.app_key }}-tarball
+          path: ${{ inputs.tarball_name }}
+          retention-days: 7
+
+  release:
+    name: "2. Release: ${{ inputs.app_name }}"
+    needs: [validate-and-build]
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: "1. Safe directory"
+        run: git config --global safe.directory '*'
+
+      - name: "2. Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "3. Download Tarball Artifact"
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.app_key }}-tarball
+
+      - name: "4. Compute next version"
+        id: version
+        shell: bash
+        run: |
+          APP_KEY="${{ inputs.app_key }}"
+          if [[ "$GITHUB_REF" == refs/tags/${APP_KEY}-v* ]]; then
+            NEXT_TAG="${GITHUB_REF#refs/tags/}"
+          else
+            LATEST_TAG=$(git tag -l "${APP_KEY}-v*" | grep -E "^${APP_KEY}-v[0-9]+\.[0-9]+\.[0-9]+$" | sort -V | tail -n1)
+            if [ -z "$LATEST_TAG" ]; then
+              NEXT_TAG="${APP_KEY}-v1.0.0"
+            else
+              VERSION="${LATEST_TAG#${APP_KEY}-v}"
+              MAJOR=$(echo "$VERSION" | cut -d. -f1)
+              MINOR=$(echo "$VERSION" | cut -d. -f2)
+              PATCH=$(echo "$VERSION" | cut -d. -f3)
+              NEXT_PATCH=$((PATCH + 1))
+              NEXT_TAG="${APP_KEY}-v${MAJOR}.${MINOR}.${NEXT_PATCH}"
+            fi
+          fi
+          echo "tag=${NEXT_TAG}" >> $GITHUB_OUTPUT
+          echo "Next release tag: ${NEXT_TAG}"
+
+      - name: "5. Create GitHub Release with Tarball"
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "${{ inputs.app_name }} ${{ steps.version.outputs.tag }}"
+          draft: false
+          prerelease: false
+          files: ${{ inputs.tarball_name }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

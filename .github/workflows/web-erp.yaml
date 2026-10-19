@@ -1,0 +1,36 @@
+name: "Web: FastFree ERP"
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'apps/fastfree_erp/**'
+      - 'packages/**'
+      - '.github/workflows/web-erp.yaml'
+      - '.github/workflows/web-pipeline.yaml'
+    tags:
+      - 'erp-v*'
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'apps/fastfree_erp/**'
+      - 'packages/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: web-erp-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    uses: ./.github/workflows/web-pipeline.yaml
+    with:
+      app_name: 'FastFree ERP'
+      app_key: 'erp'
+      app_dir: 'apps/fastfree_erp'
+      has_backend: false
+      tarball_name: 'fastfree-erp.tar.gz'
+    secrets: inherit
