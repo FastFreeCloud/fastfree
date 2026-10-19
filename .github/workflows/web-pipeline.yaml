@@ -84,6 +84,13 @@ jobs:
             cd "${{ inputs.app_dir }}/src-capacitor" && npm install
           fi
 
+      - name: "8.1. Install Backend dependencies (if exists)"
+        if: ${{ inputs.has_backend }}
+        run: |
+          if [ -d "${{ inputs.app_dir }}/backend" ]; then
+            cd "${{ inputs.app_dir }}/backend" && npm install
+          fi
+
       - name: "9. Prepare Quasar"
         run: |
           cd "${{ inputs.app_dir }}"
