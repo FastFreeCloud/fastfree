@@ -31,7 +31,7 @@ name: "3_fastfree_android_ledger"
 #   GOOGLE_PLAY_SERVICE_ACCOUNT_JSON  مفتاح حساب خدمة Google Cloud لنشر Google Play Console
 ###############################################################################
 
-"on":
+on:
   workflow_dispatch:
     inputs:
       track:

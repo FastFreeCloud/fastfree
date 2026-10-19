@@ -27,7 +27,7 @@
 
 name: "2_fastfree_web_hr"
 
-"on":
+on:
   workflow_dispatch:
     inputs:
       create_release:

@@ -9,7 +9,7 @@ name: 0_scaffold_frappe
 #   • يقوم بإنشاء Tag و GitHub Release (app-v1.0.1) أوتوماتيكياً عند التفعيل
 # ══════════════════════════════════════════════════════════════════════════════
 
-"on":
+on:
   workflow_dispatch:
     inputs:
       app_name:

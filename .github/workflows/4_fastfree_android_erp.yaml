@@ -30,7 +30,7 @@ name: "4_fastfree_android_erp"
 #   GOOGLE_PLAY_SERVICE_ACCOUNT_JSON  مفتاح حساب خدمة Google Cloud لنشر Google Play Console
 ###############################################################################
 
-"on":
+on:
   workflow_dispatch:
     inputs:
       track:

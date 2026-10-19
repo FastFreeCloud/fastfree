@@ -24,7 +24,7 @@
 
 name: 7_fastos_client2
 
-"on":
+on:
   workflow_dispatch:
     inputs:
       force_build:

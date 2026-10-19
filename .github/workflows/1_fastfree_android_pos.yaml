@@ -30,7 +30,7 @@ name: "1_fastfree_android_pos"
 #   GOOGLE_PLAY_SERVICE_ACCOUNT_JSON  مفتاح حساب خدمة Google Cloud لنشر Google Play Console
 ###############################################################################
 
-"on":
+on:
   workflow_dispatch:
     inputs:
       track:

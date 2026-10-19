@@ -27,7 +27,7 @@
 
 name: "4_fastfree_web_erp"
 
-"on":
+on:
   workflow_dispatch:
     inputs:
       create_release:
