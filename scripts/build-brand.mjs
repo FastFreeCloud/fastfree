@@ -25,6 +25,65 @@ const outFile = path.join(root, 'brand', 'brand.json');
 const FLOW_APPS_DIR = path.join(root, 'fastfree_mcp_tools', 'fastfree_flow_mcp', 'apps');
 
 /**
+ * The Arabic feature lines.
+ *
+ * The feature list in the app context files is in English, because it feeds
+ * image generation prompts. A social post is written in Egyptian Arabic, so
+ * the lines that appear on a poster are translated here and kept with the
+ * canonical file.
+ */
+const FEATURES_AR = {
+  website: [
+    'صفحة تعريفية تسويقية',
+    'عرض مميزات المنتجات',
+    'جدول الأسعار والباقات',
+    'آراء العملاء',
+    'نماذج التواصل والتسجيل',
+    'مدونة وتوثيق',
+  ],
+  panel: [
+    'إدارة أسطول خوادم NixOS',
+    'مراقبة لحظية للمعالج والذاكرة والقرص',
+    'تنسيق نشر Clan',
+    'إدارة شبكات WireGuard و ZeroTier',
+    'حالة نسخ احتياطي BorgBackup',
+    'وصول طرفي للخوادم عن بُعد',
+  ],
+  ledger: [
+    'قيود مزدوجة',
+    'شجرة الحسابات',
+    'تقارير مالية (أرباح وخسائر)',
+    'تتبع المبيعات والمشتريات',
+    'تقييم المخزون',
+    'دعم عملات متعددة',
+  ],
+  erp: [
+    'نظام ERP متكامل',
+    'إدارة سلسلة الإمداد',
+    'تدفق التصنيع',
+    'المشتريات وأوامر الشراء',
+    'التشغيل متعدد الفروع',
+    'لوحة تحليلات لحظية',
+  ],
+  pos: [
+    'واجهة كاشير سريعة باللمس',
+    'مسح باركود',
+    'فواتير ضريبة القيمة المضافة',
+    'مزامنة المخزون',
+    'إدارة العملاء',
+    'تقارير فورية',
+  ],
+  hr: [
+    'ملفات الموظفين',
+    'معالجة الرواتب',
+    'الحضور والإجازات',
+    'الأقسام والوظائف',
+    'تتبع الأداء',
+    'تقويم العطلات',
+  ],
+};
+
+/**
  * The brand colours, names and taglines.
  *
  * These come from the asset generator, which is what the shipped icons,
@@ -287,9 +346,12 @@ const brand = {
     component: screen.component,
   })),
 
-  apps: APPS.map((app) => ({ ...app, ...readFlowContext(app.key) })),
+  apps: APPS.map((app) => ({
+    ...app,
+    ...readFlowContext(app.key),
+    featuresAr: FEATURES_AR[app.key] ?? [],
+  })),
 };
-
 const json = `${JSON.stringify(brand, null, 2)}\n`;
 
 if (process.argv.includes('--check')) {

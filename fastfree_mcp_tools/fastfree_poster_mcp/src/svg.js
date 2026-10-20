@@ -99,9 +99,10 @@ export function pill({ x, y, width, height, fill, text, size, textFill, stroke, 
     ? `<rect x="${num(x)}" y="${num(y)}" width="${num(width)}" height="${num(height)}" rx="${num(height / 2)}" fill="url(#${gradientId})"/>`
     : rect({ x, y, width, height, fill, radius: height / 2, stroke, strokeWidth });
 
+  // The label sits on the vertical centre of the button.
   const label = centeredText({
     x: x + width / 2,
-    y: y + height * 0.68,
+    y: y + height * 0.5 + size * 0.35,
     text,
     size,
     fill: textFill,

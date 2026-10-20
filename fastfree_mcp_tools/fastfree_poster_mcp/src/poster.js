@@ -1,17 +1,16 @@
 /**
  * Builds the poster SVG.
  *
- * The layout is a single composition in the brand's dark palette: a deep
- * brand field with a radial glow, the logo in the top corner, a right
- * aligned Arabic headline block on the right, and a contact strip along the
- * bottom.
+ * The layout follows the approved FastFree marketing artwork: a strong brand
+ * visual on one side, and a text column on the other with the eyebrow, the
+ * headline, the tagline, a short feature list and the call to action.
  *
  * Everything is drawn as vectors and live text, so the exported SVG stays
  * sharp at any size and the Arabic remains selectable and editable.
  */
 import { APPS, CONTACT, RATIOS, getApp, getRatio } from './brand.js';
 import { FONTS, circle, line, pill, rect, rtlText, sparkle } from './svg.js';
-import { buildLogoMarkup } from './logo.js';
+import { buildIconMarkup, buildLogoMarkup } from './logo.js';
 import { escapeXml, estimateWidth, num, wrapText } from './utils.js';
 
 /**
@@ -56,7 +55,7 @@ function buildBackground(app, width, height) {
       <stop offset="60%" stop-color="${app.colors.primary}" stop-opacity="0.1"/>
       <stop offset="100%" stop-color="${app.colors.primary}" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="glow2" cx="90%" cy="8%" r="45%">
+    <radialGradient id="glow2" cx="90%" cy="8%" r="48%">
       <stop offset="0" stop-color="${app.colors.accent}" stop-opacity="0.25"/>
       <stop offset="100%" stop-color="${app.colors.accent}" stop-opacity="0"/>
     </radialGradient>
@@ -105,110 +104,276 @@ function buildContactBar(app, width, top, height) {
 }
 
 /**
- * The headline block: eyebrow pill, title, accent rule, tagline, call to
+ * One feature line, with a dot to its right because the list reads right to
+ * left.
+ */
+function buildFeatureRow(app, feature, { x, y, size }) {
+  const dotR = Math.max(3, Math.round(size * 0.13));
+  const dotGap = Math.round(size * 0.55);
+
+  return `<g>
+    ${circle({
+      cx: x - dotR,
+      cy: y - size * 0.3,
+      r: dotR,
+      fill: app.colors.accent,
+      opacity: 0.95,
+    })}
+    ${rtlText({
+      x: x - dotGap - dotR * 2,
+      y,
+      text: feature,
+      size,
+      fill: '#E2E8F0',
+      opacity: 0.95,
+    })}
+  </g>`;
+}
+
+/**
+ * The headline.
+ *
+ * When the title carries the FastFree wordmark it is drawn in two tones,
+ * "Fast" in white and "Free" in the accent colour, which is how the
+ * approved FastFree artwork sets the name.
+ */
+function buildTitle(title, { x, y, size, accent }) {
+  const index = title.indexOf('FastFree');
+
+  if (index === -1) {
+    return rtlText({ x, y, text: title, size, fill: '#FFFFFF', weight: 700 });
+  }
+
+  const before = title.slice(0, index);
+  const after = title.slice(index + 'FastFree'.length);
+
+  // The wordmark is drawn in Latin, so it is laid out from its left edge.
+  const parts = [];
+  if (before) parts.push(`<tspan>${escapeXml(before)}</tspan>`);
+  parts.push(`<tspan fill="#FFFFFF">Fast</tspan>`);
+  parts.push(`<tspan fill="${accent}">Free</tspan>`);
+  if (after) parts.push(`<tspan fill="#FFFFFF">${escapeXml(after)}</tspan>`);
+
+  return `<text x="${num(x)}" y="${num(y)}" font-family="${FONTS.latin}" font-size="${num(size)}" font-weight="700" text-anchor="end">${parts.join('')}</text>`;
+}
+
+/**
+ * The text column: eyebrow, headline, rule, tagline, features, call to
  * action and link.
+ *
+ * The column is built as a list of measured rows rather than drawn straight
+ * away, because the available height depends on the ratio. A landscape
+ * poster has room for fewer feature lines than a portrait one, and a column
+ * that runs past the contact strip would push the button off the canvas.
  */
 function buildHeadline(app, {
-  title, subtitle, body, ctaText, ctaUrl, width, height, ratio,
+  title, subtitle, body, ctaText, ctaUrl, features = [], width, height, ratio, right, topOffset = 0, bottomLimit,
 }) {
-  const padding = Math.round(width * 0.05);
-  const right = width - padding;
-
   const portrait = height > width * 1.2;
-  const titleSize = Math.round(width * (portrait ? 0.085 : 0.068));
-  const taglineSize = Math.round(width * 0.03);
-  const eyebrowSize = Math.round(width * 0.022);
-  const ctaSize = Math.round(width * 0.028);
-  const urlSize = Math.round(width * 0.023);
+  const titleSize = Math.round(width * (portrait ? 0.082 : 0.055));
+  const taglineSize = Math.round(width * 0.026);
+  const eyebrowSize = Math.round(width * 0.02);
+  const ctaSize = Math.round(width * 0.025);
+  const urlSize = Math.round(width * 0.02);
+  const featureSize = Math.round(width * 0.021);
 
-  // In a landscape poster the text occupies the right half, so the title
-  // is measured against that column. In a portrait poster it uses the full
-  // width.
-  const columnWidth = portrait ? width - padding * 2 : Math.round(width * 0.56);
+  // The text column is measured against the space the brand visual leaves.
+  const columnWidth = Math.round(width * (portrait ? 0.86 : 0.56));
 
-  const elements = [];
+  // The cursor starts at the top of the column.
+  const y = Math.round(height * (portrait ? 0.14 : 0.08)) + topOffset;
 
-  // The block is laid out top down, and every step advances a cursor by
-  // the full height of the element it just placed. Advancing by only the
-  // font size leaves the next element overlapping the previous one.
-  let y = portrait ? Math.round(height * 0.15) : Math.round(height * 0.24);
+  // The call to action block is measured here but drawn later, because the
+  // link may be dropped and the button then has to move up.
+  const urlGap = Math.round(urlSize * 1.2);
+  const buttonGap = Math.round(ctaSize * 1.1);
+  const buttonHeight = Math.round(ctaSize * 2.3);
+
+  // The column is built as a list of blocks. Each block draws itself at a
+  // given cursor position and declares exactly how far the cursor moves
+  // afterwards, so the measured height is always the drawn height. Keeping
+  // the two in step is what stops the button landing in the contact strip.
+  const blocks = [];
+
+  const pushText = (text, size, fill, weight, opacity, extraAdvance) => {
+    blocks.push({
+      advance: extraAdvance,
+      draw: (cursor) => rtlText({
+        x: right,
+        y: cursor + size * 0.82,
+        text,
+        size,
+        fill,
+        weight,
+        opacity,
+      }),
+    });
+  };
 
   // Eyebrow.
   const eyebrowText = subtitle || app.nameAr;
   const eyebrowWidth = Math.round(estimateWidth(eyebrowText, eyebrowSize) + eyebrowSize * 2.2);
   const eyebrowHeight = Math.round(eyebrowSize * 2.2);
-  elements.push(pill({
-    x: right - eyebrowWidth,
-    y,
-    width: eyebrowWidth,
-    height: eyebrowHeight,
-    fill: app.colors.primary,
-    text: eyebrowText,
-    size: eyebrowSize,
-    textFill: app.colors.accent,
-    stroke: app.colors.primary,
-    strokeWidth: 1.5,
-  }));
-  y += eyebrowHeight + Math.round(titleSize * 0.5);
+  blocks.push({
+    advance: eyebrowHeight + Math.round(titleSize * 0.42),
+    draw: (cursor) => pill({
+      x: right - eyebrowWidth,
+      y: cursor,
+      width: eyebrowWidth,
+      height: eyebrowHeight,
+      fill: app.colors.primary,
+      text: eyebrowText,
+      size: eyebrowSize,
+      textFill: app.colors.accent,
+      stroke: app.colors.primary,
+      strokeWidth: 1.5,
+    }),
+  });
 
-  // Title.
+  // Headline.
   const titleLines = wrapText(title, columnWidth, titleSize);
-  const lineHeight = Math.round(titleSize * 1.32);
   for (const text of titleLines) {
-    y += Math.round(titleSize * 0.86);
-    elements.push(rtlText({
-      x: right, y, text, size: titleSize, fill: '#FFFFFF', weight: 700,
-    }));
-    y += Math.round(titleSize * 0.46);
+    blocks.push({
+      advance: Math.round(titleSize * 1.28),
+      draw: (cursor) => buildTitle(text, {
+        x: right,
+        y: cursor + Math.round(titleSize * 0.86),
+        size: titleSize,
+        accent: app.colors.accent,
+      }),
+    });
   }
 
   // Accent rule.
-  const ruleWidth = Math.round(width * 0.11);
+  const ruleWidth = Math.round(width * 0.1);
   const ruleHeight = Math.max(4, Math.round(width * 0.005));
-  y += Math.round(titleSize * 0.3);
-  elements.push(rect({
-    x: right - ruleWidth, y, width: ruleWidth, height: ruleHeight, fill: app.colors.primary, radius: ruleHeight / 2,
-  }));
-  y += ruleHeight + Math.round(taglineSize * 0.8);
+  blocks.push({
+    advance: ruleHeight + Math.round(taglineSize * 0.75),
+    draw: (cursor) => rect({
+      x: right - ruleWidth,
+      y: cursor,
+      width: ruleWidth,
+      height: ruleHeight,
+      fill: app.colors.primary,
+      radius: ruleHeight / 2,
+    }),
+  });
 
-  // Tagline.
-  // Tagline. A screen poster passes its own capability line here, so the
-  // app tagline stays the default.
+  // Tagline. A screen poster passes its own capability line here, so the app
+  // tagline stays the default.
   const taglineText = body || app.taglineAr;
   const taglineLines = wrapText(taglineText, columnWidth, taglineSize);
   for (const text of taglineLines) {
-    y += Math.round(taglineSize * 1.1);
-    elements.push(rtlText({
-      x: right, y, text, size: taglineSize, fill: '#E2E8F0', opacity: 0.92,
-    }));
-    y += Math.round(taglineSize * 0.35);
+    pushText(text, taglineSize, '#CBD5E1', 400, 0.95, Math.round(taglineSize * 1.4));
   }
 
-  // Call to action.
-  if (ctaText) {
-    const buttonWidth = Math.round(estimateWidth(ctaText, ctaSize) + ctaSize * 3);
-    const buttonHeight = Math.round(ctaSize * 2.3);
-    y += Math.round(ctaSize * 1.2);
-    elements.push(pill({
-      x: right - buttonWidth,
-      y,
-      width: buttonWidth,
-      height: buttonHeight,
-      gradientId: 'cta',
-      text: ctaText,
-      size: ctaSize,
-      textFill: '#FFFFFF',
-    }));
-    y += buttonHeight;
+  // The feature lines are the first thing dropped when the column is too
+  // tall, because the headline and the call to action matter more.
+  const featureBlocks = features.map((feature) => ({
+    advance: Math.round(featureSize * 1.55),
+    draw: (cursor) => buildFeatureRow(app, feature, {
+      x: right,
+      y: cursor + Math.round(featureSize * 1.15),
+      size: featureSize,
+    }),
+  }));
+
+  // The link and the button. The advance of each block is exactly the
+  // distance from the cursor to the block's bottom edge, which is what the
+  // fit pass measures.
+  const urlBlock = ctaUrl
+    ? {
+      advance: urlGap,
+      draw: (cursor) => `<text x="${num(right)}" y="${num(cursor + urlGap * 0.85)}" font-family="${FONTS.latin}" font-size="${urlSize}" font-weight="600" fill="${app.colors.accent}" text-anchor="end">${escapeXml(ctaUrl)}</text>`,
+    }
+    : null;
+
+  const buttonBlock = ctaText
+    ? {
+      advance: buttonGap + buttonHeight,
+      draw: (cursor) => {
+        const buttonWidth = Math.round(estimateWidth(ctaText, ctaSize) + ctaSize * 3);
+        return pill({
+          x: right - buttonWidth,
+          y: cursor + buttonGap,
+          width: buttonWidth,
+          height: buttonHeight,
+          gradientId: 'cta',
+          text: ctaText,
+          size: ctaSize,
+          textFill: '#FFFFFF',
+        });
+      },
+    }
+    : null;
+
+  // Fit the column: the feature lines are dropped one at a time until the
+  // content ends above the contact strip. The link goes before the button,
+  // because a poster without a destination is not a poster.
+  //
+  // The limit is an absolute canvas coordinate, the same space the column
+  // cursor moves in.
+  const limit = bottomLimit ?? height;
+
+  // The bottom edge of the column, in canvas coordinates. The cursor starts
+  // at the top of the column, so the result is already absolute.
+  const columnBottom = (featureList_, linkBlock_, buttonBlock_) => {
+    let cursor = y;
+    for (const block of blocks) cursor += block.advance;
+    for (const block of featureList_) cursor += block.advance;
+    if (linkBlock_) cursor += linkBlock_.advance;
+    if (buttonBlock_) cursor += buttonBlock_.advance;
+    return cursor;
+  };
+
+  let keptFeatures = featureBlocks;
+  let keptLink = urlBlock;
+  let keptButton = buttonBlock;
+
+  // The feature lines go first, then the link, and the button is the last
+  // thing to go because a poster without a call to action is not a poster
+  // either.
+  while (columnBottom(keptFeatures, keptLink, keptButton) > limit) {
+    if (keptFeatures.length) {
+      keptFeatures = keptFeatures.slice(0, -1);
+    } else if (keptLink) {
+      keptLink = null;
+    } else if (keptButton) {
+      keptButton = null;
+    } else {
+      break;
+    }
   }
 
-  // Link.
-  if (ctaUrl) {
-    y += Math.round(urlSize * 1.4);
-    elements.push(`<text x="${num(right)}" y="${num(y)}" font-family="${FONTS.latin}" font-size="${urlSize}" font-weight="600" fill="${app.colors.accent}" text-anchor="end">${escapeXml(ctaUrl)}</text>`);
+  // Draw the column from its final position.
+  const markup = [];
+  let cursor = y;
+  for (const block of blocks) {
+    markup.push(block.draw(cursor));
+    cursor += block.advance;
+  }
+  for (const block of keptFeatures) {
+    markup.push(block.draw(cursor));
+    cursor += block.advance;
+  }
+  if (keptLink) {
+    markup.push(keptLink.draw(cursor));
+    cursor += keptLink.advance;
+  }
+  if (keptButton) {
+    markup.push(keptButton.draw(cursor));
+    cursor += keptButton.advance;
   }
 
-  return elements.join('');
+  if (process.env.FASTFREE_POSTER_DEBUG) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `[poster] app=${app.key} ratio=${ratio} start=${y} end=${cursor} limit=${limit} `
+      + `features=${keptFeatures.length} link=${Boolean(keptLink)} button=${Boolean(keptButton)}`,
+    );
+  }
+
+  return markup.join('');
 }
 
 /**
@@ -223,8 +388,9 @@ function buildHeadline(app, {
  * @param {string} [options.ctaText]  Button label.
  * @param {string} [options.ctaUrl]   Link shown under the button.
  * @param {string} [options.ratio]    Output ratio key.
- * @param {boolean} [options.logo]    Draw the brand logo.
+ * @param {boolean} [options.logo]    Draw the brand wordmark.
  * @param {boolean} [options.contact] Draw the contact strip.
+ * @param {number} [options.features]  How many feature lines to show.
  * @returns {string} SVG markup.
  */
 export function buildPosterSvg({
@@ -237,6 +403,7 @@ export function buildPosterSvg({
   ratio = '1:1',
   logo = true,
   contact = true,
+  features = 3,
 }) {
   const app = getApp(appKey);
   const size = getRatio(ratio);
@@ -246,12 +413,66 @@ export function buildPosterSvg({
   }
 
   const { width, height } = size;
-  const padding = Math.round(width * 0.05);
+  const padding = Math.round(width * 0.055);
   const contactHeight = contact ? Math.round(height * 0.11) : 0;
+  const portrait = height > width * 1.2;
 
-  const logoMarkup = logo
-    ? buildLogoMarkup({ x: padding, y: padding, width: Math.round(width * 0.19) })
+  // The area the text column may use, ending above the contact strip.
+  const contentBottom = height - contactHeight;
+
+  // The wordmark is the brand signature, so it is given real estate. In a
+  // portrait poster it sits above the text, and in a landscape one it sits
+  // above the brand visual on the left.
+  const wordmarkWidth = Math.round(width * (portrait ? 0.46 : 0.24));
+  const wordmarkHeight = Math.round((wordmarkWidth * 260) / 800);
+
+  // The brand visual is the app icon, which carries the infinity mark, the
+  // app glyph and the app name.
+  const visualWidth = portrait
+    ? Math.round(Math.min(width * 0.46, contentBottom * 0.34))
+    : Math.round(Math.min(width * 0.36, contentBottom * 0.5));
+
+  const visualLeft = portrait
+    ? Math.round((width - visualWidth) / 2)
+    : padding;
+
+  let wordmarkX;
+  let wordmarkY;
+  let visualTop;
+
+  if (portrait) {
+    // The icon goes first, the wordmark under it, and the text starts
+    // below both.
+    visualTop = Math.round(height * 0.045);
+    wordmarkX = Math.round((width - wordmarkWidth) / 2);
+    wordmarkY = visualTop + visualWidth + Math.round(height * 0.025);
+  } else {
+    // The wordmark goes above the icon, so the two read as one brand block.
+    wordmarkX = visualLeft;
+    wordmarkY = Math.round(height * 0.08);
+    visualTop = wordmarkY + wordmarkHeight + Math.round(height * 0.045);
+  }
+
+  const iconMarkup = buildIconMarkup({
+    appKey,
+    x: visualLeft,
+    y: visualTop,
+    width: visualWidth,
+  });
+
+  const wordmarkMarkup = logo
+    ? buildLogoMarkup({ x: wordmarkX, y: wordmarkY, width: wordmarkWidth })
     : '';
+
+  // The text column starts below the brand visual and the wordmark in a
+  // portrait poster, and in a landscape one it fills the right half beside
+  // the brand visual.
+  const textTop = portrait
+    ? wordmarkY + wordmarkHeight + Math.round(height * 0.03)
+    : 0;
+  const right = width - padding;
+
+  const featureList = (app.featuresAr ?? app.features ?? []).slice(0, Math.max(0, features));
 
   const headline = buildHeadline(app, {
     title,
@@ -259,9 +480,13 @@ export function buildPosterSvg({
     body,
     ctaText,
     ctaUrl,
+    features: featureList,
     width,
     height,
     ratio,
+    right,
+    topOffset: textTop,
+    bottomLimit: height - contactHeight - Math.round(height * 0.02),
   });
 
   const contactBar = contact
@@ -270,7 +495,8 @@ export function buildPosterSvg({
 
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeXml(`${app.name} — ${title}`)}">
 ${buildBackground(app, width, height)}
-${logoMarkup}
+${iconMarkup}
+${wordmarkMarkup}
 ${headline}
 ${contactBar}
 </svg>`;
