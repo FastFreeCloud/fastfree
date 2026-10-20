@@ -19,9 +19,15 @@ export function middleware(req: NextRequest) {
     if (accept.startsWith('en')) locale = 'en';
   }
 
-  const url = req.nextUrl.clone();
-  url.pathname = `/${locale}${pathname === '/' ? '' : pathname}`;
-  return NextResponse.redirect(url);
+  const proto = req.headers.get('x-forwarded-proto') || 'https';
+  const rawHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'fastfree.cloud';
+  let host = rawHost;
+  if (host.includes('localhost') || host.includes('127.0.0.1')) {
+    host = 'fastfree.cloud';
+  }
+
+  const redirectUrl = new URL(`/${locale}${pathname === '/' ? '' : pathname}`, `${proto}://${host}`);
+  return NextResponse.redirect(redirectUrl);
 }
 
 export const config = {
