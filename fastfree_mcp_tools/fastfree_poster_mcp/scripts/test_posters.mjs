@@ -239,6 +239,59 @@ for (const appKey of APP_KEYS) {
   check(`${appKey}: all text stays on the canvas`, outside.length === 0, `${outside.length} outside`);
 }
 
+// ─── Nothing may fall into the contact strip ────────────────────────────────
+
+/**
+ * The contact strip occupies the bottom of the poster. A link or a button
+ * that lands inside it is hidden, and the failure is invisible in a test
+ * that only looks at the file existing.
+ *
+ * The strip's own labels and values are expected to be there, so they are
+ * excluded.
+ */
+const CONTACT_TEXT = [
+  'واتساب', 'هاتف', 'إيميل', 'الموقع',
+  '+201091999937', 'sales@fastfree.cloud', 'fastfree.cloud',
+];
+
+for (const [ratio, size] of Object.entries(RATIOS)) {
+  for (const appKey of APP_KEYS) {
+    const layoutSvg = buildPosterSvg({
+      app: appKey,
+      title: 'FastFree POS',
+      subtitle: 'FastFree',
+      body: 'كاشير سريع وفواتير لحظية ومخزون أول بأول',
+      ctaText: 'جرّبه الآن مجاناً',
+      ctaUrl: 'https://pos.fastfree.cloud',
+      ratio,
+      features: 3,
+    });
+
+    const stripTop = size.height - Math.round(size.height * 0.11);
+    const boxes = readTextBoxes(layoutSvg);
+    const inStrip = boxes.filter(
+      (box) => box.bottom > stripTop
+        && box.y < size.height
+        && !CONTACT_TEXT.includes(box.text),
+    );
+
+    check(
+      `${appKey} ${ratio}: no content lands in the contact strip`,
+      inStrip.length === 0,
+      inStrip.map((box) => box.text).join(', '),
+    );
+  }
+}
+
+// ─── The brand artwork must be present ──────────────────────────────────────
+
+for (const appKey of APP_KEYS) {
+  const layoutSvg = buildPosterSvg({ app: appKey, title: TITLE, ratio: '1:1' });
+  // The icon and the wordmark are inlined, so they carry prefixed ids.
+  check(`${appKey}: the app icon is inlined`, layoutSvg.includes('ic-'));
+  check(`${appKey}: the wordmark is inlined`, layoutSvg.includes('ff-'));
+}
+
 // ─── Screen catalogue ────────────────────────────────────────────────────────
 
 check('the catalogue has screens', SCREENS.length > 40, `${SCREENS.length} screens`);
