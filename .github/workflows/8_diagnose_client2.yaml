@@ -120,7 +120,7 @@ jobs:
             desc="${item##*:}"
             code=$(curl -m 5 -s -o /dev/null -w '%{http_code}' "https://${domain}/" 2>/dev/null || true)
             code="${code:-000}"
-            if [ "$code" = "200" ] || [ "$code" = "301" ] || [ "$code" = "302" ]; then
+            if [ "$code" = "200" ] || [ "$code" = "301" ] || [ "$code" = "302" ] || [ "$code" = "307" ] || [ "$code" = "308" ]; then
               status="✅ سليم"
             else
               status="❌ خطأ (${code})"
