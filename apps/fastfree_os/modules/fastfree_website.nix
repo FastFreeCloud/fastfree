@@ -41,7 +41,7 @@ in
           rm -f "${siteDir}/server.js"
         fi
 
-        rm -f "''${tarball}"
+        rm -f "${tarball}"
         RELEASE_TAG=""
         ASSET_NAME="${assetName}"
         AUTH_HEADER=""
@@ -57,11 +57,11 @@ in
         if [ -n "''${RELEASE_TAG}" ]; then
           TARBALL_URL="https://github.com/${ghAccount}/fastfree/releases/download/''${RELEASE_TAG}/''${ASSET_NAME}"
           echo "[fastfree-website] Downloading release ''${RELEASE_TAG} ..."
-          if curl -fsSL -H "User-Agent: FastFree" ''${AUTH_HEADER:+-H "$AUTH_HEADER"} --max-time 180 "''${TARBALL_URL}" -o "''${tarball}"; then
+          if curl -fsSL -H "User-Agent: FastFree" ''${AUTH_HEADER:+-H "$AUTH_HEADER"} --max-time 180 "''${TARBALL_URL}" -o "${tarball}"; then
             download_ok=1
           else
             echo "[fastfree-website] Download failed for tag ''${RELEASE_TAG}"
-            rm -f "''${tarball}"
+            rm -f "${tarball}"
           fi
         else
           echo "[fastfree-website] No release carrying ''${ASSET_NAME} found via GitHub API"
@@ -71,11 +71,11 @@ in
         if [ "''${download_ok}" -eq 0 ]; then
           FALLBACK_URL="https://github.com/${ghAccount}/fastfree/releases/latest/download/''${ASSET_NAME}"
           echo "[fastfree-website] Falling back to latest download URL: ''${FALLBACK_URL} ..."
-          if curl -fsSL -H "User-Agent: FastFree" ''${AUTH_HEADER:+-H "$AUTH_HEADER"} --max-time 180 "''${FALLBACK_URL}" -o "''${tarball}"; then
+          if curl -fsSL -H "User-Agent: FastFree" ''${AUTH_HEADER:+-H "$AUTH_HEADER"} --max-time 180 "''${FALLBACK_URL}" -o "${tarball}"; then
             download_ok=1
           else
             echo "[fastfree-website] Direct download fallback failed."
-            rm -f "''${tarball}"
+            rm -f "${tarball}"
           fi
         fi
 
@@ -90,9 +90,9 @@ in
           # validate, then swap. On any failure the staging dir is removed and the live copy
           # stays untouched.
           rm -rf "${siteDir}.new"; mkdir -p "${siteDir}.new"
-          if tar -xzf "''${tarball}" -C "${siteDir}.new"; then
+          if tar -xzf "${tarball}" -C "${siteDir}.new"; then
             if [ -f "${siteDir}.new/server.js" ] || [ -f "${siteDir}.new/.next/standalone/server.js" ] || ([ -d "${siteDir}.new/.next" ] && [ -f "${siteDir}.new/package.json" ]); then
-              rm -f "''${tarball}"
+              rm -f "${tarball}"
               # Park the live dir, then promote the new one. If the promote fails we put
               # the previous copy back instead of leaving the site with no files.
               rm -rf "${siteDir}.old"
