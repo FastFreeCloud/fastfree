@@ -74,12 +74,17 @@ jobs:
             exit 1
           fi
 
-          # إعادة تشغيل الخدمات بسلاسة للتأكد من حالتها
-          remote "systemctl stop fastfree-website.service fastfree-website-setup.service 2>/dev/null || true"
-          remote "systemctl reset-failed fastfree-website-setup.service fastfree-website.service fastfree-panel.service 2>/dev/null || true"
-          START_OUT=$(remote "systemctl start fastfree-website.service 2>&1" || true)
-          echo "Website start output: $START_OUT"
-          sleep 4
+          # تنظيف أي حالات فشل سابقة وتشغيل الموقع لو لم يكن يعمل
+          remote "systemctl reset-failed 2>/dev/null || true"
+          remote "
+            if ! ss -tulnp | grep -q ':9004 '; then
+              NODE_BIN=\$(which node 2>/dev/null || find /nix/store -maxdepth 3 -name node -type f -perm -111 2>/dev/null | head -n 1)
+              if [ -n \"\$NODE_BIN\" ] && [ -f /srv/fastfree-website/server.js ]; then
+                cd /srv/fastfree-website && PORT=9004 HOSTNAME=127.0.0.1 nohup \"\$NODE_BIN\" server.js >/tmp/fastfree-website.log 2>&1 &
+              fi
+            fi
+          " 2>/dev/null || true
+          sleep 3
 
           SUMMARY_FILE="$GITHUB_STEP_SUMMARY"
           echo "## 🔍 تقرير الفحص والتشخيص الشامل لخادم client2" >> "$SUMMARY_FILE"
