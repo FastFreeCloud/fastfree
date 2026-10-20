@@ -22,10 +22,10 @@ function buildBackground(app, width, height) {
   const gridStep = 64;
   const grid = [];
   for (let x = 0; x <= width; x += gridStep) {
-    grid.push(line({ x1: x, y1: 0, x2: x, y2: height, stroke: app.accent, strokeWidth: 1, opacity: 0.05 }));
+    grid.push(line({ x1: x, y1: 0, x2: x, y2: height, stroke: app.colors.accent, strokeWidth: 1, opacity: 0.05 }));
   }
   for (let y = 0; y <= height; y += gridStep) {
-    grid.push(line({ x1: 0, y1: y, x2: width, y2: y, stroke: app.accent, strokeWidth: 1, opacity: 0.05 }));
+    grid.push(line({ x1: 0, y1: y, x2: width, y2: y, stroke: app.colors.accent, strokeWidth: 1, opacity: 0.05 }));
   }
 
   // Marks are placed on a fixed lattice derived from their index, so the
@@ -39,30 +39,30 @@ function buildBackground(app, width, height) {
     const cx = ((column + 0.5) / columns) * width;
     const cy = ((row + 0.5) / rows) * height;
     if (i % 3 === 0) {
-      marks.push(sparkle({ cx, cy, size: 18, fill: app.accent, opacity: 0.22 }));
+      marks.push(sparkle({ cx, cy, size: 18, fill: app.colors.accent, opacity: 0.22 }));
     } else {
-      marks.push(circle({ cx, cy, r: 5 + (i % 4) * 3, fill: 'none', stroke: app.accent, strokeWidth: 2, opacity: 0.16 }));
+      marks.push(circle({ cx, cy, r: 5 + (i % 4) * 3, fill: 'none', stroke: app.colors.accent, strokeWidth: 2, opacity: 0.16 }));
     }
   }
 
   return `<defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="${app.deep}"/>
-      <stop offset="55%" stop-color="${app.secondary}"/>
-      <stop offset="100%" stop-color="${app.deep}"/>
+      <stop offset="0" stop-color="${app.colors.deep}"/>
+      <stop offset="55%" stop-color="${app.colors.secondary}"/>
+      <stop offset="100%" stop-color="${app.colors.deep}"/>
     </linearGradient>
     <radialGradient id="glow" cx="20%" cy="45%" r="60%">
-      <stop offset="0" stop-color="${app.primary}" stop-opacity="0.5"/>
-      <stop offset="60%" stop-color="${app.primary}" stop-opacity="0.1"/>
-      <stop offset="100%" stop-color="${app.primary}" stop-opacity="0"/>
+      <stop offset="0" stop-color="${app.colors.primary}" stop-opacity="0.5"/>
+      <stop offset="60%" stop-color="${app.colors.primary}" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="${app.colors.primary}" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="glow2" cx="90%" cy="8%" r="45%">
-      <stop offset="0" stop-color="${app.accent}" stop-opacity="0.25"/>
-      <stop offset="100%" stop-color="${app.accent}" stop-opacity="0"/>
+      <stop offset="0" stop-color="${app.colors.accent}" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="${app.colors.accent}" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="cta" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="${app.primary}"/>
-      <stop offset="100%" stop-color="${app.secondary}"/>
+      <stop offset="0" stop-color="${app.colors.primary}"/>
+      <stop offset="100%" stop-color="${app.colors.secondary}"/>
     </linearGradient>
   </defs>
   <rect width="${width}" height="${height}" fill="url(#bg)"/>
@@ -92,14 +92,14 @@ function buildContactBar(app, width, top, height) {
   const cells = items.map((item, index) => {
     const center = width - padding - index * slot - slot / 2;
     return `<g>
-      <text x="${num(center)}" y="${num(top + height * 0.36)}" font-family="${FONTS.arabic}" font-size="${labelSize}" fill="${app.accent}" text-anchor="middle" direction="rtl">${escapeXml(item.label)}</text>
+      <text x="${num(center)}" y="${num(top + height * 0.36)}" font-family="${FONTS.arabic}" font-size="${labelSize}" fill="${app.colors.accent}" text-anchor="middle" direction="rtl">${escapeXml(item.label)}</text>
       <text x="${num(center)}" y="${num(top + height * 0.72)}" font-family="${FONTS.latin}" font-size="${valueSize}" font-weight="600" fill="#FFFFFF" text-anchor="middle">${escapeXml(item.value)}</text>
     </g>`;
   });
 
   return `<g>
     ${rect({ x: 0, y: top, width, height, fill: '#030712', opacity: 0.78 })}
-    ${line({ x1: 0, y1: top, x2: width, y2: top, stroke: app.primary, strokeWidth: 3 })}
+    ${line({ x1: 0, y1: top, x2: width, y2: top, stroke: app.colors.primary, strokeWidth: 3 })}
     ${cells.join('')}
   </g>`;
 }
@@ -109,7 +109,7 @@ function buildContactBar(app, width, top, height) {
  * action and link.
  */
 function buildHeadline(app, {
-  title, subtitle, ctaText, ctaUrl, width, height, ratio,
+  title, subtitle, body, ctaText, ctaUrl, width, height, ratio,
 }) {
   const padding = Math.round(width * 0.05);
   const right = width - padding;
@@ -142,11 +142,11 @@ function buildHeadline(app, {
     y,
     width: eyebrowWidth,
     height: eyebrowHeight,
-    fill: app.primary,
+    fill: app.colors.primary,
     text: eyebrowText,
     size: eyebrowSize,
-    textFill: app.accent,
-    stroke: app.primary,
+    textFill: app.colors.accent,
+    stroke: app.colors.primary,
     strokeWidth: 1.5,
   }));
   y += eyebrowHeight + Math.round(titleSize * 0.5);
@@ -167,12 +167,15 @@ function buildHeadline(app, {
   const ruleHeight = Math.max(4, Math.round(width * 0.005));
   y += Math.round(titleSize * 0.3);
   elements.push(rect({
-    x: right - ruleWidth, y, width: ruleWidth, height: ruleHeight, fill: app.primary, radius: ruleHeight / 2,
+    x: right - ruleWidth, y, width: ruleWidth, height: ruleHeight, fill: app.colors.primary, radius: ruleHeight / 2,
   }));
   y += ruleHeight + Math.round(taglineSize * 0.8);
 
   // Tagline.
-  const taglineLines = wrapText(app.tagline, columnWidth, taglineSize);
+  // Tagline. A screen poster passes its own capability line here, so the
+  // app tagline stays the default.
+  const taglineText = body || app.taglineAr;
+  const taglineLines = wrapText(taglineText, columnWidth, taglineSize);
   for (const text of taglineLines) {
     y += Math.round(taglineSize * 1.1);
     elements.push(rtlText({
@@ -202,7 +205,7 @@ function buildHeadline(app, {
   // Link.
   if (ctaUrl) {
     y += Math.round(urlSize * 1.4);
-    elements.push(`<text x="${num(right)}" y="${num(y)}" font-family="${FONTS.latin}" font-size="${urlSize}" font-weight="600" fill="${app.accent}" text-anchor="end">${escapeXml(ctaUrl)}</text>`);
+    elements.push(`<text x="${num(right)}" y="${num(y)}" font-family="${FONTS.latin}" font-size="${urlSize}" font-weight="600" fill="${app.colors.accent}" text-anchor="end">${escapeXml(ctaUrl)}</text>`);
   }
 
   return elements.join('');
@@ -215,6 +218,8 @@ function buildHeadline(app, {
  * @param {string} options.app        App key, one of the entries in APPS.
  * @param {string} options.title      Arabic headline.
  * @param {string} [options.subtitle] Short label above the headline.
+ * @param {string} [options.body]     Line under the headline. Defaults to the
+ *                                    app tagline.
  * @param {string} [options.ctaText]  Button label.
  * @param {string} [options.ctaUrl]   Link shown under the button.
  * @param {string} [options.ratio]    Output ratio key.
@@ -226,6 +231,7 @@ export function buildPosterSvg({
   app: appKey,
   title,
   subtitle = '',
+  body = '',
   ctaText = '',
   ctaUrl = '',
   ratio = '1:1',
@@ -250,6 +256,7 @@ export function buildPosterSvg({
   const headline = buildHeadline(app, {
     title,
     subtitle,
+    body,
     ctaText,
     ctaUrl,
     width,
@@ -282,13 +289,16 @@ export function contactDetails() {
  */
 export function catalogue() {
   return {
-    apps: Object.entries(APPS).map(([key, app]) => ({
-      key,
+    apps: APPS.map((app) => ({
+      key: app.key,
       name: app.name,
       nameAr: app.nameAr,
       tagline: app.tagline,
+      taglineAr: app.taglineAr,
       url: app.url,
-      colors: { primary: app.primary, secondary: app.secondary, accent: app.accent },
+      colors: { ...app.colors },
+      features: app.features,
+      screenCount: app.screens.length,
     })),
     ratios: Object.entries(RATIOS).map(([key, size]) => ({
       key,
