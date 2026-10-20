@@ -129,6 +129,15 @@
       "enabled": true,
       "timeout": 600000
     },
+    "fastfree-social": {
+      "type": "local",
+      "command": [
+        "node",
+        "C:/Users/FastFree/Desktop/fastfree/fastfree_mcp_tools/fastfree_poster_mcp/src/index.js"
+      ],
+      "enabled": true,
+      "timeout": 120000
+    },
     "herdr": {
       "type": "local",
       "command": [
