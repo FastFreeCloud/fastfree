@@ -61,7 +61,11 @@ let
       ${tlsBlock}
       header -Server
       ${if config.fastfree.apps.fastfree_website then ''
-        reverse_proxy 127.0.0.1:9004
+        reverse_proxy 127.0.0.1:9004 {
+          header_up Host {host}
+          header_up X-Forwarded-Host {host}
+          header_up X-Forwarded-Proto {scheme}
+        }
       '' else ''
         redir https://panel.${domain}{uri} permanent
       ''}
