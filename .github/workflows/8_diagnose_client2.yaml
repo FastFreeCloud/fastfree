@@ -66,19 +66,17 @@ jobs:
         run: |
           set -uo pipefail
 
-          remote() { ssh -n -o BatchMode=yes -o ConnectTimeout=15 "$MACHINE" "$@"; }
+          remote() { timeout 20 ssh -n -o BatchMode=yes -o ConnectTimeout=10 "$MACHINE" "$@"; }
 
           if ! remote true; then
             echo "::error::تعذّر الاتصال بالسيرفر عبر SSH"
             exit 1
           fi
 
-          # تشغيل خدمة الموقع وفحص حالتها المباشرة
-          echo "=== محاولة تشغيل fastfree-website.service ==="
-          remote "systemctl reset-failed fastfree-website.service 2>&1 || true"
-          remote "systemctl start fastfree-website.service 2>&1 || true"
-          sleep 2
-          remote "systemctl status fastfree-website.service --no-pager -l 2>&1 || true"
+          # إنهاء أي عمليات nix أو switch عالقة وإعادة تشغيل خدمة الموقع
+          remote "pkill -f 'switch-to-configuration' 2>/dev/null || true"
+          remote "systemctl reset-failed fastfree-website.service fastfree-panel.service 2>/dev/null || true"
+          remote "systemctl restart --no-block fastfree-website.service 2>/dev/null || true"
 
           SUMMARY_FILE="$GITHUB_STEP_SUMMARY"
           echo "## 🔍 تقرير الفحص والتشخيص الشامل لخادم client2" >> "$SUMMARY_FILE"
