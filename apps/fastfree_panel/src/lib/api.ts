@@ -255,6 +255,40 @@ export function apiMachines(timeoutMs?: number): Promise<MachinesData> {
   return apiRequest<MachinesData>('/machines', timeoutMs === undefined ? {} : { timeoutMs });
 }
 
+export interface ClanBuildParams {
+  format?: string | undefined;
+  architecture?: 'x86_64-linux' | 'aarch64-linux' | undefined;
+  noSecrets?: boolean | undefined;
+  buildHost?: string | undefined;
+  dryRun?: boolean | undefined;
+}
+
+export interface ClanBuildResult {
+  machine: string;
+  format: string;
+  success: boolean;
+  message: string;
+  artifactPath?: string | null;
+  downloadUrl?: string | null;
+  workflowRunUrl?: string | null;
+  workflowId?: string | number | null;
+  durationMs?: number;
+  stdout?: string;
+}
+
+/** `POST /api/v1/machines/:name/build` — trigger real image build via GitHub Actions. */
+export function apiBuildMachine(
+  name: string,
+  params: ClanBuildParams = {},
+  timeoutMs?: number,
+): Promise<ClanBuildResult> {
+  return apiRequest<ClanBuildResult>(`/machines/${encodeURIComponent(name)}/build`, {
+    method: 'POST',
+    body: params,
+    ...(timeoutMs !== undefined ? { timeoutMs } : {}),
+  });
+}
+
 /** `GET /api/v1/global/show` — the configured clan identity. */
 export function apiGlobalShow(timeoutMs?: number): Promise<GlobalSummary> {
   return apiRequest<GlobalSummary>('/global/show', timeoutMs === undefined ? {} : { timeoutMs });

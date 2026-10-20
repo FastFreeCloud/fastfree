@@ -46,7 +46,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 env:
@@ -158,3 +158,16 @@ jobs:
           path: ${{ env.ARTIFACT_DIR }}
           if-no-files-found: error
           retention-days: 30
+
+      - name: "نشر الصورة في إصدارات GitHub Releases للتحميل المباشر"
+        uses: softprops/action-gh-release@v2
+        if: success()
+        with:
+          tag_name: "clan-images"
+          name: "Clan OS Images · صور الأجهزة الرسمية"
+          draft: false
+          prerelease: false
+          files: |
+            ${{ env.ARTIFACT_DIR }}/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

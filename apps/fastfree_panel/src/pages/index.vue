@@ -83,7 +83,7 @@ onMounted(() => {
     id = desktopStore.openWindow('clan-machines', 'Machines · أسطول الأجهزة', 'mdi-server-network');
   }
 
-  // Focus and arrange cleanly on the desktop
+  // Focus and arrange cleanly on the desktop as a normal floating window
   if (typeof window !== 'undefined' && id && desktopStore.windows[id]) {
     const headerH = 56;
     const dockH = 80;
@@ -91,15 +91,15 @@ onMounted(() => {
     const totalH = window.innerHeight - headerH - dockH;
     const win = desktopStore.windows[id];
     if (win) {
-      if (totalW >= 1200) {
-        const preferredW = Math.min(1180, totalW - 48);
-        win.left = Math.floor((totalW - preferredW) / 2);
-        win.top = headerH + 16;
-        win.width = preferredW;
-        win.height = Math.max(520, totalH - 32);
-      } else {
-        win.isMaximized = true;
-      }
+      win.isMaximized = false;
+      const marginX = totalW > 1200 ? 64 : 24;
+      const marginY = 24;
+      const preferredW = Math.min(1100, Math.max(380, totalW - marginX * 2));
+      const preferredH = Math.min(680, Math.max(420, totalH - marginY * 2));
+      win.width = preferredW;
+      win.height = preferredH;
+      win.left = Math.max(12, Math.floor((totalW - preferredW) / 2));
+      win.top = Math.max(headerH + 8, Math.floor(headerH + (totalH - preferredH) / 2));
     }
   }
 });

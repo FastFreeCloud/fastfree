@@ -1,0 +1,1 @@
+import{Q as e,Z as t,c as n,f as r}from"./index-V0BFz35S.js";var i=n(()=>{e.set(!1),t(`primary`,`#4F46E5`);let n=r();n.setMode(`light`),n.setAppSignature(`#4F46E5`)});export{i as default};

@@ -1,0 +1,1 @@
+import{i as e}from"./runtime-dom.esm-bundler-DfJ-TWg-.js";function t(t,n){let r=e(t);r.config.globalProperties=n.config.globalProperties;let{reload:i,...a}=n._context;return Object.assign(r._context,a),r}export{t};

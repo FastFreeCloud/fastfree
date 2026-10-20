@@ -398,7 +398,7 @@
 
                   <div class="q-pa-xs bg-grey-10 text-grey-3 font-mono text-caption rounded-borders q-mb-sm">
                     <div class="row items-center justify-between">
-                      <span>Workflow: <code>.github/workflows/10-client2.yaml</code></span>
+                      <span>Workflow: <code>.github/workflows/9_build_clan_image.yaml</code></span>
                       <q-chip dense size="xs" color="grey-8" text-color="white" label="branch: master" />
                     </div>
                   </div>
@@ -411,7 +411,7 @@
                       color="indigo-4"
                       icon="mdi-open-in-new"
                       label="View GitHub Actions Runs · متابعة سير العمل"
-                      href="https://github.com/fastfree/fastfree/actions"
+                      href="https://github.com/FastFreeCloud/fastfree/actions/workflows/9_build_clan_image.yaml"
                       target="_blank"
                       type="a"
                     />
@@ -544,23 +544,37 @@
                       color="positive"
                       class="full-width text-weight-bold"
                       icon="mdi-download"
-                      label="Download Image File · تحميل الصورة المباشر"
+                      label="Download Real Image · تحميل الصورة الفعلية"
                       @click="triggerDownload"
                     />
 
                     <q-btn
+                      v-if="lastBuildResult?.workflowRunUrl"
                       outline
-                      color="secondary"
+                      color="indigo-4"
                       class="full-width text-weight-bold"
-                      icon="mdi-console"
-                      label="Copy SCP Download Command · أمر التحميل بالسيرفر"
-                      @click="copyScpCommand"
+                      icon="mdi-github"
+                      label="View Run & Artifacts on GitHub Actions"
+                      :href="lastBuildResult.workflowRunUrl"
+                      target="_blank"
+                      type="a"
+                    />
+
+                    <q-btn
+                      outline
+                      color="purple-4"
+                      class="full-width text-weight-bold"
+                      icon="mdi-package-down"
+                      label="GitHub Releases Public Downloads · صفحة الإصدارات العامة"
+                      href="https://github.com/FastFreeCloud/fastfree/releases/tag/clan-images"
+                      target="_blank"
+                      type="a"
                     />
 
                     <q-btn
                       v-if="selectedFormat === 'iso' || selectedFormat === 'raw'"
                       flat
-                      color="dark"
+                      color="teal-4"
                       class="full-width"
                       icon="mdi-flash"
                       label="How to Flash to USB via Clan Flash · دليل الحرق على فلاشة"
@@ -650,6 +664,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useClanStore } from '../stores/clan';
+import { apiBuildMachine, type ClanBuildResult } from '../lib/api';
 
 const $q = useQuasar();
 const clanStore = useClanStore();
@@ -659,6 +674,7 @@ const currentStep = ref<number>(1);
 
 const selectedMachine = ref<string>(clanStore.selectedBuildMachine || 'client1');
 const selectedFormat = ref<string>(clanStore.selectedBuildFormat || 'iso');
+const lastBuildResult = ref<ClanBuildResult | null>(null);
 
 // Sync with clanStore when user opens builder from Machines screen
 watch(
@@ -904,91 +920,74 @@ async function startBuild() {
 
   isBuilding.value = true;
   buildComplete.value = false;
+  lastBuildResult.value = null;
   buildLogs.value = [];
-  buildProgress.value = 0.05;
-  currentBuildStage.value = 'Initializing Clan Flake environment...';
+  buildProgress.value = 0.2;
+  currentBuildStage.value = 'Connecting to FastFree Backend & Dispatching GitHub Actions Workflow...';
 
-  addLog(`[CI/CD Dispatch] Starting build for machine: ${selectedMachine.value}`, 'text-teal-3');
+  addLog(`[CI/CD Dispatch] Starting declarative build for machine: ${selectedMachine.value}`, 'text-teal-3');
   addLog(`[Target Format] ${selectedFormatInfo.value?.label} (${selectedFormat.value})`, 'text-purple-3');
   addLog(`[Command] ${currentCommand.value}`, 'text-green-4');
 
   try {
-    // Stage 1: Flake evaluation
-    currentBuildStage.value = 'Stage 1/5: Evaluating Clan Flake derivations & Disko schema...';
-    buildProgress.value = 0.20;
-    addLog('Evaluating Clan 26.05 flake and target machine dependencies...');
-    await new Promise((r) => setTimeout(r, 600));
+    addLog('Contacting FastFree Panel API (/api/v1/machines/:name/build)...', 'text-grey-4');
 
-    // Stage 2: Secrets sealing
-    currentBuildStage.value = 'Stage 2/5: Sealing Age/SOPS secrets & WireGuard mesh keys...';
-    buildProgress.value = 0.40;
-    if (includeSecrets.value) {
-      addLog('Encrypting Age/SOPS credentials and machine public keys into image closure...');
-    } else {
-      addLog('Skipping secrets (--no-secrets flag passed)');
-    }
-    await new Promise((r) => setTimeout(r, 700));
+    const result = await apiBuildMachine(selectedMachine.value, {
+      format: selectedFormat.value,
+      architecture: 'x86_64-linux',
+      noSecrets: !includeSecrets.value,
+      dryRun: dryRun.value,
+      buildHost: buildHost.value.trim() || undefined,
+    });
 
-    // Stage 3: Nix closure compilation
-    currentBuildStage.value = 'Stage 3/5: Compiling NixOS kernel and system packages...';
-    buildProgress.value = 0.65;
-    if (buildHost.value.trim()) {
-      addLog(`Delegating compilation to build-host: ${buildHost.value.trim()}`);
-    } else {
-      addLog('Compiling NixOS system closure with native packages via GitHub Actions Runner...');
-    }
-    await new Promise((r) => setTimeout(r, 900));
-
-    // Stage 4: Disk packaging
-    currentBuildStage.value = `Stage 4/5: Generating ${selectedFormat.value.toUpperCase()} disk image layout...`;
-    buildProgress.value = 0.85;
-    addLog(`Creating ${selectedFormatInfo.value?.label} filesystem and partition tables...`);
-    await new Promise((r) => setTimeout(r, 700));
-
-    // Stage 5: Finalizing
-    currentBuildStage.value = 'Stage 5/5: Finalizing image artifact & computing SHA-256...';
+    lastBuildResult.value = result;
     buildProgress.value = 1.0;
-    addLog('Computing SHA-256 checksum and storing artifact in downloads repository...');
-    await new Promise((r) => setTimeout(r, 500));
-
-    addLog(`Build complete! Output file: /srv/fastfree-panel/downloads/${artifactFileName.value}`, 'text-positive');
     buildComplete.value = true;
-    currentBuildStage.value = 'Build Succeeded · Ready to download';
+    currentBuildStage.value = result.workflowId
+      ? `Workflow #${result.workflowId} Dispatched & Running on GitHub Actions`
+      : 'Build Dispatched Successfully · Ready on GitHub';
+
+    addLog(`Build job dispatched to GitHub Actions successfully!`, 'text-positive');
+    if (result.workflowRunUrl) {
+      addLog(`Workflow Run: ${result.workflowRunUrl}`, 'text-teal-3');
+    }
+    if (result.downloadUrl) {
+      addLog(`Artifacts Download Target: ${result.downloadUrl}`, 'text-teal-3');
+    }
+    if (result.stdout) {
+      addLog(result.stdout, 'text-grey-4');
+    }
 
     $q.notify({
       type: 'positive',
       icon: 'mdi-check-circle',
-      message: `Image for "${selectedMachine.value}" (${selectedFormat.value}) built successfully!`,
-      timeout: 3000,
+      message: `Image build for "${selectedMachine.value}" (${selectedFormat.value}) dispatched to GitHub Actions!`,
+      timeout: 4000,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Build failed';
-    addLog(`Error during build: ${msg}`, 'text-negative');
-    $q.notify({ type: 'negative', message: `Build failed: ${msg}` });
+    addLog(`Error during build dispatch: ${msg}`, 'text-negative');
+    $q.notify({ type: 'negative', message: `Build dispatch failed: ${msg}` });
   } finally {
     isBuilding.value = false;
   }
 }
 
 function triggerDownload() {
-  const downloadUrl = `/srv/fastfree-panel/downloads/${artifactFileName.value}`;
+  const downloadUrl =
+    lastBuildResult.value?.downloadUrl ||
+    lastBuildResult.value?.workflowRunUrl ||
+    'https://github.com/FastFreeCloud/fastfree/releases/tag/clan-images';
+
   $q.notify({
-    type: 'info',
+    type: 'positive',
     icon: 'mdi-download',
-    message: `Starting direct download: ${downloadUrl}`,
+    message: `Opening direct download page: ${downloadUrl}`,
+    timeout: 3500,
   });
 
   if (typeof window !== 'undefined') {
-    const element = document.createElement('a');
-    element.setAttribute(
-      'href',
-      `data:text/plain;charset=utf-8,${encodeURIComponent('FastFree Clan Machine Image: ' + artifactFileName.value)}`
-    );
-    element.setAttribute('download', artifactFileName.value);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    window.open(downloadUrl, '_blank');
   }
 }
 
@@ -1010,18 +1009,9 @@ function copyCommand() {
   }
 }
 
-function copyScpCommand() {
-  const scpCmd = `scp root@76.13.51.10:/srv/fastfree-panel/downloads/${artifactFileName.value} .`;
-  if (typeof navigator !== 'undefined' && navigator.clipboard) {
-    navigator.clipboard
-      .writeText(scpCmd)
-      .then(() => $q.notify({ type: 'positive', message: 'SCP command copied to clipboard!' }))
-      .catch(() => $q.notify({ type: 'warning', message: 'Failed to copy command' }));
-  }
-}
 
 function copyGhCommand() {
-  const ghCmd = `gh workflow run 10-client2.yaml --ref master -f machine=${selectedMachine.value} -f format=${selectedFormat.value}`;
+  const ghCmd = `gh workflow run 9_build_clan_image.yaml --ref master -f machine=${selectedMachine.value} -f format=${selectedFormat.value}`;
   if (typeof navigator !== 'undefined' && navigator.clipboard) {
     navigator.clipboard
       .writeText(ghCmd)

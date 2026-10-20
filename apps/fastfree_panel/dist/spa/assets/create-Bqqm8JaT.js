@@ -1,0 +1,1 @@
+import{fn as e,gn as t,k as n}from"./runtime-core.esm-bundler-afr98a2z.js";function r(e,t,n,r){return Object.defineProperty(e,t,{get:n,set:r,enumerable:!0}),e}function i(e,t){for(let n in t)r(e,n,t[n]);return e}function a(t){return e(n(t))}function o(t){return e(t)}var s=(e,n)=>{let i=t(e);for(let t in e)r(n,t,()=>i[t],e=>{i[t]=e});return n};export{r as a,i,o as n,s as r,a as t};
