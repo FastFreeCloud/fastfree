@@ -74,18 +74,22 @@ jobs:
             exit 1
           fi
 
-          # تحديث حزمة الموقع مباشرة إلى أحدث Release رسمي website-v1.0.53
-          remote "
-            systemctl reset-failed 2>/dev/null || true
-            echo '[update] Fetching latest website bundle...'
-            curl -fsSL https://github.com/FastFreeCloud/fastfree/releases/download/website-v1.0.53/fastfree-website.tar.gz -o /tmp/fastfree-website.tar.gz 2>/dev/null
+          # 1. تحديث حزمة الموقع مباشرة إلى أحدث Release رسمي website-v1.0.53
+          echo "=== جاري تنزيل وتثبيت حزمة الموقع الحديثة على السيرفر ==="
+          ssh -o BatchMode=yes -o ConnectTimeout=15 "$MACHINE" "
+            set -e
+            echo '[update] Fetching latest website bundle (website-v1.0.53)...'
+            curl -fsSL --max-time 180 'https://github.com/FastFreeCloud/fastfree/releases/download/website-v1.0.53/fastfree-website.tar.gz' -o /tmp/fastfree-website.tar.gz
             if [ -s /tmp/fastfree-website.tar.gz ]; then
-              tar -xzf /tmp/fastfree-website.tar.gz -C /srv/fastfree-website 2>/dev/null || true
+              echo '[update] Extracting bundle to /srv/fastfree-website...'
+              tar -xzf /tmp/fastfree-website.tar.gz -C /srv/fastfree-website
               rm -f /tmp/fastfree-website.tar.gz
+              echo '[update] Restarting service on port 9004...'
               fuser -k 9004/tcp 2>/dev/null || true
-              sleep 1
+              sleep 2
+              systemctl reset-failed fastfree-website.service 2>/dev/null || true
               systemctl restart fastfree-website.service 2>/dev/null || true
-              sleep 1
+              sleep 2
             fi
             if ! ss -tulnp | grep -q ':9004 '; then
               NODE_BIN=\$(which node 2>/dev/null || find /nix/store -maxdepth 3 -name node -type f -perm -111 2>/dev/null | head -n 1)
@@ -93,8 +97,10 @@ jobs:
                 cd /srv/fastfree-website && PORT=9004 HOSTNAME=127.0.0.1 nohup \"\$NODE_BIN\" server.js >/tmp/fastfree-website.log 2>&1 &
               fi
             fi
-          " 2>/dev/null || true
-          sleep 2
+            echo '[update] Website update complete.'
+          " || echo "[update] Note: website update completed with non-zero exit code"
+
+          sleep 3
 
           SUMMARY_FILE="$GITHUB_STEP_SUMMARY"
           echo "## 🔍 تقرير الفحص والتشخيص الشامل لخادم client2" >> "$SUMMARY_FILE"
