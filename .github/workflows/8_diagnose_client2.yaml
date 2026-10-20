@@ -67,20 +67,26 @@ jobs:
           set -u
           set +e
 
-          remote() { ssh -o BatchMode=yes -o ConnectTimeout=15 "$MACHINE" "$@" || echo "(SSH error: $?)"; }
+          remote() { timeout 25 ssh -o BatchMode=yes -o ConnectTimeout=10 "$MACHINE" "$@" || echo "(SSH error or timeout: $?)"; }
 
-          if ! ssh -o BatchMode=yes -o ConnectTimeout=15 "$MACHINE" true; then
+          if ! timeout 15 ssh -o BatchMode=yes -o ConnectTimeout=10 "$MACHINE" true; then
             echo "::error::تعذّر الاتصال بالسيرفر عبر SSH"
             exit 1
           fi
 
-          # تنظيف أي حالات فشل سابقة وتحديث الموقع لأحدث Release رسمي
+          # تحديث حزمة الموقع مباشرة إلى أحدث Release رسمي website-v1.0.53
           remote "
             systemctl reset-failed 2>/dev/null || true
-            echo '[diagnose] Pulling latest website release...'
-            systemctl restart fastfree-website-setup.service 2>/dev/null || true
-            systemctl restart fastfree-website.service 2>/dev/null || true
-            sleep 2
+            echo '[update] Fetching latest website bundle...'
+            curl -fsSL https://github.com/FastFreeCloud/fastfree/releases/download/website-v1.0.53/fastfree-website.tar.gz -o /tmp/fastfree-website.tar.gz 2>/dev/null
+            if [ -s /tmp/fastfree-website.tar.gz ]; then
+              tar -xzf /tmp/fastfree-website.tar.gz -C /srv/fastfree-website 2>/dev/null || true
+              rm -f /tmp/fastfree-website.tar.gz
+              fuser -k 9004/tcp 2>/dev/null || true
+              sleep 1
+              systemctl restart fastfree-website.service 2>/dev/null || true
+              sleep 1
+            fi
             if ! ss -tulnp | grep -q ':9004 '; then
               NODE_BIN=\$(which node 2>/dev/null || find /nix/store -maxdepth 3 -name node -type f -perm -111 2>/dev/null | head -n 1)
               if [ -n \"\$NODE_BIN\" ] && [ -f /srv/fastfree-website/server.js ]; then
@@ -88,7 +94,7 @@ jobs:
               fi
             fi
           " 2>/dev/null || true
-          sleep 3
+          sleep 2
 
           SUMMARY_FILE="$GITHUB_STEP_SUMMARY"
           echo "## 🔍 تقرير الفحص والتشخيص الشامل لخادم client2" >> "$SUMMARY_FILE"
