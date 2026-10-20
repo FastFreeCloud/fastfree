@@ -120,6 +120,10 @@ jobs:
           cp -r apps/fastfree_panel/dist/spa/* /tmp/panel-bundle/spa/
           cp -r apps/fastfree_panel/backend/dist/* /tmp/panel-bundle/backend/dist/
           cp apps/fastfree_panel/backend/package.json /tmp/panel-bundle/backend/
+          # تثبيت وتضمين مكتبات الإنتاج الخاصة بخادم Hono و MCP للـ Backend
+          cd apps/fastfree_panel/backend
+          pnpm install --prod --no-optional
+          cp -r node_modules /tmp/panel-bundle/backend/
           cd /tmp/panel-bundle
           tar -czf "$GITHUB_WORKSPACE/fastfree-panel.tar.gz" .
 

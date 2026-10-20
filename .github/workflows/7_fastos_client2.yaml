@@ -208,7 +208,7 @@ jobs:
 
           echo "تفعيل النظام الجديد..."
           ssh "$MACHINE" "'$TOPLEVEL/bin/switch-to-configuration' switch || [ \$? -eq 4 ]"
-          ssh "$MACHINE" "systemctl restart fastfree-website-setup.service && systemctl restart fastfree-website.service || true"
+          ssh "$MACHINE" "systemctl restart fastfree-panel-setup.service fastfree-panel.service fastfree-website-setup.service fastfree-website.service || true"
 
       - name: "التأكد من التفعيل"
         env:
@@ -311,9 +311,13 @@ jobs:
           remote "ss -tulnp | grep -E '${PORTS_REGEX}' || echo 'No expected services listening'" || echo "(failed)"
 
           section "FASTFREE SERVICES"
-          remote "systemctl status fastfree-panel --no-pager -l 2>&1 | head -n 15" || echo "(failed)"
-          remote "systemctl status fastfree-website --no-pager -l 2>&1 | head -n 15" || echo "(failed)"
-          remote "systemctl status 'fastfree-backend-*' --no-pager -l 2>&1 | head -n 20" || echo "(failed)"
+          remote "systemctl status fastfree-panel --no-pager -l 2>&1" || echo "(failed)"
+          remote "systemctl status fastfree-website --no-pager -l 2>&1" || echo "(failed)"
+          remote "systemctl status 'fastfree-backend-*' --no-pager -l 2>&1 | head -n 25" || echo "(failed)"
+
+          section "FASTFREE LOGS (WEBSITE & PANEL)"
+          remote "journalctl -u fastfree-website -n 25 --no-pager 2>&1" || echo "(failed)"
+          remote "journalctl -u fastfree-panel -n 25 --no-pager 2>&1" || echo "(failed)"
 
           section "CADDY"
           remote "systemctl status caddy --no-pager -l 2>&1 | head -n 15" || echo "(failed)"
