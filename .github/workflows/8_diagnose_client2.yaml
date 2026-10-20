@@ -1,0 +1,208 @@
+name: "8_diagnose_client2"
+
+###############################################################################
+# FastFree OS — التشخيص والفحص الشامل لخادم عميل 2 (client2)
+#
+# الغرض:
+#   الاتصال المباشر بخادم client2 واستخراج تقرير شامل لكل تطبيق وخدمة،
+#   وفحص الأخطاء والتحذيرات وحالة المنافذ والـ systemd services،
+#   وعرض تقرير تفصيلي في ملخص الـ Run (GitHub Step Summary).
+###############################################################################
+
+on:
+  workflow_dispatch:
+    inputs:
+      lines_count:
+        description: "عدد أسطر سجلات journalctl لكل خدمة"
+        required: false
+        type: string
+        default: "50"
+
+concurrency:
+  group: fastfree-diagnose-client2
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  MACHINE: "client2"
+
+jobs:
+  diagnose:
+    name: "فحص وتشخيص خدمات خادم client2"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: "إعداد SSH"
+        env:
+          DEPLOY_KEY: ${{ secrets.CLIENT2_DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ secrets.CLIENT2_IP }}
+        run: |
+          set -euo pipefail
+          if [ -z "$DEPLOY_KEY" ] || [ -z "$DEPLOY_HOST" ]; then
+            echo "::error::السر CLIENT2_DEPLOY_KEY أو CLIENT2_IP غير متوفر."
+            exit 1
+          fi
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          {
+            printf 'Host %s %s\n' "$MACHINE" "$DEPLOY_HOST"
+            printf '  HostName %s\n' "$DEPLOY_HOST"
+            printf '  User root\n'
+            printf '  IdentityFile ~/.ssh/deploy_key\n'
+            printf '  IdentitiesOnly yes\n'
+            printf '  StrictHostKeyChecking accept-new\n'
+            printf '  ServerAliveInterval 30\n'
+            printf '  ConnectTimeout 15\n'
+          } > ~/.ssh/config
+          chmod 600 ~/.ssh/config
+
+      - name: "تشغيل الفحص الشامل وتوليد التقرير"
+        env:
+          LINES: ${{ inputs.lines_count }}
+        run: |
+          set -uo pipefail
+
+          remote() { ssh -o BatchMode=yes -o ConnectTimeout=15 "$MACHINE" "$@"; }
+
+          if ! remote true; then
+            echo "::error::تعذّر الاتصال بالسيرفر عبر SSH"
+            exit 1
+          fi
+
+          SUMMARY_FILE="$GITHUB_STEP_SUMMARY"
+          echo "## 🔍 تقرير الفحص والتشخيص الشامل لخادم client2" >> "$SUMMARY_FILE"
+          echo "تاريخ الفحص: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> "$SUMMARY_FILE"
+          echo "" >> "$SUMMARY_FILE"
+
+          # 1. حالة النظام الأساسية
+          echo "### 🖥️ 1. معلومات النظام والعتاد" >> "$SUMMARY_FILE"
+          SYS_INFO=$(remote "hostname; uname -sr; uptime; nixos-version" 2>&1 || echo "فشل الاستعلام")
+          echo '```text' >> "$SUMMARY_FILE"
+          echo "$SYS_INFO" >> "$SUMMARY_FILE"
+          echo '```' >> "$SUMMARY_FILE"
+
+          # 2. فحص النطاقات الخارجية
+          echo "### 🌐 2. فحص استجابة النطاقات الخارجية (HTTPS Audit)" >> "$SUMMARY_FILE"
+          echo "| النطاق | كود HTTP | الحالة | ملاحظة |" >> "$SUMMARY_FILE"
+          echo "| :--- | :--- | :--- | :--- |" >> "$SUMMARY_FILE"
+
+          DOMAINS=(
+            "fastfree.cloud:Next.js Website"
+            "panel.fastfree.cloud:Clan Control Panel"
+            "backend.fastfree.cloud:Frappe / Python Engine"
+            "ledger.fastfree.cloud:Accounting & Ledger SPA"
+            "erp.fastfree.cloud:ERP SPA"
+            "hr.fastfree.cloud:HR SPA"
+            "pos.fastfree.cloud:POS SPA"
+            "db.fastfree.cloud:DBGate Database Studio"
+            "cockpit.fastfree.cloud:Linux Cockpit Management"
+          )
+
+          for item in "${DOMAINS[@]}"; do
+            domain="${item%%:*}"
+            desc="${item##*:}"
+            code=$(curl -m 5 -s -o /dev/null -w '%{http_code}' "https://${domain}/" 2>/dev/null || true)
+            code="${code:-000}"
+            if [ "$code" = "200" ] || [ "$code" = "301" ] || [ "$code" = "302" ]; then
+              status="✅ سليم"
+            else
+              status="❌ خطأ (${code})"
+            fi
+            echo "| \`https://${domain}\` | **${code}** | ${status} | ${desc} |" >> "$SUMMARY_FILE"
+          done
+          echo "" >> "$SUMMARY_FILE"
+
+          # 3. الخدمات الفاشلة (systemctl --failed)
+          echo "### ⚠️ 3. الخدمات التي واجهت أخطاء (systemctl --failed)" >> "$SUMMARY_FILE"
+          FAILED_SERVICES=$(remote "systemctl --failed --no-legend --no-pager 2>&1" || echo "لا توجد")
+          if [ -z "$FAILED_SERVICES" ] || [[ "$FAILED_SERVICES" == *"0 loaded units"* ]]; then
+            echo "✅ **لا توجد أي خدمات فاشلة على مستوى النظام بالكامل.**" >> "$SUMMARY_FILE"
+          else
+            echo '```text' >> "$SUMMARY_FILE"
+            echo "$FAILED_SERVICES" >> "$SUMMARY_FILE"
+            echo '```' >> "$SUMMARY_FILE"
+          fi
+          echo "" >> "$SUMMARY_FILE"
+
+          # 4. المنافذ المفتوحة للاستماع (ss -tulnp)
+          echo "### 🔌 4. منافذ الاستماع المحلية (Listening Ports)" >> "$SUMMARY_FILE"
+          PORTS=$(remote "ss -tulnp | grep -E '(22|80|443|3306|9993|51821|8000|8080|8082|900[0-9]|9090|9099)' || ss -tulnp" 2>&1)
+          echo '<details><summary><b>اضغط هنا لعرض تفاصيل المنافذ المحلية</b></summary>' >> "$SUMMARY_FILE"
+          echo '' >> "$SUMMARY_FILE"
+          echo '```text' >> "$SUMMARY_FILE"
+          echo "$PORTS" >> "$SUMMARY_FILE"
+          echo '```' >> "$SUMMARY_FILE"
+          echo '</details>' >> "$SUMMARY_FILE"
+          echo "" >> "$SUMMARY_FILE"
+
+          # 5. فحص مجلدات التطبيقات في /srv
+          echo "### 📁 5. فحص ملفات التطبيقات داخل /srv" >> "$SUMMARY_FILE"
+          SRV_LS=$(remote "ls -la /srv/fastfree-* 2>&1" || echo "فشل الاستعلام")
+          echo '<details><summary><b>اضغط هنا لعرض محتويات مجلدات التطبيقات</b></summary>' >> "$SUMMARY_FILE"
+          echo '' >> "$SUMMARY_FILE"
+          echo '```text' >> "$SUMMARY_FILE"
+          echo "$SRV_LS" >> "$SUMMARY_FILE"
+          echo '```' >> "$SUMMARY_FILE"
+          echo '</details>' >> "$SUMMARY_FILE"
+          echo "" >> "$SUMMARY_FILE"
+
+          # 6. فحص الاستجابة الداخلية على Localhost
+          echo "### 🔄 6. فحص الاستجابة المباشرة على المضيف المحلي (Localhost Checks)" >> "$SUMMARY_FILE"
+          echo '```text' >> "$SUMMARY_FILE"
+          LOCAL_CHECKS=$(remote "
+            echo '--- 9004 Website ---' && curl -s -I -m 3 http://127.0.0.1:9004 | head -n 3 || echo 'FAILED: 9004'
+            echo '--- 9099 Panel Backend ---' && curl -s -I -m 3 http://127.0.0.1:9099/api/v1/health | head -n 3 || echo 'FAILED: 9099'
+            echo '--- 8000 Frappe Backend ---' && curl -s -I -m 3 http://127.0.0.1:8000 | head -n 3 || echo 'FAILED: 8000'
+            echo '--- 9001 Ledger SPA ---' && curl -s -I -m 3 http://127.0.0.1:9001 | head -n 3 || echo 'FAILED: 9001'
+            echo '--- 9002 ERP SPA ---' && curl -s -I -m 3 http://127.0.0.1:9002 | head -n 3 || echo 'FAILED: 9002'
+            echo '--- 9003 POS SPA ---' && curl -s -I -m 3 http://127.0.0.1:9003 | head -n 3 || echo 'FAILED: 9003'
+            echo '--- 9005 HR SPA ---' && curl -s -I -m 3 http://127.0.0.1:9005 | head -n 3 || echo 'FAILED: 9005'
+          " 2>&1)
+          echo "$LOCAL_CHECKS" >> "$SUMMARY_FILE"
+          echo '```' >> "$SUMMARY_FILE"
+          echo "" >> "$SUMMARY_FILE"
+
+          # 7. سجلات كل خدمة بالتفصيل
+          echo "### 📋 7. سجلات الأخطاء والتشغيل التفصيلية لكل خدمة" >> "$SUMMARY_FILE"
+
+          SERVICES=(
+            "fastfree-website:سجلات خادم الموقع (Next.js Standalone)"
+            "fastfree-website-setup:سجلات تهيئة وتنزيل حزمة الموقع"
+            "fastfree-panel:سجلات خادم لوحة التحكم (Hono Backend)"
+            "fastfree-panel-setup:سجلات تهيئة وتنزيل لوحة التحكم"
+            "fastfree-backend-web:سجلات محرك الخادم (Frappe/Node)"
+            "fastfree-backend-setup:سجلات تهيئة الخادم وقواعد البيانات"
+            "caddy:سجلات خادم الويب العكسي Caddy"
+          )
+
+          for s_item in "${SERVICES[@]}"; do
+            s_name="${s_item%%:*}"
+            s_desc="${s_item##*:}"
+            echo "<details><summary><b>سجلات $s_name ($s_desc)</b></summary>" >> "$SUMMARY_FILE"
+            echo '' >> "$SUMMARY_FILE"
+            echo '```text' >> "$SUMMARY_FILE"
+            LOGS=$(remote "journalctl -u $s_name -n $LINES --no-pager 2>&1" || echo "لا توجد سجلات")
+            echo "$LOGS" >> "$SUMMARY_FILE"
+            echo '```' >> "$SUMMARY_FILE"
+            echo '</details>' >> "$SUMMARY_FILE"
+            echo "" >> "$SUMMARY_FILE"
+          done
+
+          # 8. أهم أخطاء وتحذيرات النظام من journalctl
+          echo "### 🚨 8. أخطاء النظام ذات الأولوية العالية (Priority Error & Critical)" >> "$SUMMARY_FILE"
+          SYS_ERRORS=$(remote "journalctl -p 3 -xb -n 40 --no-pager 2>&1" || echo "لا توجد أخطاء")
+          echo '<details><summary><b>اضغط هنا لعرض أخطاء النظام العامة (journalctl -p 3)</b></summary>' >> "$SUMMARY_FILE"
+          echo '' >> "$SUMMARY_FILE"
+          echo '```text' >> "$SUMMARY_FILE"
+          echo "$SYS_ERRORS" >> "$SUMMARY_FILE"
+          echo '```' >> "$SUMMARY_FILE"
+          echo '</details>' >> "$SUMMARY_FILE"
+          echo "" >> "$SUMMARY_FILE"
+
+      - name: "حذف المفاتيح المؤقتة"
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
