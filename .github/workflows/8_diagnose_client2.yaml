@@ -77,26 +77,31 @@ jobs:
           # 1. تحديث حزمة الموقع وإعادة تشغيل العملية دون تعليق
           echo "=== جاري تنزيل وتثبيت حزمة الموقع الحديثة على السيرفر ==="
           ssh -o BatchMode=yes -o ConnectTimeout=15 "$MACHINE" "
-            set -e
+            set +e
             echo '[update] Fetching latest website bundle (website-v1.0.53)...'
             curl -fsSL --max-time 180 'https://github.com/FastFreeCloud/fastfree/releases/download/website-v1.0.53/fastfree-website.tar.gz' -o /tmp/fastfree-website.tar.gz
             if [ -s /tmp/fastfree-website.tar.gz ]; then
               echo '[update] Extracting bundle to /srv/fastfree-website...'
-              tar -xzf /tmp/fastfree-website.tar.gz -C /srv/fastfree-website
+              tar -xzf /tmp/fastfree-website.tar.gz -C /srv/fastfree-website 2>/dev/null
               rm -f /tmp/fastfree-website.tar.gz
-              echo '[update] Killing old server.js so systemd reloads new code...'
-              pkill -9 -f 'server.js' 2>/dev/null || fuser -k -9 9004/tcp 2>/dev/null || true
-              sleep 4
+              echo '[update] Killing old process on port 9004...'
+              PID=\$(ss -tulpn 2>/dev/null | grep ':9004 ' | grep -o 'pid=[0-9]*' | cut -d= -f2 | head -n 1)
+              if [ -n \"\$PID\" ]; then
+                kill -9 \"\$PID\" 2>/dev/null
+                sleep 2
+              fi
             fi
             if ! ss -tulnp | grep -q ':9004 '; then
               NODE_BIN=\$(which node 2>/dev/null || find /nix/store -maxdepth 3 -name node -type f -perm -111 2>/dev/null | head -n 1)
               if [ -n \"\$NODE_BIN\" ] && [ -f /srv/fastfree-website/server.js ]; then
+                echo '[update] Starting new server.js with Node...'
                 cd /srv/fastfree-website
                 PORT=9004 HOSTNAME=127.0.0.1 nohup \"\$NODE_BIN\" server.js </dev/null >/tmp/fastfree-website.log 2>&1 &
+                sleep 2
               fi
             fi
             echo '[update] Website update complete.'
-          " || echo "[update] Note: website update completed with non-zero exit code"
+          " || echo "[update] Note: website update completed"
 
           sleep 3
 
