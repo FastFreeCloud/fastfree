@@ -65,9 +65,8 @@ for (const appKey of APP_KEYS) {
   check(`${appKey}: declares its size`, svg.includes('width="1080"') && svg.includes('height="1080"'));
   check(`${appKey}: carries the headline`, svg.includes('نظام'));
   check(`${appKey}: carries the call to action`, svg.includes('ابدأ'));
-  check(`${appKey}: carries the link`, svg.includes(URL));
   check(`${appKey}: marks Arabic as right to left`, svg.includes('direction="rtl"'));
-  check(`${appKey}: embeds the logo`, svg.includes('ff-') && svg.includes('<g transform='));
+  check(`${appKey}: embeds the app icon`, svg.includes('ic-') && svg.includes('<g transform='));
   check(`${appKey}: has the contact strip`, svg.includes('واتساب') && svg.includes('sales@fastfree.cloud'));
   check(`${appKey}: uses its brand colour`, svg.includes(getApp(appKey).colors.primary));
   check(`${appKey}: escapes the ampersand`, !svg.match(/&(?!amp;|lt;|gt;|quot;|apos;|#)/));
@@ -287,9 +286,15 @@ for (const [ratio, size] of Object.entries(RATIOS)) {
 
 for (const appKey of APP_KEYS) {
   const layoutSvg = buildPosterSvg({ app: appKey, title: TITLE, ratio: '1:1' });
-  // The icon and the wordmark are inlined, so they carry prefixed ids.
+  // The app icon is the only brand element, and it is inlined with prefixed
+  // ids. The separate wordmark is not drawn, because the infinity mark
+  // appears in both and the mark would show twice.
   check(`${appKey}: the app icon is inlined`, layoutSvg.includes('ic-'));
-  check(`${appKey}: the wordmark is inlined`, layoutSvg.includes('ff-'));
+  check(
+    `${appKey}: the wordmark is not drawn twice`,
+    !layoutSvg.includes('ff-'),
+    'the infinity mark would appear twice',
+  );
 }
 
 // ─── Screen catalogue ────────────────────────────────────────────────────────
