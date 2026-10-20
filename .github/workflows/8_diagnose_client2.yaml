@@ -83,6 +83,11 @@ jobs:
                 cd /srv/fastfree-website && PORT=9004 HOSTNAME=127.0.0.1 nohup \"\$NODE_BIN\" server.js >/tmp/fastfree-website.log 2>&1 &
               fi
             fi
+            # تحديث ترويسات Caddy لضمان التوجيه الصحيح لموقع fastfree.cloud
+            if grep -q 'reverse_proxy 127.0.0.1:9004$' /etc/caddy/Caddyfile 2>/dev/null; then
+              sed -i 's|reverse_proxy 127.0.0.1:9004$|reverse_proxy 127.0.0.1:9004 {\n    header_up Host {host}\n    header_up X-Forwarded-Host {host}\n    header_up X-Forwarded-Proto {scheme}\n  }|g' /etc/caddy/Caddyfile
+              systemctl reload caddy 2>/dev/null || true
+            fi
           " 2>/dev/null || true
           sleep 3
 
