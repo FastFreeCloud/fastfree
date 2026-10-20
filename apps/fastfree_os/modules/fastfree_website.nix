@@ -149,7 +149,8 @@ in
     systemd.services.fastfree-website = {
       description = "FastFree Website (Next.js Production Server)";
       after = [ "network-online.target" "fastfree-website-setup.service" ];
-      wants = [ "network-online.target" "fastfree-website-setup.service" ];
+      wants = [ "network-online.target" ];
+      requires = [ "fastfree-website-setup.service" ];
       wantedBy = [ "multi-user.target" ];
       restartTriggers = [
         config.environment.etc."caddy/Caddyfile".text
@@ -168,6 +169,8 @@ in
         RestartSec = "5s";
         ExecStart = pkgs.writeShellScript "fastfree-website-start" ''
           cd "${siteDir}"
+          echo "[fastfree-website] Checking files in ${siteDir}..."
+          ls -la "${siteDir}" 2>&1 || true
           if [ -f "${siteDir}/server.js" ]; then
             echo "[fastfree-website] Starting Next.js standalone server on 127.0.0.1:9004..."
             exec ${pkgs.nodejs_22}/bin/node "${siteDir}/server.js"
@@ -178,7 +181,7 @@ in
             echo "[fastfree-website] Starting Next.js production server via next binary on 127.0.0.1:9004..."
             exec ${pkgs.nodejs_22}/bin/node "${siteDir}/node_modules/next/dist/bin/next" start -p 9004 -H 127.0.0.1
           else
-            echo "[fastfree-website] Waiting for assets to initialize..."
+            echo "[fastfree-website] ERROR: No runnable server found in ${siteDir}!"
             sleep 5
             exit 1
           fi
