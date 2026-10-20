@@ -101,7 +101,7 @@ in
                 rm -rf "${siteDir}.old"
                 echo "[fastfree-website] Swapped in release tarball (atomically)."
                 valid_local=1
-                systemctl restart fastfree-website.service 2>/dev/null || true
+                systemctl restart --no-block fastfree-website.service 2>/dev/null || true
               else
                 mv "${siteDir}.old" "${siteDir}" 2>/dev/null || true
                 rm -rf "${siteDir}.new"
