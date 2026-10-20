@@ -36,9 +36,9 @@ export function brandRead() {
  * Build a generation prompt from the brand kit.
  * Returned comma-free because the Flow editor strips commas.
  */
-export function brandPrompt({ request, kind = 'illustration', ratio = '1:1', exclude = [] }) {
+export function brandPrompt({ request, kind = 'illustration', ratio = '1:1', exclude = [], app }) {
   if (!request?.trim()) throw new Error('request is required');
-  const prompt = cleanForFlow(buildPrompt(request, { kind, ratio, exclude }));
+  const prompt = cleanForFlow(buildPrompt(request, { kind, ratio, exclude, app }));
 
   return {
     ok: true,
