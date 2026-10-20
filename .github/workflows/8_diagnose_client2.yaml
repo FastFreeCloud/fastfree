@@ -100,7 +100,40 @@ jobs:
                 sleep 2
               fi
             fi
-            echo '[update] Website update complete.'
+            # تحديث حزمة لوحة التحكم Panel إلى الإصدار الحديث panel-v1.0.6
+            echo '[update] Fetching latest panel bundle (panel-v1.0.6)...'
+            curl -fsSL --max-time 180 'https://github.com/FastFreeCloud/fastfree/releases/download/panel-v1.0.6/fastfree-panel.tar.gz' -o /tmp/fastfree-panel.tar.gz
+            if [ -s /tmp/fastfree-panel.tar.gz ]; then
+              echo '[update] Extracting panel bundle...'
+              rm -rf /tmp/panel-staging && mkdir -p /tmp/panel-staging
+              tar -xzf /tmp/fastfree-panel.tar.gz -C /tmp/panel-staging 2>/dev/null
+              rm -f /tmp/fastfree-panel.tar.gz
+              if [ -d /tmp/panel-staging/spa ]; then
+                cp -rf /tmp/panel-staging/spa/* /srv/fastfree-panel/ 2>/dev/null || true
+              fi
+              if [ -d /tmp/panel-staging/backend/dist ]; then
+                mkdir -p /var/lib/fastfree-panel/backend/dist
+                cp -rf /tmp/panel-staging/backend/dist/* /var/lib/fastfree-panel/backend/dist/ 2>/dev/null || true
+              fi
+              rm -rf /tmp/panel-staging
+              echo '[update] Restarting panel process on port 9099...'
+              PID_PANEL=\$(ss -tulpn 2>/dev/null | grep ':9099 ' | grep -o 'pid=[0-9]*' | cut -d= -f2 | head -n 1)
+              if [ -n \"\$PID_PANEL\" ]; then
+                kill -9 \"\$PID_PANEL\" 2>/dev/null
+                sleep 2
+              fi
+            fi
+            if ! ss -tulnp | grep -q ':9099 '; then
+              NODE_BIN=\$(which node 2>/dev/null || find /nix/store -maxdepth 3 -name node -type f -perm -111 2>/dev/null | head -n 1)
+              if [ -n \"\$NODE_BIN\" ] && [ -f /var/lib/fastfree-panel/backend/dist/server.js ]; then
+                echo '[update] Starting new panel backend with Node...'
+                cd /var/lib/fastfree-panel/backend
+                PORT=9099 HOSTNAME=127.0.0.1 nohup \"\$NODE_BIN\" dist/server.js </dev/null >/tmp/fastfree-panel.log 2>&1 &
+                sleep 2
+              fi
+            fi
+
+            echo '[update] Applications update complete.'
           " || echo "[update] Note: website update completed"
 
           sleep 3
