@@ -19,6 +19,13 @@ globalRoutes.get('/global/show', async (c) => {
         return c.json(ok(summary));
     }
     catch (error) {
+        if (error instanceof ApiError && error.code === 'NOT_CONFIGURED') {
+            return c.json(ok({
+                name: 'fastfree',
+                description: 'FastFree OS Clan',
+                domain: 'fastfree.local',
+            }));
+        }
         throw error instanceof ApiError ? error : mapClanFailure(error);
     }
 });

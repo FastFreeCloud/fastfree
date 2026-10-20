@@ -5,6 +5,7 @@
  * file may ever be imported by the SPA: secrets and paths must stay server-side.
  */
 
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const DEFAULT_HOST = '127.0.0.1';
@@ -43,21 +44,15 @@ function readPositiveInt(name: string, fallback: number): number {
 }
 
 /**
- * The Clan repository root. Resolved server-side only and never returned in any
- * API response. `null` means Clan access is not configured yet.
+ * The Clan repository root (optional in declarative CI/CD production).
+ * Resolved server-side only. Does not assume server-side git repositories.
  */
-import { existsSync } from 'node:fs';
-
 function readClanDir(): string | null {
   const raw = process.env.CLAN_DIR?.trim();
   if (raw && raw.length > 0 && existsSync(raw)) {
-    if (raw === '/etc/clan' && !existsSync('/etc/clan/.git') && existsSync('/root/fastfree-source/apps/fastfree_os')) {
-      return '/root/fastfree-source/apps/fastfree_os';
-    }
     return resolve(raw);
   }
   const candidates = [
-    '/root/fastfree-source/apps/fastfree_os',
     resolve(process.cwd(), '../fastfree_os'),
     resolve(process.cwd(), 'apps/fastfree_os'),
     '/etc/clan',
@@ -72,12 +67,47 @@ function readClanDir(): string | null {
 
 /**
  * Bootstrap bearer token. Optional: when absent the backend relies on the
- * trusted reverse proxy to enforce authentication. It is compared in constant
- * time and never echoed back.
+ * trusted reverse proxy to enforce authentication.
  */
 function readBootstrapToken(): string | null {
   const raw = process.env.CLAN_PANEL_TOKEN?.trim();
   return raw && raw.length > 0 ? raw : null;
+}
+
+/**
+ * Read GitHub token from environment or `/etc/fastfree/github-token`.
+ */
+function readGithubToken(): string | null {
+  const envToken = process.env.GITHUB_TOKEN?.trim() || process.env.GH_TOKEN?.trim();
+  if (envToken && envToken.length > 0) {
+    return envToken;
+  }
+  try {
+    const tokenPath = '/etc/fastfree/github-token';
+    if (existsSync(tokenPath)) {
+      const content = readFileSync(tokenPath, 'utf8').trim();
+      if (content.length > 0) {
+        return content;
+      }
+    }
+  } catch {
+    // Ignore read errors
+  }
+  return null;
+}
+
+/**
+ * Read GitHub repository owner & name.
+ */
+function readGithubRepo(): { owner: string; repo: string } {
+  const envRepo = process.env.GITHUB_REPOSITORY?.trim() || process.env.FASTFREE_GITHUB_REPO?.trim();
+  if (envRepo && envRepo.includes('/')) {
+    const [owner, repo] = envRepo.split('/');
+    if (owner && repo) {
+      return { owner, repo };
+    }
+  }
+  return { owner: 'FastFreeCloud', repo: 'fastfree' };
 }
 
 export const config = {
@@ -85,7 +115,11 @@ export const config = {
   port: readPort(),
 
   clanDir: readClanDir(),
+  clanConfigured: true,
   bootstrapToken: readBootstrapToken(),
+
+  githubToken: readGithubToken(),
+  githubRepo: readGithubRepo(),
 
   /** Ceiling on captured `clan` stdout+stderr bytes, to bound memory use. */
   maxOutputBytes: readPositiveInt('CLAN_PANEL_MAX_OUTPUT_BYTES', DEFAULT_MAX_OUTPUT_BYTES),

@@ -62,17 +62,16 @@ function nullIfNone(value: string | undefined): string | null {
 export interface MachineSummary {
   /** Machine name exactly as printed by `clan machines list`. */
   name: string;
-  /**
-   * Always `null`. `clan machines list` prints bare names only, and 26.05 has no
-   * `machines info` subcommand, so no hostname is available from this source.
-   * The field stays in the contract for forward compatibility.
-   */
+  /** Hostname or deploy target host. */
   hostname: string | null;
-  /**
-   * Always `null`. Reachability is not part of `clan machines list`; it lives in
-   * `clan network overview`, which reports per-network state, not per-machine.
-   */
+  /** Reachability / live status. */
   isOnline: boolean | null;
+  roles?: string[];
+  description?: string | null;
+  targetHost?: string | null;
+  buildHost?: string | null;
+  machineClass?: string | null;
+  installedAt?: string | null;
 }
 
 /**

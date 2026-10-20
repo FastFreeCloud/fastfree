@@ -1,0 +1,160 @@
+###############################################################################
+# FastFree OS — بناء صورة آلة Clan (9_build_clan_image.yaml)
+#
+# طريقة العمل:
+#   1. يتم التشغيل يدويًا عبر workflow_dispatch أو عبر لوحة التحكم (FastFree Panel API).
+#   2. يقوم ببناء صورة النظام المحددة (client1, client2, client3) بالصيغة المطلوبة
+#      (iso, vhdx, qcow2, raw) والمعمارية المستهدفة.
+#   3. رفع الصورة الناتجة كـ Artifact رسمي على GitHub Actions قابل للتحميل المباشر.
+###############################################################################
+
+name: 9_build_clan_image
+
+on:
+  workflow_dispatch:
+    inputs:
+      machine:
+        description: "اسم الجهاز في Clan (client1, client2, client3)"
+        type: choice
+        options:
+          - client1
+          - client2
+          - client3
+        default: client1
+        required: true
+      format:
+        description: "صيغة الصورة الناتجة (iso, vhdx, qcow2, raw)"
+        type: choice
+        options:
+          - iso
+          - vhdx
+          - qcow2
+          - raw
+        default: vhdx
+        required: true
+      architecture:
+        description: "معمارية النظام المستهدف"
+        type: choice
+        options:
+          - x86_64-linux
+          - aarch64-linux
+        default: x86_64-linux
+        required: true
+
+concurrency:
+  group: 9_build_clan_image-${{ inputs.machine }}-${{ inputs.format }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  SOURCE_DIR: apps/fastfree_os
+  NIX_CONFIG: |
+    experimental-features = nix-command flakes
+    accept-flake-config = true
+    extra-substituters = https://cache.nixos.org https://nix-community.cachix.org
+    extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
+    max-jobs = auto
+    keep-outputs = true
+
+jobs:
+  build-image:
+    name: "بناء صورة Clan (${{ inputs.machine }} - ${{ inputs.format }})"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: "تهيئة بيئة Git"
+        run: |
+          git config --global safe.directory '*'
+          git config --global init.defaultBranch master
+
+      - name: "سحب الكود المصدري"
+        uses: actions/checkout@v4
+
+      - name: "تفريغ مساحة على الـ runner"
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          docker-images: true
+          swap-storage: true
+          large-packages: false
+
+      - name: "تثبيت Nix"
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: "تفعيل Magic Nix Cache"
+        uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          use-flakehub: false
+
+      - name: "فحص وتأكيد إعداد الجهاز في Clan"
+        working-directory: ${{ env.SOURCE_DIR }}
+        run: |
+          echo "Checking configuration for machine: ${{ inputs.machine }}"
+          nix eval ".#clan.inventory.machines.${{ inputs.machine }}" --print-build-logs >/dev/null
+          echo "Machine config is valid."
+
+      - name: "بناء صورة الجهاز (${{ inputs.machine }} / ${{ inputs.format }})"
+        id: build
+        working-directory: ${{ env.SOURCE_DIR }}
+        env:
+          MACHINE: ${{ inputs.machine }}
+          FORMAT: ${{ inputs.format }}
+          ARCH: ${{ inputs.architecture }}
+        run: |
+          set -euo pipefail
+          echo "=========================================="
+          echo "Building Clan Machine: $MACHINE"
+          echo "Format: $FORMAT"
+          echo "Architecture: $ARCH"
+          echo "=========================================="
+
+          mkdir -p "$RUNNER_TEMP/artifact"
+
+          # 1. إذا كان client1 بصيغة vhdx أو موجود كـ flake package
+          if [ "$MACHINE" = "client1" ] && [ "$FORMAT" = "vhdx" ] && [ "$ARCH" = "x86_64-linux" ]; then
+            echo "Direct flake package build for client1 VHDX..."
+            nix build ".#packages.${ARCH}.${MACHINE}" --out-link ./result --print-build-logs
+            echo "Dereferencing build output into artifact folder..."
+            cp -rL ./result/* "$RUNNER_TEMP/artifact/" 2>/dev/null || cp -rL ./result "$RUNNER_TEMP/artifact/"
+          else
+            echo "Building via Clan CLI..."
+            OUT_PATH=$(nix run "https://git.clan.lol/clan/clan-core/archive/26.05.tar.gz#clan-cli" -- machines build --format "$FORMAT" "$MACHINE")
+            echo "Clan build output path: $OUT_PATH"
+            if [ -e "$OUT_PATH" ]; then
+              if [ -d "$OUT_PATH" ]; then
+                cp -rL "$OUT_PATH"/* "$RUNNER_TEMP/artifact/" 2>/dev/null || cp -rL "$OUT_PATH" "$RUNNER_TEMP/artifact/"
+              else
+                cp -L "$OUT_PATH" "$RUNNER_TEMP/artifact/"
+              fi
+            else
+              echo "Checking nix store results..."
+              STORE_MATCH=$(find /nix/store -maxdepth 2 \( -name "*${MACHINE}*${FORMAT}*" -o -name "*${MACHINE}*" \) -type f | tail -n 1)
+              if [ -n "$STORE_MATCH" ]; then
+                cp -L "$STORE_MATCH" "$RUNNER_TEMP/artifact/"
+              fi
+            fi
+          fi
+
+          echo "Artifact staging content:"
+          ls -lah "$RUNNER_TEMP/artifact"
+          echo "ARTIFACT_DIR=$RUNNER_TEMP/artifact" >> "$GITHUB_ENV"
+
+      - name: "رفع الصورة كـ Artifact رسمي"
+        uses: actions/upload-artifact@v4
+        with:
+          name: "clan-image-${{ inputs.machine }}-${{ inputs.format }}-${{ inputs.architecture }}"
+          path: ${{ env.ARTIFACT_DIR }}
+          if-no-files-found: error
+          retention-days: 30

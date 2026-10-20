@@ -77,6 +77,14 @@ export class ApiError extends Error {
   static notConfigured(message: string): ApiError {
     return new ApiError('NOT_CONFIGURED', message);
   }
+
+  static upstream(message: string, details?: Record<string, unknown>): ApiError {
+    return new ApiError('UPSTREAM_ERROR', message, details);
+  }
+
+  static internal(message = 'Internal server error.'): ApiError {
+    return new ApiError('INTERNAL', message);
+  }
 }
 
 export function toErrorBody(error: ApiError): ApiErrorBody {

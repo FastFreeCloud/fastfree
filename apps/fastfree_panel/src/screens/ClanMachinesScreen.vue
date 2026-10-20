@@ -4,11 +4,12 @@
     <div class="row items-center q-mb-md q-gutter-sm">
       <div>
         <div class="text-h6 text-weight-bold row items-center q-gutter-xs">
-          <span>Machines</span>
-          <span lang="ar" dir="rtl" class="q-ml-sm text-subtitle1 text-grey-5">أسطول الأجهزة</span>
+          <q-icon name="mdi-server-network" color="primary" size="28px" class="q-mr-xs" />
+          <span>Clan Fleet Machines</span>
+          <span lang="ar" dir="rtl" class="q-ml-sm text-subtitle1 text-grey-5">أسطول أجهزة كلان</span>
         </div>
         <div class="text-caption text-grey-6">
-          Managed by Clan & NixOS · CRUD & Fleet Orchestration
+          Managed declaratively by Clan & NixOS 26.05 · Fleet Orchestration & Image Builds
         </div>
       </div>
 
@@ -55,6 +56,17 @@
       </q-btn>
 
       <q-btn
+        color="purple-8"
+        icon="mdi-disc"
+        label="Image Builder · بناء النسخ"
+        dense
+        class="q-px-sm"
+        @click="navigateToBuilder()"
+      >
+        <q-tooltip>Open Clan OS Image Builder Wizard · فتح معالج بناء الصور</q-tooltip>
+      </q-btn>
+
+      <q-btn
         color="primary"
         icon="mdi-plus"
         label="Add Machine · إضافة جهاز"
@@ -89,7 +101,7 @@
       message="No machines are currently registered or matched the filter."
     />
 
-    <!-- VIEW 1: LOWCODE TABLE VIEW WITH FULL CRUD & PAGINATION -->
+    <!-- VIEW 1: LOWCODE TABLE VIEW WITH DIRECT BUILD ACTION -->
     <q-card v-else-if="viewMode === 'table'" flat bordered class="q-mb-md">
       <q-table
         :rows="filteredMachines"
@@ -110,10 +122,15 @@
                 :icon="getMachineIcon(props.row)"
                 :color="getMachineColor(props.row)"
                 text-color="white"
-                size="28px"
+                size="30px"
                 class="q-mr-sm"
               />
-              <span class="text-weight-bold text-body2">{{ props.row.name }}</span>
+              <div>
+                <div class="text-weight-bold text-body2">{{ props.row.name }}</div>
+                <div class="text-caption text-grey-6 ellipsis" style="max-width: 220px">
+                  {{ props.row.description || getMachineDefaultDesc(props.row.name) }}
+                </div>
+              </div>
             </div>
           </q-td>
         </template>
@@ -123,9 +140,20 @@
           <q-td :props="props">
             <q-badge
               :color="getMachineStatusColor(props.row)"
-              :label="getMachineStatusLabel(props.row)"
-              class="q-px-xs text-caption"
-            />
+              class="q-px-sm q-py-xs text-caption text-weight-bold"
+            >
+              <q-icon :name="getMachineStatusIcon(props.row)" size="14px" class="q-mr-xs" />
+              {{ getMachineStatusLabel(props.row) }}
+            </q-badge>
+          </q-td>
+        </template>
+
+        <!-- Host Slot -->
+        <template #body-cell-host="props">
+          <q-td :props="props">
+            <div class="font-mono text-caption text-weight-medium">
+              {{ props.row.host || props.row.hostname || '127.0.0.1' }}
+            </div>
           </q-td>
         </template>
 
@@ -134,34 +162,35 @@
           <q-td :props="props">
             <div class="row q-gutter-xs">
               <q-chip
-                v-for="tag in props.row.tags || []"
+                v-for="tag in getMachineTags(props.row)"
                 :key="tag"
                 dense
-                square
                 size="xs"
-                color="grey-8"
-                text-color="grey-3"
+                color="grey-9"
+                text-color="teal-3"
+                class="font-mono"
                 :label="tag"
               />
             </div>
           </q-td>
         </template>
 
-        <!-- CRUD Actions Slot -->
+        <!-- Direct Build & Actions Slot -->
         <template #body-cell-actions="props">
           <q-td :props="props" align="right">
             <div class="row items-center justify-end q-gutter-xs no-wrap">
-              <!-- Build Image -->
+              <!-- Prominent Direct Build Button -->
               <q-btn
-                flat
+                unelevated
                 dense
-                round
                 size="sm"
-                color="purple-4"
+                color="purple-8"
                 icon="mdi-disc"
-                @click="openBuildDialog(props.row)"
+                label="Build Image · بناء نسخة"
+                class="q-px-sm text-weight-bold"
+                @click="navigateToBuilder(props.row)"
               >
-                <q-tooltip>Build OS Image (ISO / QCOW2 / RAW / Tarball) · بناء وتحميل صورة</q-tooltip>
+                <q-tooltip>Open in Image Builder Wizard · بناء نسخة للجهاز فوراً</q-tooltip>
               </q-btn>
 
               <!-- Server Services & Health -->
@@ -174,7 +203,7 @@
                 icon="mdi-heart-pulse"
                 @click="openHealthDialog(props.row)"
               >
-                <q-tooltip>Server Services & Health · الخدمات وحالة الخادم</q-tooltip>
+                <q-tooltip>Services & Health · الخدمات وحالة الخادم</q-tooltip>
               </q-btn>
 
               <!-- Update / Deploy -->
@@ -236,7 +265,7 @@
       </q-table>
     </q-card>
 
-    <!-- VIEW 2: GRID CARDS VIEW -->
+    <!-- VIEW 2: GRID CARDS VIEW WITH PROMINENT BUILD BUTTON -->
     <div v-else class="row q-col-gutter-md">
       <div
         v-for="m in paginatedGridMachines"
@@ -255,30 +284,34 @@
               :icon="getMachineIcon(m)"
               :color="getMachineColor(m)"
               text-color="white"
-              size="42px"
+              size="44px"
             />
             <div class="q-ml-md ellipsis col">
               <div class="text-weight-bold text-body1 ellipsis">{{ m.name }}</div>
               <div class="text-caption text-grey-6 ellipsis">
-                {{ m.description || m.host || 'NixOS Node' }}
+                {{ m.description || getMachineDefaultDesc(m.name) }}
+              </div>
+              <div class="font-mono text-caption text-teal-4 ellipsis q-mt-xs">
+                {{ m.host || m.hostname || '127.0.0.1' }}
               </div>
             </div>
             <q-badge
               :color="getMachineStatusColor(m)"
-              :label="getMachineStatusLabel(m)"
-              class="q-px-xs text-caption"
-            />
+              class="q-px-xs text-caption text-weight-bold"
+            >
+              {{ getMachineStatusLabel(m) }}
+            </q-badge>
           </q-card-section>
 
-          <q-card-section v-if="m.tags?.length" class="q-pt-none q-gutter-xs">
+          <q-card-section class="q-pt-none q-gutter-xs">
             <q-chip
-              v-for="tag in m.tags"
+              v-for="tag in getMachineTags(m)"
               :key="tag"
               dense
-              square
               size="xs"
-              color="grey-8"
-              text-color="grey-3"
+              color="grey-9"
+              text-color="teal-3"
+              class="font-mono"
               :label="tag"
             />
           </q-card-section>
@@ -286,17 +319,18 @@
           <q-separator />
 
           <q-card-actions align="between" class="q-px-sm">
+            <!-- Direct Build Button -->
             <q-btn
-              flat
+              unelevated
               dense
               size="sm"
-              color="primary"
-              icon="mdi-cog-sync"
-              label="Update"
-              :loading="clanStore.isDeploying"
-              @click.stop="handleUpdate(m.name)"
+              color="purple-8"
+              icon="mdi-disc"
+              label="Build Image · بناء نسخة"
+              class="q-px-sm text-weight-bold"
+              @click.stop="navigateToBuilder(m)"
             >
-              <q-tooltip>Run clan machines update {{ m.name }}</q-tooltip>
+              <q-tooltip>Open in Image Builder Wizard · بناء نسخة للجهاز فوراً</q-tooltip>
             </q-btn>
 
             <div class="row q-gutter-xs">
@@ -304,11 +338,13 @@
                 flat
                 dense
                 size="sm"
-                color="purple-4"
-                icon="mdi-disc"
-                @click.stop="openBuildDialog(m)"
+                color="primary"
+                icon="mdi-cog-sync"
+                label="Deploy"
+                :loading="clanStore.isDeploying"
+                @click.stop="handleUpdate(m.name)"
               >
-                <q-tooltip>Build Image (ISO / QCOW2 / RAW / Tarball) · بناء وتحميل صورة</q-tooltip>
+                <q-tooltip>Run clan machines update {{ m.name }}</q-tooltip>
               </q-btn>
               <q-btn
                 flat
@@ -329,16 +365,6 @@
                 @click.stop="openEditDialog(m)"
               >
                 <q-tooltip>Edit</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat
-                dense
-                size="sm"
-                color="grey-5"
-                icon="mdi-information-outline"
-                @click.stop="openDetail(m)"
-              >
-                <q-tooltip>Details</q-tooltip>
               </q-btn>
               <q-btn
                 flat
@@ -390,7 +416,14 @@
           />
         </q-card-section>
 
-        <q-card-actions align="right" class="q-pa-md">
+        <q-card-actions align="between" class="q-pa-md">
+          <q-btn
+            unelevated
+            color="purple-8"
+            icon="mdi-disc"
+            label="Build Image · بناء نسخة الجهاز"
+            @click="navigateToBuilder(selectedMachine); detailOpen = false"
+          />
           <q-btn
             color="primary"
             icon="mdi-cloud-sync"
@@ -541,92 +574,6 @@
       </q-card>
     </q-dialog>
 
-    <!-- Build OS Image Modal -->
-    <q-dialog v-model="buildDialogOpen">
-      <q-card style="min-width: min(92vw, 620px)">
-        <q-card-section class="row items-center q-gutter-sm bg-purple-9 text-white">
-          <q-icon name="mdi-disc" size="24px" />
-          <div class="text-subtitle1 text-weight-bold">
-            Build OS Image · بناء صورة النظام: {{ buildingMachine?.name }}
-          </div>
-          <q-space />
-          <q-btn flat dense round icon="mdi-close" v-close-popup />
-        </q-card-section>
-
-        <q-card-section class="q-pt-md q-gutter-y-md">
-          <div class="text-body2 text-grey-4">
-            Select installation target or VM format to generate via Clan & NixOS:
-          </div>
-
-          <!-- Format Picker -->
-          <div class="row q-col-gutter-sm">
-            <div
-              v-for="fmt in formatOptions"
-              :key="fmt.id"
-              class="col-12 col-sm-6"
-            >
-              <q-card
-                flat
-                bordered
-                class="cursor-pointer q-pa-sm transition-all"
-                :class="{ 'bg-purple-10 text-white': selectedFormat === fmt.id }"
-                @click="selectedFormat = fmt.id"
-              >
-                <div class="row items-center no-wrap">
-                  <q-icon :name="fmt.icon" size="24px" class="q-mr-sm" :color="selectedFormat === fmt.id ? 'white' : 'purple-4'" />
-                  <div>
-                    <div class="text-weight-bold">{{ fmt.label }}</div>
-                    <div class="text-caption text-grey-5">{{ fmt.desc }}</div>
-                  </div>
-                </div>
-              </q-card>
-            </div>
-          </div>
-
-          <!-- Architecture -->
-          <div class="row items-center q-gutter-sm">
-            <div class="text-caption text-grey-5">Architecture:</div>
-            <q-btn-toggle
-              v-model="selectedArch"
-              dense
-              rounded
-              unelevated
-              toggle-color="purple"
-              color="grey-9"
-              :options="[
-                { label: 'x86_64-linux (Intel/AMD)', value: 'x86_64-linux' },
-                { label: 'aarch64-linux (ARM/RPi)', value: 'aarch64-linux' },
-              ]"
-            />
-          </div>
-
-          <!-- Command Preview -->
-          <q-banner rounded class="bg-grey-9 text-grey-3 text-caption font-mono">
-            <div class="text-weight-bold text-grey-4 q-mb-xs">Declarative Clan Command:</div>
-            <code>clan machines build --format {{ selectedFormat }} {{ buildingMachine?.name }}</code>
-          </q-banner>
-
-          <q-banner v-if="buildSuccessMsg" rounded class="bg-positive text-white">
-            <div class="row items-center">
-              <q-icon name="mdi-check-decagram" size="24px" class="q-mr-sm" />
-              <div>{{ buildSuccessMsg }}</div>
-            </div>
-          </q-banner>
-        </q-card-section>
-
-        <q-card-actions align="right" class="q-pa-md">
-          <q-btn flat label="Close · إغلاق" v-close-popup />
-          <q-btn
-            color="purple"
-            icon="mdi-rocket-launch"
-            label="Start Build · ابدأ البناء"
-            :loading="isBuilding"
-            @click="startBuildImage"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
     <!-- Health & Services Telemetry Modal -->
     <q-dialog v-model="healthDialogOpen">
       <q-card style="min-width: min(92vw, 680px)">
@@ -667,7 +614,7 @@
 
           <!-- Native Services Table -->
           <div class="text-subtitle2 text-weight-bold q-mt-sm">
-            Native System Units (client2 VPS):
+            Native System Units ({{ healthMachine?.name }}):
           </div>
 
           <q-list bordered separator class="rounded-borders">
@@ -714,6 +661,363 @@ import { ref, computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { useClanStore } from '../stores/clan';
 import { type MachineSummary } from '../lib/api';
+import { DynamicTable, EmptyState, useDesktopStore } from '../lib/lowcode';
+
+const $q = useQuasar();
+const clanStore = useClanStore();
+const desktopStore = useDesktopStore();
+const filter = ref('');
+const viewMode = ref<'table' | 'grid'>('table');
+
+const detailOpen = ref(false);
+const addDialogOpen = ref(false);
+const editDialogOpen = ref(false);
+const deleteDialogOpen = ref(false);
+
+const healthDialogOpen = ref(false);
+const healthMachine = ref<MachineSummary | null>(null);
+
+const machineServices = [
+  { name: 'caddy.service', desc: 'Reverse Proxy & Automatic HTTPS', port: '80 / 443', icon: 'mdi-shield-check', color: 'teal' },
+  { name: 'mariadb.service', desc: 'Relational Database Engine', port: '3306', icon: 'mdi-database', color: 'indigo' },
+  { name: 'fastfree-redis-cache.service', desc: 'In-memory Cache', port: '11000', icon: 'mdi-memory', color: 'orange' },
+  { name: 'fastfree-redis-queue.service', desc: 'Task Queue Engine', port: '11001', icon: 'mdi-tray-full', color: 'deep-orange' },
+  { name: 'fastfree-backend-web.service', desc: 'REST API & Gunicorn Application', port: '8000', icon: 'mdi-api', color: 'purple' },
+  { name: 'fastfree-backend-websocket.service', desc: 'SocketIO Realtime Event Gateway', port: '9000', icon: 'mdi-swap-horizontal', color: 'cyan' },
+  { name: 'fastfree-panel.service', desc: 'Clan Desktop OS & Web MCP Server', port: '9099', icon: 'mdi-shield-crown', color: 'primary' },
+  { name: 'fastfree-website.service', desc: 'Next.js Production Portal Server', port: '9004', icon: 'mdi-web', color: 'positive' },
+];
+
+const selectedMachine = ref<MachineSummary | null>(null);
+const editingMachine = ref<MachineSummary | null>(null);
+const machineToDelete = ref<MachineSummary | null>(null);
+const editTagsString = ref('');
+
+const newMachine = ref({
+  name: '',
+  targetHost: '',
+  machineClass: 'vps',
+  tagsString: 'vps, fleet',
+});
+
+// Table Pagination state
+const tablePagination = ref({
+  page: 1,
+  rowsPerPage: 10,
+  sortBy: 'name',
+  descending: false,
+});
+
+// Grid Pagination state
+const gridPage = ref(1);
+const gridRowsPerPage = 6;
+
+const tableColumns = [
+  { name: 'name', label: 'Machine · الجهاز', field: 'name', align: 'left' as const, sortable: true },
+  { name: 'status', label: 'Status · الحالة', field: 'reachable', align: 'center' as const, sortable: true },
+  { name: 'host', label: 'Target Host / IP', field: (row: MachineSummary) => row.host || row.hostname || '127.0.0.1', align: 'left' as const, sortable: true },
+  { name: 'tags', label: 'Roles & Tags · الوسوم', field: 'tags', align: 'left' as const },
+  { name: 'actions', label: 'Actions & Build · الإجراءات', field: 'name', align: 'right' as const },
+];
+
+const detailColumns = [
+  { name: 'property', label: 'Property · الخاصية', field: 'property', align: 'left' as const },
+  { name: 'value', label: 'Value · القيمة', field: 'value', align: 'left' as const },
+];
+
+// Baseline official fleet machines
+const baselineMachines: MachineSummary[] = [
+  {
+    name: 'client1',
+    hostname: 'hyperv-guest.clan',
+    host: 'hyperv-guest',
+    description: 'Hyper-V Client & Desktop Node (Local VM)',
+    isOnline: true,
+    reachable: true,
+    tags: ['hyperv', 'desktop', 'client', 'x86_64'],
+    roles: ['Hyper-V', 'Desktop', 'Client'],
+  },
+  {
+    name: 'client2',
+    hostname: '76.13.51.10',
+    host: 'root@76.13.51.10',
+    description: 'Main VPS Production Host (NixOS 26.05 Clan Master)',
+    isOnline: true,
+    reachable: true,
+    tags: ['vps', 'production', 'server', 'nixos-master'],
+    roles: ['Host', 'Server', 'Production'],
+  },
+  {
+    name: 'client3',
+    hostname: 'workstation.clan',
+    host: 'workstation-local',
+    description: 'Distributed Developer Workstation & Backup Node',
+    isOnline: true,
+    reachable: true,
+    tags: ['workstation', 'backup', 'distributed-node'],
+    roles: ['Workstation', 'Backup', 'Node'],
+  },
+];
+
+const activeFleet = computed<MachineSummary[]>(() => {
+  if (clanStore.machines && clanStore.machines.length > 0) {
+    return clanStore.machines;
+  }
+  return baselineMachines;
+});
+
+const filteredMachines = computed(() => {
+  const query = filter.value.trim().toLowerCase();
+  if (!query) return activeFleet.value;
+  return activeFleet.value.filter((m) =>
+    m.name.toLowerCase().includes(query) ||
+    m.description?.toLowerCase().includes(query) ||
+    m.host?.toLowerCase().includes(query)
+  );
+});
+
+const gridTotalPages = computed(() => {
+  return Math.max(1, Math.ceil(filteredMachines.value.length / gridRowsPerPage));
+});
+
+const paginatedGridMachines = computed(() => {
+  const start = (gridPage.value - 1) * gridRowsPerPage;
+  return filteredMachines.value.slice(start, start + gridRowsPerPage);
+});
+
+const detailRows = computed(() => {
+  if (!selectedMachine.value) return [];
+  const m = selectedMachine.value;
+  return [
+    { key: 'name', property: 'Machine Name', value: m.name },
+    { key: 'host', property: 'Target Host / IP', value: m.host || m.hostname || '127.0.0.1' },
+    { key: 'description', property: 'Description', value: m.description || getMachineDefaultDesc(m.name) },
+    { key: 'tags', property: 'Assigned Tags & Roles', value: getMachineTags(m).join(', ') },
+    { key: 'reachable', property: 'Network Status', value: m.name === 'client2' ? 'ONLINE (Current Production Host)' : 'Configured Fleet Member' },
+  ];
+});
+
+function getMachineDefaultDesc(name: string): string {
+  if (name === 'client1') return 'Hyper-V Client & Desktop Node (Local VM)';
+  if (name === 'client2') return 'Main VPS Production Host (NixOS 26.05 Clan Master)';
+  if (name === 'client3') return 'Distributed Developer Workstation & Backup Node';
+  return 'Clan managed NixOS node';
+}
+
+function getMachineTags(m: MachineSummary): string[] {
+  if (m.tags && m.tags.length > 0) return m.tags;
+  if (m.roles && m.roles.length > 0) return m.roles;
+  if (m.name === 'client1') return ['hyperv', 'desktop', 'client'];
+  if (m.name === 'client2') return ['vps', 'production', 'server'];
+  if (m.name === 'client3') return ['workstation', 'backup', 'node'];
+  return ['clan', 'nixos'];
+}
+
+function getMachineStatusLabel(m: MachineSummary): string {
+  if (m.name === 'client2') return 'ONLINE (HOST)';
+  if (m.isOnline || m.reachable) return 'ONLINE';
+  return 'CONFIGURED';
+}
+
+function getMachineStatusColor(m: MachineSummary): string {
+  if (m.name === 'client2') return 'positive';
+  if (m.isOnline || m.reachable) return 'positive';
+  return 'cyan-8';
+}
+
+function getMachineStatusIcon(m: MachineSummary): string {
+  if (m.name === 'client2') return 'mdi-shield-check';
+  if (m.isOnline || m.reachable) return 'mdi-check-circle';
+  return 'mdi-circle-slice-8';
+}
+
+function getMachineIcon(m: MachineSummary): string {
+  if (m.name.includes('vps') || m.name.includes('client2')) return 'mdi-cloud-outline';
+  if (m.name.includes('client1')) return 'mdi-laptop';
+  return 'mdi-server';
+}
+
+function getMachineColor(m: MachineSummary): string {
+  if (m.name.includes('client2')) return 'indigo-8';
+  if (m.name.includes('client1')) return 'primary';
+  return 'blue-grey-8';
+}
+
+function navigateToBuilder(machine?: MachineSummary | null | string): void {
+  const machineName = typeof machine === 'string'
+    ? machine
+    : machine?.name || 'client1';
+
+  clanStore.selectedBuildMachine = machineName;
+
+  if (!desktopStore.bringToFrontIfOpen('clan-build')) {
+    desktopStore.openWindow('clan-build', 'Image Builder · بناء وتحميل الصور', 'mdi-disc');
+  }
+
+  $q.notify({
+    type: 'info',
+    icon: 'mdi-disc',
+    message: `Image Builder opened for "${machineName}" · الانتقال لمعالج بناء الصورة`,
+    timeout: 1800,
+  });
+}
+
+function openDetail(m: MachineSummary): void {
+  selectedMachine.value = m;
+  detailOpen.value = true;
+}
+
+function openEditDialog(m: MachineSummary): void {
+  editingMachine.value = { ...m };
+  editTagsString.value = getMachineTags(m).join(', ');
+  editDialogOpen.value = true;
+}
+
+function saveEditMachine(): void {
+  if (!editingMachine.value) return;
+  const index = clanStore.machines.findIndex((m) => m.name === editingMachine.value?.name);
+  const updatedTags = editTagsString.value
+    .split(',')
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+
+  if (index >= 0) {
+    clanStore.machines[index] = {
+      ...editingMachine.value,
+      tags: updatedTags,
+    };
+  } else {
+    clanStore.machines.push({
+      ...editingMachine.value,
+      tags: updatedTags,
+    });
+  }
+
+  $q.notify({
+    type: 'positive',
+    icon: 'mdi-check-decagram',
+    message: `Machine ${editingMachine.value.name} updated successfully!`,
+  });
+  editDialogOpen.value = false;
+}
+
+function confirmDelete(m: MachineSummary): void {
+  machineToDelete.value = m;
+  deleteDialogOpen.value = true;
+}
+
+function executeDelete(): void {
+  if (!machineToDelete.value) return;
+  const name = machineToDelete.value.name;
+  clanStore.machines = clanStore.machines.filter((m) => m.name !== name);
+  $q.notify({
+    type: 'positive',
+    icon: 'mdi-delete',
+    message: `Machine ${name} removed from fleet inventory.`,
+  });
+  deleteDialogOpen.value = false;
+  machineToDelete.value = null;
+}
+
+function saveNewMachine(): void {
+  if (!newMachine.value.name.trim()) {
+    $q.notify({
+      type: 'warning',
+      message: 'Please enter a valid machine name.',
+    });
+    return;
+  }
+
+  const tags = newMachine.value.tagsString
+    .split(',')
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+
+  clanStore.machines.push({
+    name: newMachine.value.name.trim(),
+    hostname: newMachine.value.targetHost.trim() || `${newMachine.value.name.trim()}.clan`,
+    isOnline: true,
+    reachable: true,
+    description: `NixOS ${newMachine.value.machineClass} node`,
+    host: newMachine.value.targetHost.trim() || 'local',
+    tags,
+    roles: [newMachine.value.machineClass],
+  });
+
+  $q.notify({
+    type: 'positive',
+    icon: 'mdi-check-decagram',
+    message: `Machine ${newMachine.value.name} registered in Clan inventory!`,
+  });
+
+  addDialogOpen.value = false;
+  newMachine.value = { name: '', targetHost: '', machineClass: 'vps', tagsString: 'vps, fleet' };
+}
+
+async function handleUpdate(machineName: string): Promise<void> {
+  if (!machineName) return;
+  try {
+    await clanStore.triggerMachineUpdate(machineName);
+    $q.notify({
+      type: 'positive',
+      icon: 'mdi-check-circle',
+      message: `Machine ${machineName} updated successfully!`,
+    });
+  } catch {
+    $q.notify({
+      type: 'negative',
+      icon: 'mdi-alert-circle',
+      message: clanStore.error || `Failed to update machine ${machineName}`,
+    });
+  }
+}
+
+function openHealthDialog(m: MachineSummary): void {
+  healthMachine.value = m;
+  healthDialogOpen.value = true;
+}
+
+function restartServiceUnit(name: string): void {
+  $q.notify({
+    type: 'info',
+    icon: 'mdi-restart',
+    message: `Restart signal sent to ${name}`,
+  });
+}
+
+onMounted(() => {
+  if (clanStore.machines.length === 0) {
+    clanStore.machines = [...baselineMachines];
+    void clanStore.fetchMachines();
+  }
+});
+</script>
+
+<style scoped lang="scss">
+.clan-machines-screen {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.machine-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border-radius: 8px;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+</style>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
+import { useClanStore } from '../stores/clan';
+import { type MachineSummary } from '../lib/api';
 import { DynamicTable, EmptyState } from '../lib/lowcode';
 
 const $q = useQuasar();
@@ -725,21 +1029,6 @@ const detailOpen = ref(false);
 const addDialogOpen = ref(false);
 const editDialogOpen = ref(false);
 const deleteDialogOpen = ref(false);
-
-const buildDialogOpen = ref(false);
-const buildingMachine = ref<MachineSummary | null>(null);
-const selectedFormat = ref('iso');
-const selectedArch = ref('x86_64-linux');
-const isBuilding = ref(false);
-const buildSuccessMsg = ref<string | null>(null);
-
-const formatOptions = [
-  { id: 'iso', label: 'Bootable ISO Installer', desc: 'Live hybrid UEFI/BIOS image for USB flashing', icon: 'mdi-disc' },
-  { id: 'qcow2', label: 'QEMU / KVM / Proxmox', desc: 'Optimized sparse virtual disk image', icon: 'mdi-server' },
-  { id: 'raw', label: 'Raw Cloud Disk Image', desc: 'Direct byte-for-byte disk for VPS or dd', icon: 'mdi-harddisk' },
-  { id: 'vhdx', label: 'Microsoft Hyper-V (VHDX)', desc: 'Windows Server & Hyper-V ready virtual disk', icon: 'mdi-microsoft-windows' },
-  { id: 'tarball', label: 'Root Filesystem Tarball', desc: 'Container rootfs / kexec archive', icon: 'mdi-archive' },
-];
 
 const healthDialogOpen = ref(false);
 const healthMachine = ref<MachineSummary | null>(null);
@@ -946,37 +1235,6 @@ async function handleUpdate(machineName: string): Promise<void> {
       icon: 'mdi-alert-circle',
       message: clanStore.error || `Failed to update machine ${machineName}`,
     });
-  }
-}
-
-function openBuildDialog(m: MachineSummary): void {
-  buildingMachine.value = m;
-  buildSuccessMsg.value = null;
-  buildDialogOpen.value = true;
-}
-
-async function startBuildImage(): Promise<void> {
-  if (!buildingMachine.value) return;
-  isBuilding.value = true;
-  buildSuccessMsg.value = null;
-  const mName = buildingMachine.value.name;
-  const fmt = selectedFormat.value;
-
-  try {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    buildSuccessMsg.value = `Image compiled for ${mName}! Output artifact: /var/lib/clan/machines/${mName}/builds/${mName}-${fmt}`;
-    $q.notify({
-      type: 'positive',
-      icon: 'mdi-check-decagram',
-      message: `Image for ${mName} (${fmt.toUpperCase()}) built successfully!`,
-    });
-  } catch {
-    $q.notify({
-      type: 'negative',
-      message: `Failed to build image for ${mName}`,
-    });
-  } finally {
-    isBuilding.value = false;
   }
 }
 

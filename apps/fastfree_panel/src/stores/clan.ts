@@ -74,6 +74,11 @@ function describeError(error: unknown): { code: PanelErrorCode; message: string 
 export const useClanStore = defineStore('clan', () => {
   const mcp = useWebMcp();
 
+  /** Currently selected machine for image building */
+  const selectedBuildMachine = ref<string>('client1');
+  /** Currently selected image format */
+  const selectedBuildFormat = ref<string>('iso');
+
   /** Machine roster; empty until the first successful load. */
   const machines = ref<MachineSummary[]>([]);
   /** Clan identity; `null` until the first successful load. */
@@ -359,6 +364,8 @@ export const useClanStore = defineStore('clan', () => {
 
   return {
     // state
+    selectedBuildMachine,
+    selectedBuildFormat,
     machines,
     global,
     systemHealth,
