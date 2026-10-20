@@ -101,15 +101,18 @@ jobs:
           cd apps/fastfree_website
           npm run lint
 
-      - name: "10. بناء كود الإنتاج المستقل Quasar SPA"
+      - name: "10. بناء كود الإنتاج المستقل Next.js Standalone"
         run: |
           cd apps/fastfree_website
           npm run build
+          # تجهيز حزمة Standalone بملفات static والمحتوى العام public
+          cp -r .next/static .next/standalone/.next/static
+          cp -r public .next/standalone/public
 
       - name: "11. حزم ملف الـ Tarball للإنتاج"
         run: |
           cd apps/fastfree_website
-          tar -czf "$GITHUB_WORKSPACE/fastfree-website.tar.gz" .next public package.json
+          tar -czf "$GITHUB_WORKSPACE/fastfree-website.tar.gz" -C .next/standalone .
 
       - name: "12. رفع الحزمة كـ Artifact"
         uses: actions/upload-artifact@v6

@@ -24,17 +24,22 @@ in
       description = "Ensure FastFree Website bundle exists";
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
+      before = [ "fastfree-website.service" "caddy.service" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
       };
-      path = [ pkgs.coreutils pkgs.curl pkgs.gnutar pkgs.gzip pkgs.nodejs_22 pkgs.jq ];
+      path = [ pkgs.coreutils pkgs.curl pkgs.gnutar pkgs.gzip pkgs.nodejs_22 pkgs.jq pkgs.systemd ];
       script = ''
         mkdir -p "${siteDir}"
 
         # Clean up any legacy fallback portal files
         rm -f "${siteDir}/portal.js"
+        if [ -f "${siteDir}/server.js" ] && grep -q -E "منظومة السحابة|FastFree Cloud|awaiting release" "${siteDir}/server.js" 2>/dev/null; then
+          echo "[fastfree-website] Purging legacy fallback portal server.js"
+          rm -f "${siteDir}/server.js"
+        fi
 
         rm -f "''${tarball}"
         RELEASE_TAG=""
@@ -59,7 +64,7 @@ in
 
         # A working previous version always beats a placeholder.
         valid_local=0
-        if [ -d "${siteDir}/.next" ] && [ -f "${siteDir}/package.json" ]; then
+        if [ -f "${siteDir}/server.js" ] || ([ -d "${siteDir}/.next" ] && [ -f "${siteDir}/package.json" ]); then
           valid_local=1
         fi
 
@@ -69,7 +74,7 @@ in
           # stays untouched.
           rm -rf "${siteDir}.new"; mkdir -p "${siteDir}.new"
           if tar -xzf "''${tarball}" -C "${siteDir}.new"; then
-            if [ -d "${siteDir}.new/.next" ] && [ -f "${siteDir}.new/package.json" ]; then
+            if [ -f "${siteDir}.new/server.js" ] || [ -f "${siteDir}.new/.next/standalone/server.js" ] || ([ -d "${siteDir}.new/.next" ] && [ -f "${siteDir}.new/package.json" ]); then
               rm -f "''${tarball}"
               # Park the live dir, then promote the new one. If the promote fails we put
               # the previous copy back instead of leaving the site with no files.
@@ -79,11 +84,12 @@ in
                 rm -rf "${siteDir}.old"
                 echo "[fastfree-website] Swapped in release tarball (atomically)."
                 valid_local=1
+                systemctl restart fastfree-website.service 2>/dev/null || true
               else
                 mv "${siteDir}.old" "${siteDir}" 2>/dev/null || true
                 rm -rf "${siteDir}.new"
                 echo "[fastfree-website] Swap failed; previous copy restored."
-                if [ -d "${siteDir}/.next" ] && [ -f "${siteDir}/package.json" ]; then
+                if [ -f "${siteDir}/server.js" ] || ([ -d "${siteDir}/.next" ] && [ -f "${siteDir}/package.json" ]); then
                   valid_local=1
                 fi
               fi
@@ -98,7 +104,7 @@ in
         fi
 
         if [ "''${valid_local}" -eq 0 ]; then
-          # No valid copy: fall back to local source, then placeholder.
+          # No valid copy: fall back to local source
           echo "[fastfree-website] No valid local copy. Checking local build source..."
           if [ -d "${sourceDir}/.next" ]; then
             cp -rf "${sourceDir}/.next" "${siteDir}/"
@@ -111,19 +117,14 @@ in
           fi
         fi
 
-        if [ "''${valid_local}" -eq 0 ]; then
-          echo "[fastfree-website] Writing placeholder (no release, no local source)."
-          printf '%s\n' 'const http = require("http");' 'const port = Number(process.env.PORT || 9004);' 'const server = http.createServer((req, res) => {' '  res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });' '  res.end("<h1>FastFree Website</h1><p>Initializing... awaiting release bundle.</p>");' '});' 'server.listen(port, "127.0.0.1", () => console.log("[fastfree-website] placeholder server on " + port));' > "${siteDir}/server.js"
-        fi
-
-        # Ensure dependencies exist for next start
-        if [ -f "${siteDir}/package.json" ] && [ ! -d "${siteDir}/node_modules/next" ]; then
+        # Ensure dependencies exist for standalone or standard next
+        if [ -f "${siteDir}/package.json" ] && [ ! -f "${siteDir}/server.js" ] && [ ! -d "${siteDir}/node_modules/next" ]; then
           echo "Installing production dependencies for Next.js website..."
           cd "${siteDir}"
           timeout 600 ${pkgs.nodejs_22}/bin/npm install --omit=dev --legacy-peer-deps --no-audit --no-fund 2>&1 || true
         fi
 
-        chmod -R 755 "${siteDir}/.next" "${siteDir}/public" 2>/dev/null || true
+        chmod -R 755 "${siteDir}" 2>/dev/null || true
       '';
     };
 
@@ -133,6 +134,9 @@ in
       after = [ "network-online.target" "fastfree-website-setup.service" ];
       wants = [ "network-online.target" "fastfree-website-setup.service" ];
       wantedBy = [ "multi-user.target" ];
+      restartTriggers = [
+        config.environment.etc."caddy/Caddyfile".text
+      ];
       environment = {
         NODE_ENV = "production";
         PORT = "9004";
@@ -147,12 +151,15 @@ in
         RestartSec = "5s";
         ExecStart = pkgs.writeShellScript "fastfree-website-start" ''
           cd "${siteDir}"
-          if [ -f "${siteDir}/node_modules/next/dist/bin/next" ]; then
+          if [ -f "${siteDir}/server.js" ]; then
+            echo "[fastfree-website] Starting Next.js standalone server on 127.0.0.1:9004..."
+            exec ${pkgs.nodejs_22}/bin/node "${siteDir}/server.js"
+          elif [ -f "${siteDir}/.next/standalone/server.js" ]; then
+            echo "[fastfree-website] Starting Next.js standalone server (nested) on 127.0.0.1:9004..."
+            exec ${pkgs.nodejs_22}/bin/node "${siteDir}/.next/standalone/server.js"
+          elif [ -f "${siteDir}/node_modules/next/dist/bin/next" ]; then
             echo "[fastfree-website] Starting Next.js production server via next binary on 127.0.0.1:9004..."
             exec ${pkgs.nodejs_22}/bin/node "${siteDir}/node_modules/next/dist/bin/next" start -p 9004 -H 127.0.0.1
-          elif [ -f "${siteDir}/server.js" ]; then
-            echo "[fastfree-website] Starting Next.js server on 127.0.0.1:9004..."
-            exec ${pkgs.nodejs_22}/bin/node "${siteDir}/server.js"
           else
             echo "[fastfree-website] Waiting for assets to initialize..."
             sleep 5

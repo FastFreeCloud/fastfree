@@ -208,6 +208,7 @@ jobs:
 
           echo "تفعيل النظام الجديد..."
           ssh "$MACHINE" "'$TOPLEVEL/bin/switch-to-configuration' switch || [ \$? -eq 4 ]"
+          ssh "$MACHINE" "systemctl restart fastfree-website-setup.service fastfree-website.service 2>/dev/null || true"
 
       - name: "التأكد من التفعيل"
         env:
