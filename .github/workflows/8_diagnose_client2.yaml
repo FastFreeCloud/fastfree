@@ -74,9 +74,13 @@ jobs:
             exit 1
           fi
 
-          # تنظيف أي حالات فشل سابقة وتشغيل الموقع لو لم يكن يعمل
-          remote "systemctl reset-failed 2>/dev/null || true"
+          # تنظيف أي حالات فشل سابقة وتحديث الموقع لأحدث Release رسمي
           remote "
+            systemctl reset-failed 2>/dev/null || true
+            echo '[diagnose] Pulling latest website release...'
+            systemctl restart fastfree-website-setup.service 2>/dev/null || true
+            systemctl restart fastfree-website.service 2>/dev/null || true
+            sleep 2
             if ! ss -tulnp | grep -q ':9004 '; then
               NODE_BIN=\$(which node 2>/dev/null || find /nix/store -maxdepth 3 -name node -type f -perm -111 2>/dev/null | head -n 1)
               if [ -n \"\$NODE_BIN\" ] && [ -f /srv/fastfree-website/server.js ]; then
@@ -84,7 +88,7 @@ jobs:
               fi
             fi
           " 2>/dev/null || true
-          sleep 2
+          sleep 3
 
           SUMMARY_FILE="$GITHUB_STEP_SUMMARY"
           echo "## 🔍 تقرير الفحص والتشخيص الشامل لخادم client2" >> "$SUMMARY_FILE"
@@ -118,10 +122,18 @@ jobs:
           for item in "${DOMAINS[@]}"; do
             domain="${item%%:*}"
             desc="${item##*:}"
-            code=$(curl -m 5 -s -o /dev/null -w '%{http_code}' "https://${domain}/" 2>/dev/null || true)
+            headers=$(curl -m 5 -s -I "https://${domain}/" 2>/dev/null || true)
+            code=$(echo "$headers" | head -n 1 | awk '{print $2}')
             code="${code:-000}"
-            if [ "$code" = "200" ] || [ "$code" = "301" ] || [ "$code" = "302" ] || [ "$code" = "307" ] || [ "$code" = "308" ]; then
-              status="✅ سليم"
+            loc=$(echo "$headers" | grep -i '^location:' | tr -d '\r' | awk '{print $2}' || true)
+            if [ "$code" = "200" ]; then
+              status="✅ سليم (200 OK)"
+            elif [ "$code" = "301" ] || [ "$code" = "302" ] || [ "$code" = "307" ] || [ "$code" = "308" ]; then
+              if [[ "$loc" == *"localhost"* ]] || [[ "$loc" == *"127.0.0.1"* ]]; then
+                status="❌ خطأ توجيه داخلي إلى: \`$loc\`"
+              else
+                status="✅ تحويل سليم إلى \`$loc\`"
+              fi
             else
               status="❌ خطأ (${code})"
             fi
