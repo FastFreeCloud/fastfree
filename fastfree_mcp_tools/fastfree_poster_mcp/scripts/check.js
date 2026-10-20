@@ -45,6 +45,12 @@ assert('exposes the six app tools',
 assert('exposes the catalogue tool',
   tools.some((tool) => tool.name === 'social_post_catalogue'));
 
+assert('exposes the screen catalogue tool',
+  tools.some((tool) => tool.name === 'app_screens'));
+
+assert('exposes the screen poster tool',
+  tools.some((tool) => tool.name === 'screen_social_post'));
+
 // The catalogue must describe the apps, the ratios and the contact details.
 const catalogue = await client.callTool({ name: 'social_post_catalogue', arguments: {} });
 const catalogueText = catalogue.content?.[0]?.text || '{}';
@@ -52,6 +58,13 @@ const catalogueData = JSON.parse(catalogueText);
 assert('catalogue lists six apps', catalogueData.apps?.length === 6);
 assert('catalogue lists the ratios', catalogueData.ratios?.length > 0);
 assert('catalogue carries the contact details', Boolean(catalogueData.contact?.phone));
+
+// The screen catalogue must know the screens of the apps.
+const screens = await client.callTool({ name: 'app_screens', arguments: { app: 'erp' } });
+const screensData = JSON.parse(screens.content?.[0]?.text || '{}');
+assert('the screen catalogue returns screens', screensData.ok === true && screensData.count > 40, `${screensData.count} screens`);
+assert('each screen names the apps that ship it',
+  screensData.packages.every((group) => group.screens.every((screen) => screen.apps.length > 0)));
 
 // A real poster must come out of the tool.
 const result = await client.callTool({
@@ -74,6 +87,17 @@ assert('the jpeg is a real jpeg',
   fs.readFileSync(payload.jpegFile).slice(0, 3).toString('hex') === 'ffd8ff');
 assert('the svg is small', payload.svgBytes < 100000, `${payload.svgBytes} bytes`);
 assert('a caption is provided', Boolean(payload.caption));
+
+// A screen poster must build too.
+const screenResult = await client.callTool({
+  name: 'screen_social_post',
+  arguments: { app: 'pos', screen: 'sales-invoices', ratio: '1:1' },
+});
+const screenPayload = JSON.parse((screenResult.content?.[0]?.text || '').replace(/^OK\s*/s, ''));
+assert('the screen tool returns ok', screenPayload.ok === true, screenPayload.reason || '');
+assert('the screen poster exists', Boolean(screenPayload.svgFile) && fs.existsSync(screenPayload.svgFile));
+assert('the screen poster uses the screen label',
+  fs.readFileSync(screenPayload.svgFile, 'utf8').includes('فواتير المبيعات'));
 
 await client.close();
 

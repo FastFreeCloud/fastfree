@@ -19,11 +19,13 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import {
   CATALOGUE_TOOL,
+  SCREEN_POST_TOOL,
+  SCREENS_TOOL,
   TOOL_DEFINITIONS,
   appKeyForTool,
   cataloguePayload,
 } from './tools.js';
-import { createPoster } from './handlers.js';
+import { createPoster, createScreenPoster, screensCatalogue } from './handlers.js';
 
 const NAME = 'fastfree_social_mcp';
 const VERSION = '1.0.0';
@@ -43,6 +45,48 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   if (name === CATALOGUE_TOOL) {
     return {
       content: [{ type: 'text', text: JSON.stringify(cataloguePayload(), null, 2) }],
+    };
+  }
+
+  if (name === SCREENS_TOOL) {
+    try {
+      const catalogue = screensCatalogue(args);
+      return {
+        content: [{ type: 'text', text: JSON.stringify(catalogue, null, 2) }],
+      };
+    } catch (err) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `${name} failed: ${err && err.message ? err.message : String(err)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+
+  if (name === SCREEN_POST_TOOL) {
+    const screenResult = await createScreenPoster(args);
+    if (!screenResult.ok) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `FAILED\n\n${JSON.stringify(screenResult, null, 2)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `OK\n\n${JSON.stringify(screenResult, null, 2)}`,
+        },
+      ],
     };
   }
 

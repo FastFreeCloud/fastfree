@@ -8,8 +8,9 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { APP_KEYS, APPS, RATIOS } from '../src/brand.js';
+import { APP_KEYS, APPS, RATIOS, SCREENS, getApp } from '../src/brand.js';
 import { buildPosterSvg, catalogue } from '../src/poster.js';
+import { screensCatalogue } from '../src/handlers.js';
 import { availableFontFiles, checkFonts, renderJpeg, renderPng } from '../src/render.js';
 import { splitByScript, wrapText } from '../src/utils.js';
 
@@ -68,7 +69,7 @@ for (const appKey of APP_KEYS) {
   check(`${appKey}: marks Arabic as right to left`, svg.includes('direction="rtl"'));
   check(`${appKey}: embeds the logo`, svg.includes('ff-') && svg.includes('<g transform='));
   check(`${appKey}: has the contact strip`, svg.includes('واتساب') && svg.includes('sales@fastfree.cloud'));
-  check(`${appKey}: uses its brand colour`, svg.includes(APPS[appKey].primary));
+  check(`${appKey}: uses its brand colour`, svg.includes(getApp(appKey).colors.primary));
   check(`${appKey}: escapes the ampersand`, !svg.match(/&(?!amp;|lt;|gt;|quot;|apos;|#)/));
 }
 
@@ -237,6 +238,48 @@ for (const appKey of APP_KEYS) {
   const outside = readTextBoxes(layoutSvg).filter((box) => box.bottom > 1080 || box.x < 0);
   check(`${appKey}: all text stays on the canvas`, outside.length === 0, `${outside.length} outside`);
 }
+
+// ─── Screen catalogue ────────────────────────────────────────────────────────
+
+check('the catalogue has screens', SCREENS.length > 40, `${SCREENS.length} screens`);
+
+const screenKeys = new Set(SCREENS.map((screen) => screen.key));
+check('screen keys are unique', screenKeys.size === SCREENS.length);
+
+const screensWithoutLabel = SCREENS.filter((screen) => !screen.labelAr && !screen.labelEn);
+check('every screen has a label', screensWithoutLabel.length === 0, screensWithoutLabel.map((s) => s.key).join(', '));
+
+const screensWithoutComponent = SCREENS.filter((screen) => !screen.component);
+check('every screen has a component', screensWithoutComponent.length === 0, screensWithoutComponent.map((s) => s.key).join(', '));
+
+// The screen keys must be real, so the code and the catalogue agree.
+const catalogueResult = screensCatalogue();
+check('the screen catalogue builds', catalogueResult.ok === true);
+check('the catalogue counts every screen', catalogueResult.count === SCREENS.length, `${catalogueResult.count}`);
+check('the catalogue is grouped by package', catalogueResult.packages.length > 0);
+
+// A screen poster must use the screen label as the headline.
+const salesInvoice = SCREENS.find((screen) => screen.key === 'sales-invoices');
+check('the sales invoice screen exists', Boolean(salesInvoice));
+
+if (salesInvoice) {
+  const screenSvg = buildPosterSvg({
+    app: 'pos',
+    title: salesInvoice.labelAr,
+    subtitle: getApp('pos').nameAr,
+    body: getApp('pos').taglineAr,
+    ratio: '1:1',
+  });
+  check('a screen poster carries the screen label', screenSvg.includes(salesInvoice.labelAr));
+  check('a screen poster carries the app name', screenSvg.includes(getApp('pos').nameAr));
+}
+
+// A body line must override the app tagline.
+const withBody = buildPosterSvg({
+  app: 'pos', title: 'عنوان', body: 'سطر توضيحي خاص', ratio: '1:1',
+});
+check('a custom body line is used', withBody.includes('سطر توضيحي خاص'));
+check('the app tagline is not used when a body is given', !withBody.includes(getApp('pos').taglineAr));
 
 // ─── Catalogue ──────────────────────────────────────────────────────────────
 
