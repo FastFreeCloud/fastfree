@@ -76,8 +76,9 @@ jobs:
 
           # إعادة تشغيل الخدمات بسلاسة للتأكد من حالتها
           remote "systemctl reset-failed fastfree-website-setup.service fastfree-website.service fastfree-panel.service"
-          remote "systemctl restart --no-block fastfree-website.service"
-          sleep 3
+          remote "systemctl start fastfree-website-setup.service"
+          remote "systemctl start fastfree-website.service"
+          sleep 5
 
           SUMMARY_FILE="$GITHUB_STEP_SUMMARY"
           echo "## 🔍 تقرير الفحص والتشخيص الشامل لخادم client2" >> "$SUMMARY_FILE"
