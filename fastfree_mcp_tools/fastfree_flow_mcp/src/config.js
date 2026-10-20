@@ -43,7 +43,10 @@ export const config = {
   outputDir: env.FLOW_OUTPUT_DIR || path.resolve(root, 'output'),
 
   pollIntervalMs: Number(env.FLOW_POLL_MS || 4000),
-  maxPolls: Number(env.FLOW_MAX_POLLS || 45),
+  // A generation can spend most of a minute rendering before the placeholder
+  // is replaced by a real image, so the budget is generous but still well
+  // inside toolTimeoutMs (7 minutes).
+  maxPolls: Number(env.FLOW_MAX_POLLS || 75),
   settleRounds: 3,
   typeDelayMs: 25,
   launchTimeoutMs: 20000,

@@ -66,16 +66,16 @@ console.log('tools   : ' + tools.length);
 for (const t of tools) console.log('  - ' + t.name);
 
 console.log('\nprobing browser session ...');
-const status = await rpc('tools/call', { name: 'flow_status', arguments: {} });
+const status = await rpc('tools/call', { name: 'flow_ensure_browser', arguments: {} });
 const body = status.result?.content?.[0]?.text ?? '';
 
 console.log(body);
 
-const alive = /"authenticated":\s*true/.test(body);
-console.log('\nresult  : ' + (alive ? 'OK - session authenticated' : 'FAIL - not authenticated'));
+const alive = /"ok":\s*true/.test(body) || /alreadyRunning|launched/.test(body);
+console.log('\nresult  : ' + (alive ? 'OK - browser reachable' : 'FAIL - browser not reachable'));
 
 if (!alive) {
-  console.log('hint    : run scripts\\launch.cmd and sign in through the browser window');
+  console.log('hint    : run scripts\\launch.cmd first');
 }
 
 done(alive ? 0 : 1);

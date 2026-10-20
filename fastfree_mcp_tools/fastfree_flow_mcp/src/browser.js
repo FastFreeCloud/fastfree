@@ -190,6 +190,70 @@ async function detectFlowError(page) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Generation in progress                                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Detect that Flow is still rendering.
+ *
+ * While a generation runs, Flow shows a placeholder tile with a percentage
+ * counter instead of a real image. The placeholder is not an <img>, so the
+ * media count stays flat and the poll would otherwise settle on "nothing
+ * new" while the work is still going. Watching for the progress indicator
+ * keeps the poll alive until the image actually appears.
+ */
+async function detectGenerationInProgress(page) {
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const style = window.getComputedStyle(el);
+        return (
+          style.display !== 'none' &&
+          style.visibility !== 'hidden' &&
+          (el.offsetParent !== null || el.getClientRects().length > 0)
+        );
+      };
+
+      // Collect the element's own text nodes, so a percentage wrapped in
+      // nested markup is still read as a single value.
+      const ownText = (el) => {
+        let out = '';
+        for (const node of el.childNodes) {
+          if (node.nodeType === Node.TEXT_NODE) out += node.nodeValue;
+        }
+        return out.replace(/\s+/g, ' ').trim();
+      };
+
+      for (const el of document.querySelectorAll('span, div, p, label')) {
+        if (!visible(el)) continue;
+        const text = ownText(el);
+        if (!text) continue;
+        const match = text.match(/^(\d{1,3})\s*%$/);
+        if (match) {
+          const value = Number.parseInt(match[1], 10);
+          if (value >= 0 && value <= 100) {
+            return { inProgress: true, percent: value };
+          }
+        }
+      }
+
+      // A busy spinner or progress bar is the same signal without a number.
+      const busy = document.querySelector(
+        '[aria-busy="true"], [role="progressbar"], [aria-label*="Generating" i], ' +
+        '[aria-label*="Loading" i], [data-loading="true"]',
+      );
+      if (busy && visible(busy)) {
+        return { inProgress: true, percent: null };
+      }
+
+      return { inProgress: false, percent: null };
+    });
+  } catch {
+    return { inProgress: false, percent: null };
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* CDP availability                                                    */
 /* ------------------------------------------------------------------ */
 
@@ -602,6 +666,7 @@ export async function waitForMedia(page, kind = 'image', baseline) {
   let stable = 0;
   let last = baseline;
   let lastErrorCheck = 0;
+  let progressSeen = false;
 
   for (let i = 0; i < config.maxPolls; i++) {
     await page.waitForTimeout(config.pollIntervalMs);
@@ -624,6 +689,19 @@ export async function waitForMedia(page, kind = 'image', baseline) {
       }
     }
 
+    // While Flow renders, the media count cannot move because the result is
+    // still a placeholder. Settling here would report "reused" for a
+    // generation that is merely slow, so the progress signal keeps the
+    // poll running.
+    const progress = await detectGenerationInProgress(page);
+    if (progress.inProgress) {
+      progressSeen = true;
+      prev = last;
+      stable = 0;
+      log('debug', 'Generation still in progress', { percent: progress.percent });
+      continue;
+    }
+
     const { total } = await collectMedia(page, kind, Number.MAX_SAFE_INTEGER);
     last = total;
 
@@ -634,6 +712,7 @@ export async function waitForMedia(page, kind = 'image', baseline) {
           fresh: Math.max(0, total - baseline),
           reusedOnly: total <= baseline,
           polls: i + 1,
+          progressSeen,
         };
       }
     } else {
@@ -648,6 +727,7 @@ export async function waitForMedia(page, kind = 'image', baseline) {
     fresh: Math.max(0, last - baseline),
     reusedOnly: last <= baseline,
     polls: config.maxPolls,
+    progressSeen,
   };
 }
 
