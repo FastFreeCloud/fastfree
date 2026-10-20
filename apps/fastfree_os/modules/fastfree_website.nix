@@ -44,7 +44,12 @@ in
         rm -f "''${tarball}"
         RELEASE_TAG=""
         ASSET_NAME="${assetName}"
-        if RELEASE_JSON=$(curl -fsSL --max-time 30 "https://api.github.com/repos/${ghAccount}/fastfree/releases?per_page=100" 2>/dev/null); then
+        AUTH_HEADER=""
+        if [ -s /etc/fastfree/github-token ]; then
+          AUTH_HEADER="Authorization: Bearer $(cat /etc/fastfree/github-token)"
+        fi
+
+        if RELEASE_JSON=$(curl -fsSL -H "User-Agent: FastFree" ''${AUTH_HEADER:+-H "$AUTH_HEADER"} --max-time 30 "https://api.github.com/repos/${ghAccount}/fastfree/releases?per_page=100" 2>/dev/null); then
           RELEASE_TAG=$(printf '%s' "''${RELEASE_JSON}" | ${pkgs.jq}/bin/jq -r --arg a "''${ASSET_NAME}" '[.[] | select(any(.assets[]?; .name == $a))] | sort_by(.published_at // .created_at // "") | last | .tag_name // ""' 2>/dev/null || true)
         fi
 
@@ -52,7 +57,7 @@ in
         if [ -n "''${RELEASE_TAG}" ]; then
           TARBALL_URL="https://github.com/${ghAccount}/fastfree/releases/download/''${RELEASE_TAG}/''${ASSET_NAME}"
           echo "[fastfree-website] Downloading release ''${RELEASE_TAG} ..."
-          if curl -fsSL --max-time 120 "''${TARBALL_URL}" -o "''${tarball}" 2>/dev/null; then
+          if curl -fsSL -H "User-Agent: FastFree" ''${AUTH_HEADER:+-H "$AUTH_HEADER"} --max-time 180 "''${TARBALL_URL}" -o "''${tarball}"; then
             download_ok=1
           else
             echo "[fastfree-website] Download failed for tag ''${RELEASE_TAG}"
@@ -60,6 +65,18 @@ in
           fi
         else
           echo "[fastfree-website] No release carrying ''${ASSET_NAME} found via GitHub API"
+        fi
+
+        # Direct fallback (works reliably even if GitHub API was rate-limited)
+        if [ "''${download_ok}" -eq 0 ]; then
+          FALLBACK_URL="https://github.com/${ghAccount}/fastfree/releases/latest/download/''${ASSET_NAME}"
+          echo "[fastfree-website] Falling back to latest download URL: ''${FALLBACK_URL} ..."
+          if curl -fsSL -H "User-Agent: FastFree" ''${AUTH_HEADER:+-H "$AUTH_HEADER"} --max-time 180 "''${FALLBACK_URL}" -o "''${tarball}"; then
+            download_ok=1
+          else
+            echo "[fastfree-website] Direct download fallback failed."
+            rm -f "''${tarball}"
+          fi
         fi
 
         # A working previous version always beats a placeholder.
