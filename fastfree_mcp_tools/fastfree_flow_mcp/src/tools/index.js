@@ -149,6 +149,52 @@ async function generateSingleImage(page, prompt, ratio) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Ensure browser is running                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Ensure the Chromium browser is running and reachable on the CDP port.
+ * If it is not running, launch it automatically using the configured
+ * profile (preserving the signed-in Google session).
+ */
+export async function flowEnsureBrowser({ restart = false } = {}) {
+  if (await cdpAlive()) {
+    return {
+      ok: true,
+      launched: false,
+      alreadyRunning: true,
+      cdpPort: config.cdpPort,
+      note: `Browser already listening on CDP ${config.cdpPort}.`,
+    };
+  }
+
+  if (!config.autoLaunch) {
+    return {
+      ok: false,
+      launched: false,
+      alreadyRunning: false,
+      cdpPort: config.cdpPort,
+      note: `Browser not running on CDP ${config.cdpPort} and FLOW_AUTO_LAUNCH is disabled. Run scripts\\launch.cmd manually.`,
+    };
+  }
+
+  const r = await launchBrowser({ restart });
+  const ready = await waitForCdp();
+
+  return {
+    ...r,
+    ok: ready,
+    launched: true,
+    alreadyRunning: false,
+    cdpReady: ready,
+    port: config.cdpPort,
+    note: ready
+      ? 'Browser launched and listening on CDP.'
+      : `Browser started but port ${config.cdpPort} never answered.`,
+  };
+}
+
+/* ------------------------------------------------------------------ */
 /* Connection & status                                                 */
 /* ------------------------------------------------------------------ */
 
@@ -279,7 +325,11 @@ export async function flowGenerateImage({ prompt, ratio, app }) {
     // Captured before submitting, so leftovers from an earlier run are
     // never mistaken for this run's output.
     const baseline = await countMedia(page, 'image');
-    const ratioResult = ratio ? await selectRatio(page, ratio) : NOT_REQUESTED;
+
+    // Resolve unsupported ratios (e.g. 1.91:1 -> 16:9) before selecting.
+    const resolved = resolveRatio(ratio);
+    const effectiveRatio = resolved.ratio;
+    const ratioResult = effectiveRatio ? await selectRatio(page, effectiveRatio) : NOT_REQUESTED;
 
     const finalPrompt = appPalette
       ? `${prompt}. colour palette ${appPalette}`
@@ -314,9 +364,10 @@ export async function flowGenerateImage({ prompt, ratio, app }) {
       app,
       model,
       // Never echo the requested ratio as if it had been applied.
-      ratio: ratioResult.applied ? ratio : 'default',
+      ratio: ratioResult.applied ? effectiveRatio : 'default',
       ratioApplied: ratioResult.applied,
       ratioDetail: ratioResult.reason || ratioResult.via || null,
+      ratioFallback: resolved.fallback,
       settled: result.settled,
       fresh: result.fresh,
       reusedOnly: result.reusedOnly,
