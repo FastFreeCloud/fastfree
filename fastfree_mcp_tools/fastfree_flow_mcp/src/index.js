@@ -108,6 +108,17 @@ const TOOL_DEFS = [
     description: 'List the interactive elements (buttons, navigation, inputs) on the current Flow page. Use this if a tool starts failing after a Flow UI update.',
     inputSchema: { type: 'object', properties: {} },
   },
+  {
+    name: 'flow_ensure_browser',
+    group: 'Session',
+    description: 'Ensure the Chromium browser is running and reachable on the CDP port. Launches it automatically if not running, preserving the signed-in Google session.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        restart: { type: 'boolean', description: 'Close the running browser first, then relaunch.' },
+      },
+    },
+  },
 
   /* ---- images ---- */
   {
@@ -267,6 +278,7 @@ const HANDLERS = {
   flow_status: () => tools.flowStatus(),
   flow_screenshot: (a) => tools.flowScreenshot(a),
   flow_discover_ui: () => tools.flowDiscoverUi(),
+  flow_ensure_browser: (a) => tools.flowEnsureBrowser(a),
   flow_generate_image: (a) => tools.flowGenerateImage(a),
   flow_generate_batch: (a) => tools.flowGenerateBatch(a),
   flow_list_apps: () => tools.flowListApps(),

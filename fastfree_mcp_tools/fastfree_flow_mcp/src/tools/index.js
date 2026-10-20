@@ -88,16 +88,28 @@ async function readCredits(page) {
   }
 }
 
-async function generateSingleImage(page, prompt, ratio) {
+async function generateSingleImage(page, prompt, ratio, app) {
   const resolved = resolveRatio(ratio);
   const effectiveRatio = resolved.ratio;
 
   await openFlow(page, { newProject: true });
 
   const baseline = await countMedia(page, 'image');
+
+  let appPalette = null;
+  if (app) {
+    const colors = appColors[app];
+    if (!colors) throw new Error(`Unknown app key "${app}". Use flow_list_apps to see valid keys.`);
+    appPalette = `${colors.primary} and ${colors.secondary} and ${colors.accent}`;
+  }
+
   const ratioResult = effectiveRatio ? await selectRatio(page, effectiveRatio) : NOT_REQUESTED;
 
-  const sent = await submitPrompt(page, prompt);
+  const finalPrompt = appPalette
+    ? `${prompt}. colour palette ${appPalette}`
+    : prompt;
+
+  const sent = await submitPrompt(page, finalPrompt);
   if (!sent.submitted) {
     return {
       ok: false,
@@ -421,7 +433,7 @@ export async function flowDownloadLatest() {
 /* Batch image generation                                             */
 /* ------------------------------------------------------------------ */
 
-export async function flowGenerateBatch({ prompts, ratio }) {
+export async function flowGenerateBatch({ prompts, ratio, app }) {
   if (!Array.isArray(prompts) || prompts.length === 0) {
     throw new Error('prompts must be a non-empty array');
   }
@@ -439,7 +451,7 @@ export async function flowGenerateBatch({ prompts, ratio }) {
   return withSession(async (page) => {
     for (const prompt of prompts) {
       try {
-        const result = await generateSingleImage(page, prompt, ratio);
+        const result = await generateSingleImage(page, prompt, ratio, app);
         results.push({
           prompt,
           ok: result.ok,
