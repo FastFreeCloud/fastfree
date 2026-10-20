@@ -149,8 +149,7 @@ in
     systemd.services.fastfree-website = {
       description = "FastFree Website (Next.js Production Server)";
       after = [ "network-online.target" "fastfree-website-setup.service" ];
-      wants = [ "network-online.target" ];
-      requires = [ "fastfree-website-setup.service" ];
+      wants = [ "network-online.target" "fastfree-website-setup.service" ];
       wantedBy = [ "multi-user.target" ];
       restartTriggers = [
         config.environment.etc."caddy/Caddyfile".text
