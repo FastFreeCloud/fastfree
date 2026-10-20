@@ -75,8 +75,10 @@ jobs:
           fi
 
           # إعادة تشغيل الخدمات بسلاسة للتأكد من حالتها
+          remote "systemctl stop fastfree-website.service fastfree-website-setup.service 2>/dev/null || true"
           remote "systemctl reset-failed fastfree-website-setup.service fastfree-website.service fastfree-panel.service 2>/dev/null || true"
-          remote "systemctl start --no-block fastfree-website.service fastfree-panel.service 2>/dev/null || true"
+          START_OUT=$(remote "systemctl start fastfree-website.service 2>&1" || true)
+          echo "Website start output: $START_OUT"
           sleep 4
 
           SUMMARY_FILE="$GITHUB_STEP_SUMMARY"
