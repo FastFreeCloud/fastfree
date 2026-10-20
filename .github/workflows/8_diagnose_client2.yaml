@@ -203,6 +203,9 @@ jobs:
           echo '</details>' >> "$SUMMARY_FILE"
           echo "" >> "$SUMMARY_FILE"
 
+          # طباعة التقرير بالكامل في الـ console log
+          cat "$SUMMARY_FILE"
+
       - name: "حذف المفاتيح المؤقتة"
         if: always()
         run: rm -f ~/.ssh/deploy_key
