@@ -1,34 +1,32 @@
 /**
  * GET /api/v1/machines
+ * POST /api/v1/machines/:name/build
  *
- * Machine identifiers and safe metadata only, from `clan machines list`.
- * The browser never supplies a machine name for this endpoint; it can only read
- * the inventory. See docs/spa-architecture.md.
+ * Certified machine fleet inventory and declarative GitHub Actions build trigger.
+ * See docs/spa-architecture.md.
  */
 
 import { Hono } from 'hono';
 
-import { argvFor } from '../clan/allowlist.js';
-import { mapClanFailure, runClan } from '../clan/exec.js';
-import { type MachineSummary, parseMachines } from '../clan/parse.js';
+import { clanService } from '../core/clan.service.js';
+import type { ClanMachineInfo } from '../schemas/clan.schema.js';
+import { clanMachineBuildSchema } from '../schemas/clan.schema.js';
 import { ApiError } from '../http/errors.js';
 import { ok } from '../http/respond.js';
 
 export interface MachinesData {
-  machines: MachineSummary[];
+  machines: ClanMachineInfo[];
 }
 
 export const machinesRoutes = new Hono();
 
 machinesRoutes.get('/machines', async (c) => {
   try {
-    const result = await runClan(argvFor('machines.list'));
-    const body: MachinesData = { machines: parseMachines(result.stdout) };
+    const machines = await clanService.listMachines();
+    const body: MachinesData = { machines };
     return c.json(ok(body));
   } catch (error) {
-    // NOT_CONFIGURED / TIMEOUT / UPSTREAM_ERROR keep their code; anything else
-    // degrades to an opaque UPSTREAM_ERROR. stderr never reaches the client.
-    throw error instanceof ApiError ? error : mapClanFailure(error);
+    throw error instanceof ApiError ? error : ApiError.upstream(String(error));
   }
 });
 
@@ -37,23 +35,24 @@ machinesRoutes.post('/machines/:name/build', async (c) => {
   try {
     const json = (await c.req.json().catch(() => ({}))) as {
       format?: string;
+      architecture?: 'x86_64-linux' | 'aarch64-linux';
       noSecrets?: boolean;
       buildHost?: string;
       dryRun?: boolean;
     };
 
-    const { clanService } = await import('../core/clan.service.js');
-    const { clanMachineBuildSchema } = await import('../schemas/clan.schema.js');
-
+    const defaultFormat = name.toLowerCase() === 'client1' ? 'vhdx' : 'iso';
     const parsed = clanMachineBuildSchema.parse({
       machine: name,
-      format: json.format ?? 'iso',
+      format: json.format ?? defaultFormat,
+      architecture: json.architecture ?? 'x86_64-linux',
       noSecrets: json.noSecrets ?? false,
       buildHost: json.buildHost,
       dryRun: json.dryRun ?? false,
     });
 
     const result = await clanService.buildMachine(parsed.machine, parsed.format, {
+      architecture: parsed.architecture,
       noSecrets: parsed.noSecrets,
       buildHost: parsed.buildHost,
       dryRun: parsed.dryRun,
@@ -61,6 +60,6 @@ machinesRoutes.post('/machines/:name/build', async (c) => {
 
     return c.json(ok(result));
   } catch (error) {
-    throw error instanceof ApiError ? error : mapClanFailure(error);
+    throw error instanceof ApiError ? error : ApiError.upstream(String(error));
   }
 });

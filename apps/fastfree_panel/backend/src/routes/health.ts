@@ -26,7 +26,7 @@ export const healthRoutes = new Hono();
 healthRoutes.get('/health', (c) => {
   const body: HealthData = {
     status: 'ok',
-    clanConfigured: config.clanDir !== null,
+    clanConfigured: config.clanConfigured,
     bootstrapAuthEnabled: config.bootstrapToken !== null,
     uptimeSeconds: Math.floor((Date.now() - startedAt) / 1000),
   };

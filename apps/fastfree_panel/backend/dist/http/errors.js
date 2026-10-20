@@ -52,6 +52,12 @@ export class ApiError extends Error {
     static notConfigured(message) {
         return new ApiError('NOT_CONFIGURED', message);
     }
+    static upstream(message, details) {
+        return new ApiError('UPSTREAM_ERROR', message, details);
+    }
+    static internal(message = 'Internal server error.') {
+        return new ApiError('INTERNAL', message);
+    }
 }
 export function toErrorBody(error) {
     const body = { error: { code: error.code, message: error.message } };

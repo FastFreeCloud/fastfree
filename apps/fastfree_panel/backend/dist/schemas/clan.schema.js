@@ -82,6 +82,7 @@ export const clanBuildFormatSchema = z.enum([
 export const clanMachineBuildSchema = z.object({
     machine: machineNameSchema,
     format: clanBuildFormatSchema.default('iso'),
+    architecture: z.enum(['x86_64-linux', 'aarch64-linux']).default('x86_64-linux').optional(),
     noSecrets: z.boolean().default(false).optional(),
     buildHost: z.string().trim().optional(),
     dryRun: z.boolean().default(false).optional(),
@@ -96,6 +97,8 @@ export const clanBuildResultSchema = z.object({
     message: z.string(),
     artifactPath: z.string().nullable().optional(),
     downloadUrl: z.string().nullable().optional(),
+    workflowRunUrl: z.string().nullable().optional(),
+    workflowId: z.string().nullable().optional(),
     durationMs: z.number().optional(),
     stdout: z.string().optional(),
 });
