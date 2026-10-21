@@ -10,7 +10,7 @@
  */
 import { APPS, CONTACT, RATIOS, getApp, getRatio } from './brand.js';
 import { FONTS, circle, line, pill, rect, rtlText, sparkle } from './svg.js';
-import { buildIconMarkup, buildLogoMarkup } from './logo.js';
+import { adaptiveMarkHeight, buildAdaptiveMarkMarkup, buildScreenMarkup } from './logo.js';
 import { escapeXml, estimateWidth, num, wrapText } from './utils.js';
 
 /**
@@ -142,7 +142,7 @@ function buildFeatureRow(app, feature, { x, y, size }) {
  * inside a right-to-left text element clips the first letter, so it gets
  * its own element anchored to the start of the line.
  */
-function buildTitle(title, { x, y, size, accent }) {
+function buildTitle(title, { x, y, size, accent, maxWidth }) {
   const index = title.indexOf('FastFree');
 
   if (index === -1) {
@@ -158,12 +158,20 @@ function buildTitle(title, { x, y, size, accent }) {
     ? `<tspan fill="#FFFFFF">${escapeXml(after)}</tspan>`
     : '';
 
-  // The whole line is Latin here, so it is centred on the right edge of the
-  // column and drawn left to right.
-  const width = estimateWidth(title, size);
-  const left = x - width;
+  // The whole line is Latin here, so it is laid out from its left edge and
+  // right aligned to the column. The size is reduced when the line is too
+  // wide: a Latin headline in a bold face is wider than the general
+  // estimate, and would otherwise run into the screen shot.
+  //
+  // Bold Latin averages wider per glyph than the general text estimate, so
+  // the headline is measured with a larger factor.
+  const LATIN_DISPLAY_FACTOR = 0.66;
+  const measured = title.length * LATIN_DISPLAY_FACTOR * size;
+  const scale = maxWidth && measured > maxWidth ? maxWidth / measured : 1;
+  const fittedSize = Math.round(size * scale);
+  const left = x - title.length * LATIN_DISPLAY_FACTOR * fittedSize;
 
-  return `<text x="${num(left)}" y="${num(y)}" font-family="${FONTS.latin}" font-size="${num(size)}" font-weight="700" text-anchor="start" direction="ltr">${before ? `<tspan>${escapeXml(before)}</tspan>` : ''}<tspan fill="#FFFFFF">Fast</tspan><tspan fill="${accent}">Free</tspan>${tail}</text>`;
+  return `<text x="${num(left)}" y="${num(y)}" font-family="${FONTS.latin}" font-size="${num(fittedSize)}" font-weight="700" text-anchor="start" direction="ltr">${before ? `<tspan>${escapeXml(before)}</tspan>` : ''}<tspan fill="#FFFFFF">Fast</tspan><tspan fill="${accent}">Free</tspan>${tail}</text>`;
 }
 
 /**
@@ -176,17 +184,22 @@ function buildTitle(title, { x, y, size, accent }) {
  * that runs past the contact strip would push the button off the canvas.
  */
 function buildHeadline(app, {
-  title, subtitle, body, ctaText, ctaUrl, features = [], width, height, ratio, right, topOffset = 0, bottomLimit,
+  title, subtitle, body, ctaText, ctaUrl, features = [], width, height, ratio, right, topOffset = 0, bottomLimit, columnWidth: columnWidthArg,
 }) {
-  const portrait = height > width * 1.2;
-  const titleSize = Math.round(width * (portrait ? 0.08 : 0.055));
-  const taglineSize = Math.round(width * 0.025);
-  const eyebrowSize = Math.round(width * 0.019);
-  const ctaSize = Math.round(width * 0.024);
-  const featureSize = Math.round(width * 0.02);
+  const portrait = height > width * 1.1;
 
-  // The text column is measured against the space the brand visual leaves.
-  const columnWidth = Math.round(width * (portrait ? 0.86 : 0.56));
+  // A landscape poster is only 628 pixels tall, so the type is smaller
+  // there. The portrait sizes are used as they are.
+  const titleSize = Math.round(width * (portrait ? 0.08 : 0.052));
+  const taglineSize = Math.round(width * (portrait ? 0.026 : 0.023));
+  const eyebrowSize = Math.round(width * (portrait ? 0.019 : 0.017));
+  const ctaSize = Math.round(width * (portrait ? 0.024 : 0.022));
+  const featureSize = Math.round(width * (portrait ? 0.021 : 0.019));
+
+  // The text column is measured against the space it actually has. In a
+  // landscape poster the screen shot takes the left half, so the column
+  // only gets what is left of the right side.
+  const columnWidth = columnWidthArg ?? Math.round(width * (portrait ? 0.86 : 0.4));
 
   // The cursor starts at the top of the column.
   const y = Math.round(height * (portrait ? 0.14 : 0.08)) + topOffset;
@@ -206,6 +219,7 @@ function buildHeadline(app, {
   const pushText = (text, size, fill, weight, opacity, extraAdvance) => {
     blocks.push({
       advance: extraAdvance,
+      tagline: false,
       draw: (cursor) => rtlText({
         x: right,
         y: cursor + size * 0.82,
@@ -214,6 +228,24 @@ function buildHeadline(app, {
         fill,
         weight,
         opacity,
+      }),
+    });
+  };
+
+  // The tagline is pushed separately so the fit pass can drop it when the
+  // column does not fit.
+  const pushTagline = (text, size) => {
+    blocks.push({
+      advance: Math.round(size * 1.35),
+      tagline: true,
+      draw: (cursor) => rtlText({
+        x: right,
+        y: cursor + size * 0.82,
+        text,
+        size,
+        fill: '#E2E8F0',
+        weight: 600,
+        opacity: 0.95,
       }),
     });
   };
@@ -250,6 +282,7 @@ function buildHeadline(app, {
         y: cursor + Math.round(titleSize * 0.86),
         size: titleSize,
         accent: app.colors.accent,
+        maxWidth: columnWidth,
       }),
     });
   }
@@ -276,7 +309,7 @@ function buildHeadline(app, {
   const taglineText = body || app.taglineAr;
   const taglineLines = wrapText(taglineText, columnWidth, taglineSize);
   for (const text of taglineLines) {
-    pushText(text, taglineSize, '#E2E8F0', 600, 0.95, Math.round(taglineSize * 1.35));
+    pushTagline(text, taglineSize);
   }
 
   // The feature lines are the first thing dropped when the column is too
@@ -312,19 +345,25 @@ function buildHeadline(app, {
     }
     : null;
 
-  // Fit the column: the feature lines are dropped one at a time until the
-  // content ends above the contact strip. The link goes before the button,
-  // because a poster without a destination is not a poster.
+  // Fit the column: the content is dropped one piece at a time until it
+  // ends above the contact strip. The order is what matters. The feature
+  // lines go first, then the tagline, and the button is the last thing to
+  // go, because a poster without a call to action is not a poster.
   //
   // The limit is an absolute canvas coordinate, the same space the column
   // cursor moves in.
   const limit = bottomLimit ?? height;
 
-  // The bottom edge of the column, in canvas coordinates. The cursor starts
-  // at the top of the column, so the result is already absolute.
-  const columnBottom = (featureList_, buttonBlock_) => {
+  // The tagline is the block right before the feature lines, so it can be
+  // dropped when the column does not fit.
+  const taglineIndex = blocks.findIndex((block) => block.tagline);
+
+  const columnBottom = (featureList_, buttonBlock_, dropTagline) => {
     let cursor = y;
-    for (const block of blocks) cursor += block.advance;
+    blocks.forEach((block, index) => {
+      if (dropTagline && index === taglineIndex) return;
+      cursor += block.advance;
+    });
     for (const block of featureList_) cursor += block.advance;
     if (buttonBlock_) cursor += buttonBlock_.advance;
     return cursor;
@@ -332,12 +371,13 @@ function buildHeadline(app, {
 
   let keptFeatures = featureBlocks;
   let keptButton = buttonBlock;
+  let dropTagline = false;
 
-  // The feature lines go first, and the button is the last thing to go,
-  // because a poster without a call to action is not a poster.
-  while (columnBottom(keptFeatures, keptButton) > limit) {
+  while (columnBottom(keptFeatures, keptButton, dropTagline) > limit) {
     if (keptFeatures.length) {
       keptFeatures = keptFeatures.slice(0, -1);
+    } else if (!dropTagline && taglineIndex >= 0) {
+      dropTagline = true;
     } else if (keptButton) {
       keptButton = null;
     } else {
@@ -348,10 +388,11 @@ function buildHeadline(app, {
   // Draw the column from its final position.
   const markup = [];
   let cursor = y;
-  for (const block of blocks) {
+  blocks.forEach((block, index) => {
+    if (dropTagline && index === taglineIndex) return;
     markup.push(block.draw(cursor));
     cursor += block.advance;
-  }
+  });
   for (const block of keptFeatures) {
     markup.push(block.draw(cursor));
     cursor += block.advance;
@@ -365,7 +406,7 @@ function buildHeadline(app, {
     // eslint-disable-next-line no-console
     console.error(
       `[poster] app=${app.key} ratio=${ratio} start=${y} end=${cursor} limit=${limit} `
-      + `features=${keptFeatures.length} link=${Boolean(keptLink)} button=${Boolean(keptButton)}`,
+      + `features=${keptFeatures.length} button=${Boolean(keptButton)}`,
     );
   }
 
@@ -411,47 +452,76 @@ export function buildPosterSvg({
   const { width, height } = size;
   const padding = Math.round(width * 0.055);
   const contactHeight = contact ? Math.round(height * 0.11) : 0;
-  const portrait = height > width * 1.2;
+  const portrait = height > width * 1.1;
 
-  // The area the text column may use, ending above the contact strip.
+  // The area the content may use, ending above the contact strip.
   const contentBottom = height - contactHeight;
 
-  // The app icon is the only brand element, because the infinity mark
-  // appears in the wordmark as well.
-  const wordmarkWidth = 0;
-  const wordmarkHeight = 0;
+  // The brand visual is the adaptive application artwork: the infinity
+  // mark with the application glyph underneath it. It carries no lettering,
+  // so it never competes with the headline.
+  //
+  // The mark is centred at the top in every ratio, so it always reads as the
+  // first thing on the poster.
+  const markWidth = Math.round(width * (portrait ? 0.26 : 0.17));
+  const markHeight = Math.round(adaptiveMarkHeight(markWidth));
 
-  // The brand visual is the app icon, which carries the infinity mark, the
-  // app glyph and the app name. It is the only brand element the poster
-  // needs, so the separate wordmark is not drawn as well: the mark appears
-  // twice otherwise.
-  const visualWidth = portrait
-    ? Math.round(Math.min(width * 0.5, contentBottom * 0.34))
-    : Math.round(Math.min(width * 0.38, contentBottom * 0.56));
+  const markX = Math.round((width - markWidth) / 2);
+  const markY = portrait
+    ? Math.round(height * 0.04)
+    : Math.round(height * 0.05);
 
-  const visualLeft = portrait
-    ? Math.round((width - visualWidth) / 2)
+  const markMarkup = logo
+    ? buildAdaptiveMarkMarkup({
+      appKey,
+      x: markX,
+      y: markY,
+      width: markWidth,
+    })
+    : '';
+
+  // The screen shot of the application.
+  //
+  // A landscape poster splits in two: the screen shot on the left, the text
+  // column on the right. A portrait poster stacks them, with the screen
+  // under the mark and the text under that.
+  const screenWidth = portrait
+    ? Math.round(width * 0.76)
+    : Math.round(width * 0.34);
+  const screenLeft = portrait
+    ? Math.round((width - screenWidth) / 2)
     : padding;
+  const screenHeight = Math.round(screenWidth * 0.62);
 
-  const visualTop = portrait
-    ? Math.round(height * 0.05)
-    : Math.round((contentBottom - visualWidth) / 2);
+  let screenTop;
+  let textTop;
+  let right;
 
-  const iconMarkup = buildIconMarkup({
+  if (portrait) {
+    screenTop = markY + markHeight + Math.round(height * 0.025);
+    textTop = screenTop + screenHeight + Math.round(height * 0.03);
+    right = width - padding;
+  } else {
+    // The mark is centred at the top. The screen shot goes below it on
+    // the left, and the text column starts at the top on the right, so the
+    // short landscape poster uses its height well.
+    screenTop = markY + markHeight + Math.round(height * 0.035);
+    textTop = Math.round(height * 0.09);
+    right = width - padding;
+  }
+
+  const screenMarkup = buildScreenMarkup({
     appKey,
-    x: visualLeft,
-    y: visualTop,
-    width: visualWidth,
+    x: screenLeft,
+    y: screenTop,
+    width: screenWidth,
+    height: screenHeight,
   });
 
-  // The text column starts below the brand visual in a portrait poster, and
-  // in a landscape one it fills the right half beside it.
-  const textTop = portrait
-    ? visualTop + visualWidth + Math.round(height * 0.04)
-    : 0;
-  const right = width - padding;
-
-  const featureList = (app.featuresAr ?? app.features ?? []).slice(0, Math.max(0, features));
+  // A landscape poster has a short text column, so it carries fewer feature
+  // lines. The fit pass drops the rest if they still do not fit.
+  const featureLimit = portrait ? features : Math.min(features, 2);
+  const featureList = (app.featuresAr ?? app.features ?? []).slice(0, Math.max(0, featureLimit));
 
   const headline = buildHeadline(app, {
     title,
@@ -466,6 +536,10 @@ export function buildPosterSvg({
     right,
     topOffset: textTop,
     bottomLimit: height - contactHeight - Math.round(height * 0.02),
+    // The text column is bounded by the screen shot on the left.
+    columnWidth: portrait
+      ? Math.round(width * 0.86)
+      : Math.round(width - padding - (screenLeft + screenWidth) - Math.round(width * 0.045)),
   });
 
   const contactBar = contact
@@ -474,7 +548,8 @@ export function buildPosterSvg({
 
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeXml(`${app.name} — ${title}`)}">
 ${buildBackground(app, width, height)}
-${iconMarkup}
+${markMarkup}
+${screenMarkup}
 ${headline}
 ${contactBar}
 </svg>`;

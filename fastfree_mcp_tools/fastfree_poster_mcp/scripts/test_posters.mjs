@@ -66,7 +66,6 @@ for (const appKey of APP_KEYS) {
   check(`${appKey}: carries the headline`, svg.includes('نظام'));
   check(`${appKey}: carries the call to action`, svg.includes('ابدأ'));
   check(`${appKey}: marks Arabic as right to left`, svg.includes('direction="rtl"'));
-  check(`${appKey}: embeds the app icon`, svg.includes('ic-') && svg.includes('<g transform='));
   check(`${appKey}: has the contact strip`, svg.includes('واتساب') && svg.includes('sales@fastfree.cloud'));
   check(`${appKey}: uses its brand colour`, svg.includes(getApp(appKey).colors.primary));
   check(`${appKey}: escapes the ampersand`, !svg.match(/&(?!amp;|lt;|gt;|quot;|apos;|#)/));
@@ -85,7 +84,7 @@ for (const [ratio, size] of Object.entries(RATIOS)) {
 // ─── Options ────────────────────────────────────────────────────────────────
 
 const noLogo = buildPosterSvg({ app: 'pos', title: TITLE, ratio: '1:1', logo: false });
-check('logo can be turned off', !noLogo.includes('ff-'));
+check('logo can be turned off', !noLogo.includes('am-'));
 
 const noContact = buildPosterSvg({ app: 'pos', title: TITLE, ratio: '1:1', contact: false });
 check('contact strip can be turned off', !noContact.includes('sales@fastfree.cloud'));
@@ -286,15 +285,98 @@ for (const [ratio, size] of Object.entries(RATIOS)) {
 
 for (const appKey of APP_KEYS) {
   const layoutSvg = buildPosterSvg({ app: appKey, title: TITLE, ratio: '1:1' });
-  // The app icon is the only brand element, and it is inlined with prefixed
-  // ids. The separate wordmark is not drawn, because the infinity mark
-  // appears in both and the mark would show twice.
-  check(`${appKey}: the app icon is inlined`, layoutSvg.includes('ic-'));
+  // The adaptive artwork is the brand element: the infinity mark with the
+  // application glyph underneath it. The square tile icon is not drawn,
+  // because it repeats the mark and adds a frame the mark does not need.
+  check(`${appKey}: the brand mark is inlined`, layoutSvg.includes('am-'));
   check(
-    `${appKey}: the wordmark is not drawn twice`,
-    !layoutSvg.includes('ff-'),
+    `${appKey}: the app icon is not drawn twice`,
+    !layoutSvg.includes('ic-'),
     'the infinity mark would appear twice',
   );
+}
+
+// ─── The application screen shot ────────────────────────────────────────────
+
+/**
+ * The applications that ship a screen shot.
+ *
+ * The enterprise app needs a signed in session, so it has no capture yet.
+ */
+const WITH_SCREEN = ['ledger', 'pos', 'hr', 'panel', 'website'];
+
+for (const appKey of APP_KEYS) {
+  const layoutSvg = buildPosterSvg({ app: appKey, title: TITLE, ratio: '1:1' });
+  const hasScreen = layoutSvg.includes('<image ');
+
+  if (WITH_SCREEN.includes(appKey)) {
+    check(`${appKey}: the application screen is shown`, hasScreen);
+  } else {
+    check(`${appKey}: no screen is shown without a capture`, !hasScreen);
+  }
+}
+
+// The screen shot has to sit under the brand mark.
+for (const appKey of WITH_SCREEN) {
+  const layoutSvg = buildPosterSvg({ app: appKey, title: TITLE, ratio: '1:1' });
+  const markY = Number(/<g transform="translate\([\d.]+,([\d.]+)\) scale/.exec(layoutSvg)?.[1]);
+  const imageY = Number(/<image x="[\d.]+" y="([\d.]+)"/.exec(layoutSvg)?.[1]);
+  check(
+    `${appKey}: the screen sits below the mark`,
+    Number.isFinite(markY) && Number.isFinite(imageY) && imageY > markY,
+    `mark ${markY}, screen ${imageY}`,
+  );
+}
+
+/**
+ * The screen shot and the text must not overlap.
+ *
+ * A poster with the headline printed over the screen shot is unreadable,
+ * and the failure is invisible to a check that only looks at the file
+ * existing.
+ */
+for (const ratio of Object.keys(RATIOS)) {
+  for (const appKey of WITH_SCREEN) {
+    const layoutSvg = buildPosterSvg({
+      app: appKey,
+      title: 'FastFree POS',
+      subtitle: 'نظام الكاشير',
+      body: 'كاشير سريع وفواتير لحظية',
+      ctaText: 'جرّبه الآن',
+      ratio,
+      features: 3,
+    });
+
+    const image = /<image x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"/.exec(layoutSvg);
+    if (!image) continue;
+
+    const [, ix, iy, iw, ih] = image.map(Number);
+    const screenRight = ix + iw;
+    const screenBottom = iy + ih;
+
+    // The headline column is right aligned, so its runs share the largest
+    // x. The mark carries its own text and the contact strip spans the full
+    // width, so only the runs of the headline column are compared.
+    const runs = [...layoutSvg.matchAll(/<text x="([\d.-]+)" y="([\d.-]+)"/g)].map((m) => ({
+      x: Number(m[1]),
+      y: Number(m[2]),
+    }));
+
+    const columnX = Math.max(...runs.map((r) => r.x));
+    const columnRuns = runs.filter((r) => r.x > columnX - 40 && r.y < screenBottom);
+
+    const textLeft = Math.min(...columnRuns.map((r) => r.x));
+    const textRight = Math.max(...columnRuns.map((r) => r.x));
+
+    const overlapsHorizontally = textLeft < screenRight;
+    const overlapsVertically = columnRuns.some((r) => r.y > iy && r.y < screenBottom);
+
+    check(
+      `${appKey} ${ratio}: the text does not sit on the screen`,
+      !(overlapsHorizontally && overlapsVertically),
+      `screen x ${ix}..${screenRight}, text x ${textLeft}..${textRight}`,
+    );
+  }
 }
 
 // ─── Screen catalogue ────────────────────────────────────────────────────────
