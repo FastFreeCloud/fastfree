@@ -8,3 +8,5 @@
 *.ts text eol=lf
 *.vue text eol=lf
 *.js text eol=lf
+*.sh text eol=lf
+*.bash text eol=lf
