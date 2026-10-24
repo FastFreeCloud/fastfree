@@ -43,7 +43,7 @@ AppUpdatesURL={#AppURL}
 ; Dynamic auto-detection: picks the drive with the greatest free disk space (never forces C:\)
 DefaultDirName={code:GetDefaultDir}
 DefaultGroupName=FastFree
-OutputDir=..\..\dist-installer
+OutputDir=..\..\..\dist-installer
 OutputBaseFilename={#OutputExeName}
 Compression=lzma2/ultra64
 SolidCompression=yes
@@ -70,8 +70,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [LangOptions]
 DialogFontName=Segoe UI Variable Text
 DialogFontSize=9
-TitleFontName=Segoe UI Variable Display
-TitleFontSize=12
 WelcomeFontName=Segoe UI Variable Display
 WelcomeFontSize=14
 
@@ -107,26 +105,28 @@ external 'GetDriveTypeW@kernel32.dll stdcall';
 // =============================================================================
 function GetDefaultDir(Param: String): String;
 var
+  I: Integer;
   DriveLetter: Char;
   RootPath: String;
   FreeBytes, TotalBytes: Int64;
   MaxFreeBytes: Int64;
   BestDrive: String;
+  FreeGB: Extended;
 begin
   MaxFreeBytes := 0;
   BestDrive := 'C:\'; // Safe initial fallback
 
   // Iterate over drive letters C: to Z:
-  for DriveLetter := 'C' to 'Z' do
+  for I := Ord('C') to Ord('Z') do
   begin
+    DriveLetter := Chr(I);
     RootPath := DriveLetter + ':\';
     if GetDriveType(RootPath) = DRIVE_FIXED then
     begin
       if GetSpaceOnDisk64(RootPath, FreeBytes, TotalBytes) then
       begin
-        Log(Format('Inspected drive %s - Free space: %.2f GB', [
-          RootPath, Extended(FreeBytes) / (1024 * 1024 * 1024)
-        ]));
+        FreeGB := FreeBytes / (1024 * 1024 * 1024);
+        Log(Format('Inspected drive %s - Free space: %.2f GB', [RootPath, FreeGB]));
         // If this drive has more space than previously discovered drives
         if FreeBytes > MaxFreeBytes then
         begin
@@ -138,10 +138,9 @@ begin
   end;
 
   // Build target directory on the selected drive (e.g. D:\FastFree\Appliance\client2)
+  FreeGB := MaxFreeBytes / (1024 * 1024 * 1024);
   Result := AddBackslash(BestDrive) + 'FastFree\Appliance\{#AppMachine}';
-  Log(Format('Auto-selected target directory on best drive: %s (%.2f GB available)', [
-    Result, Extended(MaxFreeBytes) / (1024 * 1024 * 1024)
-  ]));
+  Log(Format('Auto-selected target directory on best drive: %s (%.2f GB available)', [Result, FreeGB]));
 end;
 
 // Helper to extract drive root (e.g. "D:\FastFree\Appliance" -> "D:\")
@@ -161,7 +160,7 @@ var
   SelectedPath, DriveRoot: String;
   FreeBytes, TotalBytes: Int64;
   RequiredBytes: Int64;
-  FreeGB, RequiredGB: Double;
+  FreeGB, RequiredGB: Extended;
 begin
   Result := True;
 
@@ -173,7 +172,7 @@ begin
 
     if GetSpaceOnDisk64(DriveRoot, FreeBytes, TotalBytes) then
     begin
-      FreeGB := Extended(FreeBytes) / (1024 * 1024 * 1024);
+      FreeGB := FreeBytes / (1024 * 1024 * 1024);
       RequiredGB := MIN_REQUIRED_GB;
 
       if FreeBytes < RequiredBytes then
@@ -181,8 +180,7 @@ begin
         MsgBox(
           Format('Drive %s has only %.2f GB of free space.'#13#10 +
                  'FastFree Virtual Machine requires at least %.0f GB of free disk space.'#13#10#13#10 +
-                 'Please choose a different drive (such as D:\ or E:\) with sufficient capacity.',
-                 [DriveRoot, FreeGB, RequiredGB]),
+                 'Please choose a different drive (such as D:\ or E:\) with sufficient capacity.', [DriveRoot, FreeGB, RequiredGB]),
           mbCriticalError, MB_OK
         );
         Result := False;
@@ -236,8 +234,7 @@ begin
   VhdxPath := ExpandConstant('{app}\Virtual Hard Disks\fastfree_{#AppMachine}.vhdx');
 
   Params := Format(
-    '-NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "%s" -VmName "FastFree-{#AppMachine}" -VhdxPath "%s" -CpuCount 4 -MemoryGB 4 -AutoEnableHyperV',
-    [ScriptPath, VhdxPath]
+    '-NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "%s" -VmName "FastFree-{#AppMachine}" -VhdxPath "%s" -CpuCount 4 -MemoryGB 4 -AutoEnableHyperV', [ScriptPath, VhdxPath]
   );
 
   WizardForm.ProgressGauge.Style := npbstMarquee;
