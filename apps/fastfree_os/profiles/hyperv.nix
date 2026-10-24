@@ -12,13 +12,6 @@
   fastfree.subdomains.db = "db";
   fastfree.apps = {
     base = true;
-    mariadb = true;
-    caddy = true;
-    fastfree_backend = true;
-    fastfree_ledger = true;
-    fastfree_erp = true;
-    fastfree_hr = true;
-    fastfree_pos = true;
   };
 
   virtualisation.hypervGuest.enable = true;

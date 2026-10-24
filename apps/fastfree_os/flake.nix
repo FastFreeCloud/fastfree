@@ -110,6 +110,7 @@
       # mkBaseConfig/mkSystemConfig + legacy nixosConfigurations) is deleted —
       # Clan inventory (clan.nix + machines/<name>/) is canonical now.
       clan = clanResult.config;
+      clanModules.fastfree-erp = import ./services/fastfree-erp/default.nix;
       clanInternals = clanResult.config.clanInternals;
       # Standard output expected by `nixos-rebuild --flake .#<name>`
       # (official convert template: inherit nixosConfigurations from clan).

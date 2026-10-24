@@ -42,8 +42,8 @@
           "id": "nixos-clan",
           "domain": "nixos-clan",
           "path": "domains/nixos-clan/rules/nixos-clan.md",
-          "bytes": 1010,
-          "tokens": 266
+          "bytes": 1128,
+          "tokens": 296
         },
         {
           "kind": "skill",
@@ -156,8 +156,8 @@
       ],
       "totals": {
         "items": 16,
-        "bytes": 104707,
-        "tokens": 12083,
+        "bytes": 104825,
+        "tokens": 12113,
         "by_kind": {
           "check": 1,
           "command": 1,
@@ -680,8 +680,8 @@
           "id": "nixos-clan",
           "domain": "nixos-clan",
           "path": "domains/nixos-clan/rules/nixos-clan.md",
-          "bytes": 1010,
-          "tokens": 266
+          "bytes": 1128,
+          "tokens": 296
         },
         {
           "kind": "skill",
@@ -885,8 +885,8 @@
       ],
       "totals": {
         "items": 28,
-        "bytes": 520696,
-        "tokens": 21656,
+        "bytes": 520814,
+        "tokens": 21686,
         "by_kind": {
           "check": 3,
           "command": 3,

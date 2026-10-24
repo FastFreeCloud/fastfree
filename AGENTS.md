@@ -8,7 +8,7 @@ Use MCP server: npx -y ai-rulez@latest mcp --allow-any-dir --serve-skills
 Regenerate: ai-rulez generate
 
 Docs: https://github.com/Goldziher/ai-rulez
-Content-Hash: blake3:3d83b03884a7d91f1be9ab2247277e800c672870deb94d5a7035b4d0e47d4ca3
+Content-Hash: blake3:aec91d3880cb252eadc1e215bb48f657a4760bd222e0c84f5fef7c7e7d3a8e5a
 -->
 
 # fastfree
@@ -26,7 +26,7 @@ _Applies to: `apps/fastfree_os/**`, `flake.nix`, `clan.nix`_
 When working on `apps/fastfree_os`:
 - **Fleet Topology**: `client1` is the single central public VPS. `client2` through `client11` are customer Hyper-V appliances.
 - **Profiles**: Shared system configurations must be in `profiles/base.nix`, `profiles/vps.nix`, or `profiles/hyperv.nix`. Keep `machines/<name>/configuration.nix` minimal.
-- **Clan Services**: Official Clan services (`wireguard`, `sshd`, `users`, `internet`) must be declared under `inventory.instances` with `module.input = "clan-core"`.
+- **Clan Services**: Core Clan services (`wireguard`, `sshd`, `users`, `internet`) must be declared under `inventory.instances` with `module.input = "clan-core"`. Custom services (e.g. `fastfree-erp`) must use `_class = "clan.service"` and be instantiated under `inventory.instances`.
 - **WireGuard**: Each client machine (`client2..11`) gets an isolated WireGuard instance (`client${n}-network`) on a distinct UDP port (`51820 + n`), connecting to controller `client1`.
 - **Secrets Management**: Never embed plaintext passwords in Nix expressions. Use Clan Vars (`clan vars generate <machine>`).
 

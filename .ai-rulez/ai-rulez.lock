@@ -5,7 +5,7 @@ version = 1
 ai_rulez_version = '5.6.3'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:3437cb5872c4e13d916d068267fafd2f10a02699aaca2621dac708a834ec14d1'
+tree = 'sha256:4cc721dec98e3625d0ce937cac1fa69c27c3b94cac0e458ebd18219335e50510'
 
 [[served]]
 name = 'ai-rulez'
@@ -434,7 +434,7 @@ kind = 'rule'
 id = 'nixos-clan'
 domain = 'nixos-clan'
 path = 'domains/nixos-clan/rules/nixos-clan.md'
-digest = 'sha256:6a386619e76acf87df0f4a7c56622394f5fee29f6b8b79ca3a1bea93b85e7933'
+digest = 'sha256:bbf08b7dae1656049db922da7b045aff580aedee43b53af7eaff789d44b8a4d9'
 
 [[item]]
 kind = 'settings'
@@ -590,7 +590,7 @@ digest = 'sha256:a77060414656d3492bddaa4caee3a40d004cba7a9e1a50310a0dc3c18bc81dc
 
 [[output]]
 path = '.agents/rules/nixos-clan.md'
-digest = 'sha256:6dc5ea127734832c6b6bb817fcff3656966e7383a586aa8802d3e21b147b2f3a'
+digest = 'sha256:13c09404078ef7548e4df6aacff946f6dc3c5461bf84d3579272aa2888ed3631'
 
 [[output]]
 path = '.agents/rules/secure-secrets.md'
@@ -902,7 +902,7 @@ digest = 'sha256:867a55ddf7d7d6cfb6b99dc9905fb67a5043aefd6e8f572db2643966cb7ec79
 
 [[output]]
 path = '.ai-rulez/roles.json'
-digest = 'sha256:ac0302cf1f60a7752d2d3638edd9e0033f53adea637afd1bc867cc6305bf7528'
+digest = 'sha256:7989f3e83a2b17d43d249f76f6c83b4ab1c77f37edea3e93ec919a78ee370692'
 
 [[output]]
 path = '.claude/rules/erp-invariants.md'
@@ -914,7 +914,7 @@ digest = 'sha256:3f8aba98b597273ce64ce5e93a0b4b0d2039414e7071caa0439fac8678982df
 
 [[output]]
 path = '.claude/rules/nixos-clan.md'
-digest = 'sha256:7ffecf5b2b030f47911ce018a8e5d9f37113a80760b0c7400b22c0fe531cdbfb'
+digest = 'sha256:606f703ff9928ff8b604dd142796b3ba531ca61675409affe7986a327166a096'
 
 [[output]]
 path = '.claude/rules/secure-secrets.md'
@@ -1402,7 +1402,7 @@ digest = 'sha256:676ddffc944ea32cc2ef9069d75d2f6db14857f9884ea142231bea0ef95a16f
 
 [[output]]
 path = 'AGENTS.md'
-digest = 'sha256:7fa0fbbdd7978d25e8280f9a85df697a2a069f12ceec3f061c047fd82ff6fd2c'
+digest = 'sha256:6e2189367473ce711e3c04178eef82f3f994fd259ea11effeddda6e3cf57ddcb'
 
 [[output]]
 path = 'CLAUDE.md'
@@ -1410,7 +1410,7 @@ digest = 'sha256:71bc73c292a2adb25eabe7c0e6f22776193bef75dab71b286cd8e4f63b44bf6
 
 [[output]]
 path = 'llms-full.txt'
-digest = 'sha256:3821a9e7c5b9d036abec5e519ff30e9cdf017afd91e17724555dc64a3081b570'
+digest = 'sha256:c7ab090916388f73709335d2d0078542bbf08668e190866d140af7543526b10a'
 
 [[output]]
 path = 'llms.txt'
