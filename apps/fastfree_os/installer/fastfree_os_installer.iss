@@ -224,17 +224,22 @@ var
   PowerShellExe: String;
   ScriptPath: String;
   VhdxPath: String;
+  AppDir: String;
+  LogFile: String;
   Params: String;
   ResultCode: Integer;
+  DummyCode: Integer;
 begin
   Result := True;
 
   PowerShellExe := ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe');
   ScriptPath := ExpandConstant('{tmp}\Register-FastFreeVM.ps1');
+  AppDir := ExpandConstant('{app}');
   VhdxPath := ExpandConstant('{app}\Virtual Hard Disks\fastfree_{#AppMachine}.vhdx');
+  LogFile := AppDir + '\fastfree_hyperv_install.log';
 
   Params := Format(
-    '-NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "%s" -VmName "FastFree-{#AppMachine}" -VhdxPath "%s" -CpuCount 4 -MemoryGB 4 -AutoEnableHyperV', [ScriptPath, VhdxPath]
+    '-NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "%s" -VmName "FastFree-{#AppMachine}" -VhdxPath "%s" -InstallDir "%s" -CpuCount 4 -MemoryGB 4 -AutoEnableHyperV', [ScriptPath, VhdxPath, AppDir]
   );
 
   WizardForm.ProgressGauge.Style := npbstMarquee;
@@ -258,8 +263,10 @@ begin
       end;
       102: begin
         MsgBox(
-          'The Microsoft Hyper-V Hypervisor feature is not enabled on this Windows computer.'#13#10#13#10 +
-          'Please enable Hyper-V under Windows Features (Optional Features) and restart your PC.',
+          'Microsoft Hyper-V is currently disabled on this computer.'#13#10#13#10 +
+          'To enable Hyper-V, please run PowerShell as Administrator and execute:'#13#10 +
+          'Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All -All'#13#10#13#10 +
+          'Then restart your computer and run setup again.',
           mbCriticalError, MB_OK
         );
         Result := False;
@@ -283,11 +290,18 @@ begin
       else begin
         MsgBox(
           Format('Hyper-V registration encountered an error (Code: %d).'#13#10#13#10 +
-                 'You can review detailed diagnostics in: %%TEMP%%\fastfree_hyperv_install.log', [ResultCode]),
+                 'Detailed diagnostic log was saved to:'#13#10 +
+                 '%s', [ResultCode, LogFile]),
           mbError, MB_OK
         );
         Result := False;
       end;
+    end;
+
+    // Automatically open the log file if an error occurred and log exists
+    if (not Result) and FileExists(LogFile) then
+    begin
+      ShellExec('open', 'notepad.exe', LogFile, '', SW_SHOWNORMAL, ewNoWait, DummyCode);
     end;
   end
   else
