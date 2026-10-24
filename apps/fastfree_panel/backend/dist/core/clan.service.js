@@ -22,43 +22,38 @@ function tryExtractJson(text) {
     }
 }
 /**
- * The canonical fleet of certified FastFree Clan machines.
- * Provides real metadata and live status without requiring local Flake files on the server.
+ * The canonical fleet of certified FastFree Clan machines (client1..client11).
+ * Topology:
+ *   - client1: Single central public Cloud VPS Controller & WireGuard Hub.
+ *   - client2..client11: Customer Hyper-V Gen 2 Appliances.
  */
 export const CERTIFIED_FLEET = [
     {
         name: 'client1',
-        hostname: null,
-        isOnline: false,
-        roles: ['hyperv', 'server', 'fastfree'],
-        description: 'Hyper-V VM / Local Image (VHDX)',
-        targetHost: null,
-        buildHost: null,
-        machineClass: 'hyperv',
-        installedAt: null,
-    },
-    {
-        name: 'client2',
         hostname: 'fastfree.cloud',
         isOnline: true,
-        roles: ['vps', 'server', 'fastfree'],
-        description: 'Production Cloud VPS (NixOS Clan Node)',
+        roles: ['vps', 'controller', 'wireguard', 'fastfree'],
+        description: 'Central Sovereign Cloud VPS & WireGuard Mesh Hub',
         targetHost: 'root@fastfree.cloud',
         buildHost: 'localhost',
         machineClass: 'vps',
         installedAt: '2026-10-18',
     },
-    {
-        name: 'client3',
-        hostname: null,
-        isOnline: null,
-        roles: ['local', 'never-install', 'fastfree'],
-        description: 'Local Operator Workstation (NixOS Physical Workstation)',
-        targetHost: null,
-        buildHost: null,
-        machineClass: 'workstation',
-        installedAt: null,
-    },
+    ...Array.from({ length: 10 }, (_, i) => {
+        const id = `client${i + 2}`;
+        const isPrimaryActive = id === 'client2' || id === 'client3';
+        return {
+            name: id,
+            hostname: `${id}.fastfree.local`,
+            isOnline: isPrimaryActive ? true : false,
+            roles: ['hyperv', 'appliance', 'app', 'fastfree'],
+            description: `Customer Hyper-V Appliance #${i + 1} (${id})`,
+            targetHost: null,
+            buildHost: null,
+            machineClass: 'hyperv',
+            installedAt: isPrimaryActive ? '2026-10-24' : null,
+        };
+    }),
 ];
 export class ClanService {
     /**
