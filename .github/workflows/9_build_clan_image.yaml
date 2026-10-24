@@ -239,8 +239,13 @@ jobs:
       - name: "التأكد من توفر مترجم Inno Setup (ISCC)"
         shell: pwsh
         run: |
-          $isccDefault = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-          if (-not (Test-Path $isccDefault)) {
+          $candidates = @(
+            "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+            "C:\Program Files\Inno Setup 6\ISCC.exe",
+            "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
+          )
+          $found = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $found) {
             Write-Host "Installing Inno Setup via Chocolatey..."
             choco install innosetup -y --no-progress
           }
@@ -248,14 +253,19 @@ jobs:
       - name: "بناء ملف التثبيت المستقل (${{ inputs.machine }}_setup.exe)"
         shell: pwsh
         run: |
-          $isccPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-          if (-not (Test-Path $isccPath)) {
+          $candidates = @(
+            "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+            "C:\Program Files\Inno Setup 6\ISCC.exe",
+            "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
+          )
+          $isccPath = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $isccPath) {
             $isccCmd = Get-Command ISCC.exe -ErrorAction SilentlyContinue
             if ($isccCmd) { $isccPath = $isccCmd.Source }
           }
           Write-Host "Using Inno Setup Compiler at: $isccPath"
           New-Item -ItemType Directory -Path "dist-installer" -Force | Out-Null
-          & $isccPath "/DAppMachine=${{ inputs.machine }}" "/DOutputExeName=${{ inputs.machine }}_setup" apps/fastfree_os/installer/fastfree_os_installer.iss
+          & $isccPath "/DAppMachine=${{ inputs.machine }}" "/DOutputExeName=${{ inputs.machine }}_setup" "/Odist-installer" apps/fastfree_os/installer/fastfree_os_installer.iss
           Get-ChildItem -Path dist-installer
 
       - name: "رفع المثبت كـ Artifact رسمي"
