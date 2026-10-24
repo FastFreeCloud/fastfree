@@ -177,6 +177,7 @@ jobs:
           TARGET_VHDX="apps/fastfree_os/installer/fastfree_${MACHINE}.vhdx"
           cp -L "$VHDX_SRC" "$TARGET_VHDX"
           mkdir -p dist-installer
+          chmod -R 777 dist-installer apps/fastfree_os/installer
 
           echo "Compiling Inno Setup package inside Docker (amake/innosetup:64bit)..."
           docker run --rm \
@@ -185,6 +186,7 @@ jobs:
             amake/innosetup:64bit \
             -DAppMachine="${MACHINE}" \
             -DOutputExeName="${MACHINE}_setup" \
+            -O/work/dist-installer \
             apps/fastfree_os/installer/fastfree_os_installer.iss
 
           echo "Verifying compiled installer:"

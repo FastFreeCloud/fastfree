@@ -76,7 +76,6 @@
         ./modules/boot.nix
         ./modules/nix-settings.nix
         ./modules/system.nix
-        ./modules/containers.nix
         ./modules/integration.nix
         ./modules/shell.nix
         ./modules/herdr.nix
