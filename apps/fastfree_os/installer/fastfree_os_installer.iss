@@ -79,8 +79,12 @@ Name: "autostart"; Description: "Automatically launch FastFree Virtual Machine o
 
 [Files]
 ; Deployment scripts & VM files
-Source: "Register-FastFreeVM.ps1"; DestDir: "{tmp}"; Flags: dontcopy
+Source: "Register-FastFreeVM.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "fastfree_{#AppMachine}.vhdx"; DestDir: "{app}\Virtual Hard Disks"; Flags: ignoreversion
+
+[Registry]
+; If a reboot is needed to activate Hyper-V, auto-provision the VM on the first login after restart
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"; ValueType: string; ValueName: "FastFreeProvision"; ValueData: """{sys}\WindowsPowerShell\v1.0\powershell.exe"" -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\Register-FastFreeVM.ps1"" -VmName ""FastFree-{#AppMachine}"" -VhdxPath ""{app}\Virtual Hard Disks\fastfree_{#AppMachine}.vhdx"" -InstallDir ""{app}"" -CpuCount 4 -MemoryGB 4"; Check: NeedRestart; Flags: uninsdeletevalue
 
 [Icons]
 Name: "{group}\FastFree ERP Portal ({#AppMachine})"; Filename: "http://{#AppMachine}.fastfree.local"; IconFilename: "{sys}\shell32.dll"; IconIndex: 14
@@ -89,12 +93,25 @@ Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\FastFree ERP ({#AppMachine})"; Filename: "http://{#AppMachine}.fastfree.local"; Tasks: desktopicon; IconFilename: "{sys}\shell32.dll"; IconIndex: 14
 
 [Run]
-Filename: "http://{#AppMachine}.fastfree.local"; Description: "Open FastFree ERP Portal in browser"; Flags: postinstall shellexec nowait skipifsilent
+Filename: "http://{#AppMachine}.fastfree.local"; Description: "Open FastFree ERP Portal in browser"; Flags: postinstall shellexec nowait skipifsilent; Check: not NeedRestart
 
 [Code]
 const
   DRIVE_FIXED = 3;
   MIN_REQUIRED_GB = 20; // Minimum 20 GB required for VHDX + database + snapshot headroom
+
+var
+  MustRestartComputer: Boolean;
+
+function NeedRestart(): Boolean;
+begin
+  Result := MustRestartComputer;
+end;
+
+function IsHyperVActive(): Boolean;
+begin
+  Result := RegKeyExists(HKLM, 'SYSTEM\CurrentControlSet\Services\vmms');
+end;
 
 // Windows API for drive type inspection
 function GetDriveType(lpRootPathName: String): UINT;
@@ -314,10 +331,46 @@ begin
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
+var
+  DismExe, DismParams: String;
+  DismResult: Integer;
 begin
   if CurStep = ssPostInstall then
   begin
-    // After files are unpacked, register & launch the VM
-    RegisterHyperVVirtualMachine();
+    if not IsHyperVActive() then
+    begin
+      Log('Hyper-V service (vmms) is not active. Activating Microsoft-Hyper-V via DISM...');
+      WizardForm.ProgressGauge.Style := npbstMarquee;
+      WizardForm.StatusLabel.Caption := 'Activating Microsoft Hyper-V features (this may take 1-2 minutes)...';
+
+      DismExe := ExpandConstant('{sys}\dism.exe');
+      DismParams := '/Online /Enable-Feature /All /FeatureName:Microsoft-Hyper-V-All /NoRestart /Quiet';
+
+      if Exec(DismExe, DismParams, '', SW_HIDE, ewWaitUntilTerminated, DismResult) then
+      begin
+        Log(Format('DISM executed with exit code: %d', [DismResult]));
+        // DISM codes: 0 = Success, 3010 = Success (Reboot required)
+        if (DismResult = 0) or (DismResult = 3010) then
+        begin
+          MustRestartComputer := True;
+          Log('Hyper-V feature enabled successfully. Computer restart scheduled.');
+        end
+        else
+        begin
+          Log(Format('DISM failed with unexpected error code: %d', [DismResult]));
+        end;
+      end
+      else
+      begin
+        Log('Failed to execute DISM.');
+      end;
+      WizardForm.ProgressGauge.Style := npbstNormal;
+    end
+    else
+    begin
+      // Hyper-V is already active! Provision and start the VM immediately
+      Log('Hyper-V is already active. Provisioning VM immediately...');
+      RegisterHyperVVirtualMachine();
+    end;
   end;
 end;
