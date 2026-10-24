@@ -12,12 +12,24 @@
 ;   * Desktop shortcuts to launch FastFree ERP in browser & Hyper-V Manager.
 ; ==============================================================================
 
-#define AppName "FastFree Sovereign Node"
-#define AppVersion "26.05.0"
-#define AppPublisher "FastFree Cloud Ecosystem"
-#define AppURL "https://fastfree.cloud"
-#define AppMachine "client2"
-#define OutputExeName "client2_setup"
+#ifndef AppName
+  #define AppName "FastFree Sovereign Node"
+#endif
+#ifndef AppVersion
+  #define AppVersion "26.05.0"
+#endif
+#ifndef AppPublisher
+  #define AppPublisher "FastFree Cloud Ecosystem"
+#endif
+#ifndef AppURL
+  #define AppURL "https://fastfree.cloud"
+#endif
+#ifndef AppMachine
+  #define AppMachine "client2"
+#endif
+#ifndef OutputExeName
+  #define OutputExeName "client2_setup"
+#endif
 
 [Setup]
 AppId={{C62F8B70-4E81-4FA3-94BE-A2D5E8B18129}
@@ -53,7 +65,6 @@ DirExistsWarning=no
 DisableDirPage=no
 
 ; Clean Uninstall Support
-UninstallDisplayIcon={app}\fastfree.ico
 UninstallDisplayName={#AppName} ({#AppMachine})
 
 [Languages]
