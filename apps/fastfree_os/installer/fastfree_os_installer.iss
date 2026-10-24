@@ -53,11 +53,8 @@ PrivilegesRequired=admin
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 
-; Modern Windows 11 Fluent Dynamic Design (auto-adapts to Dark & Light themes)
-WizardStyle=modern dynamic
-WizardResizable=yes
-DefaultFontName=Segoe UI Variable Text, Segoe UI
-DefaultFontSize=10
+; Modern Windows 11 Fluent Design
+WizardStyle=modern
 
 ; Directory page settings
 EnableDirDoesntExistWarning=no
@@ -69,6 +66,14 @@ UninstallDisplayName={#AppName} ({#AppMachine})
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
+
+[LangOptions]
+DialogFontName=Segoe UI Variable Text
+DialogFontSize=9
+TitleFontName=Segoe UI Variable Display
+TitleFontSize=12
+WelcomeFontName=Segoe UI Variable Display
+WelcomeFontSize=14
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
