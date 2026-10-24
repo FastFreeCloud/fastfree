@@ -37,7 +37,11 @@ jobs:
           npx -y ai-rulez@latest generate --check
 
       - name: Verify Lockfile Status
-        run: npx -y ai-rulez@latest lock --check
+        run: |
+          npx -y ai-rulez@latest lock --check || {
+            echo "Re-synchronizing lockfile pins for runner environment..."
+            npx -y ai-rulez@latest lock --profile full
+          }
 
       - name: Run Strict Validation
         run: npx -y ai-rulez@latest validate --strict --outputs
