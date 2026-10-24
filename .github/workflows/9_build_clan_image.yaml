@@ -183,18 +183,13 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: "نشر الصورة في إصدارات GitHub Releases للتحميل المباشر"
-        uses: softprops/action-gh-release@v2
-        if: success()
-        with:
-          tag_name: "clan-images"
-          name: "Clan OS Images · صور الأجهزة الرسمية"
-          draft: false
-          prerelease: false
-          files: |
-            ${{ env.ARTIFACT_DIR }}/*
+      - name: "نشر الصورة في إصدارات GitHub Releases للتحميل المباشر (للصيغ غير VHDX)"
+        if: success() && inputs.format != 'vhdx'
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload clan-images ${{ env.ARTIFACT_DIR }}/* --clobber
 
   build-installer:
     name: "بناء مثبت ويندوز الذكي (${{ inputs.machine }}_setup.exe)"
@@ -277,14 +272,8 @@ jobs:
           retention-days: 30
 
       - name: "نشر ملف التثبيت (${{ inputs.machine }}_setup.exe) في GitHub Releases"
-        uses: softprops/action-gh-release@v2
-        if: success()
-        with:
-          tag_name: "clan-images"
-          name: "Clan OS Images · صور الأجهزة الرسمية"
-          draft: false
-          prerelease: false
-          files: |
-            dist-installer/*.exe
+        shell: pwsh
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload clan-images dist-installer/*.exe --clobber
