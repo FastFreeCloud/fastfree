@@ -196,3 +196,82 @@ jobs:
             ${{ env.ARTIFACT_DIR }}/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-installer:
+    name: "بناء مثبت ويندوز الذكي (${{ inputs.machine }}_setup.exe)"
+    needs: build-image
+    if: inputs.format == 'vhdx'
+    runs-on: windows-latest
+    steps:
+      - name: "سحب الكود المصدري"
+        uses: actions/checkout@v4
+
+      - name: "تحميل قرص VHDX الناتج"
+        uses: actions/download-artifact@v4
+        with:
+          name: "clan-image-${{ inputs.machine }}-${{ inputs.format }}-${{ inputs.architecture }}"
+          path: staging-vhdx
+
+      - name: "تجهيز وفك القرص داخل مجلد المثبت"
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path staging-vhdx
+          $zip = Get-ChildItem -Path staging-vhdx -Filter "*.zip" | Select-Object -First 1
+          if ($zip) {
+            Write-Host "Extracting $($zip.FullName)..."
+            Expand-Archive -Path $zip.FullName -DestinationPath apps/fastfree_os/installer -Force
+          } else {
+            $vhdx = Get-ChildItem -Path staging-vhdx -Filter "*.vhdx" | Select-Object -First 1
+            if ($vhdx) {
+              Copy-Item -Path $vhdx.FullName -Destination "apps/fastfree_os/installer/fastfree_${{ inputs.machine }}.vhdx" -Force
+            }
+          }
+          # تأكيد تطابق اسم ملف القرص مع اسم الجهاز
+          $foundVhdx = Get-ChildItem -Path apps/fastfree_os/installer -Filter "*.vhdx" | Select-Object -First 1
+          if ($foundVhdx -and $foundVhdx.Name -ne "fastfree_${{ inputs.machine }}.vhdx") {
+            Rename-Item -Path $foundVhdx.FullName -NewName "fastfree_${{ inputs.machine }}.vhdx" -Force
+          }
+          Get-ChildItem -Path apps/fastfree_os/installer
+
+      - name: "التأكد من توفر مترجم Inno Setup (ISCC)"
+        shell: pwsh
+        run: |
+          $isccDefault = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $isccDefault)) {
+            Write-Host "Installing Inno Setup via Chocolatey..."
+            choco install innosetup -y --no-progress
+          }
+
+      - name: "بناء ملف التثبيت المستقل (${{ inputs.machine }}_setup.exe)"
+        shell: pwsh
+        run: |
+          $isccPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $isccPath)) {
+            $isccCmd = Get-Command ISCC.exe -ErrorAction SilentlyContinue
+            if ($isccCmd) { $isccPath = $isccCmd.Source }
+          }
+          Write-Host "Using Inno Setup Compiler at: $isccPath"
+          New-Item -ItemType Directory -Path "dist-installer" -Force | Out-Null
+          & $isccPath "/DAppMachine=${{ inputs.machine }}" "/DOutputExeName=${{ inputs.machine }}_setup" apps/fastfree_os/installer/fastfree_os_installer.iss
+          Get-ChildItem -Path dist-installer
+
+      - name: "رفع المثبت كـ Artifact رسمي"
+        uses: actions/upload-artifact@v4
+        with:
+          name: "fastfree-installer-${{ inputs.machine }}"
+          path: dist-installer/*.exe
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: "نشر ملف التثبيت (${{ inputs.machine }}_setup.exe) في GitHub Releases"
+        uses: softprops/action-gh-release@v2
+        if: success()
+        with:
+          tag_name: "clan-images"
+          name: "Clan OS Images · صور الأجهزة الرسمية"
+          draft: false
+          prerelease: false
+          files: |
+            dist-installer/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

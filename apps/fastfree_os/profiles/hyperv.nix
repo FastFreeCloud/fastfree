@@ -23,8 +23,16 @@
 
   sops.age.keyFile = "/var/lib/sops-nix/key.txt";
   virtualisation.hypervGuest.enable = true;
-  fileSystems."/" = { device = "/dev/disk/by-label/nixos"; fsType = "ext4"; };
-  fileSystems."/boot" = { device = "/dev/disk/by-label/ESP"; fsType = "vfat"; };
+  fileSystems."/" = {
+    device = "/dev/disk/by-label/nixos";
+    fsType = "ext4";
+    autoResize = true;
+  };
+  fileSystems."/boot" = {
+    device = "/dev/disk/by-label/ESP";
+    fsType = "vfat";
+  };
+  boot.growPartition = true;
   boot.loader.timeout = 0;
   boot.initrd.availableKernelModules = [ "hv_vmbus" "hv_storvsc" "hv_netvsc" "sd_mod" "sr_mod" ];
   boot.loader.grub = {
