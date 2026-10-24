@@ -20,6 +20,9 @@ param(
     [Parameter(Mandatory = $false)]
     [string]$VhdxPath = "",
 
+    [Parameter(Mandatory = $false)]
+    [string]$InstallDir = "",
+
     [int]$CpuCount = 4,
     [int64]$MemoryGB = 4,
     [string]$SwitchName = "Default Switch",
@@ -27,7 +30,20 @@ param(
     [switch]$AutoEnableHyperV
 )
 
-$LogPath = Join-Path $env:TEMP "fastfree_hyperv_install.log"
+# Resolve target log file path: Prioritize the chosen installation directory
+$LogPath = ""
+if ($InstallDir -and (Test-Path $InstallDir)) {
+    $LogPath = Join-Path $InstallDir "fastfree_hyperv_install.log"
+} elseif ($VhdxPath) {
+    $parentDir = Split-Path (Split-Path $VhdxPath -Parent) -Parent
+    if ($parentDir -and (Test-Path $parentDir)) {
+        $LogPath = Join-Path $parentDir "fastfree_hyperv_install.log"
+    }
+}
+if (-not $LogPath) {
+    $LogPath = Join-Path $env:TEMP "fastfree_hyperv_install.log"
+}
+
 if (-not $CheckOnly) {
     Start-Transcript -Path $LogPath -Append
 }
