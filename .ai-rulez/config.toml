@@ -80,10 +80,8 @@ command = ["npx", "-y", "ai-rulez@latest"]
 prompt = true
 
 # ---------------------------------------------------------
-# CLAUDE MANAGED SETTINGS & LINT TRAPS
+# LINT TRAPS
 # ---------------------------------------------------------
-[claude.settings.managed]
-env = { FASTFREE_SOVEREIGN = "1" }
 
 [lint.traps]
 extra_harnesses = ["cursor", "copilot"]
