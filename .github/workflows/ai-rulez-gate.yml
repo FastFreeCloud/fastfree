@@ -27,9 +27,9 @@ jobs:
 
       - name: Verify Generated Outputs Sync (Zero Drift)
         run: |
-          npx -y ai-rulez@latest generate --check || {
+          npx -y ai-rulez@latest generate --check --debug || {
             echo "::error::ai-rulez generate --check failed. Showing diff after regeneration:"
-            npx -y ai-rulez@latest generate
+            npx -y ai-rulez@latest generate --debug
             git diff
             git status -s
             exit 2
