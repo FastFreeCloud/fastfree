@@ -48,8 +48,6 @@
       # has no `clan` option and fails evaluation.
       # Image-only: never `clan machines install` — built as VHDX via CI.
       hypervImageModule = { config, pkgs, lib, ... }: {
-        virtualisation.diskSize = 40 * 1024;
-
         system.build.hypervImage = lib.mkForce (
           import "${nixpkgs}/nixos/lib/make-disk-image.nix" {
             name = "nixos-hyperv-${config.system.nixos.label}-fixed";
@@ -59,11 +57,12 @@
               rm $diskImage
             '';
             format = "raw";
-            inherit (config.virtualisation) diskSize;
+            diskSize = "auto";
+            additionalSpace = "4G";
             partitionTableType = "efi";
             inherit config lib;
             pkgs = customPkgs pkgs;
-            memSize = 2048;
+            memSize = 4096;
           }
         );
       };
