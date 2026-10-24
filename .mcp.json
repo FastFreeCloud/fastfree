@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "ai-rulez": {
+      "args": [
+        "-y",
+        "ai-rulez@latest",
+        "mcp",
+        "--allow-any-dir",
+        "--serve-skills"
+      ],
+      "command": "npx",
+      "type": "stdio"
+    }
+  }
+}

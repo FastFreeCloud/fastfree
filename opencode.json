@@ -2,6 +2,18 @@
   "$schema": "https://opencode.ai/config.json",
   "lsp": true,
   "mcp": {
+    "ai-rulez": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "ai-rulez@latest",
+        "mcp",
+        "--allow-any-dir",
+        "--serve-skills"
+      ],
+      "enabled": true
+    },
     "context7": {
       "type": "remote",
       "url": "https://mcp.context7.com/mcp",
@@ -113,22 +125,6 @@
       "timeout": 300000,
       "cwd": "."
     },
-    "fastfree-flow": {
-      "type": "local",
-      "command": [
-        "node",
-        "C:/Users/FastFree/Desktop/fastfree/fastfree_mcp_tools/fastfree_flow_mcp/src/index.js"
-      ],
-      "environment": {
-        "FLOW_BROWSER": "C:/Users/FastFree/AppData/Local/CentBrowser/Application/chrome.exe",
-        "FLOW_USER_DATA": "C:/Users/FastFree/AppData/Local/CentBrowser/User Data",
-        "FLOW_PROFILE": "Default",
-        "FLOW_CDP_PORT": "9222",
-        "FLOW_ACCOUNT": "mohamed.fastfree@gmail.com"
-      },
-      "enabled": true,
-      "timeout": 600000
-    },
     "fastfree-social": {
       "type": "local",
       "command": [
@@ -159,7 +155,35 @@
       "uv run flet *": "allow",
       "uv run python *": "allow",
       "bench *": "ask",
-      "rm -rf *": "deny"
+      "rm -rf *": "deny",
+      "clan vars generate *": "ask",
+      "clan vars set *": "ask",
+      "clan vars show *": "deny",
+      "git clean -fdx *": "deny",
+      "git commit *": "ask",
+      "git push *": "ask",
+      "git reset --hard *": "deny"
+    },
+    "edit": {
+      "**/.git/**": "deny",
+      ".git/**": "deny"
+    },
+    "read": {
+      "**": "allow",
+      "**/*.jks": "deny",
+      "**/*.keystore": "deny",
+      "**/*id_ed25519*": "deny",
+      "**/*id_rsa*": "deny",
+      "**/.env*": "deny",
+      "*.jks": "deny",
+      "*.keystore": "deny",
+      "*id_ed25519*": "deny",
+      "*id_rsa*": "deny",
+      ".env*": "deny"
+    },
+    "webfetch": {
+      "https://github.com/*": "allow",
+      "https://npmjs.org/*": "allow"
     }
   },
   "agent": {
@@ -177,5 +201,8 @@
   "plugin": [
     "opencode-browser",
     "opencode-wakatime"
+  ],
+  "instructions": [
+    "AGENTS.local.md"
   ]
 }

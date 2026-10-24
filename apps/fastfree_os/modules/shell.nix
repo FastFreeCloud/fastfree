@@ -47,11 +47,6 @@
       ff-rg = "rg -n --hidden --glob '!.git'";
       ff-fd = "fd -H -I";
       ff-ug = "ugrep -r --hidden -n";
-
-      # Cloudflare quick-tunnel URLs (modules/tunnel.nix) — the hostname is
-      # random and changes whenever the tunnel service restarts, so always read
-      # it from /run instead of typing or remembering one.
-      ff-urls = "for n in guacamole opencode; do f=/run/fastfree-tunnel-$n.url; if [ -s $f ]; then printf '%-10s %s\\n' $n \"$(cat $f)\"; else printf '%-10s %s\\n' $n \"not started yet - run: sudo systemctl start cloudflared-$n\"; fi; done";
     };
   };
 }

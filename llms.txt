@@ -1,0 +1,35 @@
+# FastFree Monorepo
+
+> FastFree Sovereign Multi-Agent Monorepo & OS Ecosystem
+
+## Rules
+
+- [Code Quality Standards](.ai-rulez/rules/code-quality.md): Follow these coding standards:
+- [Zero Plaintext Secrets Policy](.ai-rulez/rules/secure-secrets.md): 1. **Nix Expressions**: Never embed plaintext passwords, private keys, hashes, or API secrets inside `.nix` files.
+- [FastFree ERP Domain Invariants](.ai-rulez/domains/erp-modules/rules/erp-invariants.md): Domain erp-modules. When working within ERP domain packages:
+- [FastFree Frontend & Quasar Standards](.ai-rulez/domains/frontend/rules/frontend-quasar.md): Domain frontend. When working on Vue/TypeScript apps and packages:
+- [FastFree OS & Clan 26.05 Standards](.ai-rulez/domains/nixos-clan/rules/nixos-clan.md): Domain nixos-clan. When working on `apps/fastfree_os`:
+
+## Context
+
+- [Multi-Agent Operating Environment with Herdr](.ai-rulez/context/agents.md): المشروع يدار بواسطة وكلاء ذكاء اصطناعي متعددين يعملون بالتوازي داخل طرفيات **Herdr** (`herdr.dev` مع `HERDR_ENV=1`):
+- [FastFree Monorepo Architecture](.ai-rulez/context/architecture.md): FastFree is a sovereign, offline-first enterprise multi-agent monorepo and operating system ecosystem.
+
+## Skills
+
+- [AI-Rulez](.ai-rulez/skills/ai-rulez/SKILL.md): Use AI-Rulez correctly in user projects, including CLI, MCP, configuration, and generation workflows
+- [Code Reviewer](.ai-rulez/skills/code-reviewer/SKILL.md): Specialized agent for code review and quality assurance
+- [FastFree Change Policy & Commit Conventions](.ai-rulez/skills/fastfree-change-policy/SKILL.md): Mandatory code modification rules, scope boundary enforcement, secret prevention, and commit conventions for all human developers and AI agents operating within the FastFree Monorepo.
+- [FastFree Monorepo — الدليل المعماري والتشغيلي الشامل](.ai-rulez/skills/fastfree-guide/SKILL.md): Comprehensive architectural, development, and operational guide for the FastFree Monorepo ecosystem. Use when inspecting, developing, testing, building, or deploying any package (lowcode, auth, acc...
+- [FastFree Test & Quality Verification Skill](.ai-rulez/skills/fastfree-test/SKILL.md): Mandatory verification, typechecking, and testing procedures for the FastFree Monorepo. Use before declaring any task complete or pushing changes to Git. Ensures zero TypeScript errors, clean linti...
+- [Conducting Herdr](.ai-rulez/skills/herdr-conductor/SKILL.md): Operate a live Herdr terminal session through the herdr-mcp server. Use when the user asks what their Herdr agents are doing, or wants to start, prompt, read, wait for, or stop a coding agent, or t...
+- [Fan-out in Herdr](.ai-rulez/skills/herdr-fanout/SKILL.md): Fan a task out across several coding agents in Herdr, each in its own git worktree, then collect and reconcile the results. Use when the user wants parallel exploration, several independent attempt...
+- [Writer / reviewer loop in Herdr](.ai-rulez/skills/herdr-review-loop/SKILL.md): Run a writer/reviewer loop in Herdr — one agent produces work, a second critiques it in its own pane, and findings are relayed back until it is clean. Use when the user wants a second pair of eyes,...
+- [Skill Evolution Loop](.ai-rulez/skills/skill-evolution/SKILL.md): Keep opencode skills accurate by harvesting failure lessons into skill rules after every fix. Use after any bug fix, failed run, or UI surprise.
+- [ERP Domain Development](.ai-rulez/domains/erp-modules/skills/erp-domain-development/SKILL.md): Domain erp-modules. Add or fix a screen, service, store, or locale in any fastfree_* domain package following architecture invariants and shared utilities. Use for ERP feature work and code review.
+- [Android Build & Release](.ai-rulez/domains/frontend/skills/android-build-release/SKILL.md): Domain frontend. Build signed APK/AAB for a FastFree Android app locally or via tag-triggered CI workflows, then cut a GitHub Release. Use for pos/erp/hr/ledger builds and build failures.
+- [Play Console Setup (FastFree Android)](.ai-rulez/domains/frontend/skills/play-console-setup/SKILL.md): Domain frontend. Bootstrap FastFree Android apps on Google Play Console via Playwright MCP — create app records, invite the publisher service account, upload first AABs. Use when asked to work on Play Console / pub...
+- [Play Publish Automation (API only, no browser)](.ai-rulez/domains/frontend/skills/play-publish-automation/SKILL.md): Domain frontend. Publish Play listings, graphics, and AABs to the internal track via uv scripts and keyless WIF auth. Use for Play uploads, metadata changes, and publish failures. No browser needed.
+- [Quasar Quality Gates](.ai-rulez/domains/frontend/skills/quasar-quality-gates/SKILL.md): Domain frontend. Run Quasar prepare, vue-tsc typecheck, and lint across the four apps (pos, erp, hr, ledger) before any push or tag. Use for validation failures and pre-push checks.
+- [NixOS Host Deploy](.ai-rulez/domains/nixos-clan/skills/nixos-host-deploy/SKILL.md): Domain nixos-clan. Validate, build, provision, and SSH-deploy NixOS clients (client1 Hyper-V, client2 VPS, client3 local) with post-deploy diagnostics. Use for host deploys and deploy failures.
+- [Web & Backend Release](.ai-rulez/domains/nixos-clan/skills/web-backend-release/SKILL.md): Domain nixos-clan. Ship Nix SPA images, the Frappe backend image, and bench scaffolds to GHCR with auto-tags and releases. Use for image builds, release cuts, and release failures.

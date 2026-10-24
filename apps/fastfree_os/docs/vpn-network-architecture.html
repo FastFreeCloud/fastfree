@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FastFree — بنية شبكة الـ VPN</title>
+<style>
+  :root{
+    --bg:#080d16; --bg2:#101827; --bg3:#182131; --line:#243146;
+    --fg:#e8eef8; --fg2:#9db0c9; --fg3:#657a96;
+    --acc:#3ddcf0; --acc2:#8b5cff; --ok:#3ddc84; --warn:#ffb020; --err:#ff5c72;
+    --mono:'Cascadia Code','JetBrains Mono',Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--fg);font-family:'Segoe UI',Tahoma,system-ui,sans-serif;
+       line-height:1.85;padding-bottom:90px}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 22px}
+  header{background:radial-gradient(1200px 400px at 70% -10%,#1b2f4d 0%,#0d1420 60%,#080d16 100%);
+         border-bottom:1px solid var(--line);padding:50px 0 38px;margin-bottom:36px}
+  h1{font-size:2rem;letter-spacing:-.5px;margin-bottom:8px;
+     background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{color:var(--fg2);max-width:900px}
+  h2{font-size:1.4rem;margin:50px 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line);
+     display:flex;align-items:center;gap:12px}
+  h2 .n{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#051018;font-weight:800;
+        font-size:.8rem;width:28px;height:28px;border-radius:9px;display:inline-flex;
+        align-items:center;justify-content:center;flex:none}
+  h2.crit{border-bottom-color:var(--err)} h2.crit .n{background:linear-gradient(135deg,#ff5c72,#ff8f5c)}
+  h3{font-size:1.05rem;margin:26px 0 10px;color:var(--acc)}
+  p{color:var(--fg2);margin:9px 0}
+  p strong,li strong,b{color:var(--fg)}
+  ul,ol{margin:9px 22px 9px 0;color:var(--fg2)} li{margin:5px 0}
+  code{font-family:var(--mono);background:#0c1420;border:1px solid var(--line);border-radius:6px;
+       padding:1.5px 6px;font-size:.85em;color:var(--acc);direction:ltr;display:inline-block}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.87rem;background:var(--bg2);
+        border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th{background:#17202e;color:var(--fg2);text-align:right;padding:11px 13px;font-weight:700;
+     font-size:.79rem;border-bottom:1px solid var(--line)}
+  td{padding:10px 13px;border-bottom:1px solid #1a2333;color:var(--fg2);vertical-align:top}
+  tr:last-child td{border-bottom:none} tr:hover td{background:#131c29}
+  .note{border-right:4px solid var(--acc);background:#0d1a27;padding:15px 19px;border-radius:0 10px 10px 0;margin:16px 0}
+  .note.warn{border-color:var(--warn);background:#1c1708}
+  .note.err{border-color:var(--err);background:#1d0c11}
+  .note.ok{border-color:var(--ok);background:#0a1b12}
+  .note.big{font-size:1rem}
+  .yes{color:var(--ok);font-weight:700} .no{color:var(--err);font-weight:700}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+  @media(max-width:850px){.grid2,.grid3{grid-template-columns:1fr}}
+  .box{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .box h4{color:var(--acc);margin:0 0 6px;font-size:.97rem}
+  .box p{font-size:.87rem;margin:5px 0}
+  .badge{display:inline-block;padding:2px 9px;border-radius:6px;font-size:.72rem;font-weight:700;white-space:nowrap}
+  .b-ok{background:#0f2a1a;color:var(--ok);border:1px solid #1d5c39}
+  .b-no{background:#2a1016;color:var(--err);border:1px solid #6b2530}
+  .b-warn{background:#2a2210;color:var(--warn);border:1px solid #6b5623}
+  .term{background:var(--bg2);border:1px solid var(--line);border-right:4px solid var(--acc2);
+        border-radius:0 12px 12px 0;padding:14px 18px;margin:10px 0}
+  .term>b{color:var(--acc2);display:block;margin-bottom:3px;font-size:1rem}
+  .term p{margin:0;font-size:.89rem}
+  .term p b{display:inline;margin:0}
+  .legend{display:flex;gap:20px;flex-wrap:wrap;margin:14px 0;font-size:.85rem;color:var(--fg2)}
+  .legend i{width:13px;height:13px;border-radius:4px;display:inline-block;margin-left:6px;vertical-align:-1px}
+  .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+  @media(max-width:850px){.kpi{grid-template-columns:repeat(2,1fr)}}
+  .kpi div{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:15px;text-align:center}
+  .kpi b{display:block;font-size:1.5rem;color:var(--acc);font-family:var(--mono)}
+  .kpi span{font-size:.75rem;color:var(--fg3)}
+  .step{display:flex;gap:16px;margin:18px 0;align-items:flex-start}
+  .step .num{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#051018;font-weight:800;
+             width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex:none}
+  .step .bd{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:15px 18px}
+  .step .bd p{margin:5px 0}
+  .diagram{background:#060b12;border:1px solid var(--line);border-radius:14px;padding:22px 18px;
+           overflow-x:auto;direction:ltr;text-align:left}
+  .diagram pre{background:none;border:none;padding:0;margin:0;font-family:var(--mono);
+               font-size:.8rem;line-height:1.7;color:#c9d7e8}
+  .toc{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:18px 22px}
+  .toc ol{margin:8px 0 0 18px;padding:0;columns:2;column-gap:34px}
+  .toc li{margin:3px 0;font-size:.88rem}
+  .toc a{color:var(--acc);text-decoration:none} .toc a:hover{text-decoration:underline}
+  .toc .crit a{color:var(--err);font-weight:700}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:var(--fg3);font-size:.8rem}
+  .layer{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.7rem;font-weight:700;
+         border:1px solid;vertical-align:2px;white-space:nowrap}
+  .layer-live{background:#0f2a1a;color:var(--ok);border-color:#1d5c39}
+  .layer-plan{background:#2a2210;color:var(--warn);border-color:#6b5623}
+  .client{background:var(--bg3);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0;
+          border-top:4px solid var(--tone)}
+  .client h3{margin:0 0 2px;color:var(--fg);font-size:1.1rem}
+  .client .role{color:var(--tone);font-weight:700;font-size:.85rem}
+  .client dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:14px 0 0;font-size:.85rem}
+  .client dt{color:var(--fg3);white-space:nowrap}
+  .client dd{margin:0;color:var(--fg2);font-family:var(--mono);font-size:.83rem}
+  .devlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px;margin:12px 0 4px}
+  .devlist div{background:#0c1420;border:1px solid var(--line);border-radius:9px;padding:8px 10px;
+               font-family:var(--mono);font-size:.8rem;color:var(--fg2);direction:ltr;text-align:left}
+  .devlist b{color:var(--acc);display:block;font-size:.74rem;font-weight:600}
+  .cheat{background:#0c1420;border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:16px 0}
+  .cheat div{font-family:var(--mono);font-size:.84rem;color:var(--fg2);padding:4px 0;
+             border-bottom:1px dashed #1d2839;direction:rtl;text-align:right}
+  .cheat div:last-child{border-bottom:none}
+  .cheat span{color:var(--acc)}
+  .navlink{display:inline-block;background:var(--bg2);border:1px solid var(--line);border-radius:9px;
+           padding:7px 14px;margin:0 0 0 8px;font-size:.85rem;text-decoration:none;color:var(--acc)}
+  .navlink:hover{border-color:var(--acc)}
+  table.kv td:first-child{white-space:nowrap;color:var(--fg3);width:210px}
+  table.kv td:nth-child(2){font-family:var(--mono);font-size:.83rem}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>FastFree — بنية شبكة الـ VPN</h1>
+    <p>الملف الثاني: <b>المخططات والقواعد والجداول العامة</b> — المصفوفات، تحليل الفصل، الواقع المُنفَّذ اليوم، والخطة.</p>
+    <a class="navlink" href="vpn-network-design.html">الملف الأول: جدول كل عميل (11 عميل) ←</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+
+<div class="note big ok">
+  <b>الصورة في 30 ثانية:</b>
+  <b>11 عميل</b> (الـ VPS = العميل 1 + 10 عملاء) · <b>5 أجهزة</b> لكل عميل = <b>55 جهاز</b> ·
+  <b>21</b> instance (11 شبكة أجهزة + 10 روابط مع الـ VPS).
+  <br>الـ VPS هو <b>العميل الأول</b> — له 5 أجهزة زي أي عميل، <b>وليه يوصل الـ 55 جهاز كلهم</b>
+  عن طريق 10 روابط <code>/30</code>.
+</div>
+
+<div class="toc">
+  <b>الأساسيات</b>
+  <ol>
+    <li><a href="#s1">المصطلحات (6 كلمات)</a></li>
+    <li><a href="#s2">قواعد الشبكة (4)</a></li>
+    <li><a href="#s3">الـ VPS يوصل للكل</a></li>
+    <li><a href="#s4">من يتصل بمين — شكل الشبكة وسيناريو الفصل</a></li>
+    <li><a href="#s5">جدول البورتات (21 instance)</a></li>
+  </ol>
+  <b style="display:block;margin-top:14px">الجداول والمخططات</b>
+  <ol start="6">
+    <li><a href="#s6">المخطط العام (11 عميل)</a></li>
+    <li><a href="#s7">المسار: من جهاز لخدمة على الـ VPS</a></li>
+    <li><a href="#s8">جدول روابط الـ backbone (10)</a></li>
+    <li><a href="#s9">مصفوفة الوصول</a></li>
+    <li><a href="#s10">أمثلة عملية</a></li>
+  </ol>
+  <b style="display:block;margin-top:14px">الأسئلة الحرجة</b>
+  <ol start="11" class="crit">
+    <li><a href="#s11" style="color:var(--err);font-weight:700">🔴 لو الـ VPS فصل</a></li>
+    <li><a href="#s12">لو بوابة عميل فصلت؟</a></li>
+  </ol>
+  <b style="display:block;margin-top:14px">التنفيذ</b>
+  <ol start="13">
+    <li><a href="#s13">🇦🇪 ما شغّال فعلاً اليوم</a></li>
+    <li><a href="#s14">الخطة: الـ 21 instance</a></li>
+    <li><a href="#s15">المشاكل الـ 12</a></li>
+    <li><a href="#s16">خطة التنفيذ</a></li>
+    <li><a href="#s17">خريطة الأسماء: المستند ↔ الكود</a></li>
+  </ol>
+</div>
+
+<h2 id="s1"><span class="n">1</span>المصطلحات — 6 كلمات بس</h2>
+
+<div class="grid3">
+<div class="term"><b>عميل (Client)</b>
+  <p>وحدة مستقلة: <b>جهاز Clan واحد</b> (بوابة) + <b>5 أجهزة</b> ليه. رقمه هو أول خانة في كل عناوينه.</p></div>
+<div class="term"><b>بوابة (Hub)</b>
+  <p>جهاز Clan بتاع العميل — بيستقبل أجهزته ويوصّلها بالـ VPS. الـ VPS نفسه هو بوابة العميل 1.</p></div>
+<div class="term"><b>جهاز (Device)</b>
+  <p>موبايل / لابتوب / تابلت <b>مش</b> جهاز Clan. اسمه <code>clientX_d_Y</code>: X = العميل، Y = رقم الجهاز.</p></div>
+<div class="term"><b>IP — رقم البيت</b>
+  <p>عنوان الجهاز جوه الشبكة الخاصة: <code>10.0.X.Y</code> — X = العميل، Y = الجهاز. مفيش تخمين.</p></div>
+<div class="term"><b>Port — رقم الباب</b>
+  <p>بيحدد أي شبكة نفتح. <code>51821</code> شبكات الأجهزة · <code>51831..51840</code> روابط الـ backbone.</p></div>
+<div class="term"><b>Instance — الشبكة</b>
+  <p>شبكة WireGuard واحدة. اللي جواها بيوصل بعضه، واللي برّاها <b>مفيش مسار</b> — وده أداة العزل.</p></div>
+</div>
+
+<h2 id="s2"><span class="n">2</span>قواعد الشبكة — 4 بس</h2>
+
+<div class="step"><div class="num">1</div><div class="bd">
+  <b>الجهاز بيتصل ببوابة عميله هو، وبس.</b>
+  <p>الجهاز <code>10.0.7.3</code> بيتصل بـ <code>10.0.7.254</code> (بوابة client7) وما يتصلش ببوابة تانية.
+     الـ <code>AllowedIPs</code> بتاعه مقيّد على شبكته هو + عنوان الـ VPS.</p>
+</div></div>
+
+<div class="step"><div class="num">2</div><div class="bd">
+  <b>كل بوابة (غير الـ VPS) مربوطة بالـ VPS بوحدها.</b>
+  <p>10 روابط مستقلة، كل واحد في <b>instance لوحده</b> ومنفذ لوحده. مفيش رابط بين عميلين.</p>
+</div></div>
+
+<div class="step"><div class="num">3</div><div class="bd">
+  <b>الـ VPS يوصل كل حاجة — وهو الوحيد اللي عنده IP عام.</b>
+  <p>كل عميل بيتصل بالـ VPS عن طريق رابطه، والـ VPS عنده <b>route لكل شبكة عميل</b> فبيوصل الـ 55 جهاز.
+     الأجهزة عدا الـ VPS بتعدّي من بوابتها الأول (خطوتين).</p>
+</div></div>
+
+<div class="step"><div class="num">4</div><div class="bd">
+  <b>العزل بين العملاء — قرار مش صدفة.</b>
+  <p>الـ VPS <b>مش بيعمل forwarding</b> من شبكة عميل لشبكة عميل تاني. فجهاز عميل ما يوصلش جهاز عميل تاني.
+     كل عميل شايف بوابته والـ VPS — بس.</p>
+</div></div>
+
+<div class="note warn">
+  <b>مهم:</b> الـ VPN ده <b>شبكة خاصة</b> — مش tunnel للإنترنت.
+  الإنترنت بيمر من الـ ISP بتاع كل جهاز مباشرة. لو الـ VPN فصل، الإنترنت ما يتأثرش.
+</div>
+
+<h2 id="s3"><span class="n">3</span>الـ VPS يوصل للكل — وده جوهر التصميم</h2>
+
+<div class="note ok">
+  <b>العميل 1 (الـ VPS) = عميل زي أي عميل + مركز الشبكة كلها.</b>
+  <br>• زي أي عميل: عنده <b>شبكة أجهزة خاصة</b> <code>10.0.1.0/24</code> و<b>5 أجهزة</b>
+  <code>client1_d_1..5</code> وبوابته <code>10.0.1.254</code>.
+  <br>• فوق كده: هو <b>المركز</b> — اتصل بـ <b>10 بوابات</b> (العملاء 2..11) عن طريق
+  <b>10 روابط /30</b> مستقلة، وعنده route لكل شبكة عميل، فبيوصل <b>الـ 55 جهاز</b> كلهم.
+  <br>• مفيش حد تاني في الشبكة يقدر يعمل كده — مفيش غيره IP عام.
+</div>
+
+<table>
+<thead><tr><th>الخصوصية</th><th>السبب</th></tr></thead>
+<tbody>
+<tr><td>الـ VPS يوصل الـ 55 جهاز</td><td>عنده route لكل شبكة <code>10.0.X.0/24</code> عبر رابط ذلك العميل</td></tr>
+<tr><td>الـ VPS يوصل الـ 10 بوابات</td><td>هي الـ 10 روابط <code>/30</code> — كل واحدة endpoint معلوم</td></tr>
+<tr><td>العميل X ما يوصلش العميل Y</td><td>الـ VPS مش بيعمل forwarding بين الشبكات</td></tr>
+<tr><td>العميل X ما يوصلش إلا الـ VPS</td><td>عميله ما يعرفش غير <code>10.0.X.0/24</code> وعنوان الـ VPS</td></tr>
+<tr><td>مفيش حد من برّه يوصل</td><td>كل الشبكات خاصة — مفيش route عام</td></tr>
+</tbody>
+</table>
+
+<h2 id="s4"><span class="n">4</span>من يتصل بمين — شكل الشبكة وسيناريو الفصل</h2>
+
+<div class="note">
+  <b>الصور باللاتيني عشان المحاذاة تضبط بالظبط.</b>
+  رموزها: <code>--</code> رابط · <code>✓</code> شغّال · <code>X</code> واقع.
+</div>
+
+<h3>أ) مين يتصل بمين — شكل الشبكة</h3>
+
+<div class="note ok">
+  <b>3 حقايق:</b>
+  1. الـ VPS (client1) هو اللي بيتصل بالـ 10 كلهم — 10 روابط منفصلة، كل واحد instance + منفذ + شبكة لوحده.
+  2. أي عميل تاني مش بيتصل بحد غير أجهزته + الـ VPS.
+  3. العزل في الاتجاهين.
+</div>
+
+<div class="diagram"><pre>
+      every device uses its own ISP  (the VPN is NOT an internet tunnel)
+                                       |
+                                       v
+  +----------------------------------------------------------------------+
+  | client1  =  VPS  =  fastfree.cloud  =  76.13.51.10  (only public IP) |
+  | device net 10.0.1.0/24   gateway 10.0.1.254   port 51821             |
+  | +-- 10.0.1.1 client1_d_1    +-- 10.0.1.2 client1_d_2                 |
+  | +-- 10.0.1.3 client1_d_3    +-- 10.0.1.4 client1_d_4                 |
+  | +-- 10.0.1.5 client1_d_5                                             |
+  +----------------------------------------------------------------------+
+
+           |                 |                 |                 .
+           |                 |                 |                 .
+      port 518310       port 518320      1port 518360           x7
+           |                 |                 |               same
+           |                 |                 |
+
+    +-------------+   +-------------+   +-------------+   +------------+
+    | client2     |   | client3     |   | client7     |   | client5..11 |
+    | 10.0.2.0/24 |   | 10.0.3.0/24 |   | 10.0.7.0/24 |   | one each   |
+    | gw 10.0.2.254 | | gw 10.0.3.254 | | gw 10.0.7.254 | | one link   |
+    | port 51821  |   | port 51821  |   | port 51821  |   | one port   |
+    | 5 devices   |   | 5 devices   |   | 5 devices   |   | 5 devices  |
+    +-------------+   +-------------+   +-------------+   +------------+
+
+X  no link between any two of client2..client11 - each one talks to the VPS on
+X  the VPS never forwards between two customers - isolation by design
+</pre></div>
+<h3>ب) لو عميل واحد فصل — العزل في العمل</h3>
+<div class="diagram"><pre>
+ALL HEALTHY:
+  client2 hub  -- link 51831 --+
+  client3 hub  -- link 51832 --+
+  client4 hub  -- link 51833 --+
+                                  |
+                              +--->  THE VPS (client1)   panel | API | Frapp
+  client7 hub  -- link 51836 --+
+  client8 hub  -- link 51837 --+
+  client9 hub  -- link 51838 --+
+  client10 hub -- link 51839 --+
+  client11 hub -- link 51840 --+
+
+
+CLIENT7'S HUB GOES DOWN:
+  client2 hub  -- link 51831 --+
+  client3 hub  -- link 51832 --+
+  client4 hub  -- link 51833 --+
+                                  |
+                              +--->  THE VPS (client1)   ✅ still fine
+  client7 hub  X  link dead  X
+  client8 hub  -- link 51837 --+
+  client9 hub  -- link 51838 --+
+  client11 hub -- link 51840 --+
+
+client7 devices (10.0.7.1..5)  ->  their gateway 10.0.7.254 is dead
+                                   ->  they lose the private network
+the other 10 clients           ->  zero impact, everything normalorks
+can they reach client7 ?        ->  NO - they could not even when it was ali
+</pre></div>
+
+<div class="note ok">
+  <b>الخلاصة:</b> العميل اللي فصل — 5 أجهزته فقدوا بوابتهم (وبكده الشبكة الخاصة)، بس إنترنتهم شغّال.
+  الـ 10 التانيين: صفر تأثير. محدش يقدر يوصل للفاصل (حيطة العزل في الاتجاهين).
+</div>
+
+<table>
+<thead><tr><th>مين</th><th>تأثر؟</th><th>التفاصيل</th></tr></thead>
+<tbody>
+<tr><td><b>العميل اللي فصل</b></td><td class="no">❌</td><td>الـ 5 أجهزته فقدوا بوابتهم = الشبكة الخاصة، بس الإنترنت شغّال</td></tr>
+<tr><td><b>الـ 10 التانيين</b></td><td class="yes">✅ شغّالين</td><td>صفر تأثير، خدماتهم والـ VPS والـ LAN كلها شغّالة</td></tr>
+<tr><td><b>الـ VPS</b></td><td class="yes">✅</td><td>كل الروابط التانية سليمة، يوصل الـ 50 جهاز الباقين</td></tr>
+<tr><td><b>الإنترنت</b></td><td class="yes">✅</td><td>كل جهاز على ISP بتاعه — مش متأثر</td></tr>
+<tr><td><b>هل الـ 10 يقدروا يوصلوا للفاصل؟</b></td><td class="no">❌</td><td>محدش يوصل للفاصل — العزل في الاتجاهين، حتى لو كان شغّال</td></tr>
+</tbody>
+</table>
+
+<h2 id="s5"><span class="n">5</span>جدول البورتات — 21 instance</h2>
+
+<p>كل <code>instance</code> = شبكة WireGuard واحدة. الـ 21 instance مقسومة типين:
+   <b>11</b> شبكة أجهزة (واحدة لكل عميل) و<b>10</b> روابط مع الـ VPS.</p>
+
+<table>
+<thead><tr><th>النوع</th><th>العدد</th><th>المنفذ</th><th>من بيفتحه</th><th>مين بيتصل عليه</th><th>الشبكة</th></tr></thead>
+<tbody>
+<tr><td><b>شبكة أجهزة</b> — <code>client1-devices</code>..<code>client11-devices</code></td><td>11</td>
+    <td><code>51821</code></td><td>بوابة العميل (الـ VPS لعميل 1)</td><td>أجهزة ذلك العميل الخمسة</td>
+    <td><code>10.0.X.0/24</code></td></tr>
+<tr><td><b>رابط backbone</b> — <code>client2-link</code>..<code>client11-link</code></td><td>10</td>
+    <td><code>51831</code> .. <code>51840</code></td><td>الـ VPS</td><td>بوابة ذلك العميل</td>
+    <td><code>10.0.0.x/30</code></td></tr>
+<tr><td>SSH للإدارة</td><td>1</td><td><code>22</code></td><td>الـ VPS</td><td>أنت</td><td>—</td></tr>
+<tr><td>HTTP / HTTPS</td><td>1</td><td><code>80 / 443</code></td><td>الـ VPS</td><td>المتصفح</td><td>—</td></tr>
+</tbody>
+</table>
+
+<div class="note">
+  <b>قاعدة الترقيم:</b> منفذ شبكة الأجهزة <code>51821</code> — <b>نفس الرقم على كل بوابة</b>
+  (كل بوابة على جهاز مختلف، فمفيش تعارض).
+  ومنفذ رابط العميل X هو <code>51831+(X-2)</code> — أي واحد على الـ VPS، فكل واحد لازم يبقى مختلف.
+  <br>  مثال: العميل 2 → <code>51831</code> · العميل 11 → <code>51840</code>.
+</div>
+
+<div class="note ok">
+  <b>ليه شبكات الأجهزة كلها على <code>51821</code>؟</b> لأن البورت بيتحدد بـ
+  <b>(الجهاز + البورت)</b> مش بالبورت لوحده:
+  <br>• <code>client2.fastfree.local:51821</code> و <code>client3.fastfree.local:51821</code>
+  <b>مختلفين تماماً</b> — كل واحدة على <b>بوابة مختلفة</b>. زي SSH على منفذ 22 في كل السيرفرات.
+  <br>• الـ 10 روابط لازم كل واحد فيها <b>منفذ مختلف</b> — لأنهم كلهم بيقعدوا على
+  <b>نفس الجهاز</b> (الـ VPS)، ونفس البورت على نفس الجهاز = تعارض.
+  <br><b>القاعدة:</b> نفس البورت على أجهزة مختلفة = عادي · نفس البورت على نفس الجهاز = تعارض.
+  <br>وبالتالي: <b>21 instance</b> موجودين على <b>21 زوج (جهاز + منفذ) مختلف</b> — مفيش ولا تعارض واحد.
+</div>
+
+<div class="note warn">
+  <b>الاستثناء الوحيد اللي محتاج انتباه — الـ VPS:</b>
+  <br>لأن الـ VPS هو <b>بوابة</b> (عميل 1) <b>و</b> مركز الروابط، هو مستضيف <b>11</b> instance:
+  <code>client1-devices</code> على <code>51821</code> + الروابط العشرة <code>51831..51840</code>.
+  <br><b>لكن</b> الـ mesh الحالية شغّالة النهارده على <code>51821</code> على نفس الجهاز —
+  فـ <code>client1-devices</code> هي <b>تتصادم</b> معاها لحد ما الـ instance القديم
+  <code>wireguard</code> يتقفل. الحل: اقفل الـ mesh القديمة الأول، أو خد <code>client1-devices</code>
+  منفذ تاني (مثلاً <code>51822</code>).
+</div>
+
+<h3>قاعدة تسمية الـ instances — الاسم نفسه بيقول الفرق</h3>
+
+<p>كل instance اسمه <code>clientN-&lt;نوع&gt;</code> — فتلاقي نوعه في الاسم من غير ما تفتح أي ملف:</p>
+
+<table>
+<thead><tr><th>اسم الـ instance</th><th>النوع</th><th>الشبكة</th><th>الـ controller</th><th>الـ peers</th><th>العدد</th></tr></thead>
+<tbody>
+<tr><td><code>client1-devices</code> .. <code>client11-devices</code></td>
+    <td><b>شبكة أجهزة العميل</b><br>(<code>-devices</code>)</td>
+    <td><code>10.0.X.0/24</code><br>25 عنوان</td>
+    <td>بوابة العميل نفسه<br>(<code>10.0.X.254</code>)</td>
+    <td>أجهزةه الخمسة<br><code>clientX_d_1..5</code></td>
+    <td>11</td></tr>
+<tr><td><code>client2-link</code> .. <code>client11-link</code></td>
+    <td><b>رابط العميل مع الـ VPS</b><br>(<code>-link</code>)</td>
+    <td><code>10.0.0.x/30</code><br>عنوانين</td>
+    <td>الـ VPS<br>(<code>client1</code>)</td>
+    <td>بوابة العميل<br>واحدة بس</td>
+    <td>10</td></tr>
+</tbody>
+</table>
+
+<div class="note ok">
+  <b>الفرق في الاسم = الفرق في طبيعة الشبكة:</b><br>
+  <b><code>-devices</code></b> = شبكة <b>عريضة</b> فيها العميل وأجهزته (Broadcast لازم) — وبتاخد /24.<br>
+  <b><code>-link</code></b> = نفق <b>نقطة-نقطة</b> بين بوابة العميل والـ VPS — 2 peers بالظبط و<b>مفيش broadcast</b>، فـ /30.<br>
+  ولهذا: devices بيتعمل على <b>كل</b> الـ 11 عميل، و link <b>مش</b> — لأن العميل 1 <b>هو</b> الـ VPS.
+</div>
+
+<div class="note">
+  <b>قواعد عملية قبل ما تختار الاسم:</b>
+  <br>• الاسم بيتحوّل لـ var groups: <code>wireguard-keys-&lt;name&gt;</code> و <code>wireguard-network-&lt;name&gt;</code> —
+  فخليه <b>ASCII</b> ومن غير مسافات أو نقاط.
+  <br>• لازم يكون <b>مختلف</b> عن الـ instance الحالي <code>wireguard</code>، وإلا الـ vars المسمّاة
+  <code>wireguard-keys-wireguard</code> هتتخبط مع Instance تانية.
+  <br>• الترقيم <b>من غير صفر</b> (<code>client10</code> مش <code>client010</code>) عشان يبقى متوافق مع
+  أسماء الأجهزة <code>client10_d_1</code> وأسماء الـ machines <code>client10</code>.
+</div>
+
+<h2 id="s6"><span class="n">6</span>المخطط العام</h2>
+
+<p>المخططات باللاتيني والاختصارات عشان أضلّ محاذية بالظبط (العربي في مربّع ثابت العرض بيكسر الحدود).
+   رموزها: <code>+--</code> جهاز · <code>|</code> رابط · <code>OK</code> شغّال · <code>X</code> واقع.</p>
+
+<div class="diagram"><pre>
+                                 INTERNET
+                                     |
+    every device uses its own ISP  (the VPN is NOT an internet tunnel)
+                                     |
+                                     v
++------------------------------------------------------------+
+| client1  =  VPS  =  fastfree.cloud  =  76.13.51.10         |
+| device net 10.0.1.0/24   gateway 10.0.1.254   port 51821   |
+| +-- 10.0.1.1 client1_d_1    +-- 10.0.1.2 client1_d_2       |
+| +-- 10.0.1.3 client1_d_3    +-- 10.0.1.4 client1_d_4       |
+| +-- 10.0.1.5 client1_d_5                                   |
++------------------------------------------------------------+
+
+           |                 |                 |                 .
+           |                 |                 |                 .
+      10.0.0.0/30       10.0.0.4/30       10.0.0.8/30           x10
+      port 51831        port 51832        port 51833           same
+           |                 |                 |                 .
+           |                 |                 |                 .
+
+    +-------------+   +-------------+   +-------------+   +------------+
+    | client2     |   | client3     |   | client4     |   | client5..11 |
+    | 10.0.2.0/24 |   | 10.0.3.0/24 |   | 10.0.4.0/24 |   | one each   |
+    | gw 10.0.2.254 | | gw 10.0.3.254 | | gw 10.0.4.254 | | one link   |
+    | port 51821  |   | port 51821  |   | port 51821  |   | one port   |
+    | 5 devices   |   | 5 devices   |   | 5 devices   |   | 5 devices  |
+    +-------------+   +-------------+   +-------------+   +------------+
+
+X  no link between any two of client2..client11 - each one talks to the VPS
+X  the VPS never forwards between two customers - isolation by design
+</pre></div>
+<h2 id="s7"><span class="n">7</span>المسار: من جهاز لخدمة على الـ VPS</h2>
+<div class="diagram"><pre>
+  10.0.2.2      client2_d_2   (a phone at the client2 site)
+       |
+       |  AllowedIPs = 10.0.2.0/24 + 10.0.0.1/32   (its own net + the VPS only
+       v
+  10.0.2.254    gateway of client2  (the customer's own box)
+       |
+       |  the hub forwards it to the VPS over the backbone link 10.0.0.0/30
+       v
+  10.0.0.1      the VPS  (client1)  - the only public address in the whole mes
+       |
+       v
+  fastfree.cloud services:   panel | API | Frappe | CI
+
+  client1's own devices skip hop 2: their gateway 10.0.1.254 IS the VPS.
+  the VPS reaches every device of every client the same way - one hop, backwar
+     10.0.X.Y  ->  10.0.X.254 (the customer hub)  ->  10.0.0.x  ->  the VPS
+</pre></div>
+<h2 id="s8"><span class="n">8</span>جدول روابط الـ backbone (10)</h2>
+
+<table>
+<thead><tr><th>العميل</th><th>الرابط</th><th>الشبكة</th><th>الـ VPS</th><th>العميل</th>
+  <th>instance</th><th>Port</th><th>غير مربوط</th></tr></thead>
+<tbody>
+<tr><td><b>client2</b></td><td>client1 ↔ client2</td><td><code>10.0.0.0/30</code></td><td><code>10.0.0.1</code></td><td><code>10.0.0.2</code></td><td><code>client2-link</code></td><td><code>51831</code></td><td class="no">client3, client4, client5, client6, client7, client8, client9, client10, client11</td></tr>
+<tr><td><b>client3</b></td><td>client1 ↔ client3</td><td><code>10.0.0.4/30</code></td><td><code>10.0.0.5</code></td><td><code>10.0.0.6</code></td><td><code>client3-link</code></td><td><code>51832</code></td><td class="no">client2, client4, client5, client6, client7, client8, client9, client10, client11</td></tr>
+<tr><td><b>client4</b></td><td>client1 ↔ client4</td><td><code>10.0.0.8/30</code></td><td><code>10.0.0.9</code></td><td><code>10.0.0.10</code></td><td><code>client4-link</code></td><td><code>51833</code></td><td class="no">client2, client3, client5, client6, client7, client8, client9, client10, client11</td></tr>
+<tr><td><b>client5</b></td><td>client1 ↔ client5</td><td><code>10.0.0.12/30</code></td><td><code>10.0.0.13</code></td><td><code>10.0.0.14</code></td><td><code>client5-link</code></td><td><code>51834</code></td><td class="no">client2, client3, client4, client6, client7, client8, client9, client10, client11</td></tr>
+<tr><td><b>client6</b></td><td>client1 ↔ client6</td><td><code>10.0.0.16/30</code></td><td><code>10.0.0.17</code></td><td><code>10.0.0.18</code></td><td><code>client6-link</code></td><td><code>51835</code></td><td class="no">client2, client3, client4, client5, client7, client8, client9, client10, client11</td></tr>
+<tr><td><b>client7</b></td><td>client1 ↔ client7</td><td><code>10.0.0.20/30</code></td><td><code>10.0.0.21</code></td><td><code>10.0.0.22</code></td><td><code>client7-link</code></td><td><code>51836</code></td><td class="no">client2, client3, client4, client5, client6, client8, client9, client10, client11</td></tr>
+<tr><td><b>client8</b></td><td>client1 ↔ client8</td><td><code>10.0.0.24/30</code></td><td><code>10.0.0.25</code></td><td><code>10.0.0.26</code></td><td><code>client8-link</code></td><td><code>51837</code></td><td class="no">client2, client3, client4, client5, client6, client7, client9, client10, client11</td></tr>
+<tr><td><b>client9</b></td><td>client1 ↔ client9</td><td><code>10.0.0.28/30</code></td><td><code>10.0.0.29</code></td><td><code>10.0.0.30</code></td><td><code>client9-link</code></td><td><code>51838</code></td><td class="no">client2, client3, client4, client5, client6, client7, client8, client10, client11</td></tr>
+<tr><td><b>client10</b></td><td>client1 ↔ client10</td><td><code>10.0.0.32/30</code></td><td><code>10.0.0.33</code></td><td><code>10.0.0.34</code></td><td><code>client10-link</code></td><td><code>51839</code></td><td class="no">client2, client3, client4, client5, client6, client7, client8, client9, client11</td></tr>
+<tr><td><b>client11</b></td><td>client1 ↔ client11</td><td><code>10.0.0.36/30</code></td><td><code>10.0.0.37</code></td><td><code>10.0.0.38</code></td><td><code>client11-link</code></td><td><code>51840</code></td><td class="no">client2, client3, client4, client5, client6, client7, client8, client9, client10</td></tr>
+</tbody></table>
+<h2 id="s9"><span class="n">9</span>مصفوفة الوصول</h2>
+
+<table>
+<thead><tr><th>من ↓ / إلى →</th><th>بوابة عميله</th><th>الـ VPS</th><th>بوابة عميل تاني</th>
+  <th>جهاز تحت بوابة تانية</th><th>جهاز تحت نفس البوابة</th><th>الإنترنت</th></tr></thead>
+<tbody>
+<tr><td><code>client1_d_*</code></td><td class="yes">✅</td><td class="yes">✅</td><td class="no">✗</td>
+    <td class="no">✗</td><td class="no">✗</td><td class="yes">✅</td></tr>
+<tr><td><code>clientX_d_*</code> (X=2..11)</td><td class="yes">✅</td><td class="yes">✅</td><td class="no">✗</td>
+    <td class="no">✗</td><td class="no">✗</td><td class="yes">✅</td></tr>
+<tr><td><b>الـ VPS</b> (client1)</td><td>—</td><td class="yes">✅</td><td class="yes">✅ كل الـ 10</td>
+    <td class="yes">✅ كل الـ 55</td><td class="yes">✅ أجهزته</td><td class="yes">✅</td></tr>
+<tr><td><b>بوابة عميل X</b></td><td>—</td><td class="yes">✅</td><td class="no">✗</td>
+    <td class="no">✗</td><td class="yes">✅ أجهزته</td><td class="yes">✅</td></tr>
+</tbody>
+</table>
+
+<div class="note warn">
+  <b>ليه "جهاز تحت بوابة تانية" = ✗؟</b> لأن الـ VPS <b>ما بيعملش forwarding</b> بين
+  <code>10.0.1.0/24</code> و<code>10.0.2.0/24</code> و… و<code>10.0.11.0/24</code>.
+  هو يوصّل كل عميل <b>للـ VPS</b>، بس <b>مش</b> يوصّل عميل <b>لعميل</b>. ده بالظبط العزل المقصود.
+</div>
+
+<h2 id="s10"><span class="n">10</span>أمثلة عملية</h2>
+
+<table>
+<thead><tr><th>السيناريو</th><th>المسار</th><th>النتيجة</th></tr></thead>
+<tbody>
+<tr><td>موبايل العميل 1 (<code>client1_d_1</code> = <code>10.0.1.1</code>) عايز خدمة على الـ VPS</td>
+    <td><code>10.0.1.1 → 10.0.1.254</code> مباشرة</td><td class="yes">✅ خطوة واحدة</td></tr>
+<tr><td>لابتوب العميل 7 (<code>client7_d_2</code> = <code>10.0.7.2</code>) عايز الـ VPS</td>
+    <td><code>10.0.7.2 → 10.0.7.254 → 10.0.0.25</code></td><td class="yes">✅ خطوتين</td></tr>
+<tr><td>الـ VPS عايز يوصل موبايل العميل 7</td>
+    <td><code>10.0.0.1 → 10.0.0.26 → 10.0.7.254 → 10.0.7.2</code></td><td class="yes">✅ موجودة — الـ VPS هو اللي بيوزّع</td></tr>
+<tr><td>لابتوب العميل 7 عايز موبايل العميل 3</td>
+    <td><code>10.0.7.2 → ???</code> — مفيش route لـ <code>10.0.3.x</code></td><td class="no">✗ معزول</td></tr>
+<tr><td>جهازين تحت نفس البوابة (<code>10.0.7.1</code> ← <code>10.0.7.2</code>)</td>
+    <td>مفيش route — <code>/32</code> لكل جهاز</td><td class="no">✗ معزول</td></tr>
+<tr><td>من برّه (أي حد على الإنترنت) عايز <code>10.0.1.1</code></td>
+    <td>مفيش route عام — خاص</td><td class="no">✗ مستحيل</td></tr>
+</tbody>
+</table>
+
+<div class="note ok">
+  <b>النتيجة:</b> 55 جهاز، كل واحد <b>معزول تماماً</b> عن الـ 54 التانية، وكل واحد
+  بيوصل <b>بس</b> لبوابة عميله → ومن جوّاها الـ VPS لو احتاج.
+</div>
+
+<h2 id="s11" class="crit"><span class="n">11</span>🔴 لو الـ VPS فصل — إيه اللي هيحصل؟</h2>
+
+<div class="note err big">
+  <b>السؤال الحاسم:</b> الـ VPS هو مركز الشبكة — فلو فصل، <b>إيه اللي بيستمر وإيه اللي بيوقع؟</b>
+  <br><b>الجواب:</b> شبكة كل عميل بتفضل شغالة مع بوابتها (10 عملاء × 5 أجهزة = 50 جهاز)،
+  بس <b>خدمات الـ VPS</b> بتقع، و<b>أجهزة العميل 1</b> (5 أجهزة) هي كمان بتقطع — لأن بوابتها هي الـ VPS.
+</div>
+
+<table>
+<thead><tr><th>#</th><th>العنصر</th><th>قبل</th><th>بعد</th><th>السبب</th></tr></thead>
+<tbody>
+<tr style="background:#1d0c11"><td>1</td><td><b>أجهزة العميل 1</b> (10.0.1.x)</td><td class="yes">✅</td>
+    <td class="no">❌ فقدت الشبكة الخاصة كلها</td><td>بوابتها <b>هي</b> الـ VPS — مفيش مسار بديل</td></tr>
+<tr><td>2</td><td>أجهزة العملاء 2..11 (50 جهاز)</td><td class="yes">✅</td>
+    <td class="yes">✅ فتحت شبكتها المحلية مع بوابتها</td><td>بواباتها شغّالة — مش عابرة للـ VPS</td></tr>
+<tr><td>3</td><td>أجهزة العملاء 2..11 توصل <b>خدمات الـ VPS</b></td><td class="yes">✅</td>
+    <td class="no">❌ انقطعت</td><td>الـ VPS هو المضيف الوحيد</td></tr>
+<tr style="background:#1d0c11"><td>4</td><td><b>اللوحة · الـ API · Frappe · CI</b></td><td class="yes">✅</td>
+    <td class="no">❌ انقطعت</td><td>مستضافة كلها على الـ VPS</td></tr>
+<tr><td>5</td><td>الإنترنت بتاع أي جهاز</td><td class="yes">✅</td>
+    <td class="yes">✅ مش متأثر خالص</td><td>كل جهاز بيستخدم ISP بتاعه</td></tr>
+<tr><td>6</td><td>عميل ↔ عميل (أي رابط)</td><td class="no">✗ مفيش أصلاً</td>
+    <td class="no">✗</td><td>معزولين بالتصميم</td></tr>
+<tr><td>7</td><td>الـ LAN في موقع كل عميل</td><td class="yes">✅</td>
+    <td class="yes">✅</td><td>مش مبنية على الـ VPN</td></tr>
+<tr><td>8</td><td><code>clan machines update</code> ونشر الكود</td><td class="yes">✅</td>
+    <td class="no">❌ توقف</td><td>الـ deploy بيحصل على الـ VPS</td></tr>
+</tbody>
+</table>
+
+<div class="diagram"><pre>
+  X  the VPS is DOWN
+       |
+       +-- X  client1 devices  ->  10.0.1.254 (IS the VPS)  ->  no path left
+       |
+       +-- OK client2..11 devices  ->  their own hub  ->  their local services
+                                       |
+                                       +->  the VPS  X   (all 10 backbone link
+       |
+       +-- OK internet  ->  every device on its own ISP
+       |
+       +-- X  panel | API | Frappe | CI      (all of them live on the VPS)
+       |
+       +-- X  the VPS cannot reach the 55 devices any more (it was their only
+</pre></div>
+
+<h3>الاستعادة — تلقائية</h3>
+<table>
+<thead><tr><th>السؤال</th><th>الإجابة</th></tr></thead>
+<tbody>
+<tr><td>لما الـ VPS يرجع، الاتصال بيرجع لوحده؟</td><td class="yes">✅ أيوه — كل البوابات بتبعت KeepAlive كل 25 ثانية وبتعيد المحاولة تلقائياً</td></tr>
+<tr><td>محتاج إعادة تشغيل حاجة؟</td><td class="no">لا — كل حاجة تلقائية</td></tr>
+<tr><td>مدة الاستعادة؟</td><td>ثواني (محدودة بـ KeepAlive = 25s)</td></tr>
+<tr><td>أجهزة العميل 1 بترجع كمان؟</td><td class="yes">✅ أيوه — لأنها بتتصل بالـ VPS مباشرة</td></tr>
+</tbody>
+</table>
+
+<div class="note warn">
+  <b>الـ VPS مش نقطة فشل الشبكة كلها</b> — الشبكة المحلية بتفضل شغالة عند الـ 10 عملاء.
+  هو نقطة فشل <b>لخدماته هو</b> (اللوحة + الـ API + Frappe) و<b>لأجهزة العميل 1</b>.
+  <br>الحل لو حبيت تتخلص من ده: <b>replication</b> — توزيع الخدمات الحرجة على بوابات العملاء كمان.
+</div>
+
+<h2 id="s12"><span class="n">12</span>لو بوابة عميل فصلت؟</h2>
+
+<table>
+<thead><tr><th>الحالة</th><th>التأثير</th></tr></thead>
+<tbody>
+<tr><td><b>بوابة عميل X فصلت</b></td>
+    <td>أجهزة ذلك العميل الخمسة يفقدوا الشبكة الخاصة كلها (البوابة هي المسار الوحيد).
+        الإنترنت بتاعهم يفضل شغال. وباقي العملاء مش متأثرين خالص.</td></tr>
+<tr><td><b>الـ VPS فصل</b> (client1)</td>
+    <td>الشبكة <b>بتفضل شغالة</b> عند الـ 10 عملاء — بس خدمات الـ VPS وأجهزة العميل 1 بتنقطع (القسم 10).</td></tr>
+</tbody>
+</table>
+
+<div class="note">
+  <b>ملخص الفشل:</b> بوابة العميل = <b>نقطة الفشل الوحيدة لأجهزته الخمسة</b>.
+  الـ VPS = نقطة فشل <b>لخدماته</b> و<b>لأجهزة العميل 1</b> — مش للشبكة كلها.
+</div>
+
+<h2 id="s13"><span class="n">13</span>🇦🇪 ما شغّال فعلاً اليوم <span class="layer layer-live">مُنفَّذ</span></h2>
+
+<div class="note warn">
+  <b>خلّي بالك:</b> كل اللي فات (11 عميل · 55 جهاز · 21 instance · <code>10.0.X.Y</code>)
+  هو <b>التصميم المستهدف</b>. اللي شغّال <b>النهارده</b> مختلف تماماً، وده القسم ده.
+</div>
+
+<table>
+<thead><tr><th>الحاجة</th><th>القيمة الفعلية</th><th>من الكود</th></tr></thead>
+<tbody>
+<tr><td>خدمة WireGuard</td><td>الخدمة الرسمية <code>services/official/wireguard</code> من <code>clan-core 26.05</code></td><td><code>clan.nix</code></td></tr>
+<tr><td>اسم الـ instance</td><td><code>wireguard</code> — <b>لازم يفضل كده</b> (المتغيرات متسمّاة بيه ومشفّرة بـ sops)</td><td><code>clan.nix</code></td></tr>
+<tr><td>الـ controller</td><td>الـ VPS — <b>الوحيد اللي عنده IP عام</b></td><td><code>clan.nix</code></td></tr>
+<tr><td>الـ peers</td><td>الجهازين التانيين (client1 و client3 في تسمية الكود) — الاتنين ورا NAT</td><td><code>clan.nix</code></td></tr>
+<tr><td>الـ port</td><td><code>51821/UDP</code> — <b>واحد للكل</b></td><td><code>clan.nix</code></td></tr>
+<tr><td>نطاق العناوين</td><td>IPv6 ULA <code>fd28:387a:3f:4500::/56</code> — <b>مش</b> <code>10.0.x.x</code></td><td><code>clan.nix</code></td></tr>
+<tr><td>عنوان كل peer</td><td>‏/96 بيتولّد من <b>sha256(اسم الجهاز)</b></td><td><code>scripts/wg-peer-address.py</code></td></tr>
+<tr><td>الأجهزة الخارجية</td><td><b>صفر</b> مسجّلة دلوقتي — البلوك موجود لكنه معلّق</td><td><code>machines/*/configuration.nix</code></td></tr>
+<tr><td>KeepAlive</td><td>25 ثانية</td><td><code>wireguard-peers.nix</code></td></tr>
+<tr><td>خدمة <code>internet</code></td><td><code>fastfree.cloud:22</code> — أولوية 2000 ثم 1000 (mesh) ثم Tor</td><td><code>clan.nix</code></td></tr>
+</tbody>
+</table>
+
+<div class="note err">
+  <b>ثغرة خصوصية موجودة النهارده:</b> كل الـ peers في نفس الـ instance بيقدروا يوصلوا لبعض
+  (الـ controller بيعمل forwarding). فلو ضفت 55 جهاز على الـ instance الواحدة النهارده،
+  <b>كلهم هيشوفوا بعضهم</b> — على عكس التصميم المستهدف (قاعدة 4).
+  <br>عشان كده الخطة بتقسم الشبكة لـ <b>21 instance</b> منفصلة.
+</div>
+
+<h3>إزاي تضيف جهاز النهارده (3 خطوات)</h3>
+<div class="step"><div class="num">1</div><div class="bd">
+  <b>على الجهاز نفسه:</b> اعمل مفتاح WireGuard
+  <p><code>wg genkey | tee private.key | wg pubkey &gt; public.key</code> — المفتاح الخاص <b>ما يسيبش الجهاز</b> أبداً.</p>
+</div></div>
+<div class="step"><div class="num">2</div><div class="bd">
+  <b>اختار العنوان:</b> بالطريقة اللي الـ service بيحسب بيها
+  <p><code>python3 scripts/wg-peer-address.py client1_d_1</code> → <code>fd28:387a:3f:4500:&lt;suffix&gt;</code></p>
+</div></div>
+<div class="step"><div class="num">3</div><div class="bd">
+  <b>سجّل المفتاح العام على الـ controller واعمل deploy</b>
+  <p>ضيف البلوك في <code>machines/&lt;الـ VPS&gt;/configuration.nix</code> جوه
+     <code>fastfree.wireguardPeers.peers</code>، وبعدين <code>clan machines update &lt;الـ VPS&gt;</code>.</p>
+  <p>بعدها الملف الجاهز على الـ controller:
+     <code>scp root@fastfree.cloud:/etc/fastfree/wireguard-peers/client1_d_1.conf .</code> —
+     حط فيه المفتاح الخاص و<b>import</b>ه في تطبيق WireGuard.</p>
+</div></div>
+
+<h2 id="s14"><span class="n">14</span>الخطة: الـ 21 instance <span class="layer layer-plan">خطة</span></h2>
+
+<div class="note err">
+  <b>في خدمة Clan الرسمية:</b> كل الـ peers في نفس الـ instance بيقدروا يوصلوا بعضه
+  (الـ controller بيعمل forwarding). فلو حطينا بوابتين في نفس الـ instance
+  → <b>هيوصلوا بعض</b> ❌.
+  <br><b>الحل:</b> instance منفصلة لكل رابط — وبكده العزل بين العملاء يبقى مضمون بالحكم لا بالمصادفة.
+</div>
+
+<table>
+<thead><tr><th>instance</th><th>controller</th><th>peers</th><th>الشبكة</th><th>Port</th><th>النتيجة</th></tr></thead>
+<tbody>
+<tr><td><code>client1-devices</code></td><td>client1 (الـ VPS)</td><td>client1_d_1..5</td><td><code>10.0.1.0/24</code></td><td>51821</td><td>أجهزة العميل 1 + البوابة 10.0.1.254</td></tr>
+<tr><td><code>client2-devices</code></td><td>client2 (بوابته)</td><td>client2_d_1..5</td><td><code>10.0.2.0/24</code></td><td>51821</td><td>أجهزة العميل 2 + البوابة 10.0.2.254</td></tr>
+<tr><td><code>client3-devices</code></td><td>client3 (بوابته)</td><td>client3_d_1..5</td><td><code>10.0.3.0/24</code></td><td>51821</td><td>أجهزة العميل 3 + البوابة 10.0.3.254</td></tr>
+<tr><td><code>client4-devices</code></td><td>client4 (بوابته)</td><td>client4_d_1..5</td><td><code>10.0.4.0/24</code></td><td>51821</td><td>أجهزة العميل 4 + البوابة 10.0.4.254</td></tr>
+<tr><td><code>client5-devices</code></td><td>client5 (بوابته)</td><td>client5_d_1..5</td><td><code>10.0.5.0/24</code></td><td>51821</td><td>أجهزة العميل 5 + البوابة 10.0.5.254</td></tr>
+<tr><td><code>client6-devices</code></td><td>client6 (بوابته)</td><td>client6_d_1..5</td><td><code>10.0.6.0/24</code></td><td>51821</td><td>أجهزة العميل 6 + البوابة 10.0.6.254</td></tr>
+<tr><td><code>client7-devices</code></td><td>client7 (بوابته)</td><td>client7_d_1..5</td><td><code>10.0.7.0/24</code></td><td>51821</td><td>أجهزة العميل 7 + البوابة 10.0.7.254</td></tr>
+<tr><td><code>client8-devices</code></td><td>client8 (بوابته)</td><td>client8_d_1..5</td><td><code>10.0.8.0/24</code></td><td>51821</td><td>أجهزة العميل 8 + البوابة 10.0.8.254</td></tr>
+<tr><td><code>client9-devices</code></td><td>client9 (بوابته)</td><td>client9_d_1..5</td><td><code>10.0.9.0/24</code></td><td>51821</td><td>أجهزة العميل 9 + البوابة 10.0.9.254</td></tr>
+<tr><td><code>client10-devices</code></td><td>client10 (بوابته)</td><td>client10_d_1..5</td><td><code>10.0.10.0/24</code></td><td>51821</td><td>أجهزة العميل 10 + البوابة 10.0.10.254</td></tr>
+<tr><td><code>client11-devices</code></td><td>client11 (بوابته)</td><td>client11_d_1..5</td><td><code>10.0.11.0/24</code></td><td>51821</td><td>أجهزة العميل 11 + البوابة 10.0.11.254</td></tr>
+<tr><td><code>client2-link</code></td><td>client1 (الـ VPS)</td><td>client2 (بوابته)</td><td><code>10.0.0.0/30</code></td><td>51831</td><td>client1 ⇄ client2 فقط</td></tr>
+<tr><td><code>client3-link</code></td><td>client1 (الـ VPS)</td><td>client3 (بوابته)</td><td><code>10.0.0.4/30</code></td><td>51832</td><td>client1 ⇄ client3 فقط</td></tr>
+<tr><td><code>client4-link</code></td><td>client1 (الـ VPS)</td><td>client4 (بوابته)</td><td><code>10.0.0.8/30</code></td><td>51833</td><td>client1 ⇄ client4 فقط</td></tr>
+<tr><td><code>client5-link</code></td><td>client1 (الـ VPS)</td><td>client5 (بوابته)</td><td><code>10.0.0.12/30</code></td><td>51834</td><td>client1 ⇄ client5 فقط</td></tr>
+<tr><td><code>client6-link</code></td><td>client1 (الـ VPS)</td><td>client6 (بوابته)</td><td><code>10.0.0.16/30</code></td><td>51835</td><td>client1 ⇄ client6 فقط</td></tr>
+<tr><td><code>client7-link</code></td><td>client1 (الـ VPS)</td><td>client7 (بوابته)</td><td><code>10.0.0.20/30</code></td><td>51836</td><td>client1 ⇄ client7 فقط</td></tr>
+<tr><td><code>client8-link</code></td><td>client1 (الـ VPS)</td><td>client8 (بوابته)</td><td><code>10.0.0.24/30</code></td><td>51837</td><td>client1 ⇄ client8 فقط</td></tr>
+<tr><td><code>client9-link</code></td><td>client1 (الـ VPS)</td><td>client9 (بوابته)</td><td><code>10.0.0.28/30</code></td><td>51838</td><td>client1 ⇄ client9 فقط</td></tr>
+<tr><td><code>client10-link</code></td><td>client1 (الـ VPS)</td><td>client10 (بوابته)</td><td><code>10.0.0.32/30</code></td><td>51839</td><td>client1 ⇄ client10 فقط</td></tr>
+<tr><td><code>client11-link</code></td><td>client1 (الـ VPS)</td><td>client11 (بوابته)</td><td><code>10.0.0.36/30</code></td><td>51840</td><td>client1 ⇄ client11 فقط</td></tr>
+</tbody></table>
+
+<div class="note ok">
+  <b>مسموح رسمياً:</b> نفس الآلة تكون <b>controller</b> في instance و<b>peer</b> في instance تانية.
+  <br>الـ VPS (client1) = controller في <b>11</b> instance (شبكة أجهزته + 10 روابط) + peer في <b>10</b> ✅
+  <br>كل بوابة عميل = controller في <b>1</b> (شبكة أجهزته) + peer في <b>1</b> (رابطه مع الـ VPS) ✅
+</div>
+
+<div class="note warn">
+  <b>تعارض لازم يتحل قبل التنفيذ:</b> الـ mesh الحالية شغّالة على <code>51821</code> على الـ VPS،
+  والخطة كمان بتستخدم <code>51821</code> لـ <code>client1-devices</code> (العميل 1 شبكته على الـ VPS نفسه).
+  يا إما الـ mesh الحالية تتحل الأول، يا إما <code>client1-devices</code> ياخد منفذ تاني
+  (مثلاً <code>51822</code>) — أما <b>شبكات الأجهزة</b> عند العملاء 2..11 فتقدر تفضل
+  <code>51821</code> عادي لأنها على أجهزة مختلفة.
+  <br><b>كمان:</b> الـ instances الجديدة <b>مش</b> على instance <code>wireguard</code> الحالي —
+  لازم أسماء جديدة، وإلا الـ vars المسمّاة <code>wireguard-keys-*</code> هتتخبط مع المرفقة بـ sops.
+</div>
+
+<h2 id="s15"><span class="n">15</span>المشاكل الـ 12</h2>
+
+<table>
+<thead><tr><th style="width:30px">#</th><th>المشكلة</th><th>الدليل</th><th>الحل</th><th style="width:72px">الحالة</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>WireGuard متوقف تماماً على السيرفر</td><td><code>wg: command not found</code> · <code>NO_WG_INTERFACE</code></td><td>تفعيل الخدمة</td><td><span class="badge b-no">مفتوح</span></td></tr>
+<tr><td>2</td><td>mesh الـ IPv4 القديم اتشال</td><td><code>c519294</code> حذف <code>wireguard/</code></td><td>module جديد</td><td><span class="badge b-no">مفتوح</span></td></tr>
+<tr><td>3</td><td>الخدمة الرسمية IPv6 بس</td><td><code>ipv6_allocator.py</code></td><td>module مخصص IPv4</td><td><span class="badge b-no">مفتوح</span></td></tr>
+<tr><td>4</td><td><code>deploy.targetHost</code> بيقتل الـ fallback</td><td>الـ docs: <i>"disables all automatic networking"</i></td><td>خدمة <code>internet</code></td><td><span class="badge b-ok">تم</span></td></tr>
+<tr><td>5</td><td>طبقة <code>internet</code> ناقصة</td><td>مش في <code>clan.nix</code></td><td>إضافة (أولوية 2000)</td><td><span class="badge b-ok">تم</span></td></tr>
+<tr><td>6</td><td>الأجهزة الخارجية مش Clan peers</td><td>الخدمة بتحتاج role + vars</td><td><code>wireguard-peers.nix</code></td><td><span class="badge b-ok">تم</span></td></tr>
+<tr><td>7</td><td><b>المفاتيح كانت نص صريح</b> في المستودع</td><td><code>wireguard/keys/*/privatekey</code> — 32 ملف</td><td>sops vars</td><td><span class="badge b-ok">تم</span></td></tr>
+<tr><td>8</td><td>client3 معزول Firewall بس الـ mesh مقفول</td><td><code>configuration.nix:98</code></td><td>تفعيل الـ mesh</td><td><span class="badge b-no">مفتوح</span></td></tr>
+<tr><td>9</td><td><b>اللوحة بتعرض بيانات وهمية</b></td><td><code>ClanNetworkScreen.vue:257</code> — مفاتيح وهمية + IP غلط</td><td>API حقيقي</td><td><span class="badge b-no">مفتوح</span></td></tr>
+<tr><td>10</td><td>كلمة سر root ثابتة</td><td><code>initialPassword</code> في <code>machines/&lt;VPS&gt;/configuration.nix</code></td><td>vars</td><td><span class="badge b-no">مفتوح</span></td></tr>
+<tr><td>11</td><td>مفيش حساب <code>fastfree</code> غير لـ client3</td><td><code>user-fastfree</code> → client3 بس</td><td>instance + vars</td><td><span class="badge b-no">مفتوح</span></td></tr>
+<tr><td>12</td><td>3 commits معلّقة</td><td><code>e3e3da2</code> · <code>ba51160</code> · <code>005c6ee</code></td><td>push</td><td><span class="badge b-no">مفتوح</span></td></tr>
+</tbody>
+</table>
+
+<h2 id="s16"><span class="n">16</span>خطة التنفيذ</h2>
+
+<table>
+<thead><tr><th style="width:30px">#</th><th>الخطوة</th><th>الملف</th><th style="width:72px">الحالة</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>حذف tunnel.nix + مراجعه</td><td><code>tunnel.nix</code> · <code>flake.nix</code> · <code>shell.nix</code> · <code>client3</code></td><td><span class="badge b-ok">تم</span></td></tr>
+<tr><td>2</td><td>طبقة <code>internet</code> + إزالة <code>targetHost</code></td><td><code>clan.nix</code></td><td><span class="badge b-ok">تم</span></td></tr>
+<tr><td>3</td><td>module الأجهزة الخارجية</td><td><code>modules/wireguard-peers.nix</code></td><td><span class="badge b-ok">تم</span></td></tr>
+<tr><td>4</td><td>سكربت توليد العناوين</td><td><code>scripts/wg-peer-address.py</code></td><td><span class="badge b-ok">تم</span></td></tr>
+<tr><td>5</td><td><b>module شبكات البوابات (21 instance) بـ IPv4</b></td><td><code>modules/wireguard-hubs.nix</code> + instances جديدة</td><td><span class="badge b-warn">قادم</span></td></tr>
+<tr><td>6</td><td>توليد <code>.conf</code> لـ 55 جهاز</td><td>من الـ module</td><td><span class="badge b-warn">قادم</span></td></tr>
+<tr><td>7</td><td>إضافة الـ 10 عملاء كمachines جديدة</td><td><code>machines/client2..client11</code></td><td><span class="badge b-warn">قادم</span></td></tr>
+<tr><td>8</td><td>Push + deploy + تحقق <code>wg show</code></td><td>CI</td><td><span class="badge b-warn">قادم</span></td></tr>
+<tr><td>9</td><td>إصلاح اللوحة (وهمية → API حقيقي)</td><td><code>ClanNetworkScreen.vue</code></td><td><span class="badge b-warn">قادم</span></td></tr>
+</tbody>
+</table>
+
+<div class="note">
+  <b>الترتيب مهم:</b> خطوة 5 (الـ 21 instance) هي <b>الأساس</b> لكل اللي بعدها.
+  قبل ما تبنّيها، اتأكد إنك حسمت: ① المنافذ (51821 متستخدم النهارده على الـ mesh) ·
+  ② العزل (instances منفصلة + الـ VPS ما بيعملش forwarding) ·
+  ③ التوسّع (كل عميل جديد = instance شبكة أجهزة + instance رابط = منفذين جديدين).
+</div>
+
+<h2 id="s17"><span class="n">17</span>خريطة الأسماء: المستند ↔ الكود</h2>
+
+<div class="note err">
+  <b>تنبيه مهم:</b> في <b>الكود الحالي</b> اسم جهاز الـ VPS هو <code>client2</code>
+  (مجلد <code>machines/client2/</code>)، واسم جهاز الـ Hyper-V هو <code>client1</code>.
+  <br>في <b>المستندين</b>: <b>الـ VPS = العميل 1</b> (المركز) والـ Hyper-V = العميل 2.
+  <br>السبب: الـ VPS هو العميل الأول منطقياً (المركز اللي كل حاجة بتتمسك بيه).
+</div>
+
+<table>
+<thead><tr><th>الاسم في المستند</th><th>الاسم في الكود</th><th>الجهاز</th><th>الدليل في الكود</th></tr></thead>
+<tbody>
+<tr style="background:#1a1608"><td><b>client1</b></td><td><b>client2</b></td><td>الـ VPS — <code>fastfree.cloud</code> = 76.13.51.10</td><td><code>machines/client2/configuration.nix</code> · <code>clan.nix</code> (controller)</td></tr>
+<tr><td><b>client2</b></td><td><b>client1</b></td><td>Hyper-V (صورة VHDX)</td><td><code>machines/client1/configuration.nix</code></td></tr>
+<tr><td><b>client3</b></td><td><b>client3</b></td><td>محطة العمل (local)</td><td><code>machines/client3/configuration.nix</code></td></tr>
+<tr><td>client4..client11</td><td>—</td><td>العملاء الجدد (لسه)</td><td>لسه ما اتعملوش — خطوة التنفيذ رقم 7</td></tr>
+</tbody>
+</table>
+
+<div class="note warn">
+  <b>توحيد الأسماء في الكود = عملية منفصلة</b> وليست تعديل في المستند، لأنها تمس:
+  مجلدات <code>machines/</code> · <code>inventory.machines</code> · أسماء الـ instances ·
+  <b>المتغيرات المشفّرة بـ sops</b> (‏<code>wireguard-keys-*</code> · <code>wireguard-network-*</code>) ·
+  أسماء الـ workflows في CI · سجلّات النشر.
+  <br><b>(migrations):</b> إعادة التسمية جوه sops <b>تعني إعادة توليد المفاتيح</b> — والمرتبطين بالأجهزة.
+  الخطة: نعملها في خطوة مستقلة بعد ما الـ 21 instance تخلص.
+</div>
+
+
+</div>
+
+<footer>
+  <p>FastFree — مرجع شبكة الـ VPN · مبني على <code>clan-core 26.05</code> الرسمي + <code>c519294^</code> + فحص حيّ لـ <code>fastfree.cloud</code></p>
+  <p style="margin-top:5px">قاعدة التسمية: <b>الاسم = الشبكة = الـ IP</b> — <code>client7_d_3</code> = <code>10.0.7.3</code></p>
+  <p style="margin-top:5px">الملف الأول: <a href="vpn-network-design.html">جدول كل عميل من الـ 11</a></p>
+</footer>
+
+</body>
+</html>

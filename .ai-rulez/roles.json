@@ -1,0 +1,877 @@
+{
+  "schema_version": 1,
+  "tokenizer": "cl100k_base",
+  "roles": [
+    {
+      "name": "devops-clan",
+      "description": "Sovereign infrastructure engineer managing NixOS Clan, WireGuard mesh, and deployments",
+      "match": {
+        "groups": [
+          "herdr:devops",
+          "agent:nixos"
+        ]
+      },
+      "domains": [
+        "nixos-clan"
+      ],
+      "skill_modes": {
+        "nixos-host-deploy": "on",
+        "web-backend-release": "on"
+      },
+      "delivery": {
+        "nixos-clan/nixos-host-deploy": "static",
+        "nixos-clan/web-backend-release": "both"
+      },
+      "items": [
+        {
+          "kind": "rule",
+          "id": "code-quality",
+          "path": "rules/code-quality.md",
+          "bytes": 380,
+          "tokens": 88
+        },
+        {
+          "kind": "rule",
+          "id": "secure-secrets",
+          "path": "rules/secure-secrets.md",
+          "bytes": 623,
+          "tokens": 161
+        },
+        {
+          "kind": "rule",
+          "id": "nixos-clan",
+          "domain": "nixos-clan",
+          "path": "domains/nixos-clan/rules/nixos-clan.md",
+          "bytes": 1010,
+          "tokens": 266
+        },
+        {
+          "kind": "skill",
+          "id": "ai-rulez",
+          "path": "skills/ai-rulez/SKILL.md",
+          "delivery": "static",
+          "bytes": 2278,
+          "tokens": 540
+        },
+        {
+          "kind": "skill",
+          "id": "code-reviewer",
+          "path": "skills/code-reviewer/SKILL.md",
+          "delivery": "static",
+          "bytes": 685,
+          "tokens": 148
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-change-policy",
+          "path": "skills/fastfree-change-policy/SKILL.md",
+          "delivery": "static",
+          "bytes": 4602,
+          "tokens": 1000
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-guide",
+          "path": "skills/fastfree-guide/SKILL.md",
+          "delivery": "static",
+          "bytes": 57223,
+          "tokens": 4120
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-test",
+          "path": "skills/fastfree-test/SKILL.md",
+          "delivery": "static",
+          "bytes": 4042,
+          "tokens": 1023
+        },
+        {
+          "kind": "skill",
+          "id": "herdr-conductor",
+          "path": "skills/herdr-conductor/SKILL.md",
+          "delivery": "static",
+          "bytes": 13496,
+          "tokens": 1212
+        },
+        {
+          "kind": "skill",
+          "id": "herdr-fanout",
+          "path": "skills/herdr-fanout/SKILL.md",
+          "delivery": "static",
+          "bytes": 2985,
+          "tokens": 726
+        },
+        {
+          "kind": "skill",
+          "id": "herdr-review-loop",
+          "path": "skills/herdr-review-loop/SKILL.md",
+          "delivery": "static",
+          "bytes": 3033,
+          "tokens": 753
+        },
+        {
+          "kind": "skill",
+          "id": "skill-evolution",
+          "path": "skills/skill-evolution/SKILL.md",
+          "delivery": "static",
+          "bytes": 2364,
+          "tokens": 578
+        },
+        {
+          "kind": "skill",
+          "id": "nixos-host-deploy",
+          "domain": "nixos-clan",
+          "path": "domains/nixos-clan/skills/nixos-host-deploy/SKILL.md",
+          "mode": "on",
+          "delivery": "static",
+          "bytes": 2341,
+          "tokens": 656
+        },
+        {
+          "kind": "skill",
+          "id": "web-backend-release",
+          "domain": "nixos-clan",
+          "path": "domains/nixos-clan/skills/web-backend-release/SKILL.md",
+          "mode": "on",
+          "delivery": "both",
+          "bytes": 2207,
+          "tokens": 594
+        },
+        {
+          "kind": "command",
+          "id": "clan-check",
+          "domain": "nixos-clan",
+          "path": "domains/nixos-clan/commands/clan-check.md",
+          "bytes": 349,
+          "tokens": 84
+        },
+        {
+          "kind": "check",
+          "id": "clan-wireguard-ports",
+          "domain": "nixos-clan",
+          "path": "domains/nixos-clan/checks/clan-wireguard-ports.md",
+          "bytes": 600,
+          "tokens": 153
+        }
+      ],
+      "totals": {
+        "items": 16,
+        "bytes": 98218,
+        "tokens": 12102,
+        "by_kind": {
+          "check": 1,
+          "command": 1,
+          "rule": 3,
+          "skill": 11
+        },
+        "served_skills": 0,
+        "served_tokens": 0
+      }
+    },
+    {
+      "name": "erp-architect",
+      "description": "Enterprise domain architect responsible for Accounting, Sales, Inventory, and HR packages",
+      "extends": "frontend-engineer",
+      "match": {
+        "groups": [
+          "herdr:erp",
+          "agent:erp"
+        ]
+      },
+      "domains": [
+        "frontend",
+        "core-lowcode",
+        "erp-modules"
+      ],
+      "skill_modes": {
+        "android-build-release": "user-invocable-only",
+        "erp-domain-development": "on",
+        "play-console-setup": "user-invocable-only",
+        "play-publish-automation": "user-invocable-only",
+        "quasar-quality-gates": "on"
+      },
+      "delivery": {
+        "erp-modules/erp-domain-development": "static",
+        "frontend/android-build-release": "served",
+        "frontend/play-*": "served"
+      },
+      "items": [
+        {
+          "kind": "rule",
+          "id": "code-quality",
+          "path": "rules/code-quality.md",
+          "bytes": 380,
+          "tokens": 88
+        },
+        {
+          "kind": "rule",
+          "id": "secure-secrets",
+          "path": "rules/secure-secrets.md",
+          "bytes": 623,
+          "tokens": 161
+        },
+        {
+          "kind": "rule",
+          "id": "erp-invariants",
+          "domain": "erp-modules",
+          "path": "domains/erp-modules/rules/erp-invariants.md",
+          "bytes": 1114,
+          "tokens": 258
+        },
+        {
+          "kind": "rule",
+          "id": "frontend-quasar",
+          "domain": "frontend",
+          "path": "domains/frontend/rules/frontend-quasar.md",
+          "bytes": 797,
+          "tokens": 198
+        },
+        {
+          "kind": "skill",
+          "id": "ai-rulez",
+          "path": "skills/ai-rulez/SKILL.md",
+          "delivery": "static",
+          "bytes": 2278,
+          "tokens": 540
+        },
+        {
+          "kind": "skill",
+          "id": "code-reviewer",
+          "path": "skills/code-reviewer/SKILL.md",
+          "delivery": "static",
+          "bytes": 685,
+          "tokens": 148
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-change-policy",
+          "path": "skills/fastfree-change-policy/SKILL.md",
+          "delivery": "static",
+          "bytes": 4602,
+          "tokens": 1000
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-guide",
+          "path": "skills/fastfree-guide/SKILL.md",
+          "delivery": "static",
+          "bytes": 57223,
+          "tokens": 4120
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-test",
+          "path": "skills/fastfree-test/SKILL.md",
+          "delivery": "static",
+          "bytes": 4042,
+          "tokens": 1023
+        },
+        {
+          "kind": "skill",
+          "id": "herdr-conductor",
+          "path": "skills/herdr-conductor/SKILL.md",
+          "delivery": "static",
+          "bytes": 13496,
+          "tokens": 1212
+        },
+        {
+          "kind": "skill",
+          "id": "herdr-fanout",
+          "path": "skills/herdr-fanout/SKILL.md",
+          "delivery": "static",
+          "bytes": 2985,
+          "tokens": 726
+        },
+        {
+          "kind": "skill",
+          "id": "herdr-review-loop",
+          "path": "skills/herdr-review-loop/SKILL.md",
+          "delivery": "static",
+          "bytes": 3033,
+          "tokens": 753
+        },
+        {
+          "kind": "skill",
+          "id": "skill-evolution",
+          "path": "skills/skill-evolution/SKILL.md",
+          "delivery": "static",
+          "bytes": 2364,
+          "tokens": 578
+        },
+        {
+          "kind": "skill",
+          "id": "erp-domain-development",
+          "domain": "erp-modules",
+          "path": "domains/erp-modules/skills/erp-domain-development/SKILL.md",
+          "mode": "on",
+          "delivery": "static",
+          "bytes": 2306,
+          "tokens": 576
+        },
+        {
+          "kind": "skill",
+          "id": "android-build-release",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/android-build-release/SKILL.md",
+          "mode": "user-invocable-only",
+          "delivery": "served",
+          "bytes": 3278,
+          "tokens": 908
+        },
+        {
+          "kind": "skill",
+          "id": "play-console-setup",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/play-console-setup/SKILL.md",
+          "mode": "user-invocable-only",
+          "delivery": "served",
+          "bytes": 21572,
+          "tokens": 5401
+        },
+        {
+          "kind": "skill",
+          "id": "play-publish-automation",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/play-publish-automation/SKILL.md",
+          "mode": "user-invocable-only",
+          "delivery": "served",
+          "bytes": 4063,
+          "tokens": 994
+        },
+        {
+          "kind": "skill",
+          "id": "quasar-quality-gates",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/quasar-quality-gates/SKILL.md",
+          "mode": "on",
+          "delivery": "static",
+          "bytes": 1881,
+          "tokens": 526
+        },
+        {
+          "kind": "command",
+          "id": "lint-all",
+          "domain": "frontend",
+          "path": "domains/frontend/commands/lint-all.md",
+          "bytes": 388,
+          "tokens": 111
+        },
+        {
+          "kind": "command",
+          "id": "typecheck-all",
+          "domain": "frontend",
+          "path": "domains/frontend/commands/typecheck-all.md",
+          "bytes": 972,
+          "tokens": 265
+        },
+        {
+          "kind": "check",
+          "id": "composable-reuse",
+          "domain": "frontend",
+          "path": "domains/frontend/checks/composable-reuse.md",
+          "bytes": 538,
+          "tokens": 120
+        },
+        {
+          "kind": "check",
+          "id": "form-submission",
+          "domain": "frontend",
+          "path": "domains/frontend/checks/form-submission.md",
+          "bytes": 584,
+          "tokens": 137
+        }
+      ],
+      "totals": {
+        "items": 22,
+        "bytes": 129204,
+        "tokens": 19843,
+        "by_kind": {
+          "check": 2,
+          "command": 2,
+          "rule": 4,
+          "skill": 14
+        },
+        "served_skills": 3,
+        "served_tokens": 7303
+      }
+    },
+    {
+      "name": "frontend-engineer",
+      "description": "Frontend developer building Vue 3, Quasar UI, and LowCode client apps",
+      "match": {
+        "groups": [
+          "herdr:frontend",
+          "agent:frontend"
+        ]
+      },
+      "domains": [
+        "frontend",
+        "core-lowcode"
+      ],
+      "skill_modes": {
+        "android-build-release": "user-invocable-only",
+        "play-console-setup": "user-invocable-only",
+        "play-publish-automation": "user-invocable-only",
+        "quasar-quality-gates": "on"
+      },
+      "delivery": {
+        "frontend/android-build-release": "served",
+        "frontend/play-*": "served"
+      },
+      "items": [
+        {
+          "kind": "rule",
+          "id": "code-quality",
+          "path": "rules/code-quality.md",
+          "bytes": 380,
+          "tokens": 88
+        },
+        {
+          "kind": "rule",
+          "id": "secure-secrets",
+          "path": "rules/secure-secrets.md",
+          "bytes": 623,
+          "tokens": 161
+        },
+        {
+          "kind": "rule",
+          "id": "frontend-quasar",
+          "domain": "frontend",
+          "path": "domains/frontend/rules/frontend-quasar.md",
+          "bytes": 797,
+          "tokens": 198
+        },
+        {
+          "kind": "skill",
+          "id": "ai-rulez",
+          "path": "skills/ai-rulez/SKILL.md",
+          "delivery": "static",
+          "bytes": 2278,
+          "tokens": 540
+        },
+        {
+          "kind": "skill",
+          "id": "code-reviewer",
+          "path": "skills/code-reviewer/SKILL.md",
+          "delivery": "static",
+          "bytes": 685,
+          "tokens": 148
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-change-policy",
+          "path": "skills/fastfree-change-policy/SKILL.md",
+          "delivery": "static",
+          "bytes": 4602,
+          "tokens": 1000
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-guide",
+          "path": "skills/fastfree-guide/SKILL.md",
+          "delivery": "static",
+          "bytes": 57223,
+          "tokens": 4120
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-test",
+          "path": "skills/fastfree-test/SKILL.md",
+          "delivery": "static",
+          "bytes": 4042,
+          "tokens": 1023
+        },
+        {
+          "kind": "skill",
+          "id": "herdr-conductor",
+          "path": "skills/herdr-conductor/SKILL.md",
+          "delivery": "static",
+          "bytes": 13496,
+          "tokens": 1212
+        },
+        {
+          "kind": "skill",
+          "id": "herdr-fanout",
+          "path": "skills/herdr-fanout/SKILL.md",
+          "delivery": "static",
+          "bytes": 2985,
+          "tokens": 726
+        },
+        {
+          "kind": "skill",
+          "id": "herdr-review-loop",
+          "path": "skills/herdr-review-loop/SKILL.md",
+          "delivery": "static",
+          "bytes": 3033,
+          "tokens": 753
+        },
+        {
+          "kind": "skill",
+          "id": "skill-evolution",
+          "path": "skills/skill-evolution/SKILL.md",
+          "delivery": "static",
+          "bytes": 2364,
+          "tokens": 578
+        },
+        {
+          "kind": "skill",
+          "id": "android-build-release",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/android-build-release/SKILL.md",
+          "mode": "user-invocable-only",
+          "delivery": "served",
+          "bytes": 3278,
+          "tokens": 908
+        },
+        {
+          "kind": "skill",
+          "id": "play-console-setup",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/play-console-setup/SKILL.md",
+          "mode": "user-invocable-only",
+          "delivery": "served",
+          "bytes": 21572,
+          "tokens": 5401
+        },
+        {
+          "kind": "skill",
+          "id": "play-publish-automation",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/play-publish-automation/SKILL.md",
+          "mode": "user-invocable-only",
+          "delivery": "served",
+          "bytes": 4063,
+          "tokens": 994
+        },
+        {
+          "kind": "skill",
+          "id": "quasar-quality-gates",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/quasar-quality-gates/SKILL.md",
+          "mode": "on",
+          "delivery": "static",
+          "bytes": 1881,
+          "tokens": 526
+        },
+        {
+          "kind": "command",
+          "id": "lint-all",
+          "domain": "frontend",
+          "path": "domains/frontend/commands/lint-all.md",
+          "bytes": 388,
+          "tokens": 111
+        },
+        {
+          "kind": "command",
+          "id": "typecheck-all",
+          "domain": "frontend",
+          "path": "domains/frontend/commands/typecheck-all.md",
+          "bytes": 972,
+          "tokens": 265
+        },
+        {
+          "kind": "check",
+          "id": "composable-reuse",
+          "domain": "frontend",
+          "path": "domains/frontend/checks/composable-reuse.md",
+          "bytes": 538,
+          "tokens": 120
+        },
+        {
+          "kind": "check",
+          "id": "form-submission",
+          "domain": "frontend",
+          "path": "domains/frontend/checks/form-submission.md",
+          "bytes": 584,
+          "tokens": 137
+        }
+      ],
+      "totals": {
+        "items": 20,
+        "bytes": 125784,
+        "tokens": 19009,
+        "by_kind": {
+          "check": 2,
+          "command": 2,
+          "rule": 3,
+          "skill": 13
+        },
+        "served_skills": 3,
+        "served_tokens": 7303
+      }
+    },
+    {
+      "name": "reviewer",
+      "description": "Adversarial code reviewer, quality auditor, and policy gatekeeper",
+      "match": {
+        "groups": [
+          "herdr:reviewer",
+          "agent:auditor"
+        ]
+      },
+      "domains": [
+        "frontend",
+        "core-lowcode",
+        "erp-modules",
+        "nixos-clan"
+      ],
+      "skill_modes": {
+        "android-build-release": "off",
+        "code-reviewer": "on",
+        "fastfree-change-policy": "on",
+        "herdr-review-loop": "on",
+        "play-console-setup": "off",
+        "play-publish-automation": "off",
+        "skill-evolution": "on"
+      },
+      "delivery": {
+        "code-reviewer": "static",
+        "fastfree-change-policy": "static",
+        "herdr-review-loop": "static"
+      },
+      "items": [
+        {
+          "kind": "rule",
+          "id": "code-quality",
+          "path": "rules/code-quality.md",
+          "bytes": 380,
+          "tokens": 88
+        },
+        {
+          "kind": "rule",
+          "id": "secure-secrets",
+          "path": "rules/secure-secrets.md",
+          "bytes": 623,
+          "tokens": 161
+        },
+        {
+          "kind": "rule",
+          "id": "erp-invariants",
+          "domain": "erp-modules",
+          "path": "domains/erp-modules/rules/erp-invariants.md",
+          "bytes": 1114,
+          "tokens": 258
+        },
+        {
+          "kind": "rule",
+          "id": "frontend-quasar",
+          "domain": "frontend",
+          "path": "domains/frontend/rules/frontend-quasar.md",
+          "bytes": 797,
+          "tokens": 198
+        },
+        {
+          "kind": "rule",
+          "id": "nixos-clan",
+          "domain": "nixos-clan",
+          "path": "domains/nixos-clan/rules/nixos-clan.md",
+          "bytes": 1010,
+          "tokens": 266
+        },
+        {
+          "kind": "skill",
+          "id": "ai-rulez",
+          "path": "skills/ai-rulez/SKILL.md",
+          "delivery": "static",
+          "bytes": 2278,
+          "tokens": 540
+        },
+        {
+          "kind": "skill",
+          "id": "code-reviewer",
+          "path": "skills/code-reviewer/SKILL.md",
+          "mode": "on",
+          "delivery": "static",
+          "bytes": 685,
+          "tokens": 148
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-change-policy",
+          "path": "skills/fastfree-change-policy/SKILL.md",
+          "mode": "on",
+          "delivery": "static",
+          "bytes": 4602,
+          "tokens": 1000
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-guide",
+          "path": "skills/fastfree-guide/SKILL.md",
+          "delivery": "static",
+          "bytes": 57223,
+          "tokens": 4120
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-test",
+          "path": "skills/fastfree-test/SKILL.md",
+          "delivery": "static",
+          "bytes": 4042,
+          "tokens": 1023
+        },
+        {
+          "kind": "skill",
+          "id": "herdr-conductor",
+          "path": "skills/herdr-conductor/SKILL.md",
+          "delivery": "static",
+          "bytes": 13496,
+          "tokens": 1212
+        },
+        {
+          "kind": "skill",
+          "id": "herdr-fanout",
+          "path": "skills/herdr-fanout/SKILL.md",
+          "delivery": "static",
+          "bytes": 2985,
+          "tokens": 726
+        },
+        {
+          "kind": "skill",
+          "id": "herdr-review-loop",
+          "path": "skills/herdr-review-loop/SKILL.md",
+          "mode": "on",
+          "delivery": "static",
+          "bytes": 3033,
+          "tokens": 753
+        },
+        {
+          "kind": "skill",
+          "id": "skill-evolution",
+          "path": "skills/skill-evolution/SKILL.md",
+          "mode": "on",
+          "delivery": "static",
+          "bytes": 2364,
+          "tokens": 578
+        },
+        {
+          "kind": "skill",
+          "id": "erp-domain-development",
+          "domain": "erp-modules",
+          "path": "domains/erp-modules/skills/erp-domain-development/SKILL.md",
+          "delivery": "static",
+          "bytes": 2306,
+          "tokens": 576
+        },
+        {
+          "kind": "skill",
+          "id": "android-build-release",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/android-build-release/SKILL.md",
+          "mode": "off",
+          "delivery": "static",
+          "bytes": 3278,
+          "tokens": 908
+        },
+        {
+          "kind": "skill",
+          "id": "play-console-setup",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/play-console-setup/SKILL.md",
+          "mode": "off",
+          "delivery": "static",
+          "bytes": 21572,
+          "tokens": 5401
+        },
+        {
+          "kind": "skill",
+          "id": "play-publish-automation",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/play-publish-automation/SKILL.md",
+          "mode": "off",
+          "delivery": "static",
+          "bytes": 4063,
+          "tokens": 994
+        },
+        {
+          "kind": "skill",
+          "id": "quasar-quality-gates",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/quasar-quality-gates/SKILL.md",
+          "delivery": "static",
+          "bytes": 1881,
+          "tokens": 526
+        },
+        {
+          "kind": "skill",
+          "id": "nixos-host-deploy",
+          "domain": "nixos-clan",
+          "path": "domains/nixos-clan/skills/nixos-host-deploy/SKILL.md",
+          "delivery": "static",
+          "bytes": 2341,
+          "tokens": 656
+        },
+        {
+          "kind": "skill",
+          "id": "web-backend-release",
+          "domain": "nixos-clan",
+          "path": "domains/nixos-clan/skills/web-backend-release/SKILL.md",
+          "delivery": "static",
+          "bytes": 2207,
+          "tokens": 594
+        },
+        {
+          "kind": "command",
+          "id": "lint-all",
+          "domain": "frontend",
+          "path": "domains/frontend/commands/lint-all.md",
+          "bytes": 388,
+          "tokens": 111
+        },
+        {
+          "kind": "command",
+          "id": "typecheck-all",
+          "domain": "frontend",
+          "path": "domains/frontend/commands/typecheck-all.md",
+          "bytes": 972,
+          "tokens": 265
+        },
+        {
+          "kind": "command",
+          "id": "clan-check",
+          "domain": "nixos-clan",
+          "path": "domains/nixos-clan/commands/clan-check.md",
+          "bytes": 349,
+          "tokens": 84
+        },
+        {
+          "kind": "check",
+          "id": "composable-reuse",
+          "domain": "frontend",
+          "path": "domains/frontend/checks/composable-reuse.md",
+          "bytes": 538,
+          "tokens": 120
+        },
+        {
+          "kind": "check",
+          "id": "form-submission",
+          "domain": "frontend",
+          "path": "domains/frontend/checks/form-submission.md",
+          "bytes": 584,
+          "tokens": 137
+        },
+        {
+          "kind": "check",
+          "id": "clan-wireguard-ports",
+          "domain": "nixos-clan",
+          "path": "domains/nixos-clan/checks/clan-wireguard-ports.md",
+          "bytes": 600,
+          "tokens": 153
+        }
+      ],
+      "totals": {
+        "items": 27,
+        "bytes": 135711,
+        "tokens": 21596,
+        "by_kind": {
+          "check": 3,
+          "command": 3,
+          "rule": 5,
+          "skill": 16
+        },
+        "served_skills": 0,
+        "served_tokens": 0
+      }
+    }
+  ]
+}

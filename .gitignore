@@ -20,6 +20,8 @@ dist/
 build/
 result/
 result-*/
+fastfree-panel-spa-v2.2.0/
+fastfree-panel-spa-*/
 
 # Keep VPN extension dist & Clan Panel dist
 !packages/fastfree_vpn/ae/dist/
@@ -113,3 +115,7 @@ midscene_run/
 # working. Committing them bakes an absolute home path into the repo, so every
 # other clone gets two dangling links. The real content lives in .gemini/.
 .agents/
+
+# BEGIN ai-rulez (DO NOT EDIT - managed by ai-rulez)
+.ai-rulez/.generated-manifest.local.json
+# END ai-rulez

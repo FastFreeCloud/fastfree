@@ -1,71 +1,130 @@
-# AGENTS.md — FastFree Monorepo (Multi-Agent & Herdr Ecosystem)
+<!--
+🤖 AI-RULEZ :: GENERATED FILE — DO NOT EDIT
+Project: fastfree
+Source: .ai-rulez/config.toml
 
-## 🤖 منظومة الوكلاء المتعددين (Multi-Agent Operating Environment with Herdr)
+NEVER edit this file - modify .ai-rulez/ content instead
+Use MCP server: npx -y ai-rulez@latest mcp --allow-any-dir --serve-skills
+Regenerate: ai-rulez generate
+
+Docs: https://github.com/Goldziher/ai-rulez
+Content-Hash: blake3:3d83b03884a7d91f1be9ab2247277e800c672870deb94d5a7035b4d0e47d4ca3
+-->
+
+# fastfree
+
+FastFree Sovereign Monorepo & Multi-Agent OS Ecosystem
+
+## Rules
+
+### nixos-clan
+
+_Applies to: `apps/fastfree_os/**`, `flake.nix`, `clan.nix`_
+
+**Priority:** critical
+
+When working on `apps/fastfree_os`:
+- **Fleet Topology**: `client1` is the single central public VPS. `client2` through `client11` are customer Hyper-V appliances.
+- **Profiles**: Shared system configurations must be in `profiles/base.nix`, `profiles/vps.nix`, or `profiles/hyperv.nix`. Keep `machines/<name>/configuration.nix` minimal.
+- **Clan Services**: Official Clan services (`wireguard`, `sshd`, `users`, `internet`) must be declared under `inventory.instances` with `module.input = "clan-core"`.
+- **WireGuard**: Each client machine (`client2..11`) gets an isolated WireGuard instance (`client${n}-network`) on a distinct UDP port (`51820 + n`), connecting to controller `client1`.
+- **Secrets Management**: Never embed plaintext passwords in Nix expressions. Use Clan Vars (`clan vars generate <machine>`).
+
+### secure-secrets
+
+_Applies to: `**/*.nix`, `**/*.yaml`, `**/*.yml`, `**/*.json`_
+
+**Priority:** critical
+
+1. **Nix Expressions**: Never embed plaintext passwords, private keys, hashes, or API secrets inside `.nix` files.
+2. **Clan Vars**: In Clan 26.05, secrets must always be managed via `clan vars generate <machine>` or `clan vars set <machine> <key>`.
+3. **Frontend & Mobile**: Never bake private API tokens or keystore passwords directly into client bundles or git commits. Use environment placeholders (`${VAR}`) or secure CI secrets.
+
+### code-quality
+
+**Priority:** high
+
+Follow these coding standards:
+- Use descriptive variable names
+- Add comments for complex logic
+- Write unit tests for new functions
+- Keep functions small and focused (typically < 50 lines)
+- Handle errors explicitly, never silently
+
+### erp-invariants
+
+_Applies to: `packages/fastfree_accounting/**`, `packages/fastfree_inventory/**`, `packages/fastfree_sales/**`, `packages/fastfree_purchase/**`, `packages/fastfree_hr/**`, `packages/fastfree_crm/**`_
+
+**Priority:** high
+
+When working within ERP domain packages:
+1. **Shared Composables**: Always reuse `@fastfree/lowcode` composables:
+   - `useFormatNumber` for all currency, amount, and quantity formatting.
+   - `useStatusHelpers` for badges and status translations.
+2. **Form Submissions**: Every modal form dialog must wire `@submit.prevent` to its save method, with primary action buttons having `type="submit"`.
+3. **Save Success Verification**: Always check `result.success` before closing dialogs or resetting form data.
+4. **Clean Error Handling**: Always wrap API calls in `try/catch/finally` blocks with user-facing notification via `$q.notify`.
+5. **Zero Hardcoded Strings**: All table headers, form labels, tooltips, and status values must be retrieved from the package i18n translation registry.
+
+### frontend-quasar
+
+_Applies to: `apps/fastfree_panel/**`, `apps/fastfree_ledger/**`, `packages/**`_
+
+**Priority:** high
+
+When working on Vue/TypeScript apps and packages:
+- **Zero Errors**: Maintain 0 TypeScript errors (`vue-tsc --noEmit`) and clean ESLint.
+- **Shared Composables**: Always reuse `useStatusHelpers` (for badges/colors) and `useFormatNumber` (for currency/numbers) instead of duplicating local functions.
+- **Form Submissions**: Every form dialog must have `@submit.prevent` wired to its save method, with buttons having `type="submit"`.
+- **RTL & i18n**: Support bidirectional layouts (use logical CSS properties like `inset-inline-start/end`) and load translations from i18n package registries.
+
+## Context
+
+### agents
+
 المشروع يدار بواسطة وكلاء ذكاء اصطناعي متعددين يعملون بالتوازي داخل طرفيات **Herdr** (`herdr.dev` مع `HERDR_ENV=1`):
 - **الوكلاء النشطون**: Antigravity (`agy`), OpenCode (`opencode`), Claude Code (`claude`).
-- **المهارة المشتركة المعتمدة**: [FastFree Guide Skill](file:///.agents/skills/fastfree-guide/SKILL.md) (متوفرة في `.agents/skills/fastfree-guide/` و `.gemini/skills/fastfree-guide/`).
-- **خوادم MCP المشتركة**: موحدة بين `opencode.json` و `~/.gemini/config/mcp_config.json` عبر السكربت `.gemini/skills/fastfree-guide/scripts/sync-mcp.sh`.
+- **المهارة المشتركة المعتمدة**: [FastFree Guide Skill](file:///.agents/skills/fastfree-guide/SKILL.md).
 - **أدوات MCP المتوفرة للوكلاء**:
-  1. `quasar`: مكونات وإضافات Quasar UI.
-  2. `playwright`: اختبارات المتصفح وفحص E2E وأخذ لقطات.
-  3. `nixos`: خيارات وحزم وإعدادات NixOS و Flakes.
+  1. `ai-rulez`: خادم إدارة الحوكمة الذكي والقواعد والأوامر والفاحصات الحتمية.
+  2. `quasar`: مكونات وإضافات Quasar UI.
+  3. `playwright`: اختبارات المتصفح وفحص E2E وأخذ لقطات.
   4. `firecrawl-mcp`: استخراج وتلخيص محتوى الويب المتقدم.
   5. `sequential-thinking`: التفكير المنطقي المتسلسل وحل المشكلات المعقدة.
   6. `context7`: توثيق المكتبات الخارجي الحي.
-  7. `grep`: البحث السحابي في كود المشاريع المفتوحة.
-  8. `exa`: محرك البحث الدلالي.
-  9. `browsermcp`: تصفح الويب التفاعلي.
-  10. `midscene-web`: الفحص البصري التلقائي للواجهات.
+  7. `grep` & `exa`: البحث البرمجي والدلالي.
+  8. `midscene-web`: الفحص البصري التلقائي للواجهات.
 
 ---
 
-## المتطلبات
+## المتطلبات التقنية الأساسية
 
-| الأداة | الإصدار الدنيا | ملاحظة |
+| الأداة | الإصدار الأدنى | ملاحظة |
 |--------|----------------|--------|
-| **Node.js** | **>= 22.22.0** (مُختبَر على 26.8.1) | `@quasar/app-vite` 3.10.2 يرفض أقل من 22.22 |
-| pnpm | ^11.11.0 | `corepack enable pnpm` |
-| git | أي إصدار | مطلوب للوكلاء |
-
-> بدون الترقية الصحيحة يفشل `quasar prepare` ولا يُنشأ مجلد `.quasar`،
-> فتظهر أخطاء `TS2307: Cannot find module '#q-app'` في كل ملفات التطبيق.
+| **Node.js** | **>= 22.22.0** | إلزامي لـ `@quasar/app-vite` 3.10.2 لإنشاء مجلد `.quasar` ومنع أخطاء TS2307 |
+| **pnpm** | ^11.11.0 | مدير الحزم المعتمد للمستودع |
+| **Git** | أي إصدار حديث | إدارة التفرعات وتثبيت التعديلات |
 
 ---
 
-## أوامر الفحص
-
-### التطبيقات (المهمة الأساسية)
+## أوامر الفحص والتشغيل المباشرة
 
 ```bash
-# fastfree_panel — Clan Panel SPA
+# fastfree_panel (Quasar 2 + Vite)
 cd apps/fastfree_panel
-npx quasar prepare          # مرة واحدة بعد أي تغيير في quasar.config.ts
-npx vue-tsc --noEmit        # TypeCheck — صفر أخطاء
-npx eslint -c ./eslint.config.js "./src*/**/*.{ts,js,cjs,mjs,vue}"   # Lint
-npm run dev
+npx quasar prepare
+npx vue-tsc --noEmit
+npx eslint -c ./eslint.config.js "./src*/**/*.{ts,js,cjs,mjs,vue}"
 
-# fastfree_ledger — Accounting + Sales + Inventory
+# fastfree_ledger (Accounting + Sales + Inventory)
 cd apps/fastfree_ledger
-npx quasar prepare          # مرة واحدة بعد أي تغيير في quasar.config.ts
-npx vue-tsc --noEmit        # TypeCheck — صفر أخطاء
-npx eslint -c ./eslint.config.js "./src*/**/*.{ts,js,cjs,mjs,vue}"   # Lint
-npm run dev
-```
+npx quasar prepare
+npx vue-tsc --noEmit
+npx eslint -c ./eslint.config.js "./src*/**/*.{ts,js,cjs,mjs,vue}"
 
-> ⚠️ `npm run lint:check` يشغّل **prettier** الذي يكتب الملفات — استخدم
-> `npx eslint` للفحص فقط، و`npm run lint` للإصلاح التلقائي.
-
-### الحزم (packages/)
-
-```bash
-cd packages/<pkg> && npx vue-tsc --noEmit
-```
-
-### فحص كل الحزم دفعة واحدة
-
-```bash
+# فحص كافة حزم packages/ دفعة واحدة:
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-foreach($p in @('fastfree_auth','fastfree_accounting','fastfree_inventory','fastfree_sales','fastfree_purchase','fastfree_hr','fastfree_crm')){
+foreach($p in @('fastfree_lowcode','fastfree_auth','fastfree_accounting','fastfree_inventory','fastfree_sales','fastfree_purchase','fastfree_hr','fastfree_crm')){
   cd "C:\Users\FastFree\Desktop\fastfree\packages\$p"
   Write-Output "$p = $((npx vue-tsc --noEmit 2>&1 | Select-String 'error TS' | Measure-Object).Count)"
 }
@@ -73,277 +132,54 @@ foreach($p in @('fastfree_auth','fastfree_accounting','fastfree_inventory','fast
 
 ---
 
-## التطبيقات (apps/)
-
-| التطبيق | الإصدار | الوصف | TypeScript | Lint |
-|---------|---------|-------|-----------|------|
-| **fastfree_panel** | 2.2.0 | Clan Panel SPA + Private Node backend (Hono) | ✅ 0 | ✅ 0 |
-| **fastfree_ledger** | 0.0.1 | Accounting + Sales + Inventory عبر lowcode | ✅ 0 | ✅ 0 |
-| fastfree_erp | — | ERP | — | — |
-| fastfree_pos | — | Point of Sale | — | — |
-| fastfree_hr | — | HR منفصل | — | — |
-| fastfree_clan_panel | — | **محذوف** — استُبدل بـ `fastfree_panel` | — | — |
-
----
-
-## حالة المشروع — الحزم (packages/)
-
-| الحزمة | الحالة | شاشات | خدمات | ترجمة | TS Errors |
-|-------|--------|-------|-------|-------|-----------|
-| fastfree_lowcode | ✅ | 38 مكوّن | 27 composable | 393×2 | 0 |
-| fastfree_auth | ✅ | 6 | 11 | 131 | 0 |
-| fastfree_accounting | ✅ | 13 | 9 | 117 | 0 |
-| fastfree_inventory | ✅ | 8 | 10 | ✅ جديد | 0 |
-| fastfree_sales | ✅ | 8 | 7 | 150 | 0 |
-| fastfree_purchase | ✅ | 7 | 6 | 140 | 0 |
-| fastfree_hr | ✅ | 7 | 9 | 114 | 0 |
-| fastfree_crm | ✅ | 6 | 8 | 108 | 0 |
-| **المجموع** | ✅ | **60** | **43** | **1253** | **0** |
-
-## سجل الإصلاحات
-
-### 2026-08-07 — جلسة تحسين شاملة
-
-#### Auth (6 إصلاحات حرجة)
-1. `groups.authentication` — مفتاح ترجمة مفقود
-2. UsersManager — edit name/email يبعت للسيرفر
-3. Password reset — نقل لـ user.service.ts
-4. updateUserRole — يستخدم Has Role child table
-5. RolesManager — permission IDs بدل labels
-6. N+1 query — batch fetch للـ roles
-
-#### Accounting (12 إصلاحاً)
-1. Form validation في 5 فورمات
-2. Error handling مع $q.notify
-3. translatePaymentType — fix camelCase
-4. translateStatus للـ badges
-5. 5 مفاتيح ترجمة validation جديدة
-
-#### Inventory (14 إصلاحاً)
-1. Form validation في 5 فورمات
-2. `@submit.prevent` + `type="submit"`
-3. v-close-popup — close programmatically
-4. translateStatus — 3 مفاتيح مُعاد إضافتها
-5. Error handling في كل save functions
-6. ProductForm dropdowns من Store
-
-#### Lowcode (5 إصلاحات)
-1. RTL: `right` → `inset-inline-end`
-2. RTL: `left/right` → `inset-inline-start/end`
-3. Locale ديناميكي في useExcelExport
-4. Locale ديناميكي في usePrint
-5. hardcoded English fallback في useThemeStore
-
-#### تحسينات عامة
-1. 52 aria-label في 17 ملف
-2. 11 console.log اتمسحت
-3. 40+ TypeScript any أُصلحت
-4. 20 TS error أُصلحت
-5. 34 مفتاح ميت تأكد إنها مش موجودة
-
-### 2026-08-07 — جلسة بناء sales + purchase (135 مشكلة → 0)
-
-#### fastfree_sales (7 شاشات)
-1. إنشاء Types كاملة (Customer, Quotation, SalesOrder, SalesInvoice, DeliveryNote)
-2. 6 خدمات (customer, quotation, salesOrder, salesInvoice, delivery, report)
-3. 7 شاشات (CustomerList, CustomerForm, QuotationList, SalesOrderList, SalesInvoiceList, DeliveryNoteList, SalesReportScreen)
-4. 120 مفتاح ترجمة (EN + AR)
-5. Boot file + quasar.config integration
-
-#### fastfree_purchase (7 شاشات)
-1. إنشاء Types كاملة (Supplier, PurchaseOrder, PurchaseReceipt, PurchaseInvoice)
-2. 5 خدمات (supplier, purchaseOrder, purchaseReceipt, purchaseInvoice, report)
-3. 7 شاشات (PurchaseDashboard, SupplierList, SupplierForm, PurchaseOrderList, PurchaseReceiptList, PurchaseInvoiceList, PurchaseReportScreen)
-4. 110 مفتاح ترجمة (EN + AR)
-5. Boot file + quasar.config integration
-
-#### إصلاحات المراجعة (135 مشكلة)
-**Sales fixes:**
-1. إضافة 30 مفتاح ترجمة مفقود (status keys, confirmations, messages)
-2. تصحيح field names في Types (quotation_date→transaction_date, etc.)
-3. تحديث screen columns لتتوافق مع Types
-4. إزالة 13 console.error من catch blocks
-5. إضافة ARIA labels على الأزرار
-6. تصحيح imports في Screens (aliased imports)
-
-**Purchase fixes:**
-1. إنشاء 5 شاشات مفقودة (SupplierList, PurchaseOrderList, PurchaseReceiptList, PurchaseInvoiceList, PurchaseReportScreen)
-2. تصحيح import paths في register.ts
-3. إضافة dependencies لـ package.json
-4. إضافة total field لـ PurchaseReceipt type
-5. تصحيح type exports (ApiResponse, PurchaseSummary)
-6. إضافة ARIA labels + form validation لـ SupplierForm
-
-### 2026-08-07 — جلسة تحسين الجودة الشاملة (169 مشكلة → 0)
-
-#### Form Submissions (4 إصلاحات)
-1. StockEntryForm — @submit.prevent wired + buttons inside form
-2. CategoryList — @submit.prevent wired + buttons inside form
-3. WarehouseList — @submit.prevent wired + buttons inside form
-4. SupplierList — @submit.prevent wired + buttons inside form
-
-#### Error Handling (7 إصلاحات)
-1. FiscalYearList — try/catch في closeFiscalYear
-2. CostCenterList — try/catch في deleteCostCenter
-3. PaymentEntryList — try/catch في submit + delete
-4. JournalEntryList — try/catch في submit + cancel
-5. AccountingDashboard — Promise.all لـ 3 API calls
-
-#### Save Success Checks (5 إصلاحات)
-1. ProductForm — else branch بعد result.success
-2. CategoryList — capture result + check success
-3. WarehouseList — capture result + check success
-4. SupplierList — capture result + check success
-5. StockEntryForm — else branch بعد result.success
-
-#### File Splitting (3 إصلاحات)
-1. auth/init.ts — 474→79 سطر (83%↓) — فصل locales + screenRegistration
-2. accounting/init.ts — 383→39 سطر (90%↓) — فصل locales + screens
-3. lowcode/config.ts — 1450→60 سطر (96%↓) — فصل types + messages + defaults
-
-#### Type Safety + SSR (6 إصلاحات)
-1. auth/api.service.ts — return type أُضيف email field
-2. auth/auth.service.ts — email: userRes.data.email (كان user)
-3. accounting/PaymentEntryForm — Record<string, unknown> → Partial<PaymentEntry>
-4. inventory/StockEntryForm — Record<string, unknown> → Partial<StockEntry>
-5. lowcode/useThemeStore — SSR guards لـ document/localStorage
-6. lowcode/GroupWorkspace — SSR guard لـ window
-
-#### Performance (3 إصلاحات)
-1. AccountingDashboard — Promise.all بدال sequential calls
-2. useThemeStore — batch CSS updates بدال setProperty individual
-3. ChartOfAccounts — watch(filteredTree) بدال computed side-effect
-
-### 2026-08-08 — جلسة بناء fastfree_hr (17 مشكلة → 0)
-
-#### fastfree_hr (7 شاشات)
-1. Types كاملة (Employee, Department, Designation, Attendance, LeaveApplication, HolidayList, SalarySlip, HrSummary)1. 9 خدمات (employee, department, designations, attendance, leaveApplication, holiday, salarySlip, payroll, report)
-2. 7 شاشات (EmployeeList, EmployeeForm, DepartmentForm, DesignationList, AttendanceList, LeaveApplicationList, PayrollScreen)
-3. 114 مفتاح ترجمة (EN + AR)
-4. useHrStore (Pinia) بـ 6 fetch methods
-5. Boot file + quasar.config integration
-
-#### إصلاحات TypeCheck (17 → 0)
-1. `attendance.service.ts` — filters من array → Record object
-2. `salarySlip.service.ts` — filters من array → Record object
-3. `screens.ts` — أضافة AsyncComponentLoader type annotation
-4. `AttendanceList.vue` — handler signature conflict fix
-5. `EmployeeForm.vue` — exactOptionalPropertyTypes fixes (7 errors)
-6. `PayrollScreen.vue` — string|undefined → string fix
-
-#### fastfree_crm (6 شاشات)
-1. Types كاملة (Lead, Opportunity, Contact, Address, Campaign, CrmSummary)
-2. 8 خدمات (lead, opportunity, contact, address, campaign, leadSource, crmDashboard, report)
-3. 6 شاشات (LeadList, LeadForm, OpportunityList, OpportunityForm, ContactList, CrmDashboard)
-4. 108 مفتاح ترجمة (EN + AR)
-5. useCrmStore (Pinia) بـ 4 fetch methods
-6. Boot file + quasar.config integration
-7. vue-tsc: 0 errors | lint:check: 0 violations
-
-### 2026-08-08 — جلسة إصلاح شاملة (54 شاشة، 6 وكلاء، 0 أخطاء)
-
-#### Shared Utilities (2 composable جديدة)
-1. `useFormatNumber.ts` — تنسيق أرقام/locale-aware بدل 12+ دالة مكررة
-2. `useStatusHelpers.ts` — translateStatus + statusColor مشتركة بدل 8+ دالة مكررة
-
-#### Accounting (5 إصلاحات)
-1. CostCenterList — إزالة console.error
-2. FiscalYearList — إزالة console.error
-3. JournalEntryList — إزالة 2x console.error
-4. PaymentEntryList — إزالة 2x console.error
-5. AccountingDashboard + FinancialReports + GeneralLedger — إضافة try/catch + loading state
-
-#### Auth (3 إصلاحات)
-1. AuthLogin — try/catch في handleLogin
-2. LicenseInfo — try/catch في fetchLicense
-3. UserProfile — try/catch + loading في fetchProfile
-
-#### Inventory (3 إصلاحات)
-1. InventoryDashboard — try/catch + loading + Promise.all
-2. ProductList — try/catch/finally + $q.notify في handleDelete
-3. StockEntryList — try/catch/finally + $q.notify في executeAction
-
-#### Sales (7 إصلاحات)
-1. QuotationList — إصلاح زر الإلغاء (cancel → confirm) + shared utils
-2. SalesOrderList — نفس الإصلاح + shared utils
-3. SalesInvoiceList — نفس الإصلاح + shared utils
-4. DeliveryNoteList — نفس الإصلاح + shared utils
-5. SalesReportScreen — try/catch + loading + shared utils
-6. locales/en.ts — إضافة status keys
-7. locales/ar.ts — إضافة status keys
-
-#### Purchase (8 إصلاحات)
-1. PurchaseReportScreen — إعادة كتابة كشاشة تقارير مميزة (بديل 100% copy)
-2. SupplierForm — ترجمة supplierTypeOptions
-3. PurchaseDashboard — shared formatNumber
-4. PurchaseOrderList — shared utils (formatNumber + statusHelpers)
-5. PurchaseReceiptList — shared utils
-6. PurchaseInvoiceList — shared utils
-7. locales/en.ts — إضافة 15 مفتاح جديد
-8. locales/ar.ts — إضافة 15 مفتاح جديد
-
-#### HR (5 إصلاحات)
-1. EmployeeForm — نقل import { computed } إلى الأعلى
-2. PayrollScreen — استبدال hardcoded values بـ refs + shared formatNumber
-3. LeaveApplicationList — فحص result.success + shared statusHelpers
-4. AttendanceList — shared statusHelpers
-5. EmployeeList — shared statusHelpers
-
-#### CRM (5 إصلاحات)
-1. OpportunityList — ترجمة status badge + shared statusHelpers
-2. ContactList — ترجمة "Designation" label
-3. CrmDashboard — Promise.all + shared formatNumber + إزالة getCampaigns غير المستخدمة
-4. locales/en.ts — إضافة 13 status key
-5. locales/ar.ts — إضافة 13 status key
-
-#### Ledger (1 إصلاح)
-1. index.vue — إزالة window.location.reload() + استخراج SPLASH_DURATION constant
-
-#### lowcode Shared Exports (2 إصلاح)
-1. useFormatNumber.ts — تصحيح import path
-2. useStatusHelpers.ts — تصحيح import path + fallback color
-
-## أوامر التشغيل (بدون سكربتات وسيطة)
-
-> سكربتات `fastfree_push/deploy/cleanup/rebuild.ps1` حُذفت — الأوامر المباشرة أدناه تغني عنها.
-> كل الأوامر تشتغل من **جذر المشروع** (`C:\Users\fastfree\Desktop\fastfree-lowcode-roadmap\fastfree`)
-
-```powershell
-# رفع سريع
-git add -A; git commit -m "msg"; git push origin master
-
-# نشر على السيرفر + متابعة
-gh workflow run 10-client2.yaml --ref master
-
-# تنظيف الـ runs الفاشلة (تجربة أولاً بدون حذف)
-gh run list --status failure --limit 100 --json databaseId
-gh run list --status failure --limit 100 --json databaseId --jq '.[].databaseId' | ForEach-Object { gh run delete $_ }
-
-# حالة الـ workflows
-gh run list --limit 10
-```
-
-## Log Files
-
-- `packages/fastfree_lowcode/AGENTS.md` — تفاصيل lowcode
-- `packages/fastfree_auth/AGENTS.md` — تفاصيل auth
-- `packages/fastfree_accounting/AGENTS.md` — تفاصيل accounting
-- `packages/fastfree_inventory/AGENTS.md` — تفاصيل inventory
-- `packages/fastfree_sales/AGENTS.md` — تفاصيل sales
-- `packages/fastfree_purchase/AGENTS.md` — تفاصيل purchase
-- `packages/fastfree_hr/AGENTS.md` — تفاصيل hr
-- `packages/fastfree_crm/AGENTS.md` — تفاصيل crm
-
-## ترتيب التشغيل (Boot Order)
+## ترتيب تهيئة النظام (Boot Order)
 
 ```
-fastfree-auth-init        →  API client + auth initialized
-fastfree-accounting-init  →  Accounting groups + screens registered
-fastfree-inventory-init  →  Inventory groups + screens registered
-fastfree-sales-init      →  Sales groups + screens registered
-fastfree-purchase-init   →  Purchase groups + screens registered
-fastfree-hr-init         →  HR groups + screens registered
-fastfree-crm-init        →  CRM groups + screens registered
-i18n                     →  Translations loaded AFTER all packages register their messages
-register-service-worker  →  PWA registration (last)
+fastfree-auth-init        → API client + auth initialized
+fastfree-accounting-init  → Accounting groups + screens registered
+fastfree-inventory-init   → Inventory groups + screens registered
+fastfree-sales-init       → Sales groups + screens registered
+fastfree-purchase-init    → Purchase groups + screens registered
+fastfree-hr-init          → HR groups + screens registered
+fastfree-crm-init         → CRM groups + screens registered
+i18n                      → Translations loaded AFTER all packages register their messages
+register-service-worker   → PWA registration (last)
 ```
+
+### architecture
+
+FastFree is a sovereign, offline-first enterprise multi-agent monorepo and operating system ecosystem.
+
+## Directory Structure
+
+- **apps/**: Independent deployable application targets:
+  - `fastfree_panel`: Clan Panel SPA (Quasar 2 + Vue 3 + TypeScript + Vite) with private Node/Hono backend (`apps/fastfree_panel/backend`).
+  - `fastfree_ledger`: Unified business ledger (Accounting, Sales, Inventory) built on LowCode.
+  - `fastfree_erp`, `fastfree_pos`, `fastfree_hr`: Standalone Quasar apps with Capacitor mobile builds (`src-capacitor`).
+  - `fastfree_website`: FastFree public portal.
+  - `fastfree_backend`: Custom Frappe v15 app (Python / MariaDB).
+  - `apps/fastfree_os`: Sovereign NixOS Clan 26.05 infrastructure (VPS `client1`, Hyper-V appliances `client2..11`, WireGuard).
+- **packages/**: Core shared modular domain packages (0 TypeScript errors required):
+  - `fastfree_lowcode`: UI engine, dynamic forms, datatables, 38 components, 27 composables, RTL/i18n engine.
+  - `fastfree_auth`: Identity, licenses, role-based access control (Has Role child tables), API client.
+  - `fastfree_accounting`: General ledger, chart of accounts, journal/payment entries, fiscal years, cost centers.
+  - `fastfree_inventory`: Items, warehouses, stock entries, bin levels.
+  - `fastfree_sales`: Quotations, sales orders, invoices, delivery notes.
+  - `fastfree_purchase`: Suppliers, purchase orders, purchase receipts, purchase invoices.
+  - `fastfree_hr`: Employees, departments, attendance, leave applications, payroll.
+  - `fastfree_crm`: Leads, opportunities, contacts, campaigns.
+  - `fastfree_update`: Update orchestration and playground.
+- **scripts/**: Automation scripts for brand assets, Android keystores, and store automation.
+- **.github/workflows/**: CI/CD deployment pipelines for Clan hosts, Android releases, and web builds.
+
+## Key Principles & Invariants
+
+- **Zero TS Errors**: Enforce `vue-tsc --noEmit` across all apps and packages before push.
+- **Zero Raw CSS Offsets in RTL**: Always use logical properties (`inset-inline-start/end`) instead of `left/right`.
+- **Reusable Composables**: Reuse `useFormatNumber` (currency/number) and `useStatusHelpers` (badges/status) instead of local helpers.
+- **Form Submissions**: Every dialog form must wire `@submit.prevent` to its save function with `type="submit"` buttons.
+- **Clan Secrets**: Zero plaintext passwords in Git or Nix expressions; use Clan Vars (`clan vars`).
+
+## Unlisted skills
+
+Some skills are served over MCP and are not listed in this session. Call `find_skill` with a short description of the task, then `load_skill` with the chosen name, on the `ai-rulez` MCP server. If that server is unavailable, read `.ai-rulez/skills/<name>/SKILL.md` instead.

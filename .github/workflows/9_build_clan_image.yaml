@@ -14,13 +14,20 @@ on:
   workflow_dispatch:
     inputs:
       machine:
-        description: "اسم الجهاز في Clan (client1, client2, client3)"
+        description: "Hyper-V machine in Clan (client2-client11)"
         type: choice
         options:
-          - client1
           - client2
           - client3
-        default: client1
+          - client4
+          - client5
+          - client6
+          - client7
+          - client8
+          - client9
+          - client10
+          - client11
+        default: client2
         required: true
       format:
         description: "صيغة الصورة الناتجة (iso, vhdx, qcow2, raw)"
@@ -122,9 +129,9 @@ jobs:
 
           mkdir -p "$RUNNER_TEMP/artifact"
 
-          # 1. إذا كان client1 بصيغة vhdx أو موجود كـ flake package
-          if [ "$MACHINE" = "client1" ] && [ "$FORMAT" = "vhdx" ] && [ "$ARCH" = "x86_64-linux" ]; then
-            echo "Direct flake package build for client1 VHDX..."
+          # Hyper-V machines use the dedicated VHDX image package.
+          if [ "$FORMAT" = "vhdx" ] && [ "$ARCH" = "x86_64-linux" ]; then
+            echo "Direct flake package build for $MACHINE VHDX..."
             nix build ".#packages.${ARCH}.${MACHINE}" --out-link ./result --print-build-logs
             echo "Dereferencing build output into artifact folder..."
             cp -rL ./result/* "$RUNNER_TEMP/artifact/" 2>/dev/null || cp -rL ./result "$RUNNER_TEMP/artifact/"
