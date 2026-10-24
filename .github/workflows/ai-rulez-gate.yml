@@ -26,7 +26,14 @@ jobs:
           node-version: 22
 
       - name: Verify Generated Outputs Sync (Zero Drift)
-        run: npx -y ai-rulez@latest generate --check
+        run: |
+          npx -y ai-rulez@latest generate --check || {
+            echo "::error::ai-rulez generate --check failed. Showing diff after regeneration:"
+            npx -y ai-rulez@latest generate
+            git diff
+            git status -s
+            exit 2
+          }
 
       - name: Verify Lockfile Status
         run: npx -y ai-rulez@latest lock --check
