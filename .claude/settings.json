@@ -1,16 +1,8 @@
 {
+  "env": {
+    "FASTFREE_SOVEREIGN": "1"
+  },
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "npx -y ai-rulez@latest session-start",
-            "timeout": 150
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit",
@@ -19,6 +11,17 @@
             "type": "command",
             "command": "npx -y ai-rulez@latest guard",
             "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y ai-rulez@latest session-start",
+            "timeout": 150
           }
         ]
       }
@@ -56,8 +59,5 @@
       "Read(./**/*.jks)",
       "Write(./.git/**)"
     ]
-  },
-  "env": {
-    "FASTFREE_SOVEREIGN": "1"
   }
 }
