@@ -1,7 +1,6 @@
 {
   "version": "1",
   "files": [
-    ".agents/mcp_config.json",
     ".agents/rules/erp-invariants.md",
     ".agents/rules/frontend-quasar.md",
     ".agents/rules/nixos-clan.md",
@@ -167,7 +166,6 @@
     ".claude/skills/skill-evolution/SKILL.md",
     ".claude/skills/typecheck-all/SKILL.md",
     ".claude/skills/web-backend-release/SKILL.md",
-    ".mcp.json",
     ".opencode/commands/clan-check.md",
     ".opencode/commands/lint-all.md",
     ".opencode/commands/typecheck-all.md",
