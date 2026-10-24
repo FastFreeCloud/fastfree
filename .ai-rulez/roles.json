@@ -320,6 +320,15 @@
         },
         {
           "kind": "skill",
+          "id": "fastfree-brand",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
+          "delivery": "static",
+          "bytes": 903901,
+          "tokens": 310
+        },
+        {
+          "kind": "skill",
           "id": "play-console-setup",
           "domain": "frontend",
           "path": "domains/frontend/skills/play-console-setup/SKILL.md",
@@ -382,14 +391,14 @@
         }
       ],
       "totals": {
-        "items": 22,
-        "bytes": 129204,
-        "tokens": 19843,
+        "items": 23,
+        "bytes": 1033105,
+        "tokens": 20153,
         "by_kind": {
           "check": 2,
           "command": 2,
           "rule": 4,
-          "skill": 14
+          "skill": 15
         },
         "served_skills": 3,
         "served_tokens": 7303
@@ -525,6 +534,15 @@
         },
         {
           "kind": "skill",
+          "id": "fastfree-brand",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
+          "delivery": "static",
+          "bytes": 903901,
+          "tokens": 310
+        },
+        {
+          "kind": "skill",
           "id": "play-console-setup",
           "domain": "frontend",
           "path": "domains/frontend/skills/play-console-setup/SKILL.md",
@@ -587,14 +605,14 @@
         }
       ],
       "totals": {
-        "items": 20,
-        "bytes": 125784,
-        "tokens": 19009,
+        "items": 21,
+        "bytes": 1029685,
+        "tokens": 19319,
         "by_kind": {
           "check": 2,
           "command": 2,
           "rule": 3,
-          "skill": 13
+          "skill": 14
         },
         "served_skills": 3,
         "served_tokens": 7303
@@ -765,6 +783,15 @@
         },
         {
           "kind": "skill",
+          "id": "fastfree-brand",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
+          "delivery": "static",
+          "bytes": 903901,
+          "tokens": 310
+        },
+        {
+          "kind": "skill",
           "id": "play-console-setup",
           "domain": "frontend",
           "path": "domains/frontend/skills/play-console-setup/SKILL.md",
@@ -860,14 +887,14 @@
         }
       ],
       "totals": {
-        "items": 27,
-        "bytes": 135711,
-        "tokens": 21596,
+        "items": 28,
+        "bytes": 1039612,
+        "tokens": 21906,
         "by_kind": {
           "check": 3,
           "command": 3,
           "rule": 5,
-          "skill": 16
+          "skill": 17
         },
         "served_skills": 0,
         "served_tokens": 0
