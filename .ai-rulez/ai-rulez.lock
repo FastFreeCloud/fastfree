@@ -5,7 +5,7 @@ version = 1
 ai_rulez_version = '5.6.2'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:e9badede6460a241ba4c9eaa90724bacf55d59b78b2448ee0d23c019a2d78aba'
+tree = 'sha256:3437cb5872c4e13d916d068267fafd2f10a02699aaca2621dac708a834ec14d1'
 
 [[served]]
 name = 'ai-rulez'
@@ -439,7 +439,7 @@ digest = 'sha256:6a386619e76acf87df0f4a7c56622394f5fee29f6b8b79ca3a1bea93b85e793
 [[item]]
 kind = 'settings'
 id = 'permissions'
-digest = 'sha256:b39c0110964ff82a425e2d253674e95ff7de0577422e032e160273ca45c9a483'
+digest = 'sha256:b1c15f0993476fbcba837635fae68ed43acf22ff24ea7b498d786ac288704883'
 
 [[item]]
 kind = 'skill'
