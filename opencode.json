@@ -147,6 +147,29 @@
       "enabled": true,
       "timeout": 300000,
       "cwd": "."
+    },
+    "jcodemunch": {
+      "type": "local",
+      "command": [
+        "uvx",
+        "jcodemunch-mcp==1.108.397",
+        "serve"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "repomap": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@sylphx/repomap@1.8.0",
+        "mcp"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
     }
   },
   "permission": {
