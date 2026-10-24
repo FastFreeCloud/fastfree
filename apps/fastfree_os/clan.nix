@@ -2,31 +2,6 @@
 { lib, ... }:
 let
   hypervClients = map (n: "client${toString n}") (lib.range 2 11);
-
-  wireguardNetworks = builtins.listToAttrs (
-    map
-      (n:
-        let
-          client = "client${toString n}";
-          port = 51820 + n;
-        in
-        {
-          name = "${client}-network";
-          value = {
-            module.name = "wireguard";
-            module.input = "clan-core";
-            roles.controller = {
-              machines."client1" = { };
-              settings = {
-                endpoint = "fastfree.cloud";
-                inherit port;
-              };
-            };
-            roles.peer.machines."${client}" = { };
-          };
-        })
-      (lib.range 2 11)
-  );
 in
 {
   meta.name = "fastfree";
@@ -44,6 +19,21 @@ in
   }) hypervClients);
 
   inventory.instances = {
+    wireguard = {
+      module.name = "wireguard";
+      module.input = "clan-core";
+      roles.controller = {
+        machines."client1" = { };
+        settings = {
+          endpoint = "fastfree.cloud";
+          port = 51820;
+        };
+      };
+      roles.peer.machines = builtins.listToAttrs (
+        map (client: { name = client; value = { }; }) hypervClients
+      );
+    };
+
     internet = {
       module.name = "internet";
       module.input = "clan-core";
@@ -91,7 +81,7 @@ in
       module.input = "clan-core";
       roles.default.machines.client1 = { };
     };
-  } // wireguardNetworks;
+  };
 
   # Hyper-V machines and the VPS require explicit selection for updates.
   machines = builtins.listToAttrs (map (client: {

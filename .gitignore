@@ -111,11 +111,6 @@ midscene_run/
 # regenerated each session.
 .herdr-web-ui/
 
-# Absolute symlinks into /home/fastfree used to keep AGENTS.md's skill paths
-# working. Committing them bakes an absolute home path into the repo, so every
-# other clone gets two dangling links. The real content lives in .gemini/.
-.agents/
-
 # BEGIN ai-rulez (DO NOT EDIT - managed by ai-rulez)
 .ai-rulez/.generated-manifest.local.json
 # END ai-rulez
