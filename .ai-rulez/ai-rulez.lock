@@ -5,7 +5,7 @@ version = 1
 ai_rulez_version = '5.6.2'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:e190f3fc4981245cbe2feb835d3b40497d2e23216aba34e92fee9bbb3f19afa1'
+tree = 'sha256:ad150854e6d93fb585285a3719caedfe09f2770892d4b720fb7b1fa00adfc131'
 
 [[served]]
 name = 'ai-rulez'
@@ -77,6 +77,19 @@ name = 'erp-domain-development'
 source = '.ai-rulez/domains/erp-modules/skills/erp-domain-development/SKILL.md'
 commit = ''
 digest = 'sha256:489e2d1e8748a6ce7326db5818cfa477e5192bb41f9de53f69daaf38ff8c8c85'
+view = 'role:reviewer'
+
+[[served]]
+name = 'fastfree-brand'
+source = '.ai-rulez/domains/frontend/skills/fastfree-brand/SKILL.md'
+commit = ''
+digest = 'sha256:58d0e82ed9aa8405413522747da7ca254faa7e5dfe4dadbe1f7011efa90fba44'
+
+[[served]]
+name = 'fastfree-brand'
+source = '.ai-rulez/domains/frontend/skills/fastfree-brand/SKILL.md'
+commit = ''
+digest = 'sha256:58d0e82ed9aa8405413522747da7ca254faa7e5dfe4dadbe1f7011efa90fba44'
 view = 'role:reviewer'
 
 [[served]]
@@ -469,6 +482,13 @@ digest = 'sha256:2aff2401fce715bec506f00a87019664a17db22861c4a246e388e744a7e6895
 
 [[item]]
 kind = 'skill'
+id = 'fastfree-brand'
+domain = 'frontend'
+path = 'domains/frontend/skills/fastfree-brand'
+digest = 'sha256:52c9e69e11e66e018e5eed89fb94085a4f31b15d84a44f62933a212dc224626d'
+
+[[item]]
+kind = 'skill'
 id = 'play-console-setup'
 domain = 'frontend'
 path = 'domains/frontend/skills/play-console-setup'
@@ -566,6 +586,166 @@ digest = 'sha256:26bd8a4c62dc1a5f0f85cc121f522c7528a7bc4b936ec4afd00f33cfe6dc4dd
 [[output]]
 path = '.agents/skills/erp-domain-development/SKILL.md'
 digest = 'sha256:69634f6d48d834c767b281ea7a3b37d99c71742723fcea34d62065512171e3ae'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/SKILL.md'
+digest = 'sha256:dfb0cde78de1f2ed55d0080a21fea44b543cffac73149d8d40c8b56163345ace'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-erp-bg.svg'
+digest = 'sha256:3e582baf6bb653888177078c382820e9bc5a1dd7899869a84539f2376ff59381'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-erp-fg.svg'
+digest = 'sha256:79210975f15e9c5f1f33bf9a050da55668913b3e58f048b42f94f9a91d9d985f'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-bg.svg'
+digest = 'sha256:fb94703073333eca3bb431f614c274f7747df005fe9f60c276d643ee18a01ca9'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-fg.svg'
+digest = 'sha256:8511e81a15fbba898672c6d2bd4f1bb61cb2f47b72e751c8e838f5591853aa75'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-ledger-bg.svg'
+digest = 'sha256:13fba6d025e82a529993016e3478db0aa67367847ff926f5cd01245f37667b4c'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-ledger-fg.svg'
+digest = 'sha256:da68eb55ba41e33911a9c2a2d53540cb26df65cde1203b6756fdb3f2e3616765'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-panel-bg.svg'
+digest = 'sha256:c168f2ed00b1a034c8ece0a0db42627d5ea75babca6fcf8859a4cdf07ac455ee'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-panel-fg.svg'
+digest = 'sha256:a6260a1d05d855c1daa3893c2aba1066d6dfcf690295d183bf4ad9f50f3d787a'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-pos-bg.svg'
+digest = 'sha256:7aec6262baebc764e822740e2f3724f11ef852e66a67d660204f9cdcec0dfc1f'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-pos-fg.svg'
+digest = 'sha256:ac6d8bc30744fa5d1840dc15a11522631a7f9ded398f73f87e15e96c4e9857fc'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-website-bg.svg'
+digest = 'sha256:38616a48d11bbf30e45adeb6c828d3261314fd2488b0126f2afb9d8ea4a617a1'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-website-fg.svg'
+digest = 'sha256:b01107675c75a553511fa4d590046aadf57f218abbdc18cfe8b47c7d23c4ca27'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/icons/adaptive-erp.svg'
+digest = 'sha256:bba331a869284be3bfd599c90d5ec7aeabed5e23cfdbe1c1d7f53d8e84d37f56'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/icons/adaptive-hr.svg'
+digest = 'sha256:c955fb903930fdb8456121e23c574719140ff8c243edd39d895a612c6fca5059'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/icons/adaptive-ledger.svg'
+digest = 'sha256:0b182c5dd82c5e30a5165dc55c7fcbde37f37e2811ad850a2002bd6bd05af4d2'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/icons/adaptive-panel.svg'
+digest = 'sha256:83215e9b889bd804c75af6ca31bdd2f0a204d2339db684920cca3861893fc53e'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/icons/adaptive-pos.svg'
+digest = 'sha256:0410af6e6739cc49dad001f81df0b2a5cfd4a9222502aef84cf8e6db3b900212'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/icons/adaptive-website.svg'
+digest = 'sha256:52d48acf3565d184ea422b35f20c45f8a9e3d5ee53737376dce4982c5fa61277'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/icons/icon-erp.svg'
+digest = 'sha256:7bcc2d0c373c59c4b12c740855625f4ad4d4e68703acb15d57bd157700af9ee1'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/icons/icon-hr.svg'
+digest = 'sha256:f0f066cc630d50a7bca339c3a3fed0e89c3d7e38025c0ae1b0a2be493e0de485'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/icons/icon-ledger.svg'
+digest = 'sha256:900714ffdcadfd4e6fff68abc1ccab71c1e91a9901f35f982d63c24590fe5b7e'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/icons/icon-panel.svg'
+digest = 'sha256:f5c6bdf4dca460945e4f7fdfdbbcf3cc090a934d7df257098fa8840eb7a90683'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/icons/icon-pos.svg'
+digest = 'sha256:86141f23e5d3f82b19d2e3aff6d287120fa4f374a1bb1861ed650b3d96566c62'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/icons/icon-website.svg'
+digest = 'sha256:0b0118c02187b04703d39a6aeaedfdcdad125043f0231f83d0fcba71b2a8226e'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/logo/fastfree-brand-logo-dark.svg'
+digest = 'sha256:4b42791d77b9d6b6540af2d921371897d152ca0bb33664833bbea44cfa7423cb'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/logo/fastfree-brand-logo-light.svg'
+digest = 'sha256:4f24cb77d374a89c6b962009376aa899174e7f5b070a8ceac6eb093806c28e34'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/logo/fastfree-infinity-mark.svg'
+digest = 'sha256:179272c1ec9e564f520b289754469a222984ec61d2c5efece425e79a7bffc745'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/splash/splash-erp-1080p.svg'
+digest = 'sha256:a1b9f4e661511c860d04b7bd2afa6e4d1f6ee0f19bc1c3a59aa6dc552ed69524'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/splash/splash-erp-portrait.svg'
+digest = 'sha256:51faecd8f909f8725c855b24a957597ee052a473f84199dd5de0ab91e414c5d1'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/splash/splash-hr-1080p.svg'
+digest = 'sha256:4c368ce5d5a1c0193e78bfd03b184bf4b300652db368425ae4460f0b2997325f'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/splash/splash-hr-portrait.svg'
+digest = 'sha256:b65c7cb197f675e382ffe4d37e875aab4522ec6f2d867e593f38fc9323ff116e'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/splash/splash-ledger-1080p.svg'
+digest = 'sha256:88ffd24f8fd4afdca496b101f9c130c0c4a18fa7e0c49367cb8a52899cec0824'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/splash/splash-ledger-portrait.svg'
+digest = 'sha256:d444a56facc5b43218dda577d17bda53af8ca9f46f5c381b3b3cf9a6d77da411'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/splash/splash-panel-1080p.svg'
+digest = 'sha256:2ef1232e9cf8b245313e2ad3ee87c25259f90f981359600b54ec8dbfa6fe5140'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/splash/splash-panel-portrait.svg'
+digest = 'sha256:12fac05e41bd19821b0966fff4a29913da412786fce02a93969339531e68c3a8'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/splash/splash-pos-1080p.svg'
+digest = 'sha256:f41e3be879c24f624b95d00049e1ad401c828213efd1ad0e59a160db64b51ab2'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/splash/splash-pos-portrait.svg'
+digest = 'sha256:d501940f7463011db585aee8ca5f679642049f0bdd62a486bcbaf18db49544bc'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/splash/splash-website-1080p.svg'
+digest = 'sha256:1b2604c9d948766e5e5a8c6cfd9634d8bb49b53cd701773c5674bfdc98c902f0'
+
+[[output]]
+path = '.agents/skills/fastfree-brand/assets/splash/splash-website-portrait.svg'
+digest = 'sha256:93315c4f382d1b6a284af4fbb8a16b47413340badcefc52eca56eb0abf71271e'
 
 [[output]]
 path = '.agents/skills/fastfree-change-policy/SKILL.md'
@@ -681,7 +861,7 @@ digest = 'sha256:867a55ddf7d7d6cfb6b99dc9905fb67a5043aefd6e8f572db2643966cb7ec79
 
 [[output]]
 path = '.ai-rulez/roles.json'
-digest = 'sha256:35a25f6f07d88b0e9d4d1c8e004ba4edff740361c8f7416d8232fd02c2049b3b'
+digest = 'sha256:7f3275b4bc993d11c5e443e9e4deb450de10b395cb51b996b925f62e32a2be1f'
 
 [[output]]
 path = '.claude/rules/erp-invariants.md'
@@ -718,6 +898,166 @@ digest = 'sha256:e859117657e518ef819109a66c080989346f7572e1c2020cc5b5a6040098d85
 [[output]]
 path = '.claude/skills/erp-domain-development/SKILL.md'
 digest = 'sha256:bf7e24a4f5be19b5feb5610b5ec98e67fc53de8cb678745e67e815b93ef4fd4d'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/SKILL.md'
+digest = 'sha256:766f79c6b375929a1e0b9cb365070fa1145ef74718cdb36ae67d8bf9dd55c337'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-erp-bg.svg'
+digest = 'sha256:52cf9b18b348649876ba99dd375d5e8986ca2273d5cbd3baf23773f1c778b75a'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-erp-fg.svg'
+digest = 'sha256:fb0a069b84ed6fe4bd12d03daec4fdc61dad3ac26b324785cef022bac0079367'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-bg.svg'
+digest = 'sha256:0f1e4c74b5ff6a37bcc5cc8eb88fea94f341299438a774ba1a9dd88bdf7812fb'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-fg.svg'
+digest = 'sha256:40d6fe1a3d00769f1dac35276dad2622bb21b78f2ebead5b264d71510f02fc1d'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-ledger-bg.svg'
+digest = 'sha256:a396a7ddeee28f69c24dc7c689af93c29ff4df8e7caa0e5a71bacf2de59d8adb'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-ledger-fg.svg'
+digest = 'sha256:c37c816ec6b4cc4297e4b99c93544ac6ffec3469354d1bd2952042e0e6bb402c'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-panel-bg.svg'
+digest = 'sha256:dcac401984badb510bb9e9da8f06be39e836e842b6121298a6fc626bbe2b0ff7'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-panel-fg.svg'
+digest = 'sha256:2b8fe5163ac4a1c630bb0d6009afe68a6c722b5f4dd1e37ef8b21b139ab9b8aa'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-pos-bg.svg'
+digest = 'sha256:6efba0cd21dc1d26cdc4a7e0862020ee61a0a6b603399f3079aa347c23625e0f'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-pos-fg.svg'
+digest = 'sha256:1137b04a4270095f39a4fe3573b5862632a359c95154184105615dfb05b4baf6'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-website-bg.svg'
+digest = 'sha256:92c13ecd5a5915b042779a71d76d449553a7a481bcf7107efb30736e43d94249'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-website-fg.svg'
+digest = 'sha256:743b5e1531c6b7e2848166ad7470128fae60dd4cf2abfb187eb7dc171d59d419'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/icons/adaptive-erp.svg'
+digest = 'sha256:e963f00816566b47a9be3c6b9ef44a489dc294b47c89bbdc48a2e942b8e2ab50'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/icons/adaptive-hr.svg'
+digest = 'sha256:fcfc02ada74b8fe54fb028409595a0cc6bba5fa27859e6ca68332aba4d7bb500'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/icons/adaptive-ledger.svg'
+digest = 'sha256:05798d45fea601aae87e8d44a982affe5075daf315e044b125efdb5b1e7b9ff8'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/icons/adaptive-panel.svg'
+digest = 'sha256:8d2f5bf2c667f84f254e45b09cc7f2e0d5ef20119be0cca2c3b88e7b89f71f99'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/icons/adaptive-pos.svg'
+digest = 'sha256:de2988ec4580559c171d0de73c46106f4131043c52d1b24c4948ff44cececa71'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/icons/adaptive-website.svg'
+digest = 'sha256:baca0495cd87cf35fb3d8dcb08bafc9af4278128adc106a85e656ae588a3a87c'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/icons/icon-erp.svg'
+digest = 'sha256:8320f6276c2e4874e85ee7361e2ba83590c14cabb4ee7b817158b42d8c8bd9e2'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/icons/icon-hr.svg'
+digest = 'sha256:c6a6b72a7e37b98da347ba627b0c3e47c948601c7a33235057bc9976c2a449fb'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/icons/icon-ledger.svg'
+digest = 'sha256:7713f72961dedf03948f6e66db3694c92800d7b0c04b75d5022692f24e17c077'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/icons/icon-panel.svg'
+digest = 'sha256:6a224e5c56208c060a75c6914ad57dfaebf291064f5fe1d02cde2b9f2bf44934'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/icons/icon-pos.svg'
+digest = 'sha256:ff44917c9297c39d7644a07d94292fbea1b800d52e2f92b97850a081ebb8d9ea'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/icons/icon-website.svg'
+digest = 'sha256:6db24385ed1e3ecf6b40b6e57f875fafc8b446b28c5bfb15dee8d87cffff7359'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/logo/fastfree-brand-logo-dark.svg'
+digest = 'sha256:4c18625a0aacc7307fae7a408742625dfabe8f850bcdf8e6640a072183be9c65'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/logo/fastfree-brand-logo-light.svg'
+digest = 'sha256:508907fa07c5a6acb7b219eec495006843383eb208c5fac5e9ebb90a19dd8dbf'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/logo/fastfree-infinity-mark.svg'
+digest = 'sha256:f12a71433a7b5ce0afe36e1d21841776acdee46caf0607084349d52d2f90effa'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/splash/splash-erp-1080p.svg'
+digest = 'sha256:6465e11b7c455e060e2f6187fa58925d076d9326b9ef6144b73466f4e1d0da4e'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/splash/splash-erp-portrait.svg'
+digest = 'sha256:7af08c5e97d12bb0aa215a53ead342df58a147d82fbc601adf9627ff414d2ff3'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/splash/splash-hr-1080p.svg'
+digest = 'sha256:dd199eb572f59642bc42cbcb042eef31a606bd8029be234e47192ee35d235c73'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/splash/splash-hr-portrait.svg'
+digest = 'sha256:208c31654b5df2bec77ba4509ee1747afe6eec775a4c4550fefad9fba7c90fe4'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/splash/splash-ledger-1080p.svg'
+digest = 'sha256:2438e14af9f68012148cfd85dce012a75d26fd3d821d900e648788aae83e6a74'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/splash/splash-ledger-portrait.svg'
+digest = 'sha256:3f2e3263abca498ef8a3d31b9cdb488a27bca7e207582c3a710e3fe3eda13184'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/splash/splash-panel-1080p.svg'
+digest = 'sha256:32911b10eb6e544629c6385f861851a03310dca7b9100af9cc0d947b3a67c26d'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/splash/splash-panel-portrait.svg'
+digest = 'sha256:8b1761d71c0b07d548bf0f30c2b81c0b2cacac86711410c18cfad8168e2009c0'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/splash/splash-pos-1080p.svg'
+digest = 'sha256:bfd62c3952220af70ba36c8c55c75958fccecefdf01a0e09b66b8daa57b36c8f'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/splash/splash-pos-portrait.svg'
+digest = 'sha256:4a862c85ae5bcef1911cddb286fa3c15299f0734d57bfb673de1e3db5fa054c6'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/splash/splash-website-1080p.svg'
+digest = 'sha256:0e3c33f55227dc6365eb931e3ced6ced9f533b28897d8f2a1a6b3e98adfb23a3'
+
+[[output]]
+path = '.claude/skills/fastfree-brand/assets/splash/splash-website-portrait.svg'
+digest = 'sha256:49e72d67e3eca2140557a0d622f850b30bebfe314569a9327f70e6d29bb2fda4'
 
 [[output]]
 path = '.claude/skills/fastfree-change-policy/SKILL.md'
@@ -848,6 +1188,166 @@ path = '.opencode/commands/typecheck-all.md'
 digest = 'sha256:fa2a2f55fa04ed106e5aa167d99be9bedad6b5f36ef7ba9ae65e9b658599b611'
 
 [[output]]
+path = '.opencode/skills/fastfree-brand/SKILL.md'
+digest = 'sha256:322de838f80e0d0ec40c372c7d1b3d742a37c3c7954f7566d801a63b04d2ecbb'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-erp-bg.svg'
+digest = 'sha256:823ce93afb554c4027cbd66193640b005f23e7589d164852a1b0902340c7287c'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-erp-fg.svg'
+digest = 'sha256:e72d180a811946aae532425c6bdde05b45b590def6ad23879e01321a4f7c312b'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-bg.svg'
+digest = 'sha256:51314bfee2547e2190e4f731b99d95aee7c3cdc44cc66bfeea7a817981c374cd'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-fg.svg'
+digest = 'sha256:d0979f58064cb1ffe2830e5bd816e2226d55304e4999657e84eeb0c37074e3d2'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-ledger-bg.svg'
+digest = 'sha256:da3801b94dd91bc26a92abe7d0883bdbdca10a84f84ccc5b6a07a0cbb82ddada'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-ledger-fg.svg'
+digest = 'sha256:90e4e54d8306c219bf85532fd3983fc4a43062c6fc3403f60efc937d207c91ca'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-panel-bg.svg'
+digest = 'sha256:7671096f18d875cb368125cf1e204a00e7a8847cfc21bd932885cfaa06258d23'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-panel-fg.svg'
+digest = 'sha256:7d0d4a93f3deece0755dbe0f8711bf2dea436b487a9dfaae44c2281b56e44462'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-pos-bg.svg'
+digest = 'sha256:827d19f79c44299f4810471a961b8c648bc47d37939b908775dd8aa6e8a3c3ab'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-pos-fg.svg'
+digest = 'sha256:8e8a2e58db639dec72a7b8a37a994b836ed94d59bd221ebd4689fa300d3ebb0e'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-website-bg.svg'
+digest = 'sha256:57ac35b2cd8e05e3705920efbfacfe4647282ab71ba972bdfcef9286fb77141e'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-website-fg.svg'
+digest = 'sha256:acceccb0886c876b72d94cf2bbbbc3f9c35af6f02d2e7f8991c54fc3d76b216d'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/icons/adaptive-erp.svg'
+digest = 'sha256:7893373d4363b39a67e78e083d8bac892c297d353a5023007f56735e364ffa7b'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/icons/adaptive-hr.svg'
+digest = 'sha256:fd596c75e9047ab81dcff8bdba41813018140a730498ddf0a156a59e891488a7'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/icons/adaptive-ledger.svg'
+digest = 'sha256:e634543a20c57c3608f251c8022b9c9c1a6613015c59d5b50723bfba3e9688b7'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/icons/adaptive-panel.svg'
+digest = 'sha256:ecf7daec07fd2f511b88bcadcc3892565f5ef1378071c74c316233bcb874afaa'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/icons/adaptive-pos.svg'
+digest = 'sha256:a0ef28e89fd23a249a338d871e5ffa8c21d6802ff7637f0d6920dd8bdbac3f1d'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/icons/adaptive-website.svg'
+digest = 'sha256:a0e53579ea0597eedf306a51a27bb984cdbd157fe40cf50143ceccd5029d8677'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/icons/icon-erp.svg'
+digest = 'sha256:1a93ce0404cb8e8d9514caf904fc7cb13e7b86ad6f23d77c0780767c5eb42632'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/icons/icon-hr.svg'
+digest = 'sha256:02e3e5da80266231f08609155d34c57c8d10dc6fc235793a8d4b145ee47d1b51'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/icons/icon-ledger.svg'
+digest = 'sha256:113b7489ea991786154bfe3cc9a3a7a1ce091d2a63951f696de25cbf94b13f63'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/icons/icon-panel.svg'
+digest = 'sha256:a41897bd925c67a81e139000937c45396a26ace04ada515c66b4b4d941311fc4'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/icons/icon-pos.svg'
+digest = 'sha256:badca8c244511627ec3ba8b4cf88352cd88eee3f0287b9ce93bc201a51100e41'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/icons/icon-website.svg'
+digest = 'sha256:238f68e3cfcf33a81161809a12e743422e779ccd511d15e0c5ae7d78f8dff674'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/logo/fastfree-brand-logo-dark.svg'
+digest = 'sha256:cde22dbf8659753343ccae9c778b3177e7b1329b2d121b46c0d34a36961d1d0e'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/logo/fastfree-brand-logo-light.svg'
+digest = 'sha256:9d6371997643fbdcbe34f9599c24da09c7fe3cadc718832b5c766b43da8c98d7'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/logo/fastfree-infinity-mark.svg'
+digest = 'sha256:8a46782daab2e12a2e2fd782adc959fe1f0b2818cf71720071db31406bd1b9f6'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/splash/splash-erp-1080p.svg'
+digest = 'sha256:f85bdfd61f6acb9951effbbc0e6b8e1707d71a588cc0c3d81e37e35b6e49199d'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/splash/splash-erp-portrait.svg'
+digest = 'sha256:b44ef5afc2b802f7af2a2a58c9ae0c07acb8dfef89a0f26f85f143746121bce1'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/splash/splash-hr-1080p.svg'
+digest = 'sha256:897b75344651f1b990b009c81d94a3a62c23fe21bdf078adfd7b0a31be439f10'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/splash/splash-hr-portrait.svg'
+digest = 'sha256:44aa302939240c6f27144565046fe064b437e2db5f089f754a6340bf976fe6fa'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/splash/splash-ledger-1080p.svg'
+digest = 'sha256:178733167bc5c86e2a3cbd576c3353f144345c4b8898a71b0d41e6fffbd78bce'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/splash/splash-ledger-portrait.svg'
+digest = 'sha256:9631953294cbd981391162cba8ba43a59c0ebc9ac945fecaea662256e565b059'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/splash/splash-panel-1080p.svg'
+digest = 'sha256:30291273d097b79805b079023fc45e704a36c23686cf2a668ad9e71812ecc6fd'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/splash/splash-panel-portrait.svg'
+digest = 'sha256:8210d41adee1382a97abef9ca0eaa3ac63ce223eeb161c64968b42b29e744d88'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/splash/splash-pos-1080p.svg'
+digest = 'sha256:91652b3a865af5414554e396217074fea7edd4e92845c3d723087a4de1bd2e57'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/splash/splash-pos-portrait.svg'
+digest = 'sha256:85bd3712f5ba42eb94a8471651c21b22209feb341f38455b67bca35240531002'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/splash/splash-website-1080p.svg'
+digest = 'sha256:8c24e337c3687f36d3e5c02571bc8769e22e8a3541c8dc4b95ad3640186d2929'
+
+[[output]]
+path = '.opencode/skills/fastfree-brand/assets/splash/splash-website-portrait.svg'
+digest = 'sha256:676ddffc944ea32cc2ef9069d75d2f6db14857f9884ea142231bea0ef95a16f4'
+
+[[output]]
 path = 'AGENTS.md'
 digest = 'sha256:7fa0fbbdd7978d25e8280f9a85df697a2a069f12ceec3f061c047fd82ff6fd2c'
 
@@ -857,8 +1357,8 @@ digest = 'sha256:71bc73c292a2adb25eabe7c0e6f22776193bef75dab71b286cd8e4f63b44bf6
 
 [[output]]
 path = 'llms-full.txt'
-digest = 'sha256:79008a00ba9fbb99834584874d094a1d5c2f896b1975287e88b99fe140758adb'
+digest = 'sha256:2ccfa8a7d2c6266047dbbe4f191babdd30e645610f1407df10af0f68d11e8c02'
 
 [[output]]
 path = 'llms.txt'
-digest = 'sha256:648a4413024876db84b6827e1a6059f0e6b36cbadecda4d57236502136800e39'
+digest = 'sha256:b0b90d8f3e1bf65ce5ae0214c95f5dbf82036529fd495fa84422629c2c9bd1a9'
