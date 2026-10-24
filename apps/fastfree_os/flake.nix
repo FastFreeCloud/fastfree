@@ -49,7 +49,7 @@
       # Image-only: never `clan machines install` — built as VHDX via CI.
       # -- Dynamic VHDX image module for Hyper-V clients --
       hypervImageModule = { config, pkgs, lib, ... }: {
-        system.build.images.vhdx = lib.mkForce (
+        system.build.hypervImage = lib.mkForce (
           import "${nixpkgs}/nixos/lib/make-disk-image.nix" {
             name = "nixos-hyperv-${config.system.nixos.label}-dynamic";
             baseName = "fastfree_${config.networking.hostName}";
@@ -66,8 +66,6 @@
             memSize = 4096;
           }
         );
-
-        system.build.hypervImage = config.system.build.images.vhdx;
       };
 
       # -- All NixOS modules --
@@ -101,14 +99,7 @@
       # -- Clan 26.05 result (official default template pattern) --
       clanResult = clan-core.lib.clan {
         inherit self;
-        imports = [
-          ./clan.nix
-          {
-            machines = lib.genAttrs (map (n: "client${toString n}") (lib.range 2 11)) (_: {
-              imports = [ hypervImageModule ];
-            });
-          }
-        ];
+        imports = [ ./clan.nix ];
         specialArgs = { inherit inputs; };
       };
 
@@ -128,7 +119,9 @@
       # -- VHDX packages for Hyper-V clients (client2 through client11) --
       packages.${system} = lib.genAttrs
         (map (n: "client${toString n}") (lib.range 2 11))
-        (machine: clanResult.config.nixosConfigurations.${machine}.config.system.build.images.vhdx);
+        (machine: (clanResult.config.nixosConfigurations.${machine}.extendModules {
+          modules = [ hypervImageModule ];
+        }).config.system.build.hypervImage);
 
       # -- checks (NixOS tests for CI) --
       checks.${system} = {

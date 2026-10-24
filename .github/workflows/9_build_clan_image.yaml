@@ -58,7 +58,6 @@ permissions:
 
 env:
   SOURCE_DIR: apps/fastfree_os
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   NIX_CONFIG: |
     experimental-features = nix-command flakes
     accept-flake-config = true
