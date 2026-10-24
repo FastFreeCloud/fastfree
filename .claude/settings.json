@@ -56,8 +56,5 @@
       "Read(./**/*.jks)",
       "Write(./.git/**)"
     ]
-  },
-  "env": {
-    "FASTFREE_SOVEREIGN": "1"
   }
 }
