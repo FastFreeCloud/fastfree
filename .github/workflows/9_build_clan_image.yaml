@@ -3,9 +3,11 @@
 #
 # طريقة العمل:
 #   1. يتم التشغيل يدويًا عبر workflow_dispatch أو عبر لوحة التحكم (FastFree Panel API).
-#   2. يقوم ببناء صورة النظام المحددة (client1, client2, client3) بالصيغة المطلوبة
+#   2. يقوم ببناء صورة النظام المحددة (client2..11) بالصيغة المطلوبة
 #      (iso, vhdx, qcow2, raw) والمعمارية المستهدفة.
-#   3. رفع الصورة الناتجة كـ Artifact رسمي على GitHub Actions قابل للتحميل المباشر.
+#   3. لصيغة vhdx: يقوم ببناء مثبت ويندوز الذكي المستقل (.exe) مباشرة ونشره في Releases.
+#   4. لصيغ iso/raw/qcow2: يرفع الصورة مباشرة إلى Releases.
+#   5. صفر ملفات zip، صفر تحذيرات Node.js، وصفر تراكم للـ Artifacts غير الضرورية.
 ###############################################################################
 
 name: 9_build_clan_image
@@ -67,8 +69,8 @@ env:
     keep-outputs = true
 
 jobs:
-  build-image:
-    name: "بناء صورة Clan (${{ inputs.machine }} - ${{ inputs.format }})"
+  build-and-publish:
+    name: "بناء ونشر (${{ inputs.machine }} - ${{ inputs.format }})"
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     defaults:
@@ -82,7 +84,7 @@ jobs:
           git config --global init.defaultBranch master
 
       - name: "سحب الكود المصدري"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: "تفريغ مساحة على الـ runner"
         uses: jlumbroso/free-disk-space@v1.3.1
@@ -91,7 +93,7 @@ jobs:
           android: true
           dotnet: true
           haskell: true
-          docker-images: true
+          docker-images: false
           swap-storage: true
           large-packages: false
 
@@ -129,7 +131,6 @@ jobs:
 
           mkdir -p "$RUNNER_TEMP/artifact"
 
-          # Hyper-V machines use the dedicated VHDX image package.
           if [ "$FORMAT" = "vhdx" ] && [ "$ARCH" = "x86_64-linux" ]; then
             echo "Direct flake package build for $MACHINE VHDX..."
             nix build ".#packages.${ARCH}.${MACHINE}" --out-link ./result --print-build-logs
@@ -154,126 +155,52 @@ jobs:
             fi
           fi
 
-          echo "Artifact staging content (before compression):"
-          ls -lah "$RUNNER_TEMP/artifact"
-
-          # Compress large images (like VHDX) into ZIP if over 1.8GB to comply with GitHub Release limits (<2GB)
-          echo "Checking file sizes for GitHub Release compliance (<2GB)..."
-          cd "$RUNNER_TEMP/artifact"
-          for file in *; do
-            if [ -f "$file" ]; then
-              filesize=$(stat -c%s "$file")
-              if [ "$filesize" -gt 1900000000 ]; then
-                echo "Compressing $file into ${file}.zip (size: $filesize bytes)..."
-                zip -1 -q "${file}.zip" "$file"
-                rm "$file"
-              fi
-            fi
-          done
-
-          echo "Final artifact staging content:"
+          echo "Build staging content:"
           ls -lah "$RUNNER_TEMP/artifact"
           echo "ARTIFACT_DIR=$RUNNER_TEMP/artifact" >> "$GITHUB_ENV"
 
-      - name: "رفع الصورة كـ Artifact رسمي"
-        uses: actions/upload-artifact@v4
-        with:
-          name: "clan-image-${{ inputs.machine }}-${{ inputs.format }}-${{ inputs.architecture }}"
-          path: ${{ env.ARTIFACT_DIR }}
-          if-no-files-found: error
-          retention-days: 30
+      - name: "بناء مثبت ويندوز الذكي ونشره (${{ inputs.machine }}_setup.exe)"
+        if: inputs.format == 'vhdx'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MACHINE: ${{ inputs.machine }}
+        run: |
+          set -euo pipefail
+          echo "Locating built VHDX image..."
+          VHDX_SRC=$(find "$ARTIFACT_DIR" -type f \( -name "*.vhdx" -o -name "*${MACHINE}*" \) | head -n 1)
+          if [ -z "$VHDX_SRC" ] || [ ! -f "$VHDX_SRC" ]; then
+            echo "Error: VHDX disk not found in $ARTIFACT_DIR"
+            exit 1
+          fi
+          echo "Found VHDX: $VHDX_SRC ($(stat -c%s "$VHDX_SRC") bytes)"
 
-      - name: "نشر الصورة في إصدارات GitHub Releases للتحميل المباشر (للصيغ غير VHDX)"
-        if: success() && inputs.format != 'vhdx'
-        shell: bash
+          TARGET_VHDX="apps/fastfree_os/installer/fastfree_${MACHINE}.vhdx"
+          cp -L "$VHDX_SRC" "$TARGET_VHDX"
+          mkdir -p dist-installer
+
+          echo "Compiling Inno Setup package inside Docker (amake/innosetup:64bit)..."
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/work" \
+            -w /work \
+            amake/innosetup:64bit \
+            -DAppMachine="${MACHINE}" \
+            -DOutputExeName="${MACHINE}_setup" \
+            apps/fastfree_os/installer/fastfree_os_installer.iss
+
+          echo "Verifying compiled installer:"
+          ls -lah dist-installer/
+          if [ ! -f "dist-installer/${MACHINE}_setup.exe" ]; then
+            echo "Error: dist-installer/${MACHINE}_setup.exe was not created!"
+            exit 1
+          fi
+
+          echo "Uploading standalone installer to GitHub Releases (clan-images)..."
+          gh release upload clan-images "dist-installer/${MACHINE}_setup.exe" --clobber
+          echo "Successfully published ${MACHINE}_setup.exe to GitHub Releases!"
+
+      - name: "نشر الصورة في GitHub Releases (للصيغ غير VHDX)"
+        if: inputs.format != 'vhdx'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload clan-images ${{ env.ARTIFACT_DIR }}/* --clobber
-
-  build-installer:
-    name: "بناء مثبت ويندوز الذكي (${{ inputs.machine }}_setup.exe)"
-    needs: build-image
-    if: inputs.format == 'vhdx'
-    runs-on: windows-latest
-    steps:
-      - name: "سحب الكود المصدري"
-        uses: actions/checkout@v4
-
-      - name: "تحميل قرص VHDX الناتج"
-        uses: actions/download-artifact@v4
-        with:
-          name: "clan-image-${{ inputs.machine }}-${{ inputs.format }}-${{ inputs.architecture }}"
-          path: staging-vhdx
-
-      - name: "تجهيز وفك القرص داخل مجلد المثبت"
-        shell: pwsh
-        run: |
-          Get-ChildItem -Path staging-vhdx -Recurse
-          $targetVhdx = "apps/fastfree_os/installer/fastfree_${{ inputs.machine }}.vhdx"
-          $zip = Get-ChildItem -Path staging-vhdx -Filter "*.zip" -Recurse | Select-Object -First 1
-          if ($zip) {
-            Write-Host "Extracting $($zip.FullName)..."
-            Expand-Archive -Path $zip.FullName -DestinationPath apps/fastfree_os/installer -Force
-          } else {
-            $vhdx = Get-ChildItem -Path staging-vhdx -Filter "*.vhdx" -Recurse | Select-Object -First 1
-            if ($vhdx) {
-              Copy-Item -Path $vhdx.FullName -Destination $targetVhdx -Force
-            }
-          }
-          $foundVhdx = Get-ChildItem -Path apps/fastfree_os/installer -Filter "*.vhdx" -Recurse | Select-Object -First 1
-          if (-not $foundVhdx) {
-            throw "VHDX disk was not found after extraction!"
-          }
-          if ($foundVhdx.FullName -ne (Resolve-Path $targetVhdx -ErrorAction SilentlyContinue).Path) {
-            Move-Item -Path $foundVhdx.FullName -Destination $targetVhdx -Force
-          }
-          $finalVhdx = Get-Item $targetVhdx
-          Write-Host "VHDX disk successfully staged: $($finalVhdx.FullName) ($([math]::Round($finalVhdx.Length / 1GB, 2)) GB)"
-
-      - name: "التأكد من توفر مترجم Inno Setup (ISCC)"
-        shell: pwsh
-        run: |
-          $candidates = @(
-            "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
-            "C:\Program Files\Inno Setup 6\ISCC.exe",
-            "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
-          )
-          $found = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-          if (-not $found) {
-            Write-Host "Installing Inno Setup via Chocolatey..."
-            choco install innosetup -y --no-progress
-          }
-
-      - name: "بناء ملف التثبيت المستقل (${{ inputs.machine }}_setup.exe)"
-        shell: pwsh
-        run: |
-          $candidates = @(
-            "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
-            "C:\Program Files\Inno Setup 6\ISCC.exe",
-            "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
-          )
-          $isccPath = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-          if (-not $isccPath) {
-            $isccCmd = Get-Command ISCC.exe -ErrorAction SilentlyContinue
-            if ($isccCmd) { $isccPath = $isccCmd.Source }
-          }
-          Write-Host "Using Inno Setup Compiler at: $isccPath"
-          New-Item -ItemType Directory -Path "dist-installer" -Force | Out-Null
-          & $isccPath "/DAppMachine=${{ inputs.machine }}" "/DOutputExeName=${{ inputs.machine }}_setup" "/Odist-installer" apps/fastfree_os/installer/fastfree_os_installer.iss
-          Get-ChildItem -Path dist-installer
-
-      - name: "رفع المثبت كـ Artifact رسمي"
-        uses: actions/upload-artifact@v4
-        with:
-          name: "fastfree-installer-${{ inputs.machine }}"
-          path: dist-installer/*.exe
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: "نشر ملف التثبيت (${{ inputs.machine }}_setup.exe) في GitHub Releases"
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload clan-images dist-installer/*.exe --clobber
+          gh release upload clan-images "$ARTIFACT_DIR"/* --clobber

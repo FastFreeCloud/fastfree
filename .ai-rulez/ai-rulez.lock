@@ -2,10 +2,10 @@
 # Refresh it with `ai-rulez lock`; `ai-rulez generate --locked` fails when it is stale.
 
 version = 1
-ai_rulez_version = '5.6.2'
+ai_rulez_version = '5.6.3'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:08b40431cd69127db9fc2bb414b8fa99487586e6dd14f03e77134f9dc638ebd5'
+tree = 'sha256:3437cb5872c4e13d916d068267fafd2f10a02699aaca2621dac708a834ec14d1'
 
 [[served]]
 name = 'ai-rulez'
@@ -830,19 +830,19 @@ digest = 'sha256:42af35ffcb9a85d0075b7ba0caf136cdac55bde076a9793b09018d442234e2d
 
 [[output]]
 path = '.agents/skills/fastfree-guide/scripts/check-quality.sh'
-digest = 'sha256:7ae3b0c5f997b65de3c068a8ee48a7e5c773591da36519b4a1a269a2c202de07'
+digest = 'sha256:9a1cd5823bbb3c871d16b616f3f85fe0d6ae0ea51759b86bc53e95c4a46d7f50'
 
 [[output]]
 path = '.agents/skills/fastfree-guide/scripts/clan-ops.sh'
-digest = 'sha256:ddeff0876b0c95c37f88fe3d5adc7ba6b8698a80ea5564329dec873931df35ff'
+digest = 'sha256:2bd002c1beea081cbaea9b717404a030a87019132103d7f6fc0ec01f3e757f77'
 
 [[output]]
 path = '.agents/skills/fastfree-guide/scripts/herdr-task.sh'
-digest = 'sha256:7310c991981ec3e3b6eba98f92239587e8d41225b2eb9c3095b2fb2aa0697a69'
+digest = 'sha256:e576dbb2bdba024e5db34d55882f03eb541cc24939832f616cdd41923cdd7b79'
 
 [[output]]
 path = '.agents/skills/fastfree-guide/scripts/sync-mcp.sh'
-digest = 'sha256:b71d18ef1fde6d20ea090bf927fd24b0c384422660135b022165d3ce8e359003'
+digest = 'sha256:1b32fb49082a7de6d764ec90f8a46275652a2e3859c22fb9f7b0ecd89c6f5493'
 
 [[output]]
 path = '.agents/skills/fastfree-test/SKILL.md'
@@ -1154,19 +1154,19 @@ digest = 'sha256:e62d813d6a3f7dac8c4af44f8ead18bfccfc0417901de3d8b33996bbe9808b3
 
 [[output]]
 path = '.claude/skills/fastfree-guide/scripts/check-quality.sh'
-digest = 'sha256:7dbaee012686d7ea57a2afc1fd7f097227bbd7330349bdb33a8c1d2b5277ed1d'
+digest = 'sha256:d825df97654c606870d0b9ef0e97c7144f6492c52982e4df351a1e0815f706bd'
 
 [[output]]
 path = '.claude/skills/fastfree-guide/scripts/clan-ops.sh'
-digest = 'sha256:53773cb884e4dced72cb61afb3064274158212a0a2ff95e6a12ebdf770e179c1'
+digest = 'sha256:96c960a2999abd37225abf5525e1041859e6dee3cd731b4cc00adf471c8819f7'
 
 [[output]]
 path = '.claude/skills/fastfree-guide/scripts/herdr-task.sh'
-digest = 'sha256:930e6a8e3ad7a286fd8f7051d7f7cc7bc505c6794eaa5c434251566e51de92f6'
+digest = 'sha256:aba14e4884072f95358b4f2804e65a0c28390e45a640529d80a23ddf9ca95c36'
 
 [[output]]
 path = '.claude/skills/fastfree-guide/scripts/sync-mcp.sh'
-digest = 'sha256:f4766676f3a5566591a4c02f1e591b6a9027b9c5893278cfb586a73d514497e5'
+digest = 'sha256:55e5206d2435bbe3456e181f14ffb98d59463adda53065ccea793c57b4cebc90'
 
 [[output]]
 path = '.claude/skills/fastfree-test/SKILL.md'
