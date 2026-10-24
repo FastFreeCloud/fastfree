@@ -5,7 +5,7 @@ version = 1
 ai_rulez_version = '5.6.2'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:94d01e5a84fee700e6cee1cb86e201bdda79cab270c7be4c46014fe4b1ab9dd5'
+tree = 'sha256:969716eb34790f1aabe1732594724c48bbaabc72f857b926243a267c27080ad7'
 
 [[served]]
 name = 'ai-rulez'
@@ -435,11 +435,6 @@ id = 'nixos-clan'
 domain = 'nixos-clan'
 path = 'domains/nixos-clan/rules/nixos-clan.md'
 digest = 'sha256:6a386619e76acf87df0f4a7c56622394f5fee29f6b8b79ca3a1bea93b85e7933'
-
-[[item]]
-kind = 'settings'
-id = 'claude-managed'
-digest = 'sha256:9aa0cb9647fa2e0f2b88997c189c14302e9f7b1f31f9f18dfafe85c1278b253b'
 
 [[item]]
 kind = 'settings'
