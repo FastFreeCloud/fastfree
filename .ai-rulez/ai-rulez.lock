@@ -5,7 +5,7 @@ version = 1
 ai_rulez_version = '5.6.2'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:ad150854e6d93fb585285a3719caedfe09f2770892d4b720fb7b1fa00adfc131'
+tree = 'sha256:94d01e5a84fee700e6cee1cb86e201bdda79cab270c7be4c46014fe4b1ab9dd5'
 
 [[served]]
 name = 'ai-rulez'
@@ -64,6 +64,40 @@ name = 'code-reviewer'
 source = '.ai-rulez/skills/code-reviewer/SKILL.md'
 commit = ''
 digest = 'sha256:3fb2124063dd2f033cd8eedaeaf7f1f10740dfe68e2530b057ff7e13d22919a3'
+view = 'role:reviewer'
+
+[[served]]
+name = 'composio'
+source = '.agents/skills/composio'
+commit = ''
+digest = 'sha256:1d94d7e333b8fe03a22769c9904974efc1b475f408fc1c54e420b8fb7882a70b'
+
+[[served]]
+name = 'composio'
+source = '.agents/skills/composio'
+commit = ''
+digest = 'sha256:1d94d7e333b8fe03a22769c9904974efc1b475f408fc1c54e420b8fb7882a70b'
+view = 'role:devops-clan'
+
+[[served]]
+name = 'composio'
+source = '.agents/skills/composio'
+commit = ''
+digest = 'sha256:1d94d7e333b8fe03a22769c9904974efc1b475f408fc1c54e420b8fb7882a70b'
+view = 'role:erp-architect'
+
+[[served]]
+name = 'composio'
+source = '.agents/skills/composio'
+commit = ''
+digest = 'sha256:1d94d7e333b8fe03a22769c9904974efc1b475f408fc1c54e420b8fb7882a70b'
+view = 'role:frontend-engineer'
+
+[[served]]
+name = 'composio'
+source = '.agents/skills/composio'
+commit = ''
+digest = 'sha256:1d94d7e333b8fe03a22769c9904974efc1b475f408fc1c54e420b8fb7882a70b'
 view = 'role:reviewer'
 
 [[served]]
@@ -362,12 +396,12 @@ digest = 'sha256:74be7142c59886550afe7eaa8fae8a6010999b2129b64b87e0d01158e145f92
 [[item]]
 kind = 'role'
 id = 'frontend-engineer'
-digest = 'sha256:d0117f0db73c28ad8a88aee97738137e087835803deac3926d1ce9c76bdfc71e'
+digest = 'sha256:d9efa1bba914669bfd0b7b271540fedb12512a61b42ef1ad4fa82ca5e558f23e'
 
 [[item]]
 kind = 'role'
 id = 'reviewer'
-digest = 'sha256:39e62683a3e9fccb90f53a5fcab5fce43f2040b338f4984ffde83eeab072df19'
+digest = 'sha256:d0dc9a83fa2f6cb545afad535ba3c45429990e28ed97851a329d299fe2c50197'
 
 [[item]]
 kind = 'rule'
@@ -861,7 +895,7 @@ digest = 'sha256:867a55ddf7d7d6cfb6b99dc9905fb67a5043aefd6e8f572db2643966cb7ec79
 
 [[output]]
 path = '.ai-rulez/roles.json'
-digest = 'sha256:7f3275b4bc993d11c5e443e9e4deb450de10b395cb51b996b925f62e32a2be1f'
+digest = 'sha256:d4534613c2e8aec7e24bb4c3f99402ec6bd8c98d3e7ef809a47f870730a5ea83'
 
 [[output]]
 path = '.claude/rules/erp-invariants.md'

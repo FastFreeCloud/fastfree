@@ -180,7 +180,6 @@
       },
       "domains": [
         "frontend",
-        "core-lowcode",
         "erp-modules"
       ],
       "skill_modes": {
@@ -414,8 +413,7 @@
         ]
       },
       "domains": [
-        "frontend",
-        "core-lowcode"
+        "frontend"
       ],
       "skill_modes": {
         "android-build-release": "user-invocable-only",
@@ -629,7 +627,6 @@
       },
       "domains": [
         "frontend",
-        "core-lowcode",
         "erp-modules",
         "nixos-clan"
       ],
