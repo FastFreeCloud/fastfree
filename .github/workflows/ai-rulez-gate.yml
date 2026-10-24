@@ -39,8 +39,9 @@ jobs:
       - name: Verify Lockfile Status
         run: |
           npx -y ai-rulez@latest lock --check || {
-            echo "::error::ai-rulez lock --check failed. Showing diff:"
-            npx -y ai-rulez@latest lock --diff
+            echo "::error::ai-rulez lock --check failed. Showing exact lockfile diff:"
+            npx -y ai-rulez@latest lock
+            git diff .ai-rulez/ai-rulez.lock
             exit 2
           }
 
