@@ -6,7 +6,18 @@ name = 'fastfree'
 description = 'FastFree Sovereign Monorepo & Multi-Agent OS Ecosystem'
 presets = ['antigravity', 'opencode', 'claude', 'llms-txt']
 default = 'full'
-gitignore = false
+gitignore = true
+gitignore_exclude = [
+  "**/AGENTS.md",
+  "**/CLAUDE.md",
+  ".agents/**",
+  ".claude/**",
+  ".opencode/**",
+  ".ai-rulez/.generated-manifest.json",
+  ".mcp.json",
+  "llms.txt",
+  "llms-full.txt"
+]
 
 # ---------------------------------------------------------
 # LINT & VALIDATION
