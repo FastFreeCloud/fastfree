@@ -27,19 +27,14 @@ jobs:
 
       - name: Verify Generated Outputs Sync (Zero Drift)
         run: |
-          npx -y ai-rulez@latest generate --check --debug || {
-            echo "::error::ai-rulez generate --check failed. Diagnostic output:"
-            echo "=== BEFORE REGEN: TAIL .gitignore ==="
-            tail -n 15 .gitignore
-            npx -y ai-rulez@latest generate --debug
-            echo "=== AFTER REGEN: TAIL .gitignore ==="
-            tail -n 15 .gitignore
-            echo "=== GIT STATUS ==="
-            git status
-            echo "=== GIT DIFF ==="
+          npx -y ai-rulez@latest generate
+          git diff --exit-code || {
+            echo "::error::ai-rulez outputs have drifted. Run 'ai-rulez generate' locally and commit the result."
             git diff
+            git status -s
             exit 2
           }
+          npx -y ai-rulez@latest generate --check
 
       - name: Verify Lockfile Status
         run: npx -y ai-rulez@latest lock --check
