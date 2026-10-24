@@ -36,9 +36,11 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useLcI18n } from 'quasar-app-extension-fastfree-lowcode/src/runtime/i18n'
+import { useFormatNumber } from '@fastfree/lowcode'
 import { useAccountingStore } from '../stores/useAccountingStore'
 
 const { t } = useLcI18n()
+const { formatNumber } = useFormatNumber()
 const $q = useQuasar()
 const store = useAccountingStore()
 
@@ -64,10 +66,6 @@ const columns = computed(() => [
 ])
 
 const loading = ref(false)
-
-function formatNumber(n: number): string {
-  return new Intl.NumberFormat().format(n)
-}
 
 async function searchLedger() {
   if (filter.account) {

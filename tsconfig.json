@@ -13,6 +13,8 @@
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "paths": {
+      "@fastfree/lowcode": ["./packages/fastfree_lowcode/src/runtime/index.ts"],
+      "@fastfree/lowcode/*": ["./packages/fastfree_lowcode/src/runtime/*"],
       "fastfree-auth": ["./packages/fastfree_auth/src/index.ts"],
       "fastfree-auth/*": ["./packages/fastfree_auth/src/*"],
       "fastfree-lowcode": ["./packages/fastfree_lowcode/src/runtime/index.ts"],

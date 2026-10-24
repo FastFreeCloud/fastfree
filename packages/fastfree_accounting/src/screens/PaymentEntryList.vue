@@ -148,12 +148,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useLcI18n } from 'quasar-app-extension-fastfree-lowcode/src/runtime/i18n'
+import { useFormatNumber } from '@fastfree/lowcode'
 import { useAccountingStore } from '../stores/useAccountingStore'
 import { getPaymentEntry, submitPaymentEntry, deletePaymentEntry } from '../services/payment.service'
 import PaymentEntryForm from './PaymentEntryForm.vue'
 import type { PaymentEntry } from '../types'
 
 const { t } = useLcI18n()
+const { formatNumber } = useFormatNumber()
 const store = useAccountingStore()
 const $q = useQuasar()
 
@@ -193,10 +195,6 @@ function translatePaymentType(type: string): string {
 
 function statusColor(status: string): string {
   return { Draft: 'grey', Submitted: 'positive', Cancelled: 'negative' }[status] ?? 'grey'
-}
-
-function formatNumber(n: number): string {
-  return new Intl.NumberFormat().format(n)
 }
 
 async function viewEntry(entry: PaymentEntry) {

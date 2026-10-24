@@ -21,7 +21,6 @@
     fastfree_pos = true;
   };
 
-  sops.age.keyFile = "/var/lib/sops-nix/key.txt";
   virtualisation.hypervGuest.enable = true;
   fileSystems."/" = {
     device = "/dev/disk/by-label/nixos";

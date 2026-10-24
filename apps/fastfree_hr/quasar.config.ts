@@ -38,6 +38,12 @@ export default defineConfig((ctx) => {
         extendTsConfig(tsConfig) {
           tsConfig.compilerOptions = tsConfig.compilerOptions || {}
           tsConfig.compilerOptions.paths = tsConfig.compilerOptions.paths || {}
+          tsConfig.compilerOptions.paths['@fastfree/lowcode'] = [
+            '../../../packages/fastfree_lowcode/src/runtime/index.ts',
+          ]
+          tsConfig.compilerOptions.paths['@fastfree/lowcode/*'] = [
+            '../../../packages/fastfree_lowcode/src/runtime/*',
+          ]
           tsConfig.compilerOptions.paths['quasar-app-extension-fastfree-lowcode/src/runtime'] = [
             '../../../packages/fastfree_lowcode/src/runtime/index.ts',
           ]
@@ -112,6 +118,13 @@ export default defineConfig((ctx) => {
 
         viteConf.resolve = viteConf.resolve || {}
         viteConf.resolve.alias = viteConf.resolve.alias || {}
+        viteConf.resolve.alias['@fastfree/lowcode'] = path.join(
+          monorepoRoot,
+          'packages',
+          'fastfree_lowcode',
+          'src',
+          'runtime',
+        )
         viteConf.resolve.alias['quasar-app-extension-fastfree_update'] = path.join(
           monorepoRoot,
           'packages',

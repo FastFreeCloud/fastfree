@@ -21,14 +21,12 @@ Commands:
   status        Show system status and configuration
   backup        Create a backup of the current system
   restore       Restore from a backup
-  login         Login to GHCR (container registry)
   doctor        Run system health checks
   version       Show version information
 
 Examples:
   fastfree update
   fastfree status
-  fastfree login
 EOF
 }
 
@@ -97,20 +95,7 @@ cmd_backup() {
 }
 
 cmd_login() {
-  echo "Logging in to GHCR..."
-  TOKEN_FILE="/etc/fastfree/github-token"
-  if [ ! -f "$TOKEN_FILE" ]; then
-    echo "Error: GitHub token not found at $TOKEN_FILE" >&2
-    exit 1
-  fi
-  TOKEN=$(cat "$TOKEN_FILE")
-  ACCOUNT=$(cat /etc/fastfree/github-account 2>/dev/null || echo "")
-  if [ -z "$ACCOUNT" ]; then
-    echo "Error: GitHub account not configured" >&2
-    exit 1
-  fi
-  echo "$TOKEN" | podman login ghcr.io -u "$ACCOUNT" --password-stdin
-  echo "Login complete."
+  echo "Clan uses native Clan Vars for secrets management. No container registry login is required."
 }
 
 cmd_doctor() {
@@ -118,7 +103,7 @@ cmd_doctor() {
   echo ""
   CHECKS=0
   PASSED=0
-  for svc in sshd mysql podman; do
+  for svc in sshd mysql caddy; do
     CHECKS=$((CHECKS + 1))
     if systemctl is-active --quiet "$svc" 2>/dev/null; then
       echo "  [PASS] $svc is running"

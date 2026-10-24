@@ -81,9 +81,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useLcI18n } from 'quasar-app-extension-fastfree-lowcode/src/runtime/i18n'
+import { useFormatNumber } from '@fastfree/lowcode'
 import type { Account, AccountType } from '../types'
 
 const { t } = useLcI18n()
+const { formatNumber } = useFormatNumber()
 
 const props = defineProps<{
   node: Account & { children?: Account[] }
@@ -117,10 +119,6 @@ const typeColor = computed(() => {
 function translateType(type: AccountType | undefined): string {
   if (!type) return ''
   return t(`accounting.${type.toLowerCase()}`)
-}
-
-function formatNumber(n: number): string {
-  return new Intl.NumberFormat().format(n)
 }
 
 function handleClick() {

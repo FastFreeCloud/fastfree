@@ -95,12 +95,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useLcI18n } from 'quasar-app-extension-fastfree-lowcode/src/runtime/i18n'
+import { useStatusHelpers } from '@fastfree/lowcode'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { submitStockEntry, cancelStockEntry } from '../services'
 import type { StockEntry } from '../types'
 import StockEntryForm from './StockEntryForm.vue'
 
 const { t } = useLcI18n()
+const { translateStatus } = useStatusHelpers('inventory')
 const store = useInventoryStore()
 const $q = useQuasar()
 
@@ -166,11 +168,6 @@ async function executeAction() {
 
 function onSaved() {
   store.fetchStockEntries()
-}
-
-function translateStatus(status: string): string {
-  const key = `inventory.${status.toLowerCase()}`
-  return t(key)
 }
 
 onMounted(() => store.fetchStockEntries())
