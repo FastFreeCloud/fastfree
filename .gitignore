@@ -111,7 +111,6 @@ midscene_run/
 # regenerated each session.
 .herdr-web-ui/
 
-
 # BEGIN ai-rulez (DO NOT EDIT - managed by ai-rulez)
 .ai-rulez/.generated-manifest.local.json
 # END ai-rulez
