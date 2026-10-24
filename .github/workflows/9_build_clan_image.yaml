@@ -215,23 +215,27 @@ jobs:
       - name: "تجهيز وفك القرص داخل مجلد المثبت"
         shell: pwsh
         run: |
-          Get-ChildItem -Path staging-vhdx
-          $zip = Get-ChildItem -Path staging-vhdx -Filter "*.zip" | Select-Object -First 1
+          Get-ChildItem -Path staging-vhdx -Recurse
+          $targetVhdx = "apps/fastfree_os/installer/fastfree_${{ inputs.machine }}.vhdx"
+          $zip = Get-ChildItem -Path staging-vhdx -Filter "*.zip" -Recurse | Select-Object -First 1
           if ($zip) {
             Write-Host "Extracting $($zip.FullName)..."
             Expand-Archive -Path $zip.FullName -DestinationPath apps/fastfree_os/installer -Force
           } else {
-            $vhdx = Get-ChildItem -Path staging-vhdx -Filter "*.vhdx" | Select-Object -First 1
+            $vhdx = Get-ChildItem -Path staging-vhdx -Filter "*.vhdx" -Recurse | Select-Object -First 1
             if ($vhdx) {
-              Copy-Item -Path $vhdx.FullName -Destination "apps/fastfree_os/installer/fastfree_${{ inputs.machine }}.vhdx" -Force
+              Copy-Item -Path $vhdx.FullName -Destination $targetVhdx -Force
             }
           }
-          # تأكيد تطابق اسم ملف القرص مع اسم الجهاز
-          $foundVhdx = Get-ChildItem -Path apps/fastfree_os/installer -Filter "*.vhdx" | Select-Object -First 1
-          if ($foundVhdx -and $foundVhdx.Name -ne "fastfree_${{ inputs.machine }}.vhdx") {
-            Rename-Item -Path $foundVhdx.FullName -NewName "fastfree_${{ inputs.machine }}.vhdx" -Force
+          $foundVhdx = Get-ChildItem -Path apps/fastfree_os/installer -Filter "*.vhdx" -Recurse | Select-Object -First 1
+          if (-not $foundVhdx) {
+            throw "VHDX disk was not found after extraction!"
           }
-          Get-ChildItem -Path apps/fastfree_os/installer
+          if ($foundVhdx.FullName -ne (Resolve-Path $targetVhdx -ErrorAction SilentlyContinue).Path) {
+            Move-Item -Path $foundVhdx.FullName -Destination $targetVhdx -Force
+          }
+          $finalVhdx = Get-Item $targetVhdx
+          Write-Host "VHDX disk successfully staged: $($finalVhdx.FullName) ($([math]::Round($finalVhdx.Length / 1GB, 2)) GB)"
 
       - name: "التأكد من توفر مترجم Inno Setup (ISCC)"
         shell: pwsh
