@@ -42,7 +42,7 @@
         };
       });
 
-      # -- VHDX image module (hyperv client1) --
+      # -- VHDX image module for Hyper-V clients --
       # Evaluated ON TOP of the Clan machine config (extendModules below), so
       # clan-core options (vars, sops, state) resolve. A raw nixosSystem here
       # has no `clan` option and fails evaluation.
@@ -53,11 +53,9 @@
         system.build.hypervImage = lib.mkForce (
           import "${nixpkgs}/nixos/lib/make-disk-image.nix" {
             name = "nixos-hyperv-${config.system.nixos.label}-fixed";
-            baseName = "fastfree_client1";
+            baseName = "fastfree_${config.networking.hostName}";
             postVM = ''
-              ${pkgs.vmTools.qemu}/bin/qemu-img convert -f raw -o subformat=fixed -O vhdx $diskImage $out/fastfree_client1.vhdx
-              ${pkgs.p7zip}/bin/7z a -t7z -m0=lzma2 -mx=9 -p"FastOS@2026" -mhe=on $out/fastfree_client1.vhdx.7z $out/fastfree_client1.vhdx
-              rm $out/fastfree_client1.vhdx
+              ${pkgs.vmTools.qemu}/bin/qemu-img convert -f raw -o subformat=fixed -O vhdx $diskImage $out/fastfree_${config.networking.hostName}.vhdx
               rm $diskImage
             '';
             format = "raw";
@@ -82,7 +80,6 @@
         ./modules/integration.nix
         ./modules/shell.nix
         ./modules/herdr.nix
-        ./modules/tunnel.nix
         ./modules/mariadb.nix
         ./modules/caddy.nix
         ./modules/fastfree_backend.nix
@@ -119,11 +116,12 @@
       # (official convert template: inherit nixosConfigurations from clan).
       nixosConfigurations = clanResult.config.nixosConfigurations;
 
-      # -- VHDX package (image-only hyperv client1: Clan config + image module) --
-      packages.${system}.client1 =
-        (clanResult.config.nixosConfigurations.client1.extendModules {
+      # -- VHDX packages for Hyper-V clients (client2 through client11) --
+      packages.${system} = lib.genAttrs
+        (map (n: "client${toString n}") (lib.range 2 11))
+        (machine: (clanResult.config.nixosConfigurations.${machine}.extendModules {
           modules = [ hypervImageModule ];
-        }).config.system.build.hypervImage;
+        }).config.system.build.hypervImage);
 
       # -- checks (NixOS tests for CI) --
       checks.${system} = {

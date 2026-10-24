@@ -1,0 +1,864 @@
+# ai-rulez.lock: pins remote includes, installed skills and authored content. Commit this file.
+# Refresh it with `ai-rulez lock`; `ai-rulez generate --locked` fails when it is stale.
+
+version = 1
+ai_rulez_version = '5.6.2'
+scope = 'all'
+outputs_pinned = true
+tree = 'sha256:e190f3fc4981245cbe2feb835d3b40497d2e23216aba34e92fee9bbb3f19afa1'
+
+[[served]]
+name = 'ai-rulez'
+source = '.ai-rulez/skills/ai-rulez/SKILL.md'
+commit = ''
+digest = 'sha256:5d070971d7bebde6471ce6352d939df0c360ae9587bd8913a4bf69fec869afb4'
+
+[[served]]
+name = 'ai-rulez'
+source = '.ai-rulez/skills/ai-rulez/SKILL.md'
+commit = ''
+digest = 'sha256:5d070971d7bebde6471ce6352d939df0c360ae9587bd8913a4bf69fec869afb4'
+view = 'role:reviewer'
+
+[[served]]
+name = 'android-build-release'
+source = '.ai-rulez/domains/frontend/skills/android-build-release/SKILL.md'
+commit = ''
+digest = 'sha256:3a56ea0002829b423d3f0e7c29b90fb07b6b072cb9b843b30caf4b7e14027e58'
+
+[[served]]
+name = 'android-build-release'
+source = '.ai-rulez/domains/frontend/skills/android-build-release/SKILL.md'
+commit = ''
+digest = 'sha256:3a56ea0002829b423d3f0e7c29b90fb07b6b072cb9b843b30caf4b7e14027e58'
+view = 'role:erp-architect'
+
+[[served]]
+name = 'android-build-release'
+source = '.ai-rulez/domains/frontend/skills/android-build-release/SKILL.md'
+commit = ''
+digest = 'sha256:3a56ea0002829b423d3f0e7c29b90fb07b6b072cb9b843b30caf4b7e14027e58'
+view = 'role:frontend-engineer'
+
+[[served]]
+name = 'clan-check'
+source = ''
+commit = ''
+digest = 'sha256:365d6a4132cd558fecb1ce4e50e2040a25a30d6c8b2e3ea9562c9969c3fcd6bb'
+
+[[served]]
+name = 'clan-check'
+source = ''
+commit = ''
+digest = 'sha256:365d6a4132cd558fecb1ce4e50e2040a25a30d6c8b2e3ea9562c9969c3fcd6bb'
+view = 'role:reviewer'
+
+[[served]]
+name = 'code-reviewer'
+source = '.ai-rulez/skills/code-reviewer/SKILL.md'
+commit = ''
+digest = 'sha256:3fb2124063dd2f033cd8eedaeaf7f1f10740dfe68e2530b057ff7e13d22919a3'
+
+[[served]]
+name = 'code-reviewer'
+source = '.ai-rulez/skills/code-reviewer/SKILL.md'
+commit = ''
+digest = 'sha256:3fb2124063dd2f033cd8eedaeaf7f1f10740dfe68e2530b057ff7e13d22919a3'
+view = 'role:reviewer'
+
+[[served]]
+name = 'erp-domain-development'
+source = '.ai-rulez/domains/erp-modules/skills/erp-domain-development/SKILL.md'
+commit = ''
+digest = 'sha256:489e2d1e8748a6ce7326db5818cfa477e5192bb41f9de53f69daaf38ff8c8c85'
+
+[[served]]
+name = 'erp-domain-development'
+source = '.ai-rulez/domains/erp-modules/skills/erp-domain-development/SKILL.md'
+commit = ''
+digest = 'sha256:489e2d1e8748a6ce7326db5818cfa477e5192bb41f9de53f69daaf38ff8c8c85'
+view = 'role:reviewer'
+
+[[served]]
+name = 'fastfree-change-policy'
+source = '.ai-rulez/skills/fastfree-change-policy/SKILL.md'
+commit = ''
+digest = 'sha256:6f9b8bf6f8689a87672389cf6ebdd67b4e5de50ef2b8674d2e23a78b3a297e60'
+
+[[served]]
+name = 'fastfree-change-policy'
+source = '.ai-rulez/skills/fastfree-change-policy/SKILL.md'
+commit = ''
+digest = 'sha256:6f9b8bf6f8689a87672389cf6ebdd67b4e5de50ef2b8674d2e23a78b3a297e60'
+view = 'role:reviewer'
+
+[[served]]
+name = 'fastfree-guide'
+source = '.ai-rulez/skills/fastfree-guide/SKILL.md'
+commit = ''
+digest = 'sha256:30db4941e421a4d5412686e6300a5587dd360fd56ae6df296e7bb16e1941c88a'
+
+[[served]]
+name = 'fastfree-guide'
+source = '.ai-rulez/skills/fastfree-guide/SKILL.md'
+commit = ''
+digest = 'sha256:30db4941e421a4d5412686e6300a5587dd360fd56ae6df296e7bb16e1941c88a'
+view = 'role:reviewer'
+
+[[served]]
+name = 'fastfree-test'
+source = '.ai-rulez/skills/fastfree-test/SKILL.md'
+commit = ''
+digest = 'sha256:c1be30315dbc8bd15177c1f85f063bc01a9ec4bccfb011dae0d6d346c7248788'
+
+[[served]]
+name = 'fastfree-test'
+source = '.ai-rulez/skills/fastfree-test/SKILL.md'
+commit = ''
+digest = 'sha256:c1be30315dbc8bd15177c1f85f063bc01a9ec4bccfb011dae0d6d346c7248788'
+view = 'role:reviewer'
+
+[[served]]
+name = 'herdr-conductor'
+source = '.ai-rulez/skills/herdr-conductor/SKILL.md'
+commit = ''
+digest = 'sha256:acb4efbb165ce4379ca77b1408dfedd3fca985c66de1dad8eaf9546365da4a16'
+
+[[served]]
+name = 'herdr-conductor'
+source = '.ai-rulez/skills/herdr-conductor/SKILL.md'
+commit = ''
+digest = 'sha256:acb4efbb165ce4379ca77b1408dfedd3fca985c66de1dad8eaf9546365da4a16'
+view = 'role:reviewer'
+
+[[served]]
+name = 'herdr-fanout'
+source = '.ai-rulez/skills/herdr-fanout/SKILL.md'
+commit = ''
+digest = 'sha256:6ee10428a206c814bcde8431ef70136aa9e0402e11737bc1429f707107c2cb76'
+
+[[served]]
+name = 'herdr-fanout'
+source = '.ai-rulez/skills/herdr-fanout/SKILL.md'
+commit = ''
+digest = 'sha256:6ee10428a206c814bcde8431ef70136aa9e0402e11737bc1429f707107c2cb76'
+view = 'role:reviewer'
+
+[[served]]
+name = 'herdr-review-loop'
+source = '.ai-rulez/skills/herdr-review-loop/SKILL.md'
+commit = ''
+digest = 'sha256:933086b97b36efa9f38c5cdab7b473b7378683b001dd7a4cc7e168e45a77a9ca'
+
+[[served]]
+name = 'herdr-review-loop'
+source = '.ai-rulez/skills/herdr-review-loop/SKILL.md'
+commit = ''
+digest = 'sha256:933086b97b36efa9f38c5cdab7b473b7378683b001dd7a4cc7e168e45a77a9ca'
+view = 'role:reviewer'
+
+[[served]]
+name = 'lint-all'
+source = ''
+commit = ''
+digest = 'sha256:b15e9685d3f5deec2dce13d9ab08ae8a728fdc496e86358526ea03108bd60ace'
+
+[[served]]
+name = 'lint-all'
+source = ''
+commit = ''
+digest = 'sha256:b15e9685d3f5deec2dce13d9ab08ae8a728fdc496e86358526ea03108bd60ace'
+view = 'role:reviewer'
+
+[[served]]
+name = 'nixos-host-deploy'
+source = '.ai-rulez/domains/nixos-clan/skills/nixos-host-deploy/SKILL.md'
+commit = ''
+digest = 'sha256:e9d81880bc4e64b0415626529cfdce681249f2c3b98c925f6d9903a8bf3e0ed2'
+
+[[served]]
+name = 'nixos-host-deploy'
+source = '.ai-rulez/domains/nixos-clan/skills/nixos-host-deploy/SKILL.md'
+commit = ''
+digest = 'sha256:e9d81880bc4e64b0415626529cfdce681249f2c3b98c925f6d9903a8bf3e0ed2'
+view = 'role:reviewer'
+
+[[served]]
+name = 'play-console-setup'
+source = '.ai-rulez/domains/frontend/skills/play-console-setup/SKILL.md'
+commit = ''
+digest = 'sha256:5db1b72ed75435d84320c8b81da35cf8922752155fe5da21ed5a0c8f515f8803'
+
+[[served]]
+name = 'play-console-setup'
+source = '.ai-rulez/domains/frontend/skills/play-console-setup/SKILL.md'
+commit = ''
+digest = 'sha256:5db1b72ed75435d84320c8b81da35cf8922752155fe5da21ed5a0c8f515f8803'
+view = 'role:erp-architect'
+
+[[served]]
+name = 'play-console-setup'
+source = '.ai-rulez/domains/frontend/skills/play-console-setup/SKILL.md'
+commit = ''
+digest = 'sha256:5db1b72ed75435d84320c8b81da35cf8922752155fe5da21ed5a0c8f515f8803'
+view = 'role:frontend-engineer'
+
+[[served]]
+name = 'play-publish-automation'
+source = '.ai-rulez/domains/frontend/skills/play-publish-automation/SKILL.md'
+commit = ''
+digest = 'sha256:3eb2b2871e7e375ed416e1cc4a022310a63584a40f89b5ad0f9021a1d48495a5'
+
+[[served]]
+name = 'play-publish-automation'
+source = '.ai-rulez/domains/frontend/skills/play-publish-automation/SKILL.md'
+commit = ''
+digest = 'sha256:3eb2b2871e7e375ed416e1cc4a022310a63584a40f89b5ad0f9021a1d48495a5'
+view = 'role:erp-architect'
+
+[[served]]
+name = 'play-publish-automation'
+source = '.ai-rulez/domains/frontend/skills/play-publish-automation/SKILL.md'
+commit = ''
+digest = 'sha256:3eb2b2871e7e375ed416e1cc4a022310a63584a40f89b5ad0f9021a1d48495a5'
+view = 'role:frontend-engineer'
+
+[[served]]
+name = 'quasar-quality-gates'
+source = '.ai-rulez/domains/frontend/skills/quasar-quality-gates/SKILL.md'
+commit = ''
+digest = 'sha256:a7f8c8e21f3b6a62b1dd951f77b19c01233782daf3083794ee00240a655d80e2'
+
+[[served]]
+name = 'quasar-quality-gates'
+source = '.ai-rulez/domains/frontend/skills/quasar-quality-gates/SKILL.md'
+commit = ''
+digest = 'sha256:a7f8c8e21f3b6a62b1dd951f77b19c01233782daf3083794ee00240a655d80e2'
+view = 'role:reviewer'
+
+[[served]]
+name = 'skill-evolution'
+source = '.ai-rulez/skills/skill-evolution/SKILL.md'
+commit = ''
+digest = 'sha256:2a74a5d5a1b57da53b75d3bd376cd1033ea63b7c2e2ed9a78595d04b6a56a1d7'
+
+[[served]]
+name = 'skill-evolution'
+source = '.ai-rulez/skills/skill-evolution/SKILL.md'
+commit = ''
+digest = 'sha256:2a74a5d5a1b57da53b75d3bd376cd1033ea63b7c2e2ed9a78595d04b6a56a1d7'
+view = 'role:reviewer'
+
+[[served]]
+name = 'typecheck-all'
+source = ''
+commit = ''
+digest = 'sha256:1752c112ab33d339bce100a2d089f45784999b7cc3d555cdf7e74bbdee5aea10'
+
+[[served]]
+name = 'typecheck-all'
+source = ''
+commit = ''
+digest = 'sha256:1752c112ab33d339bce100a2d089f45784999b7cc3d555cdf7e74bbdee5aea10'
+view = 'role:reviewer'
+
+[[served]]
+name = 'web-backend-release'
+source = '.ai-rulez/domains/nixos-clan/skills/web-backend-release/SKILL.md'
+commit = ''
+digest = 'sha256:bbad20ff878025bc8dc22aa0450e99df298babb8ce406e41bd77c576a5021ff5'
+
+[[served]]
+name = 'web-backend-release'
+source = '.ai-rulez/domains/nixos-clan/skills/web-backend-release/SKILL.md'
+commit = ''
+digest = 'sha256:bbad20ff878025bc8dc22aa0450e99df298babb8ce406e41bd77c576a5021ff5'
+view = 'role:devops-clan'
+
+[[served]]
+name = 'web-backend-release'
+source = '.ai-rulez/domains/nixos-clan/skills/web-backend-release/SKILL.md'
+commit = ''
+digest = 'sha256:bbad20ff878025bc8dc22aa0450e99df298babb8ce406e41bd77c576a5021ff5'
+view = 'role:reviewer'
+
+[[item]]
+kind = 'check'
+id = 'composable-reuse'
+domain = 'frontend'
+path = 'domains/frontend/checks/composable-reuse.md'
+digest = 'sha256:8963c03e64e11069992a2e4570ea4bf9fc94cbbcfe9b98982cb5a1179eba54e3'
+
+[[item]]
+kind = 'check'
+id = 'form-submission'
+domain = 'frontend'
+path = 'domains/frontend/checks/form-submission.md'
+digest = 'sha256:f6cdbb911f4220da3bd1d9c113670d2e0e3f7fad1e60927a6f4e393b5dc31202'
+
+[[item]]
+kind = 'check'
+id = 'clan-wireguard-ports'
+domain = 'nixos-clan'
+path = 'domains/nixos-clan/checks/clan-wireguard-ports.md'
+digest = 'sha256:8eed93c55cd210aaefa35cff5106a6f70bab91c28407067ae89c0c2d59919274'
+
+[[item]]
+kind = 'command'
+id = 'lint-all'
+domain = 'frontend'
+path = 'domains/frontend/commands/lint-all.md'
+digest = 'sha256:78f9180f6d3015a6bc81dfc21f9c3c04b222e2732473c03f3d298e7403d087bf'
+
+[[item]]
+kind = 'command'
+id = 'typecheck-all'
+domain = 'frontend'
+path = 'domains/frontend/commands/typecheck-all.md'
+digest = 'sha256:7b4c6b8ac1b615f09c43f4e078726698cb6c6c7183e3ddbc2a55482b8ac4ad5e'
+
+[[item]]
+kind = 'command'
+id = 'clan-check'
+domain = 'nixos-clan'
+path = 'domains/nixos-clan/commands/clan-check.md'
+digest = 'sha256:a999e275666a16632d0c996dd03b171b3fc04c1960da90c6970b6a0594d53089'
+
+[[item]]
+kind = 'context'
+id = 'agents'
+path = 'context/agents.md'
+digest = 'sha256:028fb83ec0f14ad7296182af47ccf15104a210513c30123d007e13084235e72c'
+
+[[item]]
+kind = 'context'
+id = 'architecture'
+path = 'context/architecture.md'
+digest = 'sha256:67337e8afb054a7e75caf2a1bd043d05d30d4e027d4e19643cfaefe0fb7f75bb'
+
+[[item]]
+kind = 'role'
+id = 'devops-clan'
+digest = 'sha256:60490c99003194145989f856e556fab5e3cef5e54610ea386c779aadd5e3df9b'
+
+[[item]]
+kind = 'role'
+id = 'erp-architect'
+digest = 'sha256:74be7142c59886550afe7eaa8fae8a6010999b2129b64b87e0d01158e145f929'
+
+[[item]]
+kind = 'role'
+id = 'frontend-engineer'
+digest = 'sha256:d0117f0db73c28ad8a88aee97738137e087835803deac3926d1ce9c76bdfc71e'
+
+[[item]]
+kind = 'role'
+id = 'reviewer'
+digest = 'sha256:39e62683a3e9fccb90f53a5fcab5fce43f2040b338f4984ffde83eeab072df19'
+
+[[item]]
+kind = 'rule'
+id = 'code-quality'
+path = 'rules/code-quality.md'
+digest = 'sha256:f4771f0ec354b7587cf42027ed45ac4f823c0c88732e9293b1648094dbafef3b'
+
+[[item]]
+kind = 'rule'
+id = 'secure-secrets'
+path = 'rules/secure-secrets.md'
+digest = 'sha256:fef961d1a0b1bbdac822980bfcea9ad07a0694c131c36753f58d59aeb8bcd9a6'
+
+[[item]]
+kind = 'rule'
+id = 'erp-invariants'
+domain = 'erp-modules'
+path = 'domains/erp-modules/rules/erp-invariants.md'
+digest = 'sha256:08f407c6827a48de6858d9d2647b18a1a13c4a7065b50f2ce7a2247710bcab1e'
+
+[[item]]
+kind = 'rule'
+id = 'frontend-quasar'
+domain = 'frontend'
+path = 'domains/frontend/rules/frontend-quasar.md'
+digest = 'sha256:fb3fa9856f814cdaa892c3f36fc34f1f23914511077cf3f689d76d51fb78b9e9'
+
+[[item]]
+kind = 'rule'
+id = 'nixos-clan'
+domain = 'nixos-clan'
+path = 'domains/nixos-clan/rules/nixos-clan.md'
+digest = 'sha256:6a386619e76acf87df0f4a7c56622394f5fee29f6b8b79ca3a1bea93b85e7933'
+
+[[item]]
+kind = 'settings'
+id = 'claude-managed'
+digest = 'sha256:9aa0cb9647fa2e0f2b88997c189c14302e9f7b1f31f9f18dfafe85c1278b253b'
+
+[[item]]
+kind = 'settings'
+id = 'permissions'
+digest = 'sha256:b39c0110964ff82a425e2d253674e95ff7de0577422e032e160273ca45c9a483'
+
+[[item]]
+kind = 'skill'
+id = 'ai-rulez'
+path = 'skills/ai-rulez'
+digest = 'sha256:7311fcd74fa2384563a7e66d2d78e775d6fe2385714114ec04fa111c50cd9e29'
+
+[[item]]
+kind = 'skill'
+id = 'code-reviewer'
+path = 'skills/code-reviewer'
+digest = 'sha256:67cd967cfb947dfbc7231952856ec4a5e0a4b5961c2df9d988bb45976a44b92f'
+
+[[item]]
+kind = 'skill'
+id = 'fastfree-change-policy'
+path = 'skills/fastfree-change-policy'
+digest = 'sha256:1ddb8e628addb57737d2618ba19ea989f970b5cab1b8091d94adbfb90a88da79'
+
+[[item]]
+kind = 'skill'
+id = 'fastfree-guide'
+path = 'skills/fastfree-guide'
+digest = 'sha256:76ebb73f4dee1c41ab4e36f4bda8b8080b3284ec007400080761128a33a67e93'
+
+[[item]]
+kind = 'skill'
+id = 'fastfree-test'
+path = 'skills/fastfree-test'
+digest = 'sha256:549b4ff78b10b8eae006a2f0de5e1fc1a26bbac0e74461157c46825c438a0778'
+
+[[item]]
+kind = 'skill'
+id = 'herdr-conductor'
+path = 'skills/herdr-conductor'
+digest = 'sha256:02fe0c4929631fcbf3942b62021947441bbcaad75c1842736727c678db6ca5c5'
+
+[[item]]
+kind = 'skill'
+id = 'herdr-fanout'
+path = 'skills/herdr-fanout'
+digest = 'sha256:1c90201edc8bbd096263bad9b6e2e48903ca004c8664717fad394e3bcbb1d190'
+
+[[item]]
+kind = 'skill'
+id = 'herdr-review-loop'
+path = 'skills/herdr-review-loop'
+digest = 'sha256:ee3bdbbeda481c0ba512b58c357c80c5cd3aff3ecabff24e8173defa4e6f0c08'
+
+[[item]]
+kind = 'skill'
+id = 'skill-evolution'
+path = 'skills/skill-evolution'
+digest = 'sha256:ac2fa781b2149ed3466f342dcb7edd6506aeb4820a202b5241e15fccf6cef01d'
+
+[[item]]
+kind = 'skill'
+id = 'erp-domain-development'
+domain = 'erp-modules'
+path = 'domains/erp-modules/skills/erp-domain-development'
+digest = 'sha256:8201b80012accbeb58e9d321bf52204710fce32488350e9e95c944cd39cdb7c3'
+
+[[item]]
+kind = 'skill'
+id = 'android-build-release'
+domain = 'frontend'
+path = 'domains/frontend/skills/android-build-release'
+digest = 'sha256:2aff2401fce715bec506f00a87019664a17db22861c4a246e388e744a7e68954'
+
+[[item]]
+kind = 'skill'
+id = 'play-console-setup'
+domain = 'frontend'
+path = 'domains/frontend/skills/play-console-setup'
+digest = 'sha256:8e368bfdf1810385f7ba18ef64a6fab68ed489c7cc3702796608e6bf3bfd73ff'
+
+[[item]]
+kind = 'skill'
+id = 'play-publish-automation'
+domain = 'frontend'
+path = 'domains/frontend/skills/play-publish-automation'
+digest = 'sha256:d7e6947f538d03e1c329d12a0041dce58064cf333f46239ab64b9ffac868a9c5'
+
+[[item]]
+kind = 'skill'
+id = 'quasar-quality-gates'
+domain = 'frontend'
+path = 'domains/frontend/skills/quasar-quality-gates'
+digest = 'sha256:23bf4e3d9c0f7b9424a78c0f205cdd4ce07828cfcbc18fcaf2a42dcd45ce661f'
+
+[[item]]
+kind = 'skill'
+id = 'nixos-host-deploy'
+domain = 'nixos-clan'
+path = 'domains/nixos-clan/skills/nixos-host-deploy'
+digest = 'sha256:ed28c6eb0f73afb660e6480abd21b4ff738c7482cd06b88d13fd90b4ef9f0501'
+
+[[item]]
+kind = 'skill'
+id = 'web-backend-release'
+domain = 'nixos-clan'
+path = 'domains/nixos-clan/skills/web-backend-release'
+digest = 'sha256:0811a67e52fa91a9dd1efacbfb2c24a967a6c1a8a3a37c90f9266d89d1bac14b'
+
+[[item]]
+kind = 'verifier'
+id = 'clan-core-structure'
+digest = 'sha256:7ea645159ddd9c6bfabfc662ef1aeede3e7fcbd1ea95361cd4b9944e81383a52'
+
+[[item]]
+kind = 'verifier'
+id = 'clan-exists'
+digest = 'sha256:7c507e163b7e0f46ee739fc225d4e8ae3e6ec594673a52fa24f2eec568ab0973'
+
+[[item]]
+kind = 'verifier'
+id = 'flake-exists'
+digest = 'sha256:ddbfa4bfe627532fa10f622786556402b57ad67d0cf39287b36ab9c151eb2595'
+
+[[item]]
+kind = 'verifier'
+id = 'generated-sync'
+digest = 'sha256:adcc1082ed19cc501ecee5e4c4ee2a4ee0887fccc70be2bb96c7d219ba630106'
+
+[[item]]
+kind = 'verifier'
+id = 'nixos-no-plaintext-secrets'
+digest = 'sha256:9f9bb5dfeb8a7ee19daa3b1cc7c86e4de1b67551dae969c89f66bbf608dca4ca'
+
+[[output]]
+path = '.agents/mcp_config.json'
+digest = 'sha256:bbbe10e32d0c02fb05d85d189d465e0e212b737ed7fc44969a594ecc17e1e3ee'
+
+[[output]]
+path = '.agents/rules/erp-invariants.md'
+digest = 'sha256:776aac84d024cc26f2187875b7dfd1742359ddc27e29e0d62d94f667955ea5ea'
+
+[[output]]
+path = '.agents/rules/frontend-quasar.md'
+digest = 'sha256:a77060414656d3492bddaa4caee3a40d004cba7a9e1a50310a0dc3c18bc81dca'
+
+[[output]]
+path = '.agents/rules/nixos-clan.md'
+digest = 'sha256:6dc5ea127734832c6b6bb817fcff3656966e7383a586aa8802d3e21b147b2f3a'
+
+[[output]]
+path = '.agents/rules/secure-secrets.md'
+digest = 'sha256:2789d2c9618f3201a8e78349c038975428746441499f6a4ad00b76ffad5a5fb4'
+
+[[output]]
+path = '.agents/skills/ai-rulez/SKILL.md'
+digest = 'sha256:d779959a80da47f4588ff1b72d56b0dec4f647b3ab372f10fa5714ddc2f1f1a8'
+
+[[output]]
+path = '.agents/skills/android-build-release/SKILL.md'
+digest = 'sha256:a5b000c16b07039ef24e156144eeda878d01e0f99e1551ad5c65cb8aaab1885a'
+
+[[output]]
+path = '.agents/skills/clan-check/SKILL.md'
+digest = 'sha256:30bb466518d2dd69c4fb6973e434b8794758d03df4cce999890cc9b853a94c4c'
+
+[[output]]
+path = '.agents/skills/code-reviewer/SKILL.md'
+digest = 'sha256:26bd8a4c62dc1a5f0f85cc121f522c7528a7bc4b936ec4afd00f33cfe6dc4dd8'
+
+[[output]]
+path = '.agents/skills/erp-domain-development/SKILL.md'
+digest = 'sha256:69634f6d48d834c767b281ea7a3b37d99c71742723fcea34d62065512171e3ae'
+
+[[output]]
+path = '.agents/skills/fastfree-change-policy/SKILL.md'
+digest = 'sha256:4a8cac0d8fe1c7648403b9d1deaef55c2ac72f60976eee77f0dd4e17d70c8863'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/SKILL.md'
+digest = 'sha256:50c3ec443c69d9e48b2df1ff6357b7537462f710e49cbaa6012f5a69405f1333'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/references/android-play-guide.md'
+digest = 'sha256:5a022d3d84915a466c0a5080bc20821875e994e228ca2140b5042da5235e363c'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/references/architecture-deep-dive.md'
+digest = 'sha256:4c675225484c413b10976e508d64105e18ad8e993e55827a304596ae172053e4'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/references/backend-frappe-guide.md'
+digest = 'sha256:f110937d5a07f199b7c8f223862a2c23b70c1092604147f07ee86875b28a1964'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/references/clan-multi-transport.nix'
+digest = 'sha256:930395eaafb7ed4e4f2bf65207a88d9f9bb17098e01203841cc1ee091806704e'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/references/domain-service.ts'
+digest = 'sha256:12d2ea0814f6377aeee9d31cf0b7d9daca432e47e9823c3345e23e0cd3377aa7'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/references/flox-nix-clan-guide.md'
+digest = 'sha256:f9023c04bb1f1e878f30af5c6046aa0683b62cdb75f0f4da19b12053bc5ebfc8'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/references/herdr-agent-coordination.md'
+digest = 'sha256:a7f2affff2797cc73d1bdea0a3a4b2ccda368f6dd7126319da349c8993b7d019'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/references/lowcode-screen.vue'
+digest = 'sha256:42af35ffcb9a85d0075b7ba0caf136cdac55bde076a9793b09018d442234e2d1'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/scripts/check-quality.sh'
+digest = 'sha256:9a1cd5823bbb3c871d16b616f3f85fe0d6ae0ea51759b86bc53e95c4a46d7f50'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/scripts/clan-ops.sh'
+digest = 'sha256:2bd002c1beea081cbaea9b717404a030a87019132103d7f6fc0ec01f3e757f77'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/scripts/herdr-task.sh'
+digest = 'sha256:e576dbb2bdba024e5db34d55882f03eb541cc24939832f616cdd41923cdd7b79'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/scripts/sync-mcp.sh'
+digest = 'sha256:1b32fb49082a7de6d764ec90f8a46275652a2e3859c22fb9f7b0ecd89c6f5493'
+
+[[output]]
+path = '.agents/skills/fastfree-test/SKILL.md'
+digest = 'sha256:73fa2a07dcd7f2f7da89e3b62b25a5dbfc073453e1c2c177455864d890fd98fe'
+
+[[output]]
+path = '.agents/skills/herdr-conductor/SKILL.md'
+digest = 'sha256:f9d5fc09d66558ab53c08eed4aa758ea45239fb747857e7ac2fdbe2880f138f4'
+
+[[output]]
+path = '.agents/skills/herdr-conductor/references/TOOLS.md'
+digest = 'sha256:1e22afdcb60f7ff850b05ff3aed885fdb6f465451a8a778b3c6707e4125b2b3c'
+
+[[output]]
+path = '.agents/skills/herdr-conductor/references/approvals.md'
+digest = 'sha256:d2438151a1e616988828b0f7e4e85d939e21862775be411e21e472714523c0dd'
+
+[[output]]
+path = '.agents/skills/herdr-fanout/SKILL.md'
+digest = 'sha256:ade564294f3cc5c0a2f8bad5e874637c8d6b2ac46b7153aa370b80807c3cfd1b'
+
+[[output]]
+path = '.agents/skills/herdr-review-loop/SKILL.md'
+digest = 'sha256:5b88e4e850e91707b904ab21373dad58002e2814e692b6ac50664cdcede1e430'
+
+[[output]]
+path = '.agents/skills/lint-all/SKILL.md'
+digest = 'sha256:a1d0079aec1a25d01ea94159a4fc44c93218fc9e11efd78014bfd1c6f451ed61'
+
+[[output]]
+path = '.agents/skills/nixos-host-deploy/SKILL.md'
+digest = 'sha256:c90ae02df9b1509825b6427287cbfe6196d579b342f3c0bcb4eccc17808a77ec'
+
+[[output]]
+path = '.agents/skills/play-console-setup/SKILL.md'
+digest = 'sha256:c94880cca4045f66333a1cb4f2bee33020a55609e288c7ba9cdf15eb8e33a7e5'
+
+[[output]]
+path = '.agents/skills/play-publish-automation/SKILL.md'
+digest = 'sha256:2d4be68127a7b7d71bc4b5bb2ebc288445c10e0b7edcf25ac1b129e7d778af52'
+
+[[output]]
+path = '.agents/skills/quasar-quality-gates/SKILL.md'
+digest = 'sha256:e2e38fe086ff8d86d8d5e3a84bd5a7f3085832e21c3af8896d7b26b358c3950d'
+
+[[output]]
+path = '.agents/skills/skill-evolution/SKILL.md'
+digest = 'sha256:246cdedf652bdb97fa7e1ad1420edf02d3125b7024471e917ed23afc8655ba4a'
+
+[[output]]
+path = '.agents/skills/typecheck-all/SKILL.md'
+digest = 'sha256:06cd86a845688ffb368e8d399298aab34aa5c02fb4ccf5c5b7459ba04b0bdb9f'
+
+[[output]]
+path = '.agents/skills/web-backend-release/SKILL.md'
+digest = 'sha256:867a55ddf7d7d6cfb6b99dc9905fb67a5043aefd6e8f572db2643966cb7ec790'
+
+[[output]]
+path = '.ai-rulez/roles.json'
+digest = 'sha256:35a25f6f07d88b0e9d4d1c8e004ba4edff740361c8f7416d8232fd02c2049b3b'
+
+[[output]]
+path = '.claude/rules/erp-invariants.md'
+digest = 'sha256:a4ea248c0f63c68aac0f407ccf395ba1b5e195d7b79a5bcd4147bfdf4f099d5a'
+
+[[output]]
+path = '.claude/rules/frontend-quasar.md'
+digest = 'sha256:3f8aba98b597273ce64ce5e93a0b4b0d2039414e7071caa0439fac8678982dfe'
+
+[[output]]
+path = '.claude/rules/nixos-clan.md'
+digest = 'sha256:7ffecf5b2b030f47911ce018a8e5d9f37113a80760b0c7400b22c0fe531cdbfb'
+
+[[output]]
+path = '.claude/rules/secure-secrets.md'
+digest = 'sha256:f0385f7ac79e2e9ab43d8ba05a48c1cb475d19ba5c936161c97cd38e274999d0'
+
+[[output]]
+path = '.claude/skills/ai-rulez/SKILL.md'
+digest = 'sha256:3af90587d4befcd0300fb139584d49acac985fa8429b844ece6dfc94dc993ee1'
+
+[[output]]
+path = '.claude/skills/android-build-release/SKILL.md'
+digest = 'sha256:936b8d51febcf73888320f2dfb27a8ba9d5b272a461db2533eb1c3d2ff2ce4dc'
+
+[[output]]
+path = '.claude/skills/clan-check/SKILL.md'
+digest = 'sha256:cb044da96eb41c252beedb1dcc0bc1384a7f2b75bea824a30a47b081348c5c49'
+
+[[output]]
+path = '.claude/skills/code-reviewer/SKILL.md'
+digest = 'sha256:e859117657e518ef819109a66c080989346f7572e1c2020cc5b5a6040098d85f'
+
+[[output]]
+path = '.claude/skills/erp-domain-development/SKILL.md'
+digest = 'sha256:bf7e24a4f5be19b5feb5610b5ec98e67fc53de8cb678745e67e815b93ef4fd4d'
+
+[[output]]
+path = '.claude/skills/fastfree-change-policy/SKILL.md'
+digest = 'sha256:13f1a955e862e3d39f20d843dc73127bfd74e371192ca3a8cad785bf4c048fb2'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/SKILL.md'
+digest = 'sha256:070eac6ba11f1c30843d978d334cd93a39434267540affc864672d5f385df17d'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/references/android-play-guide.md'
+digest = 'sha256:9da496b901a15fb525617f839cf6b183ec5ebcbc4fea82c1e37665cbf64714f0'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/references/architecture-deep-dive.md'
+digest = 'sha256:4c5043af17a39ca467b9898c28172ec315668f641f53f299a816117288332c72'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/references/backend-frappe-guide.md'
+digest = 'sha256:b8c2b2cfc9c74ead2f2315dd5a896e207aa8516f053f5c8d4e98e6372db46993'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/references/clan-multi-transport.nix'
+digest = 'sha256:e739cc189efe647d8c7c8706999eb3de31d16481f71579a4ce5af436263ece3c'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/references/domain-service.ts'
+digest = 'sha256:12947b044fcb9577d6a33db8310287a43693400136795081ea4b0f0733ee7599'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/references/flox-nix-clan-guide.md'
+digest = 'sha256:87de5e05facd503e47ccf3adb076e5f6c2e2b367b9cbf5bfe8f97411ea6af35f'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/references/herdr-agent-coordination.md'
+digest = 'sha256:9639c81bd7c9ea1447c5cfc6103cf9bf8ee9222edd8317e9b3773a3c1b1acca8'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/references/lowcode-screen.vue'
+digest = 'sha256:e62d813d6a3f7dac8c4af44f8ead18bfccfc0417901de3d8b33996bbe9808b33'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/scripts/check-quality.sh'
+digest = 'sha256:d825df97654c606870d0b9ef0e97c7144f6492c52982e4df351a1e0815f706bd'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/scripts/clan-ops.sh'
+digest = 'sha256:96c960a2999abd37225abf5525e1041859e6dee3cd731b4cc00adf471c8819f7'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/scripts/herdr-task.sh'
+digest = 'sha256:aba14e4884072f95358b4f2804e65a0c28390e45a640529d80a23ddf9ca95c36'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/scripts/sync-mcp.sh'
+digest = 'sha256:55e5206d2435bbe3456e181f14ffb98d59463adda53065ccea793c57b4cebc90'
+
+[[output]]
+path = '.claude/skills/fastfree-test/SKILL.md'
+digest = 'sha256:1e6c146343d7e12c56b62e563b189068135039f8a67b6d22ba822706842830aa'
+
+[[output]]
+path = '.claude/skills/herdr-conductor/SKILL.md'
+digest = 'sha256:d5f1289980169daad9fa9bf56b307a02166b6d82f1dc664065ce3b9d7101d9f4'
+
+[[output]]
+path = '.claude/skills/herdr-conductor/references/TOOLS.md'
+digest = 'sha256:122696b5029dda15818b956920cccf178688604c43f5e1443af432153c86c37f'
+
+[[output]]
+path = '.claude/skills/herdr-conductor/references/approvals.md'
+digest = 'sha256:5f4a30d2f09a81fa4493939103941518627df129f4f0aa821d78f091e75ea226'
+
+[[output]]
+path = '.claude/skills/herdr-fanout/SKILL.md'
+digest = 'sha256:c4a623d5df2115c261ae5bf1306cae5ee00683290d00f97dac19dcfc691fa801'
+
+[[output]]
+path = '.claude/skills/herdr-review-loop/SKILL.md'
+digest = 'sha256:9ba1e94e8474b478f475a662becbd420d2eb621ba07af4e0ddbc96aacbc83647'
+
+[[output]]
+path = '.claude/skills/lint-all/SKILL.md'
+digest = 'sha256:88310aa19bf449797b2e9361dc7bd42d8568d3204b27b04b82cb71e2b38c66d7'
+
+[[output]]
+path = '.claude/skills/nixos-host-deploy/SKILL.md'
+digest = 'sha256:2d44a6afdbd498c7c068275303fee8920208641ab5bcb216417292a9a16ef90f'
+
+[[output]]
+path = '.claude/skills/play-console-setup/SKILL.md'
+digest = 'sha256:811e23c8767e77c13c6d0bb185ec1545ccac5f1609b84f026f4dfbc444763cc2'
+
+[[output]]
+path = '.claude/skills/play-publish-automation/SKILL.md'
+digest = 'sha256:00debcd7300555777bb13b1edf03d017ffa1482c1c488dedd1249254d71014be'
+
+[[output]]
+path = '.claude/skills/quasar-quality-gates/SKILL.md'
+digest = 'sha256:9c04392c15d23924ea91a027ad66ff2975810d5e2234895a7ce95af3f4d69486'
+
+[[output]]
+path = '.claude/skills/skill-evolution/SKILL.md'
+digest = 'sha256:fe551f2279ca27758a7ac8d5dd4b0d7d1a2163b28b891bba03ea0fac8cccbeb8'
+
+[[output]]
+path = '.claude/skills/typecheck-all/SKILL.md'
+digest = 'sha256:daef62bd0a74caae290be6f30889adb1e07344cfee92decec17431ff6697d4e7'
+
+[[output]]
+path = '.claude/skills/web-backend-release/SKILL.md'
+digest = 'sha256:66001539f901aab42a949bfdf790fa5e90bb427b9e9811e8d5cb7832c6cdf3df'
+
+[[output]]
+path = '.mcp.json'
+digest = 'sha256:b8b132ac37ffd15cb815b930c158a6e3d1f9fcd71f936b4d81927594e9ef6b0c'
+
+[[output]]
+path = '.opencode/commands/clan-check.md'
+digest = 'sha256:c01b81c691b60a2e589ba03ccc6c323503e91ee0ae7fc6ace443449eeed6ee67'
+
+[[output]]
+path = '.opencode/commands/lint-all.md'
+digest = 'sha256:5c589ca18149eeae320313ec1411873a3ef36bfe5fab76dc15db2aeac863d460'
+
+[[output]]
+path = '.opencode/commands/typecheck-all.md'
+digest = 'sha256:fa2a2f55fa04ed106e5aa167d99be9bedad6b5f36ef7ba9ae65e9b658599b611'
+
+[[output]]
+path = 'AGENTS.md'
+digest = 'sha256:7fa0fbbdd7978d25e8280f9a85df697a2a069f12ceec3f061c047fd82ff6fd2c'
+
+[[output]]
+path = 'CLAUDE.md'
+digest = 'sha256:71bc73c292a2adb25eabe7c0e6f22776193bef75dab71b286cd8e4f63b44bf69'
+
+[[output]]
+path = 'llms-full.txt'
+digest = 'sha256:79008a00ba9fbb99834584874d094a1d5c2f896b1975287e88b99fe140758adb'
+
+[[output]]
+path = 'llms.txt'
+digest = 'sha256:648a4413024876db84b6827e1a6059f0e6b36cbadecda4d57236502136800e39'

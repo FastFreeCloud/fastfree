@@ -1,0 +1,235 @@
+# AI-Rulez Configuration for FastFree Monorepo
+# Documentation: https://goldziher.github.io/ai-rulez/
+
+version = '5.0'
+name = 'fastfree'
+description = 'FastFree Sovereign Monorepo & Multi-Agent OS Ecosystem'
+presets = ['antigravity', 'opencode', 'claude', 'llms-txt']
+default = 'full'
+
+# ---------------------------------------------------------
+# MCP CONFIGURATION
+# ---------------------------------------------------------
+[mcp]
+self_server = true
+serve_skills = true
+discover_skills = 'repo'
+index_cache = 'user'
+self_server_command = ['npx', '-y', 'ai-rulez@latest', 'mcp', '--allow-any-dir', '--serve-skills']
+
+# ---------------------------------------------------------
+# LLMS.TXT (AI Context Indexing Standard)
+# ---------------------------------------------------------
+[llms_txt]
+full = true
+title = 'FastFree Monorepo'
+summary = 'FastFree Sovereign Multi-Agent Monorepo & OS Ecosystem'
+
+# ---------------------------------------------------------
+# PERMISSIONS (Cross-Harness Unified Security Boundary)
+# ---------------------------------------------------------
+[permissions]
+allow = [
+  "Bash(pnpm *)",
+  "Bash(npx *)",
+  "Bash(git status)",
+  "Bash(git diff *)",
+  "Bash(git log *)",
+  "Bash(git branch *)",
+  "Bash(clan machines *)",
+  "Read(./**)",
+  "WebFetch(domain:github.com)",
+  "WebFetch(domain:npmjs.org)"
+]
+ask = [
+  "Bash(git push *)",
+  "Bash(git commit *)",
+  "Bash(clan vars generate *)",
+  "Bash(clan vars set *)"
+]
+deny = [
+  "Bash(rm -rf *)",
+  "Bash(git reset --hard *)",
+  "Bash(git clean -fdx *)",
+  "Bash(clan vars show *)",
+  "Read(./.env*)",
+  "Read(./**/.env*)",
+  "Read(./**/*id_rsa*)",
+  "Read(./**/*id_ed25519*)",
+  "Read(./**/*.keystore)",
+  "Read(./**/*.jks)",
+  "Write(./.git/**)"
+]
+
+# ---------------------------------------------------------
+# GUARD (Automatic Protection for Generated Files)
+# ---------------------------------------------------------
+[guard]
+generated = true
+command = ["npx", "-y", "ai-rulez@latest"]
+
+# ---------------------------------------------------------
+# SESSION START (Automated Agent Workspace Provisioning)
+# ---------------------------------------------------------
+[session_start]
+generate = true
+when = "remote"
+mode = "auto"
+timeout = 120
+command = ["npx", "-y", "ai-rulez@latest"]
+prompt = true
+
+# ---------------------------------------------------------
+# CLAUDE MANAGED SETTINGS & LINT TRAPS
+# ---------------------------------------------------------
+[claude.settings.managed]
+env = { FASTFREE_SOVEREIGN = "1" }
+
+[lint.traps]
+extra_harnesses = ["cursor", "copilot"]
+max_table_age_days = 90
+
+# ---------------------------------------------------------
+# PROFILES (Project / Repo Variant Scope)
+# ---------------------------------------------------------
+[profiles]
+frontend = ['frontend', 'core-lowcode']
+erp = ['frontend', 'core-lowcode', 'erp-modules']
+os = ['nixos-clan']
+full = ['frontend', 'core-lowcode', 'erp-modules', 'nixos-clan']
+
+[[scopes]]
+path = 'packages'
+profile = 'erp'
+
+[[scopes]]
+path = 'apps/fastfree_panel'
+profile = 'frontend'
+
+[[scopes]]
+path = 'apps/fastfree_ledger'
+profile = 'erp'
+
+[[scopes]]
+path = 'apps/fastfree_os'
+profile = 'os'
+
+# ---------------------------------------------------------
+# ROLES MANIFEST & DEFINITIONS (Per-Agent Workflows)
+# ---------------------------------------------------------
+[role_manifest]
+enabled = true
+skill_mode_fallback = 'drop'
+
+# 1. Frontend Engineer
+[[roles]]
+name = 'frontend-engineer'
+description = 'Frontend developer building Vue 3, Quasar UI, and LowCode client apps'
+domains = ['frontend', 'core-lowcode']
+
+[roles.skills]
+exclude = ['nixos-clan/nixos-host-deploy', 'nixos-clan/web-backend-release']
+
+[roles.skill_mode]
+'frontend/quasar-quality-gates' = 'on'
+'frontend/play-console-setup' = 'user-invocable-only'
+'frontend/play-publish-automation' = 'user-invocable-only'
+'frontend/android-build-release' = 'user-invocable-only'
+
+[roles.delivery]
+'frontend/play-*' = 'served'
+'frontend/android-build-release' = 'served'
+
+[roles.match]
+groups = ['herdr:frontend', 'agent:frontend']
+
+# 2. ERP Architect
+[[roles]]
+name = 'erp-architect'
+extends = 'frontend-engineer'
+description = 'Enterprise domain architect responsible for Accounting, Sales, Inventory, and HR packages'
+domains = ['erp-modules']
+
+[roles.skill_mode]
+'erp-modules/erp-domain-development' = 'on'
+
+[roles.delivery]
+'erp-modules/erp-domain-development' = 'static'
+
+[roles.match]
+groups = ['herdr:erp', 'agent:erp']
+
+# 3. DevOps Clan Engineer
+[[roles]]
+name = 'devops-clan'
+description = 'Sovereign infrastructure engineer managing NixOS Clan, WireGuard mesh, and deployments'
+domains = ['nixos-clan']
+
+[roles.skills]
+exclude = ['frontend/quasar-quality-gates', 'erp-modules/erp-domain-development', 'frontend/play-console-setup']
+
+[roles.skill_mode]
+'nixos-clan/nixos-host-deploy' = 'on'
+'nixos-clan/web-backend-release' = 'on'
+
+[roles.delivery]
+'nixos-clan/nixos-host-deploy' = 'static'
+'nixos-clan/web-backend-release' = 'both'
+
+[roles.match]
+groups = ['herdr:devops', 'agent:nixos']
+
+# 4. Code Reviewer / Auditor
+[[roles]]
+name = 'reviewer'
+description = 'Adversarial code reviewer, quality auditor, and policy gatekeeper'
+domains = ['frontend', 'core-lowcode', 'erp-modules', 'nixos-clan']
+
+[roles.skill_mode]
+'code-reviewer' = 'on'
+'fastfree-change-policy' = 'on'
+'herdr-review-loop' = 'on'
+'skill-evolution' = 'on'
+'frontend/play-*' = 'off'
+'frontend/android-build-release' = 'off'
+
+[roles.delivery]
+'code-reviewer' = 'static'
+'fastfree-change-policy' = 'static'
+'herdr-review-loop' = 'static'
+
+[roles.match]
+groups = ['herdr:reviewer', 'agent:auditor']
+
+# ---------------------------------------------------------
+# DETERMINISTIC VERIFIERS (CI & Git Gates)
+# ---------------------------------------------------------
+[[verifiers]]
+name = 'flake-exists'
+type = 'file_exists'
+path = 'flake.nix'
+severity = 'error'
+
+[[verifiers]]
+name = 'clan-exists'
+type = 'file_exists'
+path = 'apps/fastfree_os/clan.nix'
+severity = 'error'
+
+[[verifiers]]
+name = 'clan-core-structure'
+type = 'file_exists'
+path = 'apps/fastfree_os/machines/client1/configuration.nix'
+severity = 'error'
+
+[[verifiers]]
+name = 'nixos-no-plaintext-secrets'
+type = 'forbid'
+glob = 'apps/fastfree_os/**/*.nix'
+pattern = '(?i)(initialPassword\s*=\s*"[^"]+"|password\s*=\s*"[a-zA-Z0-9_\-]{6,}")'
+severity = 'error'
+
+[[verifiers]]
+name = 'generated-sync'
+type = 'generated_in_sync'
+severity = 'error'

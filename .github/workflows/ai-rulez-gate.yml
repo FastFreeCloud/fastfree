@@ -1,0 +1,41 @@
+name: AI-Rulez Quality & Drift Gates
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  governance-gate:
+    name: AI-Rulez Verification & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify Generated Outputs Sync (Zero Drift)
+        run: npx -y ai-rulez@latest generate --check
+
+      - name: Verify Lockfile Status
+        run: npx -y ai-rulez@latest lock --check
+
+      - name: Run Strict Validation
+        run: npx -y ai-rulez@latest validate --strict --outputs
+
+      - name: Run Deterministic Verifiers
+        run: npx -y ai-rulez@latest verifiers run --strict
+
+      - name: AI-Rulez Health Diagnostics
+        run: npx -y ai-rulez@latest doctor

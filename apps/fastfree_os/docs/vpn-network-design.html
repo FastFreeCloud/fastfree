@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FastFree — عملاء شبكة الـ VPN</title>
+<style>
+  :root{
+    --bg:#080d16; --bg2:#101827; --bg3:#182131; --line:#243146;
+    --fg:#e8eef8; --fg2:#9db0c9; --fg3:#657a96;
+    --acc:#3ddcf0; --acc2:#8b5cff; --ok:#3ddc84; --warn:#ffb020; --err:#ff5c72;
+    --mono:'Cascadia Code','JetBrains Mono',Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--fg);font-family:'Segoe UI',Tahoma,system-ui,sans-serif;
+       line-height:1.85;padding-bottom:90px}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 22px}
+  header{background:radial-gradient(1200px 400px at 70% -10%,#1b2f4d 0%,#0d1420 60%,#080d16 100%);
+         border-bottom:1px solid var(--line);padding:50px 0 38px;margin-bottom:36px}
+  h1{font-size:2rem;letter-spacing:-.5px;margin-bottom:8px;
+     background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{color:var(--fg2);max-width:900px}
+  h2{font-size:1.4rem;margin:50px 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line);
+     display:flex;align-items:center;gap:12px}
+  h2 .n{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#051018;font-weight:800;
+        font-size:.8rem;width:28px;height:28px;border-radius:9px;display:inline-flex;
+        align-items:center;justify-content:center;flex:none}
+  h2.crit{border-bottom-color:var(--err)} h2.crit .n{background:linear-gradient(135deg,#ff5c72,#ff8f5c)}
+  h3{font-size:1.05rem;margin:26px 0 10px;color:var(--acc)}
+  p{color:var(--fg2);margin:9px 0}
+  p strong,li strong,b{color:var(--fg)}
+  ul,ol{margin:9px 22px 9px 0;color:var(--fg2)} li{margin:5px 0}
+  code{font-family:var(--mono);background:#0c1420;border:1px solid var(--line);border-radius:6px;
+       padding:1.5px 6px;font-size:.85em;color:var(--acc);direction:ltr;display:inline-block}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.87rem;background:var(--bg2);
+        border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th{background:#17202e;color:var(--fg2);text-align:right;padding:11px 13px;font-weight:700;
+     font-size:.79rem;border-bottom:1px solid var(--line)}
+  td{padding:10px 13px;border-bottom:1px solid #1a2333;color:var(--fg2);vertical-align:top}
+  tr:last-child td{border-bottom:none} tr:hover td{background:#131c29}
+  .note{border-right:4px solid var(--acc);background:#0d1a27;padding:15px 19px;border-radius:0 10px 10px 0;margin:16px 0}
+  .note.warn{border-color:var(--warn);background:#1c1708}
+  .note.err{border-color:var(--err);background:#1d0c11}
+  .note.ok{border-color:var(--ok);background:#0a1b12}
+  .note.big{font-size:1rem}
+  .yes{color:var(--ok);font-weight:700} .no{color:var(--err);font-weight:700}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+  @media(max-width:850px){.grid2,.grid3{grid-template-columns:1fr}}
+  .box{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .box h4{color:var(--acc);margin:0 0 6px;font-size:.97rem}
+  .box p{font-size:.87rem;margin:5px 0}
+  .badge{display:inline-block;padding:2px 9px;border-radius:6px;font-size:.72rem;font-weight:700;white-space:nowrap}
+  .b-ok{background:#0f2a1a;color:var(--ok);border:1px solid #1d5c39}
+  .b-no{background:#2a1016;color:var(--err);border:1px solid #6b2530}
+  .b-warn{background:#2a2210;color:var(--warn);border:1px solid #6b5623}
+  .term{background:var(--bg2);border:1px solid var(--line);border-right:4px solid var(--acc2);
+        border-radius:0 12px 12px 0;padding:14px 18px;margin:10px 0}
+  .term>b{color:var(--acc2);display:block;margin-bottom:3px;font-size:1rem}
+  .term p{margin:0;font-size:.89rem}
+  .term p b{display:inline;margin:0}
+  .legend{display:flex;gap:20px;flex-wrap:wrap;margin:14px 0;font-size:.85rem;color:var(--fg2)}
+  .legend i{width:13px;height:13px;border-radius:4px;display:inline-block;margin-left:6px;vertical-align:-1px}
+  .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+  @media(max-width:850px){.kpi{grid-template-columns:repeat(2,1fr)}}
+  .kpi div{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:15px;text-align:center}
+  .kpi b{display:block;font-size:1.5rem;color:var(--acc);font-family:var(--mono)}
+  .kpi span{font-size:.75rem;color:var(--fg3)}
+  .step{display:flex;gap:16px;margin:18px 0;align-items:flex-start}
+  .step .num{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#051018;font-weight:800;
+             width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex:none}
+  .step .bd{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:15px 18px}
+  .step .bd p{margin:5px 0}
+  .diagram{background:#060b12;border:1px solid var(--line);border-radius:14px;padding:22px 18px;
+           overflow-x:auto;direction:ltr;text-align:left}
+  .diagram pre{background:none;border:none;padding:0;margin:0;font-family:var(--mono);
+               font-size:.8rem;line-height:1.7;color:#c9d7e8}
+  .toc{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:18px 22px}
+  .toc ol{margin:8px 0 0 18px;padding:0;columns:2;column-gap:34px}
+  .toc li{margin:3px 0;font-size:.88rem}
+  .toc a{color:var(--acc);text-decoration:none} .toc a:hover{text-decoration:underline}
+  .toc .crit a{color:var(--err);font-weight:700}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:var(--fg3);font-size:.8rem}
+  .layer{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.7rem;font-weight:700;
+         border:1px solid;vertical-align:2px;white-space:nowrap}
+  .layer-live{background:#0f2a1a;color:var(--ok);border-color:#1d5c39}
+  .layer-plan{background:#2a2210;color:var(--warn);border-color:#6b5623}
+  .client{background:var(--bg3);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0;
+          border-top:4px solid var(--tone)}
+  .client h3{margin:0 0 2px;color:var(--fg);font-size:1.1rem}
+  .client .role{color:var(--tone);font-weight:700;font-size:.85rem}
+  .client dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:14px 0 0;font-size:.85rem}
+  .client dt{color:var(--fg3);white-space:nowrap}
+  .client dd{margin:0;color:var(--fg2);font-family:var(--mono);font-size:.83rem}
+  .devlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px;margin:12px 0 4px}
+  .devlist div{background:#0c1420;border:1px solid var(--line);border-radius:9px;padding:8px 10px;
+               font-family:var(--mono);font-size:.8rem;color:var(--fg2);direction:ltr;text-align:left}
+  .devlist b{color:var(--acc);display:block;font-size:.74rem;font-weight:600}
+  .cheat{background:#0c1420;border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:16px 0}
+  .cheat div{font-family:var(--mono);font-size:.84rem;color:var(--fg2);padding:4px 0;
+             border-bottom:1px dashed #1d2839;direction:rtl;text-align:right}
+  .cheat div:last-child{border-bottom:none}
+  .cheat span{color:var(--acc)}
+  .navlink{display:inline-block;background:var(--bg2);border:1px solid var(--line);border-radius:9px;
+           padding:7px 14px;margin:0 0 0 8px;font-size:.85rem;text-decoration:none;color:var(--acc)}
+  .navlink:hover{border-color:var(--acc)}
+  table.kv td:first-child{white-space:nowrap;color:var(--fg3);width:210px}
+  table.kv td:nth-child(2){font-family:var(--mono);font-size:.83rem}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>FastFree — عملاء شبكة الـ VPN</h1>
+    <p>الملف الأول: <b>الـ 11 عميل</b> — لكل عميل جدول مستقل فيه جهازه وشبكته وأجهزته الخمسة وعناوينها ومنافذها وإيه اللي يوصله. <b>الـ VPS هو العميل 1</b> وله زي كل عميل 5 أجهزة، و<b>هو اللي بيوصّل الـ 10 عملاء كلهم</b>.</p>
+    <a class="navlink" href="vpn-network-architecture.html">الملف الثاني: البنية والمخططات والجداول ←</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+
+<div class="note big ok">
+  <b>الصورة في 30 ثانية:</b>
+  <b>11 عميل</b> · <b>5 أجهزة</b> لكل عميل (موبايل/لابتوب/تابلت) = <b>55 جهاز</b>.
+  كل عميل = <b>جهاز Clan واحد</b> (بوابته) + 5 أجهزة · والـ <b>VPS هو العميل 1</b>.
+  <br>الـ VPS هو <b>الوحيد اللي عنده IP عام</b>، فهو <b>يوصّل كل الـ 55 جهاز</b> — ويوصّل الـ 10 عملاء كلهم.
+  وكل عميل (غير الـ VPS) <b>معزول</b> عن التاني: جهازه بيوصل بوابته والـ VPS بس.
+</div>
+
+<div class="cheat">
+  <div><span>اسم العميل</span> X &nbsp;→&nbsp; شبكته <b>10.0.X.0/24</b></div>
+  <div><span>بوابة العميل</span> X &nbsp;→&nbsp; <b>10.0.X.254</b></div>
+  <div><span>جهاز رقم</span> Y <span>لعميل</span> X &nbsp;→&nbsp; <b>10.0.X.Y</b></div>
+  <div><span>رابط العميل</span> X <span>مع الـ VPS</span> &nbsp;→&nbsp; <b>10.0.0.(4X-8)/30</b> &nbsp;·&nbsp; منفذ <b>51831+(X-2)</b></div>
+  <div><span>instance</span> شبكة الأجهزة &nbsp;→&nbsp; <b>clientX-devices</b> &nbsp;·&nbsp; instance الرابط &nbsp;→&nbsp; <b>clientX-link</b></div>
+  <div><span>منفذ شبكات الأجهزة</span> &nbsp;→&nbsp; <b>51821</b> (نفس الرقم على كل بوابة)</div>
+  <div><span>الـ VPS</span> (العميل 1) &nbsp;→&nbsp; <b>10.0.1.254</b> هو نفسه · <b>10.0.0.1</b> على رابط العميل 2</div>
+</div>
+
+<h2 id="s1"><span class="n">1</span>الـ 11 عميل في نظرة واحدة</h2>
+
+<table>
+<thead><tr>
+  <th>العميل</th><th>الدور</th><th>جهازه (البوابة)</th><th>عام؟</th>
+  <th>شبكة أجهزته</th><th>البوابة</th><th>منفذ الأجهزة</th>
+  <th>رابطه مع الـ VPS</th><th>يوصل لـ</th>
+</tr></thead>
+<tbody>
+<tr><td><b>client1</b></td><td>المركز</td><td>VPS</td><td><span class="yes">✅ عام</span></td><td><code>10.0.1.0/24</code></td><td><code>10.0.1.254</code></td><td>51821</td><td>— (هو نفسه)</td><td>كل الـ 55 جهاز + الـ 10 عملاء</td></tr>
+<tr><td><b>client2</b></td><td>عميل 2</td><td>جهاز Clan (box) عند العميل</td><td><span class="no">✗ LAN</span></td><td><code>10.0.2.0/24</code></td><td><code>10.0.2.254</code></td><td>51821</td><td><code>10.0.0.0/30</code> · <code>51831</code></td><td>أجهزته + الـ VPS</td></tr>
+<tr><td><b>client3</b></td><td>عميل 3</td><td>جهاز Clan (box) عند العميل</td><td><span class="no">✗ LAN</span></td><td><code>10.0.3.0/24</code></td><td><code>10.0.3.254</code></td><td>51821</td><td><code>10.0.0.4/30</code> · <code>51832</code></td><td>أجهزته + الـ VPS</td></tr>
+<tr><td><b>client4</b></td><td>عميل 4</td><td>جهاز Clan (box) عند العميل</td><td><span class="no">✗ LAN</span></td><td><code>10.0.4.0/24</code></td><td><code>10.0.4.254</code></td><td>51821</td><td><code>10.0.0.8/30</code> · <code>51833</code></td><td>أجهزته + الـ VPS</td></tr>
+<tr><td><b>client5</b></td><td>عميل 5</td><td>جهاز Clan (box) عند العميل</td><td><span class="no">✗ LAN</span></td><td><code>10.0.5.0/24</code></td><td><code>10.0.5.254</code></td><td>51821</td><td><code>10.0.0.12/30</code> · <code>51834</code></td><td>أجهزته + الـ VPS</td></tr>
+<tr><td><b>client6</b></td><td>عميل 6</td><td>جهاز Clan (box) عند العميل</td><td><span class="no">✗ LAN</span></td><td><code>10.0.6.0/24</code></td><td><code>10.0.6.254</code></td><td>51821</td><td><code>10.0.0.16/30</code> · <code>51835</code></td><td>أجهزته + الـ VPS</td></tr>
+<tr><td><b>client7</b></td><td>عميل 7</td><td>جهاز Clan (box) عند العميل</td><td><span class="no">✗ LAN</span></td><td><code>10.0.7.0/24</code></td><td><code>10.0.7.254</code></td><td>51821</td><td><code>10.0.0.20/30</code> · <code>51836</code></td><td>أجهزته + الـ VPS</td></tr>
+<tr><td><b>client8</b></td><td>عميل 8</td><td>جهاز Clan (box) عند العميل</td><td><span class="no">✗ LAN</span></td><td><code>10.0.8.0/24</code></td><td><code>10.0.8.254</code></td><td>51821</td><td><code>10.0.0.24/30</code> · <code>51837</code></td><td>أجهزته + الـ VPS</td></tr>
+<tr><td><b>client9</b></td><td>عميل 9</td><td>جهاز Clan (box) عند العميل</td><td><span class="no">✗ LAN</span></td><td><code>10.0.9.0/24</code></td><td><code>10.0.9.254</code></td><td>51821</td><td><code>10.0.0.28/30</code> · <code>51838</code></td><td>أجهزته + الـ VPS</td></tr>
+<tr><td><b>client10</b></td><td>عميل 10</td><td>جهاز Clan (box) عند العميل</td><td><span class="no">✗ LAN</span></td><td><code>10.0.10.0/24</code></td><td><code>10.0.10.254</code></td><td>51821</td><td><code>10.0.0.32/30</code> · <code>51839</code></td><td>أجهزته + الـ VPS</td></tr>
+<tr><td><b>client11</b></td><td>عميل 11</td><td>جهاز Clan (box) عند العميل</td><td><span class="no">✗ LAN</span></td><td><code>10.0.11.0/24</code></td><td><code>10.0.11.254</code></td><td>51821</td><td><code>10.0.0.36/30</code> · <code>51840</code></td><td>أجهزته + الـ VPS</td></tr>
+</tbody>
+</table>
+
+<div class="kpi">
+  <div><b>11</b><span>عميل (10 عملاء + الـ VPS)</span></div>
+  <div><b>55</b><span>جهاز (5 لكل عميل)</span></div>
+  <div><b>21</b><span>instance (11 شبكة أجهزة + 10 روابط)</span></div>
+  <div><b>10.0.X.Y</b><span>نمط العنونة</span></div>
+</div>
+
+<h2 id="s2"><span class="n">2</span>جدول كل عميل</h2>
+
+<p>تحت كل عميل: <b>جدول بيانات البوابة</b> (شبكته، بوابته، instance، المنافذ، AllowedIPs)
+   و<b>جدول أجهزته الخمسة</b> (الاسم، الـ IP، الـ Endpoint، واللي يوصله).
+   الأرقام كلها <b>محسوبة</b> من القاعدة — لو غيّرت أي رقم في البداية، كل الجداول بتتحدّث.</p>
+
+<h3 id="c1">client1 — الـ VPS — المركز</h3>
+<div class="client" style="--tone:#ffb020">
+<h3>VPS — <code>fastfree.cloud</code></h3>
+<div class="role">المركز · عام · بيوصل كل الـ 55 جهاز</div>
+</div>
+<table class="kv">
+<tr><td>الجهاز (بوابته)</td><td>VPS — <code>fastfree.cloud</code></td></tr>
+<tr><td>عنوان عام</td><td><code>76.13.51.10</code> — الوحيد في الشبكة كلها</td></tr>
+<tr><td>شبكة أجهزته</td><td><code>10.0.1.0/24</code></td></tr>
+<tr><td>بوابة شبكته</td><td><code>10.0.1.254</code> (على جهازه هو)</td></tr>
+<tr><td>instance الأجهزة</td><td><code>client1-devices</code></td></tr>
+<tr><td>منفذ الأجهزة</td><td><code>51821</code></td></tr>
+<tr><td>Endpoint الأجهزة</td><td><code>fastfree.cloud:51821</code></td></tr>
+<tr><td>رابطه مع الـ VPS</td><td>— (هو الـ VPS)</td></tr>
+<tr><td>instance الرابط</td><td>—</td></tr>
+<tr><td>منفذ الرابط</td><td>—</td></tr>
+<tr><td>AllowedIPs الجهاز</td><td><code>10.0.1.0/24</code> (شبكته + البوابة 10.0.1.254)</td></tr>
+<tr><td>يوصل لـ</td><td>بوابته (= هو نفسه) + خدمات الـ VPS — خطوة واحدة</td></tr>
+</table>
+<h4 style="margin:14px 0 0;color:var(--acc);font-size:.95rem">أجهزته الخمسة</h4>
+<div class="devlist">
+<div><b>client1_d_1</b>10.0.1.1</div>
+<div><b>client1_d_2</b>10.0.1.2</div>
+<div><b>client1_d_3</b>10.0.1.3</div>
+<div><b>client1_d_4</b>10.0.1.4</div>
+<div><b>client1_d_5</b>10.0.1.5</div>
+</div>
+<table><thead><tr><th>الجهاز</th><th>الـ IP</th><th>Endpoint</th><th>Port</th><th>يقدر يوصل لـ</th></tr></thead><tbody>
+<tr><td><code>client1_d_1</code></td><td><code>10.0.1.1</code></td><td rowspan="5"><code>fastfree.cloud:51821</code></td><td rowspan="5">51821</td><td rowspan="5"><code>10.0.1.254</code> (= الـ VPS) + خدمات الـ VPS</td></tr>
+<tr><td><code>client1_d_2</code></td><td><code>10.0.1.2</code></td></tr>
+<tr><td><code>client1_d_3</code></td><td><code>10.0.1.3</code></td></tr>
+<tr><td><code>client1_d_4</code></td><td><code>10.0.1.4</code></td></tr>
+<tr><td><code>client1_d_5</code></td><td><code>10.0.1.5</code></td></tr>
+</tbody></table>
+<h3 id="c2">client2 — عميل 2 — موقع/منشأة (الاسم يُملأ)</h3>
+<div class="client" style="--tone:#4ea8ff">
+<h3>جهاز Clan (box) عند العميل — <code>client2.fastfree.local</code></h3>
+<div class="role">عميل 2 · داخل LAN · 5 أجهزة</div>
+</div>
+<table class="kv">
+<tr><td>الجهاز (بوابته)</td><td>جهاز Clan (box) عند العميل — <code>client2.fastfree.local</code></td></tr>
+<tr><td>عنوان عام</td><td>✗ مفيش — والـ VPS هو اللي بيوصّله</td></tr>
+<tr><td>شبكة أجهزته</td><td><code>10.0.2.0/24</code></td></tr>
+<tr><td>بوابة شبكته</td><td><code>10.0.2.254</code> (على جهازه هو)</td></tr>
+<tr><td>instance الأجهزة</td><td><code>client2-devices</code></td></tr>
+<tr><td>منفذ الأجهزة</td><td><code>51821</code></td></tr>
+<tr><td>Endpoint الأجهزة</td><td><code>client2.fastfree.local:51821</code></td></tr>
+<tr><td>رابطه مع الـ VPS</td><td><code>10.0.0.0/30</code> — VPS: <code>10.0.0.1</code> · العميل: <code>10.0.0.2</code></td></tr>
+<tr><td>instance الرابط</td><td><code>client2-link</code></td></tr>
+<tr><td>منفذ الرابط</td><td><code>51831</code> (على الـ VPS)</td></tr>
+<tr><td>AllowedIPs الجهاز</td><td><code>10.0.2.0/24</code> + <code>10.0.0.1/32</code> (شبكة عميله + عنوان الـ VPS بس)</td></tr>
+<tr><td>يوصل لـ</td><td><code>10.0.2.254</code> (بوابته) + <code>10.0.0.1</code> (الـ VPS) — ومفيش غير كده</td></tr>
+</table>
+<h4 style="margin:14px 0 0;color:var(--acc);font-size:.95rem">أجهزته الخمسة</h4>
+<div class="devlist">
+<div><b>client2_d_1</b>10.0.2.1</div>
+<div><b>client2_d_2</b>10.0.2.2</div>
+<div><b>client2_d_3</b>10.0.2.3</div>
+<div><b>client2_d_4</b>10.0.2.4</div>
+<div><b>client2_d_5</b>10.0.2.5</div>
+</div>
+<table><thead><tr><th>الجهاز</th><th>الـ IP</th><th>Endpoint</th><th>Port</th><th>يقدر يوصل لـ</th></tr></thead><tbody>
+<tr><td><code>client2_d_1</code></td><td><code>10.0.2.1</code></td><td rowspan="5"><code>client2.fastfree.local:51821</code></td><td rowspan="5">51821</td><td rowspan="5"><code>10.0.2.254</code> + <code>10.0.0.1</code> (الـ VPS) — لا غير</td></tr>
+<tr><td><code>client2_d_2</code></td><td><code>10.0.2.2</code></td></tr>
+<tr><td><code>client2_d_3</code></td><td><code>10.0.2.3</code></td></tr>
+<tr><td><code>client2_d_4</code></td><td><code>10.0.2.4</code></td></tr>
+<tr><td><code>client2_d_5</code></td><td><code>10.0.2.5</code></td></tr>
+</tbody></table>
+<h3 id="c3">client3 — عميل 3 — موقع/منشأة (الاسم يُملأ)</h3>
+<div class="client" style="--tone:#3ddc84">
+<h3>جهاز Clan (box) عند العميل — <code>client3.fastfree.local</code></h3>
+<div class="role">عميل 3 · داخل LAN · 5 أجهزة</div>
+</div>
+<table class="kv">
+<tr><td>الجهاز (بوابته)</td><td>جهاز Clan (box) عند العميل — <code>client3.fastfree.local</code></td></tr>
+<tr><td>عنوان عام</td><td>✗ مفيش — والـ VPS هو اللي بيوصّله</td></tr>
+<tr><td>شبكة أجهزته</td><td><code>10.0.3.0/24</code></td></tr>
+<tr><td>بوابة شبكته</td><td><code>10.0.3.254</code> (على جهازه هو)</td></tr>
+<tr><td>instance الأجهزة</td><td><code>client3-devices</code></td></tr>
+<tr><td>منفذ الأجهزة</td><td><code>51821</code></td></tr>
+<tr><td>Endpoint الأجهزة</td><td><code>client3.fastfree.local:51821</code></td></tr>
+<tr><td>رابطه مع الـ VPS</td><td><code>10.0.0.4/30</code> — VPS: <code>10.0.0.5</code> · العميل: <code>10.0.0.6</code></td></tr>
+<tr><td>instance الرابط</td><td><code>client3-link</code></td></tr>
+<tr><td>منفذ الرابط</td><td><code>51832</code> (على الـ VPS)</td></tr>
+<tr><td>AllowedIPs الجهاز</td><td><code>10.0.3.0/24</code> + <code>10.0.0.5/32</code> (شبكة عميله + عنوان الـ VPS بس)</td></tr>
+<tr><td>يوصل لـ</td><td><code>10.0.3.254</code> (بوابته) + <code>10.0.0.5</code> (الـ VPS) — ومفيش غير كده</td></tr>
+</table>
+<h4 style="margin:14px 0 0;color:var(--acc);font-size:.95rem">أجهزته الخمسة</h4>
+<div class="devlist">
+<div><b>client3_d_1</b>10.0.3.1</div>
+<div><b>client3_d_2</b>10.0.3.2</div>
+<div><b>client3_d_3</b>10.0.3.3</div>
+<div><b>client3_d_4</b>10.0.3.4</div>
+<div><b>client3_d_5</b>10.0.3.5</div>
+</div>
+<table><thead><tr><th>الجهاز</th><th>الـ IP</th><th>Endpoint</th><th>Port</th><th>يقدر يوصل لـ</th></tr></thead><tbody>
+<tr><td><code>client3_d_1</code></td><td><code>10.0.3.1</code></td><td rowspan="5"><code>client3.fastfree.local:51821</code></td><td rowspan="5">51821</td><td rowspan="5"><code>10.0.3.254</code> + <code>10.0.0.5</code> (الـ VPS) — لا غير</td></tr>
+<tr><td><code>client3_d_2</code></td><td><code>10.0.3.2</code></td></tr>
+<tr><td><code>client3_d_3</code></td><td><code>10.0.3.3</code></td></tr>
+<tr><td><code>client3_d_4</code></td><td><code>10.0.3.4</code></td></tr>
+<tr><td><code>client3_d_5</code></td><td><code>10.0.3.5</code></td></tr>
+</tbody></table>
+<h3 id="c4">client4 — عميل 4 — موقع/منشأة (الاسم يُملأ)</h3>
+<div class="client" style="--tone:#4ea8ff">
+<h3>جهاز Clan (box) عند العميل — <code>client4.fastfree.local</code></h3>
+<div class="role">عميل 4 · داخل LAN · 5 أجهزة</div>
+</div>
+<table class="kv">
+<tr><td>الجهاز (بوابته)</td><td>جهاز Clan (box) عند العميل — <code>client4.fastfree.local</code></td></tr>
+<tr><td>عنوان عام</td><td>✗ مفيش — والـ VPS هو اللي بيوصّله</td></tr>
+<tr><td>شبكة أجهزته</td><td><code>10.0.4.0/24</code></td></tr>
+<tr><td>بوابة شبكته</td><td><code>10.0.4.254</code> (على جهازه هو)</td></tr>
+<tr><td>instance الأجهزة</td><td><code>client4-devices</code></td></tr>
+<tr><td>منفذ الأجهزة</td><td><code>51821</code></td></tr>
+<tr><td>Endpoint الأجهزة</td><td><code>client4.fastfree.local:51821</code></td></tr>
+<tr><td>رابطه مع الـ VPS</td><td><code>10.0.0.8/30</code> — VPS: <code>10.0.0.9</code> · العميل: <code>10.0.0.10</code></td></tr>
+<tr><td>instance الرابط</td><td><code>client4-link</code></td></tr>
+<tr><td>منفذ الرابط</td><td><code>51833</code> (على الـ VPS)</td></tr>
+<tr><td>AllowedIPs الجهاز</td><td><code>10.0.4.0/24</code> + <code>10.0.0.9/32</code> (شبكة عميله + عنوان الـ VPS بس)</td></tr>
+<tr><td>يوصل لـ</td><td><code>10.0.4.254</code> (بوابته) + <code>10.0.0.9</code> (الـ VPS) — ومفيش غير كده</td></tr>
+</table>
+<h4 style="margin:14px 0 0;color:var(--acc);font-size:.95rem">أجهزته الخمسة</h4>
+<div class="devlist">
+<div><b>client4_d_1</b>10.0.4.1</div>
+<div><b>client4_d_2</b>10.0.4.2</div>
+<div><b>client4_d_3</b>10.0.4.3</div>
+<div><b>client4_d_4</b>10.0.4.4</div>
+<div><b>client4_d_5</b>10.0.4.5</div>
+</div>
+<table><thead><tr><th>الجهاز</th><th>الـ IP</th><th>Endpoint</th><th>Port</th><th>يقدر يوصل لـ</th></tr></thead><tbody>
+<tr><td><code>client4_d_1</code></td><td><code>10.0.4.1</code></td><td rowspan="5"><code>client4.fastfree.local:51821</code></td><td rowspan="5">51821</td><td rowspan="5"><code>10.0.4.254</code> + <code>10.0.0.9</code> (الـ VPS) — لا غير</td></tr>
+<tr><td><code>client4_d_2</code></td><td><code>10.0.4.2</code></td></tr>
+<tr><td><code>client4_d_3</code></td><td><code>10.0.4.3</code></td></tr>
+<tr><td><code>client4_d_4</code></td><td><code>10.0.4.4</code></td></tr>
+<tr><td><code>client4_d_5</code></td><td><code>10.0.4.5</code></td></tr>
+</tbody></table>
+<h3 id="c5">client5 — عميل 5 — موقع/منشأة (الاسم يُملأ)</h3>
+<div class="client" style="--tone:#3ddc84">
+<h3>جهاز Clan (box) عند العميل — <code>client5.fastfree.local</code></h3>
+<div class="role">عميل 5 · داخل LAN · 5 أجهزة</div>
+</div>
+<table class="kv">
+<tr><td>الجهاز (بوابته)</td><td>جهاز Clan (box) عند العميل — <code>client5.fastfree.local</code></td></tr>
+<tr><td>عنوان عام</td><td>✗ مفيش — والـ VPS هو اللي بيوصّله</td></tr>
+<tr><td>شبكة أجهزته</td><td><code>10.0.5.0/24</code></td></tr>
+<tr><td>بوابة شبكته</td><td><code>10.0.5.254</code> (على جهازه هو)</td></tr>
+<tr><td>instance الأجهزة</td><td><code>client5-devices</code></td></tr>
+<tr><td>منفذ الأجهزة</td><td><code>51821</code></td></tr>
+<tr><td>Endpoint الأجهزة</td><td><code>client5.fastfree.local:51821</code></td></tr>
+<tr><td>رابطه مع الـ VPS</td><td><code>10.0.0.12/30</code> — VPS: <code>10.0.0.13</code> · العميل: <code>10.0.0.14</code></td></tr>
+<tr><td>instance الرابط</td><td><code>client5-link</code></td></tr>
+<tr><td>منفذ الرابط</td><td><code>51834</code> (على الـ VPS)</td></tr>
+<tr><td>AllowedIPs الجهاز</td><td><code>10.0.5.0/24</code> + <code>10.0.0.13/32</code> (شبكة عميله + عنوان الـ VPS بس)</td></tr>
+<tr><td>يوصل لـ</td><td><code>10.0.5.254</code> (بوابته) + <code>10.0.0.13</code> (الـ VPS) — ومفيش غير كده</td></tr>
+</table>
+<h4 style="margin:14px 0 0;color:var(--acc);font-size:.95rem">أجهزته الخمسة</h4>
+<div class="devlist">
+<div><b>client5_d_1</b>10.0.5.1</div>
+<div><b>client5_d_2</b>10.0.5.2</div>
+<div><b>client5_d_3</b>10.0.5.3</div>
+<div><b>client5_d_4</b>10.0.5.4</div>
+<div><b>client5_d_5</b>10.0.5.5</div>
+</div>
+<table><thead><tr><th>الجهاز</th><th>الـ IP</th><th>Endpoint</th><th>Port</th><th>يقدر يوصل لـ</th></tr></thead><tbody>
+<tr><td><code>client5_d_1</code></td><td><code>10.0.5.1</code></td><td rowspan="5"><code>client5.fastfree.local:51821</code></td><td rowspan="5">51821</td><td rowspan="5"><code>10.0.5.254</code> + <code>10.0.0.13</code> (الـ VPS) — لا غير</td></tr>
+<tr><td><code>client5_d_2</code></td><td><code>10.0.5.2</code></td></tr>
+<tr><td><code>client5_d_3</code></td><td><code>10.0.5.3</code></td></tr>
+<tr><td><code>client5_d_4</code></td><td><code>10.0.5.4</code></td></tr>
+<tr><td><code>client5_d_5</code></td><td><code>10.0.5.5</code></td></tr>
+</tbody></table>
+<h3 id="c6">client6 — عميل 6 — موقع/منشأة (الاسم يُملأ)</h3>
+<div class="client" style="--tone:#4ea8ff">
+<h3>جهاز Clan (box) عند العميل — <code>client6.fastfree.local</code></h3>
+<div class="role">عميل 6 · داخل LAN · 5 أجهزة</div>
+</div>
+<table class="kv">
+<tr><td>الجهاز (بوابته)</td><td>جهاز Clan (box) عند العميل — <code>client6.fastfree.local</code></td></tr>
+<tr><td>عنوان عام</td><td>✗ مفيش — والـ VPS هو اللي بيوصّله</td></tr>
+<tr><td>شبكة أجهزته</td><td><code>10.0.6.0/24</code></td></tr>
+<tr><td>بوابة شبكته</td><td><code>10.0.6.254</code> (على جهازه هو)</td></tr>
+<tr><td>instance الأجهزة</td><td><code>client6-devices</code></td></tr>
+<tr><td>منفذ الأجهزة</td><td><code>51821</code></td></tr>
+<tr><td>Endpoint الأجهزة</td><td><code>client6.fastfree.local:51821</code></td></tr>
+<tr><td>رابطه مع الـ VPS</td><td><code>10.0.0.16/30</code> — VPS: <code>10.0.0.17</code> · العميل: <code>10.0.0.18</code></td></tr>
+<tr><td>instance الرابط</td><td><code>client6-link</code></td></tr>
+<tr><td>منفذ الرابط</td><td><code>51835</code> (على الـ VPS)</td></tr>
+<tr><td>AllowedIPs الجهاز</td><td><code>10.0.6.0/24</code> + <code>10.0.0.17/32</code> (شبكة عميله + عنوان الـ VPS بس)</td></tr>
+<tr><td>يوصل لـ</td><td><code>10.0.6.254</code> (بوابته) + <code>10.0.0.17</code> (الـ VPS) — ومفيش غير كده</td></tr>
+</table>
+<h4 style="margin:14px 0 0;color:var(--acc);font-size:.95rem">أجهزته الخمسة</h4>
+<div class="devlist">
+<div><b>client6_d_1</b>10.0.6.1</div>
+<div><b>client6_d_2</b>10.0.6.2</div>
+<div><b>client6_d_3</b>10.0.6.3</div>
+<div><b>client6_d_4</b>10.0.6.4</div>
+<div><b>client6_d_5</b>10.0.6.5</div>
+</div>
+<table><thead><tr><th>الجهاز</th><th>الـ IP</th><th>Endpoint</th><th>Port</th><th>يقدر يوصل لـ</th></tr></thead><tbody>
+<tr><td><code>client6_d_1</code></td><td><code>10.0.6.1</code></td><td rowspan="5"><code>client6.fastfree.local:51821</code></td><td rowspan="5">51821</td><td rowspan="5"><code>10.0.6.254</code> + <code>10.0.0.17</code> (الـ VPS) — لا غير</td></tr>
+<tr><td><code>client6_d_2</code></td><td><code>10.0.6.2</code></td></tr>
+<tr><td><code>client6_d_3</code></td><td><code>10.0.6.3</code></td></tr>
+<tr><td><code>client6_d_4</code></td><td><code>10.0.6.4</code></td></tr>
+<tr><td><code>client6_d_5</code></td><td><code>10.0.6.5</code></td></tr>
+</tbody></table>
+<h3 id="c7">client7 — عميل 7 — موقع/منشأة (الاسم يُملأ)</h3>
+<div class="client" style="--tone:#3ddc84">
+<h3>جهاز Clan (box) عند العميل — <code>client7.fastfree.local</code></h3>
+<div class="role">عميل 7 · داخل LAN · 5 أجهزة</div>
+</div>
+<table class="kv">
+<tr><td>الجهاز (بوابته)</td><td>جهاز Clan (box) عند العميل — <code>client7.fastfree.local</code></td></tr>
+<tr><td>عنوان عام</td><td>✗ مفيش — والـ VPS هو اللي بيوصّله</td></tr>
+<tr><td>شبكة أجهزته</td><td><code>10.0.7.0/24</code></td></tr>
+<tr><td>بوابة شبكته</td><td><code>10.0.7.254</code> (على جهازه هو)</td></tr>
+<tr><td>instance الأجهزة</td><td><code>client7-devices</code></td></tr>
+<tr><td>منفذ الأجهزة</td><td><code>51821</code></td></tr>
+<tr><td>Endpoint الأجهزة</td><td><code>client7.fastfree.local:51821</code></td></tr>
+<tr><td>رابطه مع الـ VPS</td><td><code>10.0.0.20/30</code> — VPS: <code>10.0.0.21</code> · العميل: <code>10.0.0.22</code></td></tr>
+<tr><td>instance الرابط</td><td><code>client7-link</code></td></tr>
+<tr><td>منفذ الرابط</td><td><code>51836</code> (على الـ VPS)</td></tr>
+<tr><td>AllowedIPs الجهاز</td><td><code>10.0.7.0/24</code> + <code>10.0.0.21/32</code> (شبكة عميله + عنوان الـ VPS بس)</td></tr>
+<tr><td>يوصل لـ</td><td><code>10.0.7.254</code> (بوابته) + <code>10.0.0.21</code> (الـ VPS) — ومفيش غير كده</td></tr>
+</table>
+<h4 style="margin:14px 0 0;color:var(--acc);font-size:.95rem">أجهزته الخمسة</h4>
+<div class="devlist">
+<div><b>client7_d_1</b>10.0.7.1</div>
+<div><b>client7_d_2</b>10.0.7.2</div>
+<div><b>client7_d_3</b>10.0.7.3</div>
+<div><b>client7_d_4</b>10.0.7.4</div>
+<div><b>client7_d_5</b>10.0.7.5</div>
+</div>
+<table><thead><tr><th>الجهاز</th><th>الـ IP</th><th>Endpoint</th><th>Port</th><th>يقدر يوصل لـ</th></tr></thead><tbody>
+<tr><td><code>client7_d_1</code></td><td><code>10.0.7.1</code></td><td rowspan="5"><code>client7.fastfree.local:51821</code></td><td rowspan="5">51821</td><td rowspan="5"><code>10.0.7.254</code> + <code>10.0.0.21</code> (الـ VPS) — لا غير</td></tr>
+<tr><td><code>client7_d_2</code></td><td><code>10.0.7.2</code></td></tr>
+<tr><td><code>client7_d_3</code></td><td><code>10.0.7.3</code></td></tr>
+<tr><td><code>client7_d_4</code></td><td><code>10.0.7.4</code></td></tr>
+<tr><td><code>client7_d_5</code></td><td><code>10.0.7.5</code></td></tr>
+</tbody></table>
+<h3 id="c8">client8 — عميل 8 — موقع/منشأة (الاسم يُملأ)</h3>
+<div class="client" style="--tone:#4ea8ff">
+<h3>جهاز Clan (box) عند العميل — <code>client8.fastfree.local</code></h3>
+<div class="role">عميل 8 · داخل LAN · 5 أجهزة</div>
+</div>
+<table class="kv">
+<tr><td>الجهاز (بوابته)</td><td>جهاز Clan (box) عند العميل — <code>client8.fastfree.local</code></td></tr>
+<tr><td>عنوان عام</td><td>✗ مفيش — والـ VPS هو اللي بيوصّله</td></tr>
+<tr><td>شبكة أجهزته</td><td><code>10.0.8.0/24</code></td></tr>
+<tr><td>بوابة شبكته</td><td><code>10.0.8.254</code> (على جهازه هو)</td></tr>
+<tr><td>instance الأجهزة</td><td><code>client8-devices</code></td></tr>
+<tr><td>منفذ الأجهزة</td><td><code>51821</code></td></tr>
+<tr><td>Endpoint الأجهزة</td><td><code>client8.fastfree.local:51821</code></td></tr>
+<tr><td>رابطه مع الـ VPS</td><td><code>10.0.0.24/30</code> — VPS: <code>10.0.0.25</code> · العميل: <code>10.0.0.26</code></td></tr>
+<tr><td>instance الرابط</td><td><code>client8-link</code></td></tr>
+<tr><td>منفذ الرابط</td><td><code>51837</code> (على الـ VPS)</td></tr>
+<tr><td>AllowedIPs الجهاز</td><td><code>10.0.8.0/24</code> + <code>10.0.0.25/32</code> (شبكة عميله + عنوان الـ VPS بس)</td></tr>
+<tr><td>يوصل لـ</td><td><code>10.0.8.254</code> (بوابته) + <code>10.0.0.25</code> (الـ VPS) — ومفيش غير كده</td></tr>
+</table>
+<h4 style="margin:14px 0 0;color:var(--acc);font-size:.95rem">أجهزته الخمسة</h4>
+<div class="devlist">
+<div><b>client8_d_1</b>10.0.8.1</div>
+<div><b>client8_d_2</b>10.0.8.2</div>
+<div><b>client8_d_3</b>10.0.8.3</div>
+<div><b>client8_d_4</b>10.0.8.4</div>
+<div><b>client8_d_5</b>10.0.8.5</div>
+</div>
+<table><thead><tr><th>الجهاز</th><th>الـ IP</th><th>Endpoint</th><th>Port</th><th>يقدر يوصل لـ</th></tr></thead><tbody>
+<tr><td><code>client8_d_1</code></td><td><code>10.0.8.1</code></td><td rowspan="5"><code>client8.fastfree.local:51821</code></td><td rowspan="5">51821</td><td rowspan="5"><code>10.0.8.254</code> + <code>10.0.0.25</code> (الـ VPS) — لا غير</td></tr>
+<tr><td><code>client8_d_2</code></td><td><code>10.0.8.2</code></td></tr>
+<tr><td><code>client8_d_3</code></td><td><code>10.0.8.3</code></td></tr>
+<tr><td><code>client8_d_4</code></td><td><code>10.0.8.4</code></td></tr>
+<tr><td><code>client8_d_5</code></td><td><code>10.0.8.5</code></td></tr>
+</tbody></table>
+<h3 id="c9">client9 — عميل 9 — موقع/منشأة (الاسم يُملأ)</h3>
+<div class="client" style="--tone:#3ddc84">
+<h3>جهاز Clan (box) عند العميل — <code>client9.fastfree.local</code></h3>
+<div class="role">عميل 9 · داخل LAN · 5 أجهزة</div>
+</div>
+<table class="kv">
+<tr><td>الجهاز (بوابته)</td><td>جهاز Clan (box) عند العميل — <code>client9.fastfree.local</code></td></tr>
+<tr><td>عنوان عام</td><td>✗ مفيش — والـ VPS هو اللي بيوصّله</td></tr>
+<tr><td>شبكة أجهزته</td><td><code>10.0.9.0/24</code></td></tr>
+<tr><td>بوابة شبكته</td><td><code>10.0.9.254</code> (على جهازه هو)</td></tr>
+<tr><td>instance الأجهزة</td><td><code>client9-devices</code></td></tr>
+<tr><td>منفذ الأجهزة</td><td><code>51821</code></td></tr>
+<tr><td>Endpoint الأجهزة</td><td><code>client9.fastfree.local:51821</code></td></tr>
+<tr><td>رابطه مع الـ VPS</td><td><code>10.0.0.28/30</code> — VPS: <code>10.0.0.29</code> · العميل: <code>10.0.0.30</code></td></tr>
+<tr><td>instance الرابط</td><td><code>client9-link</code></td></tr>
+<tr><td>منفذ الرابط</td><td><code>51838</code> (على الـ VPS)</td></tr>
+<tr><td>AllowedIPs الجهاز</td><td><code>10.0.9.0/24</code> + <code>10.0.0.29/32</code> (شبكة عميله + عنوان الـ VPS بس)</td></tr>
+<tr><td>يوصل لـ</td><td><code>10.0.9.254</code> (بوابته) + <code>10.0.0.29</code> (الـ VPS) — ومفيش غير كده</td></tr>
+</table>
+<h4 style="margin:14px 0 0;color:var(--acc);font-size:.95rem">أجهزته الخمسة</h4>
+<div class="devlist">
+<div><b>client9_d_1</b>10.0.9.1</div>
+<div><b>client9_d_2</b>10.0.9.2</div>
+<div><b>client9_d_3</b>10.0.9.3</div>
+<div><b>client9_d_4</b>10.0.9.4</div>
+<div><b>client9_d_5</b>10.0.9.5</div>
+</div>
+<table><thead><tr><th>الجهاز</th><th>الـ IP</th><th>Endpoint</th><th>Port</th><th>يقدر يوصل لـ</th></tr></thead><tbody>
+<tr><td><code>client9_d_1</code></td><td><code>10.0.9.1</code></td><td rowspan="5"><code>client9.fastfree.local:51821</code></td><td rowspan="5">51821</td><td rowspan="5"><code>10.0.9.254</code> + <code>10.0.0.29</code> (الـ VPS) — لا غير</td></tr>
+<tr><td><code>client9_d_2</code></td><td><code>10.0.9.2</code></td></tr>
+<tr><td><code>client9_d_3</code></td><td><code>10.0.9.3</code></td></tr>
+<tr><td><code>client9_d_4</code></td><td><code>10.0.9.4</code></td></tr>
+<tr><td><code>client9_d_5</code></td><td><code>10.0.9.5</code></td></tr>
+</tbody></table>
+<h3 id="c10">client10 — عميل 10 — موقع/منشأة (الاسم يُملأ)</h3>
+<div class="client" style="--tone:#4ea8ff">
+<h3>جهاز Clan (box) عند العميل — <code>client10.fastfree.local</code></h3>
+<div class="role">عميل 10 · داخل LAN · 5 أجهزة</div>
+</div>
+<table class="kv">
+<tr><td>الجهاز (بوابته)</td><td>جهاز Clan (box) عند العميل — <code>client10.fastfree.local</code></td></tr>
+<tr><td>عنوان عام</td><td>✗ مفيش — والـ VPS هو اللي بيوصّله</td></tr>
+<tr><td>شبكة أجهزته</td><td><code>10.0.10.0/24</code></td></tr>
+<tr><td>بوابة شبكته</td><td><code>10.0.10.254</code> (على جهازه هو)</td></tr>
+<tr><td>instance الأجهزة</td><td><code>client10-devices</code></td></tr>
+<tr><td>منفذ الأجهزة</td><td><code>51821</code></td></tr>
+<tr><td>Endpoint الأجهزة</td><td><code>client10.fastfree.local:51821</code></td></tr>
+<tr><td>رابطه مع الـ VPS</td><td><code>10.0.0.32/30</code> — VPS: <code>10.0.0.33</code> · العميل: <code>10.0.0.34</code></td></tr>
+<tr><td>instance الرابط</td><td><code>client10-link</code></td></tr>
+<tr><td>منفذ الرابط</td><td><code>51839</code> (على الـ VPS)</td></tr>
+<tr><td>AllowedIPs الجهاز</td><td><code>10.0.10.0/24</code> + <code>10.0.0.33/32</code> (شبكة عميله + عنوان الـ VPS بس)</td></tr>
+<tr><td>يوصل لـ</td><td><code>10.0.10.254</code> (بوابته) + <code>10.0.0.33</code> (الـ VPS) — ومفيش غير كده</td></tr>
+</table>
+<h4 style="margin:14px 0 0;color:var(--acc);font-size:.95rem">أجهزته الخمسة</h4>
+<div class="devlist">
+<div><b>client10_d_1</b>10.0.10.1</div>
+<div><b>client10_d_2</b>10.0.10.2</div>
+<div><b>client10_d_3</b>10.0.10.3</div>
+<div><b>client10_d_4</b>10.0.10.4</div>
+<div><b>client10_d_5</b>10.0.10.5</div>
+</div>
+<table><thead><tr><th>الجهاز</th><th>الـ IP</th><th>Endpoint</th><th>Port</th><th>يقدر يوصل لـ</th></tr></thead><tbody>
+<tr><td><code>client10_d_1</code></td><td><code>10.0.10.1</code></td><td rowspan="5"><code>client10.fastfree.local:51821</code></td><td rowspan="5">51821</td><td rowspan="5"><code>10.0.10.254</code> + <code>10.0.0.33</code> (الـ VPS) — لا غير</td></tr>
+<tr><td><code>client10_d_2</code></td><td><code>10.0.10.2</code></td></tr>
+<tr><td><code>client10_d_3</code></td><td><code>10.0.10.3</code></td></tr>
+<tr><td><code>client10_d_4</code></td><td><code>10.0.10.4</code></td></tr>
+<tr><td><code>client10_d_5</code></td><td><code>10.0.10.5</code></td></tr>
+</tbody></table>
+<h3 id="c11">client11 — عميل 11 — موقع/منشأة (الاسم يُملأ)</h3>
+<div class="client" style="--tone:#3ddc84">
+<h3>جهاز Clan (box) عند العميل — <code>client11.fastfree.local</code></h3>
+<div class="role">عميل 11 · داخل LAN · 5 أجهزة</div>
+</div>
+<table class="kv">
+<tr><td>الجهاز (بوابته)</td><td>جهاز Clan (box) عند العميل — <code>client11.fastfree.local</code></td></tr>
+<tr><td>عنوان عام</td><td>✗ مفيش — والـ VPS هو اللي بيوصّله</td></tr>
+<tr><td>شبكة أجهزته</td><td><code>10.0.11.0/24</code></td></tr>
+<tr><td>بوابة شبكته</td><td><code>10.0.11.254</code> (على جهازه هو)</td></tr>
+<tr><td>instance الأجهزة</td><td><code>client11-devices</code></td></tr>
+<tr><td>منفذ الأجهزة</td><td><code>51821</code></td></tr>
+<tr><td>Endpoint الأجهزة</td><td><code>client11.fastfree.local:51821</code></td></tr>
+<tr><td>رابطه مع الـ VPS</td><td><code>10.0.0.36/30</code> — VPS: <code>10.0.0.37</code> · العميل: <code>10.0.0.38</code></td></tr>
+<tr><td>instance الرابط</td><td><code>client11-link</code></td></tr>
+<tr><td>منفذ الرابط</td><td><code>51840</code> (على الـ VPS)</td></tr>
+<tr><td>AllowedIPs الجهاز</td><td><code>10.0.11.0/24</code> + <code>10.0.0.37/32</code> (شبكة عميله + عنوان الـ VPS بس)</td></tr>
+<tr><td>يوصل لـ</td><td><code>10.0.11.254</code> (بوابته) + <code>10.0.0.37</code> (الـ VPS) — ومفيش غير كده</td></tr>
+</table>
+<h4 style="margin:14px 0 0;color:var(--acc);font-size:.95rem">أجهزته الخمسة</h4>
+<div class="devlist">
+<div><b>client11_d_1</b>10.0.11.1</div>
+<div><b>client11_d_2</b>10.0.11.2</div>
+<div><b>client11_d_3</b>10.0.11.3</div>
+<div><b>client11_d_4</b>10.0.11.4</div>
+<div><b>client11_d_5</b>10.0.11.5</div>
+</div>
+<table><thead><tr><th>الجهاز</th><th>الـ IP</th><th>Endpoint</th><th>Port</th><th>يقدر يوصل لـ</th></tr></thead><tbody>
+<tr><td><code>client11_d_1</code></td><td><code>10.0.11.1</code></td><td rowspan="5"><code>client11.fastfree.local:51821</code></td><td rowspan="5">51821</td><td rowspan="5"><code>10.0.11.254</code> + <code>10.0.0.37</code> (الـ VPS) — لا غير</td></tr>
+<tr><td><code>client11_d_2</code></td><td><code>10.0.11.2</code></td></tr>
+<tr><td><code>client11_d_3</code></td><td><code>10.0.11.3</code></td></tr>
+<tr><td><code>client11_d_4</code></td><td><code>10.0.11.4</code></td></tr>
+<tr><td><code>client11_d_5</code></td><td><code>10.0.11.5</code></td></tr>
+</tbody></table>
+
+</div>
+
+<footer>
+  <p>FastFree — مرجع شبكة الـ VPN · مبني على <code>clan-core 26.05</code> الرسمي + <code>c519294^</code> + فحص حيّ لـ <code>fastfree.cloud</code></p>
+  <p style="margin-top:5px">قاعدة التسمية: <b>الاسم = الشبكة = الـ IP</b> — <code>client7_d_3</code> = <code>10.0.7.3</code></p>
+  <p style="margin-top:5px">الملف الثاني: <a href="vpn-network-architecture.html">البنية والمخططات والجداول العامة وقواعد الشبكة</a></p>
+</footer>
+
+</body>
+</html>

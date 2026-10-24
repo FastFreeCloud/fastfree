@@ -61,7 +61,7 @@ Production-ready NixOS with multi-client architecture, **3 deployment types** (v
 │  │  • local     → evaluate only, switch on the machine       │ │
 │  └────────────────────────────────────────────────────────────┘ │
 │                                                                  │
-│  Clients:  client1 (Hyper-V) · client2 (VPS) · client3 (local)  │
+│  Clients:  client1 (VPS) · client2..client11 (Hyper-V)         │
 └─────────────────────────────────────────────────────────────────┘
 ```
 │       │              flake.nix               app sources         │
@@ -133,7 +133,7 @@ fastfree_os /
 │  ├── fastfree_backend.nix            # Frappe/ERPNext — Podman containers from GHCR
 │  ├── fastfree_ledger/erp/hr/pos/website.nix  # SPA extractors served via Caddy
 │  ├── dbgate.nix                      # DbGate web interface (MariaDB + Redis)
-│  ├── cockpit.nix                     # Cockpit web panel (client2/3)
+│  ├── cockpit.nix                     # Cockpit web panel (client1 VPS)
 │  ├── desktop.nix                     # COSMIC desktop + xkb us/ara + shortcuts
 │  ├── locale.nix                      # Timezone + en_US/ar_EG + Arabic fonts
 │  └── avahi-subdomains.nix            # Avahi mDNS
@@ -476,14 +476,224 @@ All passwords are centralized in `machines/*/configuration.nix` (+ `clan vars` s
 
 ## WireGuard
 
-Two meshes (Clan docs: services/official/wireguard):
+One mesh, provided by the **official Clan service** `services/official/wireguard`
+(`clan-core` input, declared in `clan.nix`).
 
-| Mesh | Interface | Address | ListenPort | Managed by |
-|:-----|:----------|:--------|:-----------|:-----------|
-| Clan (primary) | `wireguard` | IPv6 ULA (`fd28:…/56`) | `51821` | `clan.nix` inventory |
-| Legacy (field devices) | `wg0` | `10.100.0.x/24` | manual | outside NixOS |
+### Roles — the whole model in two lines
 
-Avahi `allowInterfaces` lists both where both exist (`options.nix`).
+| Role | Requirement | FastFree machine |
+|:-----|:------------|:-----------------|
+| **controller** | must have a **publicly reachable endpoint**; terminates the tunnel, holds the mesh prefix, forwards IPv6 between peers | `client2` (VPS, `fastfree.cloud`) |
+| **peer** | dials a controller; **no public IP needed** (works behind NAT) | `client1` (Hyper-V), `client3` (workstation) |
+
+`client1` and `client3` are private by design: they only accept traffic that
+arrives through the mesh. `client2` is the single public entry point and is
+also the machine the other clients push updates to
+(`clan machines update client2`).
+
+### Addressing (IPv6 ULA, derived automatically by the service)
+
+| Item | Value |
+|:-----|:------|
+| Base network | `fd28:387a:3f:4500::/40` |
+| Controller subnet | `fd28:387a:3f:4500::/56` |
+| `client1` | `fd28:387a:3f:4500:1917:e334:07c2:8366` |
+| `client3` | `fd28:387a:3f:4500:e864:8df6:4a51:8b6e` |
+| Interface name | `wireguard` (literally the instance name) |
+| Listen port | `51821` (UDP) |
+
+Every peer gets one address **per controller** built from the same 64-bit host
+suffix, which keeps routing symmetric. The service also writes `/etc/hosts`
+entries, so machines resolve each other by name:
+
+```bash
+ping6 client1.wireguard      # from client2 / client3
+ssh fastfree@client3.wireguard
+```
+
+### Keys and secrets
+
+| Var | Meaning |
+|:----|:--------|
+| `wireguard-keys-wireguard/privatekey` | the machine's own private key (never leaves it) |
+| `wireguard-keys-wireguard/publickey` | the machine's public key |
+| `wireguard-network-wireguard/prefix` | controller only — the mesh prefix |
+| `wireguard-network-wireguard/suffix` | peer only — the 64-bit host suffix |
+
+All of them already exist for `client1`, `client2` and `client3`, encrypted
+with sops under `vars/per-machine/<machine>/`. The instance name in
+`clan.nix` must stay `wireguard` — the var names are derived from it.
+
+To re-key one machine:
+
+```bash
+clan vars generate --service wireguard-keys-wireguard --regenerate --machine client2
+clan machines update client2
+```
+
+### Adding a `fastfree` account to `client1`
+
+`client3` already has one (`user-fastfree` in `clan.nix`, vars at
+`vars/per-machine/client3/user-password-fastfree/`). `client1` does not — it
+currently has only `root` (`user-password-root`).
+
+The `users` service derives its secret var name from the **username**, so a
+`fastfree` account on `client1` needs a var group that does not exist yet:
+`vars/per-machine/client1/user-password-fastfree/`. Until it exists, the
+NixOS evaluation of `client1` fails (the service reads the var at build time),
+so the instance must be added together with the generated var:
+
+```bash
+# 1. on a machine that holds client1's age key (client1 itself, or any
+#    machine with the operator age key + sops/machines/client1/key.json):
+#    `clan vars generate` creates every var that is still missing.
+clan vars generate
+
+# 2. commit the generated vars (they are sops-encrypted with client1's age
+#    public key) — the CI only reads the repo, it never writes vars back.
+
+# 3. now add the instance to clan.nix:
+#      user-fastfree-c1 = {
+#        module.name = "users";
+#        roles.default.machines."client1" = { };
+#        roles.default.settings = {
+#          user = "fastfree";
+#          prompt = false;
+#          groups = [ "wheel" ];   # NOT networkmanager: client1 is "hyperv"
+#        };                        # and runs systemd-networkd, not NM
+#      };
+```
+
+Keep it a **separate instance** from `user-fastfree`: the `users` service
+gives every machine of one instance the **same** password, and `client3` is
+meant to stay an independent workstation with its own credentials.
+
+### Bringing a non-Clan device (phone / laptop) into the mesh
+
+The official WireGuard service only manages **Clan machines** — every peer
+needs a role, a vars generator and a NixOS configuration, so a phone cannot
+be given a role. There is no `allowedIds`-style escape hatch in this service
+(ZeroTier has one; see below).
+
+A device can still join the mesh, because the mesh is a plain NixOS WireGuard
+interface — `networking.wireguard.interfaces.wireguard` — and its `peers`
+option is a **list of submodules**, which NixOS merges by concatenation.
+`modules/wireguard-peers.nix` therefore *appends* to the official peer list
+instead of replacing it.
+
+**Why the device reaches every peer:** the service gives each Clan peer the
+route `allowedIPs = [ "<controllerPrefix>::/56" ]` — the controller's whole
+subnet. So any address inside `fd28:387a:3f:4500::/56` is reachable through
+the controller, including the device's. The controller only needs to know
+where to send the replies, which is the device's `/96`.
+
+#### Add the device
+
+**Naming:** a peer is named after the client that owns it plus the device
+number — `client1_d_1`, `client1_d_2`, `client3_d_1`. The name is the single
+source of truth: it derives the mesh address and the hostname, so the same
+device is always recognisable in `wg show`, in `/etc/hosts` and in the
+generated `.conf`.
+
+1. **On the device** — generate the keypair there, so the private key never
+   travels:
+
+   ```bash
+   wg genkey | tee private.key | wg pubkey > public.key
+   ```
+
+2. **Pick the address** — the helper derives it exactly the way the official
+   service derives the Clan peers' addresses (sha256 of the name):
+
+   ```bash
+   python3 scripts/wg-peer-address.py client1_d_1
+   # address : fd28:387a:3f:4500:3259:ca4a:66af:049d
+   ```
+
+3. **In this repo** — `machines/client2/configuration.nix`:
+
+   ```nix
+   fastfree.wireguardPeers.peers.client1_d_1 = {
+     publicKey = "<the contents of public.key>";
+     address = "fd28:387a:3f:4500:3259:ca4a:66af:049d";
+   };
+   ```
+
+4. **Deploy** — `clan machines update client2`.
+
+5. **Fetch the ready-made client config** from the controller — the private
+   key is deliberately not in it, paste it in before importing:
+
+   ```bash
+   scp root@fastfree.cloud:/etc/fastfree/wireguard-peers/client1_d_1.conf .
+   # edit the [Interface] PrivateKey line, then import the file
+   ```
+
+   The generated file contains the device address, the controller's public
+   key, the endpoint and the mesh route:
+
+   ```ini
+   [Interface]
+   PrivateKey = <PASTE THE DEVICE PRIVATE KEY HERE>
+   Address = fd28:387a:3f:4500:3259:ca4a:66af:049d/56
+
+   [Peer]
+   PublicKey = bCcmoi03/b9+GbjNs3w0O/Q9bhsUBPusFWRN9Wzfl2Q=
+   Endpoint = fastfree.cloud:51821
+   AllowedIPs = fd28:387a:3f:4500::/56
+   PersistentKeepalive = 25
+   ```
+
+6. **Check** — the device is also resolvable by name inside the mesh:
+   `ping6 client1_d_1.wireguard`.
+
+#### The ZeroTier alternative
+
+`services/official/zerotier` has a first-class escape hatch for exactly this
+case:
+
+```nix
+roles.controller.machines."client2" = {
+  settings.allowedIds = [ "<10-hex node id of your device>" ];
+};
+```
+
+ZeroTier ships native Windows / iOS / Android apps, so a phone joins with no
+key handling at all. The price is a second mesh next to the WireGuard one.
+The mesh-vpn guide in the Clan docs still describes ZeroTier as the only mesh
+technology "fully integrated into clan".
+
+### Network layers (how Clan reaches each machine)
+
+Clan's networking module tries every configured network in **priority order**
+until one succeeds. Each service exports a `networking.priority`:
+
+| Priority | Service | Used for | FastFree |
+|:---------|:--------|:---------|:---------|
+| 2000 | `internet` | machines with a public address | `client2` → `fastfree.cloud:22` |
+| 1000 | `wireguard` | machines behind NAT, the mesh itself | `client1`, `client3` (+ the controller) |
+| — | `tor` | universal fallback | not deployed |
+
+```bash
+clan network list       # configured networks and their status
+clan network ping client1
+clan network overview   # full topology
+```
+
+Because `client2` is declared through the `internet` service and **not**
+through `deploy.targetHost`, the fallback chain stays alive: if the clearnet
+path breaks, Clan reaches the VPS through the mesh instead of failing.
+
+### Legacy mesh (field devices)
+
+The old hand-rolled `wg0` mesh (`10.100.0.x/24`, port 51820) is gone — its
+directory was removed when WireGuard moved into the Clan inventory. The
+`10.100.0.x` entries still in `modules/networking.nix` are the stale IPv4
+addresses of that retired mesh; the live names come from Avahi (mDNS) and from
+the `<machine>.wireguard` entries the mesh service writes itself.
+
+Avahi `allowInterfaces` lists the `wireguard` interface where it exists
+(`options.nix`).
 
 ---
 

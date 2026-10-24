@@ -1,0 +1,36 @@
+{ modulesPath, ... }:
+
+{
+  imports = [
+    ./base.nix
+    (modulesPath + "/virtualisation/hyperv-guest.nix")
+  ];
+
+  fastfree.deployType = "hyperv";
+  fastfree.kvm = true;
+  fastfree.networking.interface = "eth0";
+  fastfree.subdomains.db = "db";
+  fastfree.apps = {
+    base = true;
+    mariadb = true;
+    caddy = true;
+    fastfree_backend = true;
+    fastfree_ledger = true;
+    fastfree_erp = true;
+    fastfree_hr = true;
+    fastfree_pos = true;
+  };
+
+  sops.age.keyFile = "/var/lib/sops-nix/key.txt";
+  virtualisation.hypervGuest.enable = true;
+  fileSystems."/" = { device = "/dev/disk/by-label/nixos"; fsType = "ext4"; };
+  fileSystems."/boot" = { device = "/dev/disk/by-label/ESP"; fsType = "vfat"; };
+  boot.loader.timeout = 0;
+  boot.initrd.availableKernelModules = [ "hv_vmbus" "hv_storvsc" "hv_netvsc" "sd_mod" "sr_mod" ];
+  boot.loader.grub = {
+    efiSupport = true;
+    efiInstallAsRemovable = true;
+    device = "nodev";
+  };
+  fastfree.avahi = { enable = true; reflector = false; interfaces = [ "eth0" ]; };
+}
