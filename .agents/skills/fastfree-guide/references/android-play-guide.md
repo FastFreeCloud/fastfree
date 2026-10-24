@@ -8,10 +8,10 @@
 
 | التطبيق | مسار المشروع | Package Name | بادئة الـ Tag | مسار سير العمل في GitHub |
 |---|---|---|---|---|
-| **FastFree POS** | `apps/fastfree_pos` | `com.fastfree.pos` | `pos-v*` | `.github/workflows/01-pos.yaml` |
-| **FastFree ERP** | `apps/fastfree_erp` | `com.fastfree.erp` | `erp-v*` | `.github/workflows/02-erp.yaml` |
-| **FastFree HR** | `apps/fastfree_hr` | `com.fastfree.hr` | `hr-v*` | `.github/workflows/03-hr.yaml` |
-| **FastFree Ledger** | `apps/fastfree_ledger` | `com.fastfree.ledger` | `ledger-v*` | `.github/workflows/04-ledger.yaml` |
+| **FastFree POS** | `apps/fastfree_pos` | `com.fastfree.pos` | `pos-v*` | `.github/workflows/1_fastfree_android_pos.yaml` |
+| **FastFree ERP** | `apps/fastfree_erp` | `com.fastfree.erp` | `erp-v*` | `.github/workflows/4_fastfree_android_erp.yaml` |
+| **FastFree HR** | `apps/fastfree_hr` | `com.fastfree.hr` | `hr-v*` | `.github/workflows/2_fastfree_android_hr.yaml` |
+| **FastFree Ledger** | `apps/fastfree_ledger` | `com.fastfree.ledger` | `ledger-v*` | `.github/workflows/3_fastfree_android_ledger.yaml` |
 
 ---
 
@@ -48,35 +48,12 @@
 
 ---
 
-## 4. سكربتات الأتمتة (`scripts/fastfree-android/`)
+## 4. أتمتة النشر والتكامل المستمر (CI / Workflows)
 
-تدار جميع عمليات النشر البرمجية عبر بايثون وأداة `uv`:
+تدار جميع عمليات البناء والنشر المباشر عبر مسارات عمل GitHub Actions (`.github/workflows/`):
 
-```bash
-cd scripts/fastfree-android
-
-# 1. تثبيت البيئة وقفل الحزم
-uv sync --locked
-
-# 2. توليد / فحص المفتاح الثابت
-uv run fastfree_android_keystore.py --gen
-
-# 3. تحديث نصوص المتجر باللغتين العربية والإنجليزية
-uv run fastfree_store_metadata.py --app fastfree_pos
-
-# 4. توليد وقص الرسومات والبنرات (1024x500)
-uv run fastfree_store_graphics.py --app pos
-
-# 5. رفع الحزمة الموقعة AAB على المسار الداخلي كمسودة
-uv run fastfree_store_publish.py \
-  --package com.fastfree.pos \
-  --locales ar,en-US \
-  --metadata-dir ../../apps/fastfree_pos/fastlane/metadata/android \
-  --track internal \
-  --aab <PATH_TO_AAB> \
-  --status draft \
-  --version-code <N>
-```
+- **بناء حزم AAB وتوقيعها**: مسار العمل يبني التطبيقات ويوقعها باستخدام مفتاح `release.jks`.
+- **نشر Google Play**: يتم النشر التلقائي إلى مسار الاختبار الداخلي عبر مصادقة WIF الرسمية الخالية من الأسرار.
 
 ---
 

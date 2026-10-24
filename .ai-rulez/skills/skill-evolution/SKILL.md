@@ -36,7 +36,7 @@ only in chat history.
 - Never encode transient noise (one-off network blip, user closed the window) as a rule.
 - Never duplicate a rule across skills — link to the owning skill instead.
 - Never delete a rule without replacing it with the corrected one + reason.
-- Docs (`AGENTS.md`, READMEs, `scripts/fastfree_android.md`) are second priority:
+- Docs (`AGENTS.md`, READMEs) are second priority:
   fix them in the same commit only when the skill change contradicts them.
 
 ## Rule format (copy-paste)

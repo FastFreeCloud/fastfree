@@ -73,5 +73,4 @@ tool (MCP annotations, so clients can require approval for the `D` ones).
 
 Policy (`HERDR_MCP_READ_ONLY`, `HERDR_MCP_DISABLE_TOOLS`, `HERDR_MCP_ALLOW`,
 `HERDR_MCP_CWD_ALLOW`) can hide or refuse tools. With `HERDR_MCP_READ_ONLY=1`
-only the `[R]` tools are exposed. See the [README](../README.md#configuration) and
-[SECURITY.md](../SECURITY.md).
+only the `[R]` tools are exposed. See [SKILL.md](../SKILL.md).

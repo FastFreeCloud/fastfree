@@ -5,19 +5,13 @@ description: Publish Play listings, graphics, and AABs to the internal track via
 
 # Play Publish Automation (API only, no browser)
 
-Project: `scripts/fastfree-android/` (Python 3.11, `uv`). Run from the **repo root**.
+Release workflows are managed via GitHub Actions CI (`.github/workflows/`).
 
 ## Order of operations (always in this order)
 
-```powershell
-cd scripts/fastfree-android
-uv sync --locked
-uv run fastfree_android_keystore.py --gen     # once: stable release.jks in .auth/signing/
-uv run fastfree_store_metadata.py [--app fastfree_pos]   # titles/descriptions/changelogs/icons
-uv run fastfree_store_graphics.py [--app pos]            # 1024x500 banner + placeholders
-uv run fastfree_store_publish.py --package com.fastfree.pos --locales ar,en-US --metadata-dir ../../apps/fastfree_pos/fastlane/metadata/android --track internal --aab <PATH> --status draft --version-code <N>
-uv run fastfree_store_screenshots.py pos en-US           # crop phone screenshots to 1080x1920
-```
+1. Stable `release.jks` is stored at `.auth/signing/`.
+2. App metadata and graphics are stored in `apps/<app>/fastlane/metadata/android`.
+3. CI builds and publishes to Google Play internal track via keyless WIF authentication.
 
 Locales are always `ar,en-US`. Track is `internal`, status `draft` — **never auto-promote
 to production** (closed test 12 testers × 14 days + human application required).
