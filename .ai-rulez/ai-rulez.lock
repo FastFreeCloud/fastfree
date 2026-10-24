@@ -3,15 +3,23 @@
 
 version = 1
 ai_rulez_version = '5.6.3'
+profile = 'full'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:aa7bfc9854c1de644b3434feae453b052bbf56933a00335cdfff716a856852a0'
+tree = 'sha256:0af5bb863ff17d4122578acf58975735e6663277637772baab5e81bf76c89906'
 
 [[served]]
 name = 'ai-rulez'
 source = '.ai-rulez/skills/ai-rulez/SKILL.md'
 commit = ''
 digest = 'sha256:5d070971d7bebde6471ce6352d939df0c360ae9587bd8913a4bf69fec869afb4'
+
+[[served]]
+name = 'ai-rulez'
+source = '.ai-rulez/skills/ai-rulez/SKILL.md'
+commit = ''
+digest = 'sha256:5d070971d7bebde6471ce6352d939df0c360ae9587bd8913a4bf69fec869afb4'
+view = 'profile:full'
 
 [[served]]
 name = 'ai-rulez'
@@ -25,6 +33,13 @@ name = 'android-build-release'
 source = '.ai-rulez/domains/frontend/skills/android-build-release/SKILL.md'
 commit = ''
 digest = 'sha256:3a56ea0002829b423d3f0e7c29b90fb07b6b072cb9b843b30caf4b7e14027e58'
+
+[[served]]
+name = 'android-build-release'
+source = '.ai-rulez/domains/frontend/skills/android-build-release/SKILL.md'
+commit = ''
+digest = 'sha256:3a56ea0002829b423d3f0e7c29b90fb07b6b072cb9b843b30caf4b7e14027e58'
+view = 'profile:full'
 
 [[served]]
 name = 'android-build-release'
@@ -51,6 +66,13 @@ name = 'caveman'
 source = '.ai-rulez/skills/caveman/SKILL.md'
 commit = ''
 digest = 'sha256:cd90a24a4c655ebba4d67e3feaa350e11e2b85c47b6e811714a2f107d71ab2cc'
+view = 'profile:full'
+
+[[served]]
+name = 'caveman'
+source = '.ai-rulez/skills/caveman/SKILL.md'
+commit = ''
+digest = 'sha256:cd90a24a4c655ebba4d67e3feaa350e11e2b85c47b6e811714a2f107d71ab2cc'
 view = 'role:reviewer'
 
 [[served]]
@@ -58,6 +80,13 @@ name = 'clan-check'
 source = ''
 commit = ''
 digest = 'sha256:365d6a4132cd558fecb1ce4e50e2040a25a30d6c8b2e3ea9562c9969c3fcd6bb'
+
+[[served]]
+name = 'clan-check'
+source = ''
+commit = ''
+digest = 'sha256:365d6a4132cd558fecb1ce4e50e2040a25a30d6c8b2e3ea9562c9969c3fcd6bb'
+view = 'profile:full'
 
 [[served]]
 name = 'clan-check'
@@ -71,6 +100,13 @@ name = 'code-reviewer'
 source = '.ai-rulez/skills/code-reviewer/SKILL.md'
 commit = ''
 digest = 'sha256:3fb2124063dd2f033cd8eedaeaf7f1f10740dfe68e2530b057ff7e13d22919a3'
+
+[[served]]
+name = 'code-reviewer'
+source = '.ai-rulez/skills/code-reviewer/SKILL.md'
+commit = ''
+digest = 'sha256:3fb2124063dd2f033cd8eedaeaf7f1f10740dfe68e2530b057ff7e13d22919a3'
+view = 'profile:full'
 
 [[served]]
 name = 'code-reviewer'
@@ -84,6 +120,13 @@ name = 'composio'
 source = '.agents/skills/composio'
 commit = ''
 digest = 'sha256:1d94d7e333b8fe03a22769c9904974efc1b475f408fc1c54e420b8fb7882a70b'
+
+[[served]]
+name = 'composio'
+source = '.agents/skills/composio'
+commit = ''
+digest = 'sha256:1d94d7e333b8fe03a22769c9904974efc1b475f408fc1c54e420b8fb7882a70b'
+view = 'profile:full'
 
 [[served]]
 name = 'composio'
@@ -124,6 +167,13 @@ name = 'erp-domain-development'
 source = '.ai-rulez/domains/erp-modules/skills/erp-domain-development/SKILL.md'
 commit = ''
 digest = 'sha256:489e2d1e8748a6ce7326db5818cfa477e5192bb41f9de53f69daaf38ff8c8c85'
+view = 'profile:full'
+
+[[served]]
+name = 'erp-domain-development'
+source = '.ai-rulez/domains/erp-modules/skills/erp-domain-development/SKILL.md'
+commit = ''
+digest = 'sha256:489e2d1e8748a6ce7326db5818cfa477e5192bb41f9de53f69daaf38ff8c8c85'
 view = 'role:reviewer'
 
 [[served]]
@@ -131,6 +181,13 @@ name = 'fastfree-brand'
 source = '.ai-rulez/domains/frontend/skills/fastfree-brand/SKILL.md'
 commit = ''
 digest = 'sha256:58d0e82ed9aa8405413522747da7ca254faa7e5dfe4dadbe1f7011efa90fba44'
+
+[[served]]
+name = 'fastfree-brand'
+source = '.ai-rulez/domains/frontend/skills/fastfree-brand/SKILL.md'
+commit = ''
+digest = 'sha256:58d0e82ed9aa8405413522747da7ca254faa7e5dfe4dadbe1f7011efa90fba44'
+view = 'profile:full'
 
 [[served]]
 name = 'fastfree-brand'
@@ -144,6 +201,13 @@ name = 'fastfree-change-policy'
 source = '.ai-rulez/skills/fastfree-change-policy/SKILL.md'
 commit = ''
 digest = 'sha256:6f9b8bf6f8689a87672389cf6ebdd67b4e5de50ef2b8674d2e23a78b3a297e60'
+
+[[served]]
+name = 'fastfree-change-policy'
+source = '.ai-rulez/skills/fastfree-change-policy/SKILL.md'
+commit = ''
+digest = 'sha256:6f9b8bf6f8689a87672389cf6ebdd67b4e5de50ef2b8674d2e23a78b3a297e60'
+view = 'profile:full'
 
 [[served]]
 name = 'fastfree-change-policy'
@@ -157,6 +221,13 @@ name = 'fastfree-guide'
 source = '.ai-rulez/skills/fastfree-guide/SKILL.md'
 commit = ''
 digest = 'sha256:4039f0493fea62b158ae9b281ce5875da731300893727670cea2b706ee7b357b'
+
+[[served]]
+name = 'fastfree-guide'
+source = '.ai-rulez/skills/fastfree-guide/SKILL.md'
+commit = ''
+digest = 'sha256:4039f0493fea62b158ae9b281ce5875da731300893727670cea2b706ee7b357b'
+view = 'profile:full'
 
 [[served]]
 name = 'fastfree-guide'
@@ -170,6 +241,13 @@ name = 'fastfree-test'
 source = '.ai-rulez/skills/fastfree-test/SKILL.md'
 commit = ''
 digest = 'sha256:c1be30315dbc8bd15177c1f85f063bc01a9ec4bccfb011dae0d6d346c7248788'
+
+[[served]]
+name = 'fastfree-test'
+source = '.ai-rulez/skills/fastfree-test/SKILL.md'
+commit = ''
+digest = 'sha256:c1be30315dbc8bd15177c1f85f063bc01a9ec4bccfb011dae0d6d346c7248788'
+view = 'profile:full'
 
 [[served]]
 name = 'fastfree-test'
@@ -183,6 +261,13 @@ name = 'herdr-conductor'
 source = '.ai-rulez/skills/herdr-conductor/SKILL.md'
 commit = ''
 digest = 'sha256:418ee018d6ddff7c9ba4c5c5f80ce6e9cd59043daf5a1b525cc34f4b82b7324f'
+
+[[served]]
+name = 'herdr-conductor'
+source = '.ai-rulez/skills/herdr-conductor/SKILL.md'
+commit = ''
+digest = 'sha256:418ee018d6ddff7c9ba4c5c5f80ce6e9cd59043daf5a1b525cc34f4b82b7324f'
+view = 'profile:full'
 
 [[served]]
 name = 'herdr-conductor'
@@ -196,6 +281,13 @@ name = 'herdr-fanout'
 source = '.ai-rulez/skills/herdr-fanout/SKILL.md'
 commit = ''
 digest = 'sha256:6ee10428a206c814bcde8431ef70136aa9e0402e11737bc1429f707107c2cb76'
+
+[[served]]
+name = 'herdr-fanout'
+source = '.ai-rulez/skills/herdr-fanout/SKILL.md'
+commit = ''
+digest = 'sha256:6ee10428a206c814bcde8431ef70136aa9e0402e11737bc1429f707107c2cb76'
+view = 'profile:full'
 
 [[served]]
 name = 'herdr-fanout'
@@ -209,6 +301,13 @@ name = 'herdr-review-loop'
 source = '.ai-rulez/skills/herdr-review-loop/SKILL.md'
 commit = ''
 digest = 'sha256:933086b97b36efa9f38c5cdab7b473b7378683b001dd7a4cc7e168e45a77a9ca'
+
+[[served]]
+name = 'herdr-review-loop'
+source = '.ai-rulez/skills/herdr-review-loop/SKILL.md'
+commit = ''
+digest = 'sha256:933086b97b36efa9f38c5cdab7b473b7378683b001dd7a4cc7e168e45a77a9ca'
+view = 'profile:full'
 
 [[served]]
 name = 'herdr-review-loop'
@@ -222,6 +321,13 @@ name = 'lint-all'
 source = ''
 commit = ''
 digest = 'sha256:b15e9685d3f5deec2dce13d9ab08ae8a728fdc496e86358526ea03108bd60ace'
+
+[[served]]
+name = 'lint-all'
+source = ''
+commit = ''
+digest = 'sha256:b15e9685d3f5deec2dce13d9ab08ae8a728fdc496e86358526ea03108bd60ace'
+view = 'profile:full'
 
 [[served]]
 name = 'lint-all'
@@ -235,6 +341,13 @@ name = 'nixos-host-deploy'
 source = '.ai-rulez/domains/nixos-clan/skills/nixos-host-deploy/SKILL.md'
 commit = ''
 digest = 'sha256:e9d81880bc4e64b0415626529cfdce681249f2c3b98c925f6d9903a8bf3e0ed2'
+
+[[served]]
+name = 'nixos-host-deploy'
+source = '.ai-rulez/domains/nixos-clan/skills/nixos-host-deploy/SKILL.md'
+commit = ''
+digest = 'sha256:e9d81880bc4e64b0415626529cfdce681249f2c3b98c925f6d9903a8bf3e0ed2'
+view = 'profile:full'
 
 [[served]]
 name = 'nixos-host-deploy'
@@ -248,6 +361,13 @@ name = 'play-console-setup'
 source = '.ai-rulez/domains/frontend/skills/play-console-setup/SKILL.md'
 commit = ''
 digest = 'sha256:47a854f47a56d03f60931230ef594eb3e2a3c63dbdfdbad4f90d879c1ae2056f'
+
+[[served]]
+name = 'play-console-setup'
+source = '.ai-rulez/domains/frontend/skills/play-console-setup/SKILL.md'
+commit = ''
+digest = 'sha256:47a854f47a56d03f60931230ef594eb3e2a3c63dbdfdbad4f90d879c1ae2056f'
+view = 'profile:full'
 
 [[served]]
 name = 'play-console-setup'
@@ -268,6 +388,13 @@ name = 'play-publish-automation'
 source = '.ai-rulez/domains/frontend/skills/play-publish-automation/SKILL.md'
 commit = ''
 digest = 'sha256:988fdc654c929b483b21a2b253ae2c4ab66dafad7ebf76cca84a439a50864f72'
+
+[[served]]
+name = 'play-publish-automation'
+source = '.ai-rulez/domains/frontend/skills/play-publish-automation/SKILL.md'
+commit = ''
+digest = 'sha256:988fdc654c929b483b21a2b253ae2c4ab66dafad7ebf76cca84a439a50864f72'
+view = 'profile:full'
 
 [[served]]
 name = 'play-publish-automation'
@@ -288,6 +415,13 @@ name = 'ponytail'
 source = '.ai-rulez/skills/ponytail/SKILL.md'
 commit = ''
 digest = 'sha256:3c7c3af9d13ee3e824a57b534d951dfbb8c6e52660fe2c7e08d70935b5d1afee'
+
+[[served]]
+name = 'ponytail'
+source = '.ai-rulez/skills/ponytail/SKILL.md'
+commit = ''
+digest = 'sha256:3c7c3af9d13ee3e824a57b534d951dfbb8c6e52660fe2c7e08d70935b5d1afee'
+view = 'profile:full'
 
 [[served]]
 name = 'ponytail'
@@ -301,6 +435,13 @@ name = 'quasar-quality-gates'
 source = '.ai-rulez/domains/frontend/skills/quasar-quality-gates/SKILL.md'
 commit = ''
 digest = 'sha256:a7f8c8e21f3b6a62b1dd951f77b19c01233782daf3083794ee00240a655d80e2'
+
+[[served]]
+name = 'quasar-quality-gates'
+source = '.ai-rulez/domains/frontend/skills/quasar-quality-gates/SKILL.md'
+commit = ''
+digest = 'sha256:a7f8c8e21f3b6a62b1dd951f77b19c01233782daf3083794ee00240a655d80e2'
+view = 'profile:full'
 
 [[served]]
 name = 'quasar-quality-gates'
@@ -314,6 +455,13 @@ name = 'skill-evolution'
 source = '.ai-rulez/skills/skill-evolution/SKILL.md'
 commit = ''
 digest = 'sha256:21404d71c9b3fda81b9315e82359516b8a926de6e9a3f45616bfc4333066edc5'
+
+[[served]]
+name = 'skill-evolution'
+source = '.ai-rulez/skills/skill-evolution/SKILL.md'
+commit = ''
+digest = 'sha256:21404d71c9b3fda81b9315e82359516b8a926de6e9a3f45616bfc4333066edc5'
+view = 'profile:full'
 
 [[served]]
 name = 'skill-evolution'
@@ -327,6 +475,13 @@ name = 'typecheck-all'
 source = ''
 commit = ''
 digest = 'sha256:1752c112ab33d339bce100a2d089f45784999b7cc3d555cdf7e74bbdee5aea10'
+
+[[served]]
+name = 'typecheck-all'
+source = ''
+commit = ''
+digest = 'sha256:1752c112ab33d339bce100a2d089f45784999b7cc3d555cdf7e74bbdee5aea10'
+view = 'profile:full'
 
 [[served]]
 name = 'typecheck-all'
@@ -340,6 +495,13 @@ name = 'web-backend-release'
 source = '.ai-rulez/domains/nixos-clan/skills/web-backend-release/SKILL.md'
 commit = ''
 digest = 'sha256:bbad20ff878025bc8dc22aa0450e99df298babb8ce406e41bd77c576a5021ff5'
+
+[[served]]
+name = 'web-backend-release'
+source = '.ai-rulez/domains/nixos-clan/skills/web-backend-release/SKILL.md'
+commit = ''
+digest = 'sha256:bbad20ff878025bc8dc22aa0450e99df298babb8ce406e41bd77c576a5021ff5'
+view = 'profile:full'
 
 [[served]]
 name = 'web-backend-release'
