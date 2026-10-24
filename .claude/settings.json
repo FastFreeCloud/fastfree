@@ -35,7 +35,9 @@
       "Bash(clan machines *)",
       "Read(./**)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:npmjs.org)"
+      "WebFetch(domain:npmjs.org)",
+      "Bash(rtk *)",
+      "Bash(bd *)"
     ],
     "ask": [
       "Bash(git push *)",

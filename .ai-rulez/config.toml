@@ -6,6 +6,7 @@ name = 'fastfree'
 description = 'FastFree Sovereign Monorepo & Multi-Agent OS Ecosystem'
 presets = ['antigravity', 'opencode', 'claude', 'llms-txt']
 default = 'full'
+gitignore = false
 
 # ---------------------------------------------------------
 # LINT & VALIDATION
@@ -62,6 +63,8 @@ summary = 'FastFree Sovereign Multi-Agent Monorepo & OS Ecosystem'
 # ---------------------------------------------------------
 [permissions]
 allow = [
+  "Bash(rtk *)",
+  "Bash(bd *)",
   "Bash(pnpm *)",
   "Bash(npx *)",
   "Bash(git status)",
