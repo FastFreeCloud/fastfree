@@ -83,5 +83,5 @@ approval on the destructive ones. The server side has a matching, coarser lever:
   approve, ever. Good for a monitoring-only agent.
 - `HERDR_MCP_DISABLE_TOOLS=herdr_pane_run` hides a specific footgun entirely.
 
-Start strict; loosen as trust is earned. See
-[`../../../SECURITY.md`](../../../SECURITY.md).
+Start strict; loosen as trust is earned.
+

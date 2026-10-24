@@ -107,7 +107,7 @@ bash .gemini/skills/fastfree-guide/scripts/check-quality.sh apps/fastfree_ledger
 4. **`garage` (خدمة التخزين الموزع)**: مخزن S3 ذاتي التوزيع ومستقل بين الأجهزة.
 5. **`borgbackup`**: نسخ احتياطي دوري مشفر ومحلي ومركزي.
 
-> كود كامل جاهز: راجع [`examples/clan-multi-transport.nix`](./examples/clan-multi-transport.nix)
+> كود كامل جاهز: راجع [`examples/clan-multi-transport.nix`](./references/examples/clan-multi-transport.nix)
 > توثيق تفصيلي: راجع [`references/flox-nix-clan-guide.md`](./references/flox-nix-clan-guide.md)
 
 ---
@@ -120,10 +120,10 @@ bash .gemini/skills/fastfree-guide/scripts/check-quality.sh apps/fastfree_ledger
 
 ```bash
 # استعراض الوكلاء الشقيقين
-bash .gemini/skills/fastfree-guide/scripts/herdr-task.sh list
+bash scripts/herdr-task.sh list
 
 # تقسيم نافذة وتشغيل سيرفر التطوير
-bash .gemini/skills/fastfree-guide/scripts/herdr-task.sh split-run "flox activate -- pnpm --filter fastfree_ledger dev"
+bash scripts/herdr-task.sh split-run "flox activate -- pnpm --filter fastfree_ledger dev"
 ```
 > طالع الدليل التفصيلي: [`references/herdr-agent-coordination.md`](./references/herdr-agent-coordination.md)
 
@@ -159,9 +159,9 @@ bash .gemini/skills/fastfree-guide/scripts/herdr-task.sh split-run "flox activat
 
 ## 8. مكتبة الأمثلة البرمجية (Code Examples)
 
-1. [`examples/clan-multi-transport.nix`](./examples/clan-multi-transport.nix): تكوين Clan متكامل يجمع بين `internet` و `zerotier` و `wireguard` و `garage` و `borgbackup`.
-2. [`examples/lowcode-screen.vue`](./examples/lowcode-screen.vue): شاشة Quasar/Vue 3 متوافقة 100% مع قواعد المعمارية والـ RTL والـ a11y.
-3. [`examples/domain-service.ts`](./examples/domain-service.ts): خدمة Frappe SDK كاملة وآمنة الأنواع.
+1. [`examples/clan-multi-transport.nix`](./references/examples/clan-multi-transport.nix): تكوين Clan متكامل يجمع بين `internet` و `zerotier` و `wireguard` و `garage` و `borgbackup`.
+2. [`examples/lowcode-screen.vue`](./references/examples/lowcode-screen.vue): شاشة Quasar/Vue 3 متوافقة 100% مع قواعد المعمارية والـ RTL والـ a11y.
+3. [`examples/domain-service.ts`](./references/examples/domain-service.ts): خدمة Frappe SDK كاملة وآمنة الأنواع.
 
 ---
 

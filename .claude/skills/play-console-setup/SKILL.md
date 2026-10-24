@@ -1,7 +1,7 @@
 ---
 description: Bootstrap FastFree Android apps on Google Play Console via Playwright MCP — create app records, invite the publisher service account, upload first AABs. Use when asked to work on Play Console / publish Android apps.
 name: play-console-setup
-# Content-Hash: blake3:2d4f80f743dafe71bf2b17082c15897a02b5e30085e3d571d5e9a1197a48edc4
+# Content-Hash: blake3:1fef61cf4d887cc84f06c6a900fe2037e15d3f2fd3db8e2f2d5100121c4ef0a0
 ---
 
 # Play Console Setup (FastFree Android)
@@ -148,21 +148,17 @@ Service account: `fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.co
 
 ## 5.4. Keystore gate (once, before the FIRST of the 4 uploads)
 
-- Use ONLY the stable key: alias `fastfree`. Fingerprint-match both on-disk copies
-  (`.auth/signing/release.jks` AND `scripts/fastfree-android/keystore/release.jks`)
-  with `fastfree_android_keystore.py --info` (second copy: `--info --in <path>`) —
-  both must report the same SHA-256. Copy direction is ALWAYS
-  `.auth/signing/` → `scripts/fastfree-android/keystore/` (CI reads the latter).
+- Use ONLY the stable key: alias `fastfree`. Stored securely at `.auth/signing/release.jks`.
   Mismatch → STOP, human reconciles before any upload.
 - NEVER `--gen --force`, never `git add` a `.jks`, never accept CI's ephemeral fallback
   for a first-ever upload (Play pins the first certificate permanently).
-- CI binds the key via `fastfree_android_keystore.py --wire --app-dir <APP_DIR>`, which
+- CI binds the key via environment secrets, which
   also pins `targetSdkVersion = 36` (Play min-target — see skill
   `android-build-release`).
 - Upload rejected with certificate/SHA mismatch → STOP all four apps, screenshot,
   human owns recovery (key upgrade in Console, not a re-upload).
 
-## 5.5. Setup questionnaires (11 tasks per app — runner `fastfree_setup_tasks.py --app <key>`)
+## 5.5. Setup questionnaires (11 tasks per app)
 
 Order matters: **Sign in details BEFORE Target audience** (console blocks the
 audience questionnaire until sign-in is done). Progress: `.auth/play-console/<key>.tasks.json`.
@@ -176,7 +172,7 @@ Fixed answer bank (identical all 4 apps): ads No · government No · financial N
 ("My app doesn't provide any financial features" opt-out checkbox) · health NONE
 ("My app does not have any health features") · privacy `https://fastfree.cloud/privacy-policy.html`
 · category **Business** · contact `mohamed.fastfree@gmail.com` / `+201091999937` ·
-sign-in `Administrator` + password runtime-read from `apps/fastfree_os/nix/clients/client2.nix`
+sign-in `Administrator` + password runtime-read from `apps/fastfree_os/machines/client2/configuration.nix`
 (`passwords.admin`, verified live) · audience **18+ only** · rating **Everyone**
 (email + All-Other-Types + IARC terms, all-No bank) · data safety collects Name /
 Phone / Credentials, no sharing, encrypted in transit Yes, deletion via support email.

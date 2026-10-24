@@ -425,7 +425,7 @@ bash .gemini/skills/fastfree-guide/scripts/check-quality.sh apps/fastfree_ledger
 4. **`garage` (خدمة التخزين الموزع)**: مخزن S3 ذاتي التوزيع ومستقل بين الأجهزة.
 5. **`borgbackup`**: نسخ احتياطي دوري مشفر ومحلي ومركزي.
 
-> كود كامل جاهز: راجع [`examples/clan-multi-transport.nix`](./examples/clan-multi-transport.nix)
+> كود كامل جاهز: راجع [`examples/clan-multi-transport.nix`](./references/examples/clan-multi-transport.nix)
 > توثيق تفصيلي: راجع [`references/flox-nix-clan-guide.md`](./references/flox-nix-clan-guide.md)
 
 ---
@@ -438,10 +438,10 @@ bash .gemini/skills/fastfree-guide/scripts/check-quality.sh apps/fastfree_ledger
 
 ```bash
 # استعراض الوكلاء الشقيقين
-bash .gemini/skills/fastfree-guide/scripts/herdr-task.sh list
+bash scripts/herdr-task.sh list
 
 # تقسيم نافذة وتشغيل سيرفر التطوير
-bash .gemini/skills/fastfree-guide/scripts/herdr-task.sh split-run "flox activate -- pnpm --filter fastfree_ledger dev"
+bash scripts/herdr-task.sh split-run "flox activate -- pnpm --filter fastfree_ledger dev"
 ```
 > طالع الدليل التفصيلي: [`references/herdr-agent-coordination.md`](./references/herdr-agent-coordination.md)
 
@@ -477,9 +477,9 @@ bash .gemini/skills/fastfree-guide/scripts/herdr-task.sh split-run "flox activat
 
 #### 8. مكتبة الأمثلة البرمجية (Code Examples)
 
-1. [`examples/clan-multi-transport.nix`](./examples/clan-multi-transport.nix): تكوين Clan متكامل يجمع بين `internet` و `zerotier` و `wireguard` و `garage` و `borgbackup`.
-2. [`examples/lowcode-screen.vue`](./examples/lowcode-screen.vue): شاشة Quasar/Vue 3 متوافقة 100% مع قواعد المعمارية والـ RTL والـ a11y.
-3. [`examples/domain-service.ts`](./examples/domain-service.ts): خدمة Frappe SDK كاملة وآمنة الأنواع.
+1. [`examples/clan-multi-transport.nix`](./references/examples/clan-multi-transport.nix): تكوين Clan متكامل يجمع بين `internet` و `zerotier` و `wireguard` و `garage` و `borgbackup`.
+2. [`examples/lowcode-screen.vue`](./references/examples/lowcode-screen.vue): شاشة Quasar/Vue 3 متوافقة 100% مع قواعد المعمارية والـ RTL والـ a11y.
+3. [`examples/domain-service.ts`](./references/examples/domain-service.ts): خدمة Frappe SDK كاملة وآمنة الأنواع.
 
 ---
 
@@ -873,7 +873,7 @@ only in chat history.
 - Never encode transient noise (one-off network blip, user closed the window) as a rule.
 - Never duplicate a rule across skills — link to the owning skill instead.
 - Never delete a rule without replacing it with the corrected one + reason.
-- Docs (`AGENTS.md`, READMEs, `scripts/fastfree_android.md`) are second priority:
+- Docs (`AGENTS.md`, READMEs) are second priority:
   fix them in the same commit only when the skill change contradicts them.
 
 #### Rule format (copy-paste)
@@ -1177,21 +1177,17 @@ Service account: `fastfree-play-publisher@fastfree-508417.iam.gserviceaccount.co
 
 #### 5.4. Keystore gate (once, before the FIRST of the 4 uploads)
 
-- Use ONLY the stable key: alias `fastfree`. Fingerprint-match both on-disk copies
-  (`.auth/signing/release.jks` AND `scripts/fastfree-android/keystore/release.jks`)
-  with `fastfree_android_keystore.py --info` (second copy: `--info --in <path>`) —
-  both must report the same SHA-256. Copy direction is ALWAYS
-  `.auth/signing/` → `scripts/fastfree-android/keystore/` (CI reads the latter).
+- Use ONLY the stable key: alias `fastfree`. Stored securely at `.auth/signing/release.jks`.
   Mismatch → STOP, human reconciles before any upload.
 - NEVER `--gen --force`, never `git add` a `.jks`, never accept CI's ephemeral fallback
   for a first-ever upload (Play pins the first certificate permanently).
-- CI binds the key via `fastfree_android_keystore.py --wire --app-dir <APP_DIR>`, which
+- CI binds the key via environment secrets, which
   also pins `targetSdkVersion = 36` (Play min-target — see skill
   `android-build-release`).
 - Upload rejected with certificate/SHA mismatch → STOP all four apps, screenshot,
   human owns recovery (key upgrade in Console, not a re-upload).
 
-#### 5.5. Setup questionnaires (11 tasks per app — runner `fastfree_setup_tasks.py --app <key>`)
+#### 5.5. Setup questionnaires (11 tasks per app)
 
 Order matters: **Sign in details BEFORE Target audience** (console blocks the
 audience questionnaire until sign-in is done). Progress: `.auth/play-console/<key>.tasks.json`.
@@ -1205,7 +1201,7 @@ Fixed answer bank (identical all 4 apps): ads No · government No · financial N
 ("My app doesn't provide any financial features" opt-out checkbox) · health NONE
 ("My app does not have any health features") · privacy `https://fastfree.cloud/privacy-policy.html`
 · category **Business** · contact `mohamed.fastfree@gmail.com` / `+201091999937` ·
-sign-in `Administrator` + password runtime-read from `apps/fastfree_os/nix/clients/client2.nix`
+sign-in `Administrator` + password runtime-read from `apps/fastfree_os/machines/client2/configuration.nix`
 (`passwords.admin`, verified live) · audience **18+ only** · rating **Everyone**
 (email + All-Other-Types + IARC terms, all-No bank) · data safety collects Name /
 Phone / Credentials, no sharing, encrypted in transit Yes, deletion via support email.
@@ -1326,19 +1322,13 @@ Source: .ai-rulez/domains/frontend/skills/play-publish-automation/SKILL.md
 
 ### Play Publish Automation (API only, no browser)
 
-Project: `scripts/fastfree-android/` (Python 3.11, `uv`). Run from the **repo root**.
+Release workflows are managed via GitHub Actions CI (`.github/workflows/`).
 
 #### Order of operations (always in this order)
 
-```powershell
-cd scripts/fastfree-android
-uv sync --locked
-uv run fastfree_android_keystore.py --gen     # once: stable release.jks in .auth/signing/
-uv run fastfree_store_metadata.py [--app fastfree_pos]   # titles/descriptions/changelogs/icons
-uv run fastfree_store_graphics.py [--app pos]            # 1024x500 banner + placeholders
-uv run fastfree_store_publish.py --package com.fastfree.pos --locales ar,en-US --metadata-dir ../../apps/fastfree_pos/fastlane/metadata/android --track internal --aab <PATH> --status draft --version-code <N>
-uv run fastfree_store_screenshots.py pos en-US           # crop phone screenshots to 1080x1920
-```
+1. Stable `release.jks` is stored at `.auth/signing/`.
+2. App metadata and graphics are stored in `apps/<app>/fastlane/metadata/android`.
+3. CI builds and publishes to Google Play internal track via keyless WIF authentication.
 
 Locales are always `ar,en-US`. Track is `internal`, status `draft` — **never auto-promote
 to production** (closed test 12 testers × 14 days + human application required).

@@ -1,7 +1,7 @@
 ---
 description: Comprehensive architectural, development, and operational guide for the FastFree Monorepo ecosystem. Use when inspecting, developing, testing, building, or deploying any package (lowcode, auth, accounting, inventory, sales, purchase, hr, crm, update, vpn), frontend app (ledger, erp, pos, hr, website), backend (Frappe), Flox hermetic environment, NixOS Clan 26.05 infrastructure (internet, wireguard, zerotier, garage, borgbackup), Herdr multi-agent orchestration, or CI/CD workflow in FastFree.
 name: fastfree-guide
-# Content-Hash: blake3:d0d35616c61f97b0c3a97818477f489441025eab57a1f4e164f279be2ce77511
+# Content-Hash: blake3:06d228f936ccabc7ccb290a825a911f713199286485925cb95aaabfe8fa2cf70
 ---
 
 # FastFree Monorepo — الدليل المعماري والتشغيلي الشامل
@@ -103,7 +103,7 @@ bash .gemini/skills/fastfree-guide/scripts/check-quality.sh apps/fastfree_ledger
 4. **`garage` (خدمة التخزين الموزع)**: مخزن S3 ذاتي التوزيع ومستقل بين الأجهزة.
 5. **`borgbackup`**: نسخ احتياطي دوري مشفر ومحلي ومركزي.
 
-> كود كامل جاهز: راجع [`examples/clan-multi-transport.nix`](./examples/clan-multi-transport.nix)
+> كود كامل جاهز: راجع [`examples/clan-multi-transport.nix`](./references/examples/clan-multi-transport.nix)
 > توثيق تفصيلي: راجع [`references/flox-nix-clan-guide.md`](./references/flox-nix-clan-guide.md)
 
 ---
@@ -116,10 +116,10 @@ bash .gemini/skills/fastfree-guide/scripts/check-quality.sh apps/fastfree_ledger
 
 ```bash
 # استعراض الوكلاء الشقيقين
-bash .gemini/skills/fastfree-guide/scripts/herdr-task.sh list
+bash scripts/herdr-task.sh list
 
 # تقسيم نافذة وتشغيل سيرفر التطوير
-bash .gemini/skills/fastfree-guide/scripts/herdr-task.sh split-run "flox activate -- pnpm --filter fastfree_ledger dev"
+bash scripts/herdr-task.sh split-run "flox activate -- pnpm --filter fastfree_ledger dev"
 ```
 > طالع الدليل التفصيلي: [`references/herdr-agent-coordination.md`](./references/herdr-agent-coordination.md)
 
@@ -155,9 +155,9 @@ bash .gemini/skills/fastfree-guide/scripts/herdr-task.sh split-run "flox activat
 
 ## 8. مكتبة الأمثلة البرمجية (Code Examples)
 
-1. [`examples/clan-multi-transport.nix`](./examples/clan-multi-transport.nix): تكوين Clan متكامل يجمع بين `internet` و `zerotier` و `wireguard` و `garage` و `borgbackup`.
-2. [`examples/lowcode-screen.vue`](./examples/lowcode-screen.vue): شاشة Quasar/Vue 3 متوافقة 100% مع قواعد المعمارية والـ RTL والـ a11y.
-3. [`examples/domain-service.ts`](./examples/domain-service.ts): خدمة Frappe SDK كاملة وآمنة الأنواع.
+1. [`examples/clan-multi-transport.nix`](./references/examples/clan-multi-transport.nix): تكوين Clan متكامل يجمع بين `internet` و `zerotier` و `wireguard` و `garage` و `borgbackup`.
+2. [`examples/lowcode-screen.vue`](./references/examples/lowcode-screen.vue): شاشة Quasar/Vue 3 متوافقة 100% مع قواعد المعمارية والـ RTL والـ a11y.
+3. [`examples/domain-service.ts`](./references/examples/domain-service.ts): خدمة Frappe SDK كاملة وآمنة الأنواع.
 
 ---
 
@@ -181,6 +181,9 @@ This skill bundles supporting files. Read them on demand when the task calls for
 - [`references/backend-frappe-guide.md`](references/backend-frappe-guide.md) — FastFree Backend (Frappe v15) Guide
 - [`references/clan-multi-transport.nix`](references/clan-multi-transport.nix)
 - [`references/domain-service.ts`](references/domain-service.ts)
+- [`references/examples/clan-multi-transport.nix`](references/examples/clan-multi-transport.nix)
+- [`references/examples/domain-service.ts`](references/examples/domain-service.ts)
+- [`references/examples/lowcode-screen.vue`](references/examples/lowcode-screen.vue)
 - [`references/flox-nix-clan-guide.md`](references/flox-nix-clan-guide.md) — FastFree Flox, NixOS & Clan 26.05 Infrastructure Guide
 - [`references/herdr-agent-coordination.md`](references/herdr-agent-coordination.md) — Herdr Multi-Agent Coordination & Workflow Guide
 - [`references/lowcode-screen.vue`](references/lowcode-screen.vue)

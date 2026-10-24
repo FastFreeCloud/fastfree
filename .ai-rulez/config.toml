@@ -8,6 +8,38 @@ presets = ['antigravity', 'opencode', 'claude', 'llms-txt']
 default = 'full'
 
 # ---------------------------------------------------------
+# LINT & VALIDATION
+# ---------------------------------------------------------
+[lint]
+analyzers = [
+  'budgets',
+  'config',
+  'convert',
+  'delivery',
+  'descriptions',
+  'duplicates',
+  'evals',
+  'hooks',
+  'llmstxt',
+  'lock',
+  'mcp',
+  'metadata',
+  'plugin',
+  'references',
+  'roles',
+  'security',
+  'traps',
+  'verifiers'
+]
+
+[lint.severity]
+AR901 = "info"
+AR902 = "info"
+AR301 = "info"
+AR503 = "info"
+AR401 = "info"
+
+# ---------------------------------------------------------
 # MCP CONFIGURATION
 # ---------------------------------------------------------
 [mcp]
@@ -125,9 +157,6 @@ name = 'frontend-engineer'
 description = 'Frontend developer building Vue 3, Quasar UI, and LowCode client apps'
 domains = ['frontend']
 
-[roles.skills]
-exclude = ['nixos-clan/nixos-host-deploy', 'nixos-clan/web-backend-release']
-
 [roles.skill_mode]
 'frontend/quasar-quality-gates' = 'on'
 'frontend/play-console-setup' = 'user-invocable-only'
@@ -162,9 +191,6 @@ groups = ['herdr:erp', 'agent:erp']
 name = 'devops-clan'
 description = 'Sovereign infrastructure engineer managing NixOS Clan, WireGuard mesh, and deployments'
 domains = ['nixos-clan']
-
-[roles.skills]
-exclude = ['frontend/quasar-quality-gates', 'erp-modules/erp-domain-development', 'frontend/play-console-setup']
 
 [roles.skill_mode]
 'nixos-clan/nixos-host-deploy' = 'on'

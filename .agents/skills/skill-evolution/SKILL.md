@@ -1,7 +1,7 @@
 ---
 name: skill-evolution
 description: "Keep opencode skills accurate by harvesting failure lessons into skill rules after every fix. Use after any bug fix, failed run, or UI surprise."
-# Content-Hash: blake3:90bd7838ab0265889d87437322835229fb408f8c48c42c756f16ca454b2eda87
+# Content-Hash: blake3:30561a54441a9fbe0dab49515b99928ebc4db3627a0d26e5810ff3df18fac1da
 ---
 
 # Skill Evolution Loop
@@ -37,7 +37,7 @@ only in chat history.
 - Never encode transient noise (one-off network blip, user closed the window) as a rule.
 - Never duplicate a rule across skills — link to the owning skill instead.
 - Never delete a rule without replacing it with the corrected one + reason.
-- Docs (`AGENTS.md`, READMEs, `scripts/fastfree_android.md`) are second priority:
+- Docs (`AGENTS.md`, READMEs) are second priority:
   fix them in the same commit only when the skill change contradicts them.
 
 ## Rule format (copy-paste)
