@@ -155,7 +155,24 @@ jobs:
             fi
           fi
 
-          echo "Artifact staging content:"
+          echo "Artifact staging content (before compression):"
+          ls -lah "$RUNNER_TEMP/artifact"
+
+          # Compress large images (like VHDX) into ZIP if over 1.8GB to comply with GitHub Release limits (<2GB)
+          echo "Checking file sizes for GitHub Release compliance (<2GB)..."
+          cd "$RUNNER_TEMP/artifact"
+          for file in *; do
+            if [ -f "$file" ]; then
+              filesize=$(stat -c%s "$file")
+              if [ "$filesize" -gt 1900000000 ]; then
+                echo "Compressing $file into ${file}.zip (size: $filesize bytes)..."
+                zip -1 -q "${file}.zip" "$file"
+                rm "$file"
+              fi
+            fi
+          done
+
+          echo "Final artifact staging content:"
           ls -lah "$RUNNER_TEMP/artifact"
           echo "ARTIFACT_DIR=$RUNNER_TEMP/artifact" >> "$GITHUB_ENV"
 
