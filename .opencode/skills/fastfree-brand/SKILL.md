@@ -1,7 +1,7 @@
 ---
 name: fastfree-brand
 description: "Master brand identity, color palettes, vector assets, logos, and Google Play Store specifications for FastFree apps."
-# Content-Hash: blake3:c57465046cee59830dfdc9d81969135b21f575e5deb97f284af72d1bd3733045
+# Content-Hash: blake3:adf1cc604bc6d3f5872a7c09b2ea6a9fee2537013e63bfbe15a66ce899137f5d
 ---
 
 # FastFree Brand Identity & Asset System
@@ -43,7 +43,6 @@ This skill bundles supporting files. Read them on demand when the task calls for
 - `assets/adaptive-icons/adaptive-pos-fg.svg`
 - `assets/adaptive-icons/adaptive-website-bg.svg`
 - `assets/adaptive-icons/adaptive-website-fg.svg`
-- `assets/fastfree-pos-launch.jpg`
 - `assets/icons/adaptive-erp.svg`
 - `assets/icons/adaptive-hr.svg`
 - `assets/icons/adaptive-ledger.svg`
