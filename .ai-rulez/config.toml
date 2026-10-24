@@ -93,10 +93,10 @@ max_table_age_days = 90
 # PROFILES (Project / Repo Variant Scope)
 # ---------------------------------------------------------
 [profiles]
-frontend = ['frontend', 'core-lowcode']
-erp = ['frontend', 'core-lowcode', 'erp-modules']
+frontend = ['frontend']
+erp = ['frontend', 'erp-modules']
 os = ['nixos-clan']
-full = ['frontend', 'core-lowcode', 'erp-modules', 'nixos-clan']
+full = ['frontend', 'erp-modules', 'nixos-clan']
 
 [[scopes]]
 path = 'packages'
@@ -125,7 +125,7 @@ skill_mode_fallback = 'drop'
 [[roles]]
 name = 'frontend-engineer'
 description = 'Frontend developer building Vue 3, Quasar UI, and LowCode client apps'
-domains = ['frontend', 'core-lowcode']
+domains = ['frontend']
 
 [roles.skills]
 exclude = ['nixos-clan/nixos-host-deploy', 'nixos-clan/web-backend-release']
@@ -183,7 +183,7 @@ groups = ['herdr:devops', 'agent:nixos']
 [[roles]]
 name = 'reviewer'
 description = 'Adversarial code reviewer, quality auditor, and policy gatekeeper'
-domains = ['frontend', 'core-lowcode', 'erp-modules', 'nixos-clan']
+domains = ['frontend', 'erp-modules', 'nixos-clan']
 
 [roles.skill_mode]
 'code-reviewer' = 'on'
