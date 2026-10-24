@@ -90,7 +90,7 @@
           "id": "herdr-conductor",
           "path": "skills/herdr-conductor/SKILL.md",
           "delivery": "static",
-          "bytes": 13496,
+          "bytes": 13333,
           "tokens": 1212
         },
         {
@@ -156,7 +156,7 @@
       ],
       "totals": {
         "items": 16,
-        "bytes": 98218,
+        "bytes": 98055,
         "tokens": 12102,
         "by_kind": {
           "check": 1,
@@ -270,7 +270,7 @@
           "id": "herdr-conductor",
           "path": "skills/herdr-conductor/SKILL.md",
           "delivery": "static",
-          "bytes": 13496,
+          "bytes": 13333,
           "tokens": 1212
         },
         {
@@ -391,7 +391,7 @@
       ],
       "totals": {
         "items": 23,
-        "bytes": 508506,
+        "bytes": 508343,
         "tokens": 20153,
         "by_kind": {
           "check": 2,
@@ -493,7 +493,7 @@
           "id": "herdr-conductor",
           "path": "skills/herdr-conductor/SKILL.md",
           "delivery": "static",
-          "bytes": 13496,
+          "bytes": 13333,
           "tokens": 1212
         },
         {
@@ -604,7 +604,7 @@
       ],
       "totals": {
         "items": 21,
-        "bytes": 505086,
+        "bytes": 504923,
         "tokens": 19319,
         "by_kind": {
           "check": 2,
@@ -730,7 +730,7 @@
           "id": "herdr-conductor",
           "path": "skills/herdr-conductor/SKILL.md",
           "delivery": "static",
-          "bytes": 13496,
+          "bytes": 13333,
           "tokens": 1212
         },
         {
@@ -885,7 +885,7 @@
       ],
       "totals": {
         "items": 28,
-        "bytes": 515013,
+        "bytes": 514850,
         "tokens": 21906,
         "by_kind": {
           "check": 3,
