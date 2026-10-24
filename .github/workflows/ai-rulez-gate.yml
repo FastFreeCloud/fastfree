@@ -37,7 +37,12 @@ jobs:
           npx -y ai-rulez@latest generate --check
 
       - name: Verify Lockfile Status
-        run: npx -y ai-rulez@latest lock --check
+        run: |
+          npx -y ai-rulez@latest lock --check || {
+            echo "::error::ai-rulez lock --check failed. Showing diff:"
+            npx -y ai-rulez@latest lock --diff
+            exit 2
+          }
 
       - name: Run Strict Validation
         run: npx -y ai-rulez@latest validate --strict --outputs
