@@ -1,7 +1,4 @@
 {
-  "env": {
-    "FASTFREE_SOVEREIGN": "1"
-  },
   "hooks": {
     "PreToolUse": [
       {
@@ -59,5 +56,8 @@
       "Read(./**/*.jks)",
       "Write(./.git/**)"
     ]
+  },
+  "env": {
+    "FASTFREE_SOVEREIGN": "1"
   }
 }
