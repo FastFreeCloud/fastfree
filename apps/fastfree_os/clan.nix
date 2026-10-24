@@ -2,6 +2,8 @@
 { lib, ... }:
 let
   hypervClients = map (n: "client${toString n}") (lib.range 2 11);
+  # Active peers with generated Clan vars (keys in vars/per-machine/)
+  activePeers = [ "client2" "client3" ];
 in
 {
   meta.name = "fastfree";
@@ -30,7 +32,7 @@ in
         };
       };
       roles.peer.machines = builtins.listToAttrs (
-        map (client: { name = client; value = { }; }) hypervClients
+        map (client: { name = client; value = { }; }) activePeers
       );
     };
 
