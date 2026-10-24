@@ -156,7 +156,7 @@
       ],
       "totals": {
         "items": 16,
-        "bytes": 98218,
+        "bytes": 98055,
         "tokens": 12102,
         "by_kind": {
           "check": 1,
@@ -391,7 +391,7 @@
       ],
       "totals": {
         "items": 23,
-        "bytes": 508506,
+        "bytes": 508343,
         "tokens": 20153,
         "by_kind": {
           "check": 2,

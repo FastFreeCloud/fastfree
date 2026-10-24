@@ -206,11 +206,6 @@
     "llms-full.txt",
     "llms.txt"
   ],
-  "merged": {
-    ".agents/mcp_config.json": [],
-    ".claude/settings.json": [],
-    ".mcp.json": []
-  },
   "servers": {
     ".agents/mcp_config.json": [
       [
