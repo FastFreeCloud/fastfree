@@ -9,6 +9,21 @@
         "--serve-skills"
       ],
       "command": "npx"
+    },
+    "jcodemunch": {
+      "command": "uvx",
+      "args": [
+        "jcodemunch-mcp==1.108.397",
+        "serve"
+      ]
+    },
+    "repomap": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@sylphx/repomap@1.8.0",
+        "mcp"
+      ]
     }
   }
 }

@@ -10,6 +10,23 @@
       ],
       "command": "npx",
       "type": "stdio"
+    },
+    "jcodemunch": {
+      "command": "uvx",
+      "args": [
+        "jcodemunch-mcp==1.108.397",
+        "serve"
+      ],
+      "type": "stdio"
+    },
+    "repomap": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@sylphx/repomap@1.8.0",
+        "mcp"
+      ],
+      "type": "stdio"
     }
   }
 }

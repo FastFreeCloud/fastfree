@@ -5,7 +5,7 @@ version = 1
 ai_rulez_version = '5.6.3'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:4cc721dec98e3625d0ce937cac1fa69c27c3b94cac0e458ebd18219335e50510'
+tree = 'sha256:aa7bfc9854c1de644b3434feae453b052bbf56933a00335cdfff716a856852a0'
 
 [[served]]
 name = 'ai-rulez'
@@ -39,6 +39,19 @@ source = '.ai-rulez/domains/frontend/skills/android-build-release/SKILL.md'
 commit = ''
 digest = 'sha256:3a56ea0002829b423d3f0e7c29b90fb07b6b072cb9b843b30caf4b7e14027e58'
 view = 'role:frontend-engineer'
+
+[[served]]
+name = 'caveman'
+source = '.ai-rulez/skills/caveman/SKILL.md'
+commit = ''
+digest = 'sha256:cd90a24a4c655ebba4d67e3feaa350e11e2b85c47b6e811714a2f107d71ab2cc'
+
+[[served]]
+name = 'caveman'
+source = '.ai-rulez/skills/caveman/SKILL.md'
+commit = ''
+digest = 'sha256:cd90a24a4c655ebba4d67e3feaa350e11e2b85c47b6e811714a2f107d71ab2cc'
+view = 'role:reviewer'
 
 [[served]]
 name = 'clan-check'
@@ -269,6 +282,19 @@ source = '.ai-rulez/domains/frontend/skills/play-publish-automation/SKILL.md'
 commit = ''
 digest = 'sha256:988fdc654c929b483b21a2b253ae2c4ab66dafad7ebf76cca84a439a50864f72'
 view = 'role:frontend-engineer'
+
+[[served]]
+name = 'ponytail'
+source = '.ai-rulez/skills/ponytail/SKILL.md'
+commit = ''
+digest = 'sha256:3c7c3af9d13ee3e824a57b534d951dfbb8c6e52660fe2c7e08d70935b5d1afee'
+
+[[served]]
+name = 'ponytail'
+source = '.ai-rulez/skills/ponytail/SKILL.md'
+commit = ''
+digest = 'sha256:3c7c3af9d13ee3e824a57b534d951dfbb8c6e52660fe2c7e08d70935b5d1afee'
+view = 'role:reviewer'
 
 [[served]]
 name = 'quasar-quality-gates'
@@ -449,6 +475,12 @@ digest = 'sha256:7311fcd74fa2384563a7e66d2d78e775d6fe2385714114ec04fa111c50cd9e2
 
 [[item]]
 kind = 'skill'
+id = 'caveman'
+path = 'skills/caveman'
+digest = 'sha256:edbfb77fe23530d1373b81bfffdabb2e5f9e59b0bc4fa2deef7cda82cc103b89'
+
+[[item]]
+kind = 'skill'
 id = 'code-reviewer'
 path = 'skills/code-reviewer'
 digest = 'sha256:67cd967cfb947dfbc7231952856ec4a5e0a4b5961c2df9d988bb45976a44b92f'
@@ -488,6 +520,12 @@ kind = 'skill'
 id = 'herdr-review-loop'
 path = 'skills/herdr-review-loop'
 digest = 'sha256:ee3bdbbeda481c0ba512b58c357c80c5cd3aff3ecabff24e8173defa4e6f0c08'
+
+[[item]]
+kind = 'skill'
+id = 'ponytail'
+path = 'skills/ponytail'
+digest = 'sha256:72fb88d65740b5117671b11f286286ea5d06ecda7bed7f1e2502b352901f7665'
 
 [[item]]
 kind = 'skill'
@@ -577,10 +615,6 @@ id = 'nixos-no-plaintext-secrets'
 digest = 'sha256:9f9bb5dfeb8a7ee19daa3b1cc7c86e4de1b67551dae969c89f66bbf608dca4ca'
 
 [[output]]
-path = '.agents/mcp_config.json'
-digest = 'sha256:bbbe10e32d0c02fb05d85d189d465e0e212b737ed7fc44969a594ecc17e1e3ee'
-
-[[output]]
 path = '.agents/rules/erp-invariants.md'
 digest = 'sha256:776aac84d024cc26f2187875b7dfd1742359ddc27e29e0d62d94f667955ea5ea'
 
@@ -603,6 +637,10 @@ digest = 'sha256:d779959a80da47f4588ff1b72d56b0dec4f647b3ab372f10fa5714ddc2f1f1a
 [[output]]
 path = '.agents/skills/android-build-release/SKILL.md'
 digest = 'sha256:a5b000c16b07039ef24e156144eeda878d01e0f99e1551ad5c65cb8aaab1885a'
+
+[[output]]
+path = '.agents/skills/caveman/SKILL.md'
+digest = 'sha256:5841709b2f6d69a6de839fc77911ba33423510e1c3a8dba3e12f04096d3d3d7a'
 
 [[output]]
 path = '.agents/skills/clan-check/SKILL.md'
@@ -885,6 +923,10 @@ path = '.agents/skills/play-publish-automation/SKILL.md'
 digest = 'sha256:f6a39f1bdd99013e8e1d518dcbc336dc09fad2c3b5b791fdad39b27a6b13123a'
 
 [[output]]
+path = '.agents/skills/ponytail/SKILL.md'
+digest = 'sha256:fc26adb43faf3e9bd4af32dd36a1dce3b973a583e781b8f457e9eee3e950ec5f'
+
+[[output]]
 path = '.agents/skills/quasar-quality-gates/SKILL.md'
 digest = 'sha256:e2e38fe086ff8d86d8d5e3a84bd5a7f3085832e21c3af8896d7b26b358c3950d'
 
@@ -902,7 +944,7 @@ digest = 'sha256:867a55ddf7d7d6cfb6b99dc9905fb67a5043aefd6e8f572db2643966cb7ec79
 
 [[output]]
 path = '.ai-rulez/roles.json'
-digest = 'sha256:7989f3e83a2b17d43d249f76f6c83b4ab1c77f37edea3e93ec919a78ee370692'
+digest = 'sha256:9aa75c1a74c1371d125e6b4ee279d55beef8623337b8e5565a79952392df7632'
 
 [[output]]
 path = '.claude/rules/erp-invariants.md'
@@ -927,6 +969,10 @@ digest = 'sha256:3af90587d4befcd0300fb139584d49acac985fa8429b844ece6dfc94dc993ee
 [[output]]
 path = '.claude/skills/android-build-release/SKILL.md'
 digest = 'sha256:936b8d51febcf73888320f2dfb27a8ba9d5b272a461db2533eb1c3d2ff2ce4dc'
+
+[[output]]
+path = '.claude/skills/caveman/SKILL.md'
+digest = 'sha256:7acb5a484de66d661ea8675ffe29924ea01df14e2565243fca86a1bd1afa28e5'
 
 [[output]]
 path = '.claude/skills/clan-check/SKILL.md'
@@ -1209,6 +1255,10 @@ path = '.claude/skills/play-publish-automation/SKILL.md'
 digest = 'sha256:0ea2cdfeac1ab46caa54dabdb71225bdc2152579f8ae0267991f61e7291367c2'
 
 [[output]]
+path = '.claude/skills/ponytail/SKILL.md'
+digest = 'sha256:9811c93c7708520728c3723ed57777acb7747024f7a922160c27c0323970ba83'
+
+[[output]]
 path = '.claude/skills/quasar-quality-gates/SKILL.md'
 digest = 'sha256:9c04392c15d23924ea91a027ad66ff2975810d5e2234895a7ce95af3f4d69486'
 
@@ -1223,10 +1273,6 @@ digest = 'sha256:daef62bd0a74caae290be6f30889adb1e07344cfee92decec17431ff6697d4e
 [[output]]
 path = '.claude/skills/web-backend-release/SKILL.md'
 digest = 'sha256:66001539f901aab42a949bfdf790fa5e90bb427b9e9811e8d5cb7832c6cdf3df'
-
-[[output]]
-path = '.mcp.json'
-digest = 'sha256:b8b132ac37ffd15cb815b930c158a6e3d1f9fcd71f936b4d81927594e9ef6b0c'
 
 [[output]]
 path = '.opencode/commands/clan-check.md'
@@ -1410,8 +1456,8 @@ digest = 'sha256:71bc73c292a2adb25eabe7c0e6f22776193bef75dab71b286cd8e4f63b44bf6
 
 [[output]]
 path = 'llms-full.txt'
-digest = 'sha256:c7ab090916388f73709335d2d0078542bbf08668e190866d140af7543526b10a'
+digest = 'sha256:6f2f41489b167680cd3eb781373b0b83477365e8379cc4b4c5c15f946a885ab0'
 
 [[output]]
 path = 'llms.txt'
-digest = 'sha256:b0b90d8f3e1bf65ce5ae0214c95f5dbf82036529fd495fa84422629c2c9bd1a9'
+digest = 'sha256:1ef591609705eb40b8fd84a47833782f0b2d451d71be45c1fea72aae0d78071e'
