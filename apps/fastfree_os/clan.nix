@@ -9,6 +9,8 @@ in
   meta.name = "fastfree";
   meta.domain = "fastfree.local";
 
+  modules.fastfree-erp = import ./services/fastfree-erp/default.nix;
+
   inventory.machines = {
     client1 = {
       deploy.targetHost = "root@fastfree.cloud";
@@ -82,6 +84,13 @@ in
       module.name = "emergency-access";
       module.input = "clan-core";
       roles.default.machines.client1 = { };
+    };
+
+    fastfree-erp = {
+      roles.default.machines = builtins.listToAttrs (map (client: {
+        name = client;
+        value = { };
+      }) hypervClients);
     };
   };
 
