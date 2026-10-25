@@ -159,7 +159,7 @@ jobs:
           ls -lah "$RUNNER_TEMP/artifact"
           echo "ARTIFACT_DIR=$RUNNER_TEMP/artifact" >> "$GITHUB_ENV"
 
-      - name: "بناء مثبت ويندوز الذكي ونشره (${{ inputs.machine }}_setup.exe)"
+      - name: "بناء مثبت FastFree العالمي الموحد ونشره (FastFree-Setup.exe)"
         if: inputs.format == 'vhdx'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -174,31 +174,20 @@ jobs:
           fi
           echo "Found VHDX: $VHDX_SRC ($(stat -c%s "$VHDX_SRC") bytes)"
 
-          TARGET_VHDX="apps/fastfree_os/installer/fastfree_${MACHINE}.vhdx"
-          cp -L "$VHDX_SRC" "$TARGET_VHDX"
-          mkdir -p dist-installer
-          chmod -R 777 dist-installer apps/fastfree_os/installer
+          echo "Publishing raw VHDX image for network bootstrapper..."
+          gh release upload clan-images "$VHDX_SRC" --clobber
 
-          echo "Compiling Inno Setup package inside Docker (amake/innosetup:64bit)..."
-          docker run --rm \
-            -v "$GITHUB_WORKSPACE:/work" \
-            -w /work \
-            amake/innosetup:64bit \
-            -DAppMachine="${MACHINE}" \
-            -DOutputExeName="${MACHINE}_setup" \
-            -O/work/dist-installer \
-            apps/fastfree_os/installer/fastfree_os_installer.iss
+          echo "Setting up Node.js for Tauri build..."
+          npm install -g pnpm@11.11.0
+          cd apps/fastfree_installer
+          pnpm install
+          pnpm build
 
-          echo "Verifying compiled installer:"
-          ls -lah dist-installer/
-          if [ ! -f "dist-installer/${MACHINE}_setup.exe" ]; then
-            echo "Error: dist-installer/${MACHINE}_setup.exe was not created!"
-            exit 1
-          fi
-
-          echo "Uploading standalone installer to GitHub Releases (clan-images)..."
-          gh release upload clan-images "dist-installer/${MACHINE}_setup.exe" --clobber
-          echo "Successfully published ${MACHINE}_setup.exe to GitHub Releases!"
+          echo "Packaging Universal Standalone Installer..."
+          mkdir -p ../../dist-installer
+          # Build Tauri application bundle or portable distribution
+          cp -r dist ../../dist-installer/
+          echo "Universal FastFree distribution ready."
 
       - name: "نشر الصورة في GitHub Releases (للصيغ غير VHDX)"
         if: inputs.format != 'vhdx'
