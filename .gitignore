@@ -119,3 +119,5 @@ midscene_run/
 .ai-rulez/.generated-manifest.local.json
 .ai-rulez/local/
 # END ai-rulez
+
+apps/fastfree_installer/src-tauri/fastfree_updater.key
