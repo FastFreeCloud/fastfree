@@ -1,4 +1,5 @@
 use crate::dto::*;
+use crate::logger::InstallerLogger;
 use std::env;
 use sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
 
@@ -64,6 +65,14 @@ impl HostDiscoveryPipeline {
         let hyperv = Self::probe_hyperv_status();
         let recommendation = Self::calculate_recommendations(total_memory_mb, cpu_count, &disks);
 
+        InstallerLogger::info(
+            "DISCOVERY",
+            &format!(
+                "Host Discovery: Host={}, User={}, Total RAM={} MB, Available RAM={} MB, CPU={} ({} cores), Disks={}",
+                host_name, user_name, total_memory_mb, available_memory_mb, cpu_brand, cpu_count, disks.len()
+            ),
+        );
+
         Ok(SystemDiscoveryReport {
             host_name,
             user_name,
@@ -101,6 +110,14 @@ impl HostDiscoveryPipeline {
         } else {
             "Hyper-V status requires verification.".to_string()
         };
+
+        InstallerLogger::info(
+            "HYPERV_PROBE",
+            &format!(
+                "Hyper-V Probe: hardware_virt_enabled={}, hypervisor_present={}, vmms_running={}, ready={}, reason='{}'",
+                hardware_virt_enabled, hypervisor_present, vmms_running, ready_for_hyperv, status_reason
+            ),
+        );
 
         HyperVStatus {
             hardware_virt_enabled,

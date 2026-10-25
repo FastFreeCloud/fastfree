@@ -1,7 +1,10 @@
 pub mod commands;
 pub mod discovery;
 pub mod dto;
+pub mod licensing;
+pub mod logger;
 
+use logger::InstallerLogger;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -10,6 +13,35 @@ use tauri::{
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    InstallerLogger::info(
+        "BOOT",
+        "FastFree Sovereign Node Setup Companion initializing (v26.5.0)...",
+    );
+    InstallerLogger::info(
+        "BOOT",
+        &format!("Host Target: {} {}", std::env::consts::OS, std::env::consts::ARCH),
+    );
+    InstallerLogger::info(
+        "BOOT",
+        &format!("Forensic Log File: {}", InstallerLogger::get_log_path().display()),
+    );
+
+    #[cfg(windows)]
+    {
+        extern "system" {
+            fn IsUserAnAdmin() -> i32;
+        }
+        let is_admin = unsafe { IsUserAnAdmin() != 0 };
+        if is_admin {
+            InstallerLogger::info("ELEVATION", "Application running with Administrator privileges.");
+        } else {
+            InstallerLogger::warn(
+                "ELEVATION",
+                "Application running under standard user token (elevation may be required for Hyper-V features).",
+            );
+        }
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_process::init())
@@ -18,6 +50,8 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_updater::Builder::default().build())
         .setup(|app| {
+            InstallerLogger::info("BOOT", "Tauri core setup phase completed.");
+
             // Build Context Menu for System Tray Companion
             let open_portal = MenuItem::with_id(app, "open_portal", "Open FastFree ERP Portal 🌐", true, None::<&str>)?;
             let show_window = MenuItem::with_id(app, "show_window", "Open Setup Companion 🖥️", true, None::<&str>)?;
@@ -49,9 +83,11 @@ pub fn run() {
                 .on_menu_event(|app, event| {
                     match event.id.as_ref() {
                         "open_portal" => {
+                            InstallerLogger::info("TRAY", "Opening FastFree ERP Portal URL");
                             let _ = tauri_plugin_opener::open_url("http://client2.fastfree.local", None::<&str>);
                         }
                         "show_window" => {
+                            InstallerLogger::info("TRAY", "Restoring main window from tray");
                             if let Some(main) = app.get_webview_window("main") {
                                 let _ = main.show();
                                 let _ = main.unminimize();
@@ -59,6 +95,7 @@ pub fn run() {
                             }
                         }
                         "start_vm" => {
+                            InstallerLogger::info("TRAY", "Triggering Start-VM 'FastFree-client2' from tray");
                             #[cfg(windows)]
                             {
                                 use std::process::Command;
@@ -68,6 +105,7 @@ pub fn run() {
                             }
                         }
                         "restart_vm" => {
+                            InstallerLogger::info("TRAY", "Triggering Restart-VM 'FastFree-client2' from tray");
                             #[cfg(windows)]
                             {
                                 use std::process::Command;
@@ -77,6 +115,7 @@ pub fn run() {
                             }
                         }
                         "stop_vm" => {
+                            InstallerLogger::info("TRAY", "Triggering Stop-VM 'FastFree-client2' from tray");
                             #[cfg(windows)]
                             {
                                 use std::process::Command;
@@ -86,9 +125,11 @@ pub fn run() {
                             }
                         }
                         "check_updates" => {
+                            InstallerLogger::info("TRAY", "Opening GitHub releases page");
                             let _ = tauri_plugin_opener::open_url("https://github.com/FastFreeCloud/fastfree/releases", None::<&str>);
                         }
                         "exit_app" => {
+                            InstallerLogger::info("TRAY", "Exiting FastFree Companion");
                             app.exit(0);
                         }
                         _ => {}
@@ -122,7 +163,10 @@ pub fn run() {
             commands::get_wireguard_status,
             commands::manage_vm,
             commands::minimize_to_tray,
-            commands::show_main_window
+            commands::show_main_window,
+            commands::get_diagnostic_logs,
+            commands::export_diagnostic_bundle,
+            commands::check_admin_elevation
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

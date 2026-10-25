@@ -1,19 +1,17 @@
 <template>
-  <div class="screen-container">
+  <div class="screen-container" :class="{ 'is-rtl': isRtl }">
     <div class="header-box">
-      <div class="step-tag">Step 3 of 6</div>
-      <h2>Sovereign Node Sizing & Hyper-V Resource Allocation</h2>
-      <p class="subtitle">
-        Assign dedicated virtual hardware resources clamped safely within host headroom limits.
-      </p>
+      <div class="step-tag">{{ t('sizing.stepTag') }}</div>
+      <h2>{{ t('sizing.title') }}</h2>
+      <p class="subtitle">{{ t('sizing.subtitle') }}</p>
     </div>
 
     <div class="content-body">
       <!-- Target Node Appliance Selector -->
       <div class="config-card">
         <div class="card-title-row">
-          <label class="config-label" for="client-select">Target Sovereign Appliance Identity:</label>
-          <span class="topology-badge">Fleet Topology: Hyper-V Guest</span>
+          <label class="config-label" for="client-select">{{ t('sizing.targetAppliance') }}</label>
+          <span class="topology-badge">{{ t('sizing.topologyBadge') }}</span>
         </div>
         <select
           id="client-select"
@@ -28,18 +26,16 @@
             {{ client }} (FastFree Sovereign Appliance Node — Hyper-V)
           </option>
         </select>
-        <p class="hint-text">
-          `client1` operates as the central VPS WireGuard controller. Client nodes <code>client2</code> through <code>client11</code> connect as isolated enterprise peers.
-        </p>
+        <p class="hint-text" v-html="t('sizing.clientHint')"></p>
       </div>
 
       <!-- CPU Sizing Slider -->
       <div class="config-card">
         <div class="card-title-row">
           <label class="config-label">
-            Assigned vCPU Cores: <strong class="text-accent">{{ assignedCpuCores }} Cores</strong>
+            {{ t('sizing.assignedCpu') }} <strong class="text-accent">{{ assignedCpuCores }} {{ t('common.cores') }}</strong>
           </label>
-          <span class="sub-stat">Host: {{ totalHostCores }} Physical/Logical Cores</span>
+          <span class="sub-stat">{{ t('sizing.hostCpu', { count: totalHostCores }) }}</span>
         </div>
         <div class="slider-wrapper">
           <input
@@ -51,9 +47,9 @@
             class="range-slider"
           />
           <div class="slider-ticks">
-            <span>{{ minCores }} Cores (Min)</span>
-            <span class="text-accent font-semibold">Recommended: {{ recommendedCores }} Cores</span>
-            <span>{{ maxCores }} Cores (Max Clamped)</span>
+            <span>{{ t('sizing.minCores', { min: minCores }) }}</span>
+            <span class="text-accent font-semibold">{{ t('sizing.recommendedCores', { count: recommendedCores }) }}</span>
+            <span>{{ t('sizing.maxCores', { max: maxCores }) }}</span>
           </div>
         </div>
       </div>
@@ -62,11 +58,11 @@
       <div class="config-card">
         <div class="card-title-row">
           <label class="config-label">
-            Assigned Memory (RAM):
-            <strong class="text-accent">{{ (assignedRamMb / 1024).toFixed(1) }} GB</strong>
-            <span class="text-muted">({{ assignedRamMb }} MB)</span>
+            {{ t('sizing.assignedRam') }}
+            <strong class="text-accent">{{ (assignedRamMb / 1024).toFixed(1) }} {{ t('common.gb') }}</strong>
+            <span class="text-muted">({{ assignedRamMb }} {{ t('common.mb') }})</span>
           </label>
-          <span class="sub-stat">Host Total: {{ (totalHostRamMb / 1024).toFixed(1) }} GB</span>
+          <span class="sub-stat">{{ t('sizing.hostTotalRam', { val: (totalHostRamMb / 1024).toFixed(1) }) }}</span>
         </div>
         <div class="slider-wrapper">
           <input
@@ -78,9 +74,9 @@
             class="range-slider"
           />
           <div class="slider-ticks">
-            <span>{{ (minRamMb / 1024).toFixed(0) }} GB (Min)</span>
-            <span class="text-accent font-semibold">Recommended: {{ (recommendedRamMb / 1024).toFixed(0) }} GB</span>
-            <span>{{ (maxRamMb / 1024).toFixed(0) }} GB (Max Clamped)</span>
+            <span>{{ t('sizing.minRam', { min: (minRamMb / 1024).toFixed(0) }) }}</span>
+            <span class="text-accent font-semibold">{{ t('sizing.recommendedRam', { val: (recommendedRamMb / 1024).toFixed(0) }) }}</span>
+            <span>{{ t('sizing.maxRam', { max: (maxRamMb / 1024).toFixed(0) }) }}</span>
           </div>
         </div>
       </div>
@@ -88,8 +84,8 @@
       <!-- Storage Destination -->
       <div class="config-card">
         <div class="card-title-row">
-          <label class="config-label" for="drive-select">Destination Storage Drive for VHDX:</label>
-          <span class="sub-stat">Dynamic VHDX (Min 30 GB Free)</span>
+          <label class="config-label" for="drive-select">{{ t('sizing.storageDest') }}</label>
+          <span class="sub-stat">{{ t('sizing.dynamicVhdxHint') }}</span>
         </div>
         <select
           id="drive-select"
@@ -101,7 +97,7 @@
             :key="disk.mount_point"
             :value="disk.mount_point"
           >
-            {{ disk.name || disk.mount_point }} ({{ disk.mount_point }}) — {{ disk.available_space_gb.toFixed(1) }} GB Free ({{ disk.file_system }})
+            {{ disk.name || disk.mount_point }} ({{ disk.mount_point }}) — {{ disk.available_space_gb.toFixed(1) }} {{ t('common.gb') }} {{ t('common.free') }} ({{ disk.file_system }})
           </option>
         </select>
       </div>
@@ -109,18 +105,18 @@
       <!-- Allocation Summary Pill -->
       <div class="allocation-summary-box">
         <div class="summary-item">
-          <span class="sum-label">Host RAM Preserved</span>
-          <span class="sum-val text-emerald">{{ ((totalHostRamMb - assignedRamMb) / 1024).toFixed(1) }} GB</span>
+          <span class="sum-label">{{ t('sizing.hostRamPreserved') }}</span>
+          <span class="sum-val text-emerald">{{ ((totalHostRamMb - assignedRamMb) / 1024).toFixed(1) }} {{ t('common.gb') }}</span>
         </div>
         <div class="summary-item">
-          <span class="sum-label">Workload Class</span>
+          <span class="sum-label">{{ t('sizing.workloadClass') }}</span>
           <span class="sum-val text-accent">
-            {{ assignedRamMb >= 8192 ? 'High-Performance Production ERP' : 'Standard Enterprise Sovereign' }}
+            {{ assignedRamMb >= 8192 ? t('sizing.prodErp') : t('sizing.stdSovereign') }}
           </span>
         </div>
         <div class="summary-item">
-          <span class="sum-label">Virtual Switch</span>
-          <span class="sum-val">FastFree-Default-Switch (NAT + WG)</span>
+          <span class="sum-label">{{ t('sizing.vswitch') }}</span>
+          <span class="sum-val">{{ t('sizing.vswitchName') }}</span>
         </div>
       </div>
     </div>
@@ -128,10 +124,10 @@
     <!-- Action Bar -->
     <div class="action-bar">
       <button class="btn btn-secondary" @click="currentStep = 2">
-        ← Back to License
+        {{ t('sizing.backToLicense') }}
       </button>
       <button class="btn btn-primary" @click="currentStep = 4">
-        Inspect WireGuard Mesh Topology →
+        {{ t('sizing.inspectWireguard') }}
       </button>
     </div>
   </div>
@@ -148,6 +144,9 @@ import {
   assignedRamMb,
   targetDiskDrive,
 } from '../composables/useDiscovery';
+import { useI18n } from '../composables/useI18n';
+
+const { t, isRtl } = useI18n();
 
 const totalHostCores = computed(() => discoveryReport.value?.cpu_count || 8);
 const totalHostRamMb = computed(() => discoveryReport.value?.total_memory_mb || 16384);
@@ -182,28 +181,28 @@ const availableClients = computed(() => {
 }
 
 .header-box {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .step-tag {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #38BDF8;
+  color: var(--accent-sky, #38BDF8);
   letter-spacing: 0.8px;
   margin-bottom: 4px;
 }
 
 .header-box h2 {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
-  color: #F8FAFC;
+  color: var(--text-main, #F8FAFC);
   margin: 0;
 }
 
 .subtitle {
-  color: #94A3B8;
-  font-size: 13px;
+  color: var(--text-muted, #94A3B8);
+  font-size: 12px;
   margin-top: 4px;
   margin-bottom: 0;
 }
@@ -212,19 +211,19 @@ const availableClients = computed(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   overflow-y: auto;
   padding-right: 4px;
 }
 
 .config-card {
-  background: #18181B;
-  border: 1px solid #27272A;
+  background: var(--bg-card, #18181B);
+  border: 1px solid var(--border-color, #27272A);
   border-radius: 10px;
-  padding: 12px 16px;
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .card-title-row {
@@ -234,64 +233,66 @@ const availableClients = computed(() => {
 }
 
 .config-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #E4E4E7;
+  color: var(--text-main, #F4F4F5);
 }
 
 .topology-badge {
   font-size: 10px;
-  font-weight: 600;
-  background: rgba(56, 189, 248, 0.15);
-  color: #38BDF8;
-  padding: 2px 8px;
-  border-radius: 10px;
+  color: var(--accent-sky, #38BDF8);
+  background: rgba(56, 189, 248, 0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
   border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
 .sub-stat {
   font-size: 11px;
-  color: #71717A;
+  color: var(--text-muted, #71717A);
 }
 
 .custom-select {
   width: 100%;
-  background: #09090B;
-  border: 1px solid #3F3F46;
+  background: var(--bg-sub, #09090B);
+  border: 1px solid var(--border-color, #3F3F46);
   border-radius: 8px;
   padding: 8px 12px;
-  font-size: 13px;
-  color: #F8FAFC;
+  font-size: 12px;
+  color: var(--text-main, #F8FAFC);
   outline: none;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .custom-select:focus {
-  border-color: #38BDF8;
+  border-color: var(--accent-sky, #38BDF8);
 }
 
 .hint-text {
   font-size: 11px;
-  color: #71717A;
-  margin: 0;
+  color: var(--text-muted, #71717A);
+  margin: 2px 0 0 0;
+  line-height: 1.4;
 }
 
 .hint-text code {
-  color: #38BDF8;
+  color: var(--accent-sky, #38BDF8);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1px 4px;
+  border-radius: 3px;
 }
 
 .slider-wrapper {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-top: 4px;
+  padding: 4px 0;
 }
 
 .range-slider {
   width: 100%;
   height: 6px;
-  background: #27272A;
-  border-radius: 3px;
-  outline: none;
   accent-color: #1976D2;
   cursor: pointer;
 }
@@ -300,17 +301,17 @@ const availableClients = computed(() => {
   display: flex;
   justify-content: space-between;
   font-size: 10px;
-  color: #71717A;
+  color: var(--text-muted, #71717A);
 }
 
 .allocation-summary-box {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  background: #09090B;
-  border: 1px solid #27272A;
+  background: var(--bg-sub, #141416);
+  border: 1px solid var(--border-color, #27272A);
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 8px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .summary-item {
@@ -321,19 +322,18 @@ const availableClients = computed(() => {
 
 .sum-label {
   font-size: 10px;
-  font-weight: 600;
+  color: var(--text-muted, #71717A);
   text-transform: uppercase;
-  color: #71717A;
 }
 
 .sum-val {
   font-size: 12px;
   font-weight: 600;
-  color: #E4E4E7;
+  color: var(--text-main, #F8FAFC);
 }
 
 .text-accent {
-  color: #38BDF8;
+  color: var(--accent-sky, #38BDF8);
 }
 
 .text-emerald {
@@ -341,9 +341,13 @@ const availableClients = computed(() => {
 }
 
 .text-muted {
-  font-size: 11px;
-  color: #71717A;
+  color: var(--text-muted, #71717A);
   font-weight: normal;
+  font-size: 11px;
+}
+
+.font-semibold {
+  font-weight: 600;
 }
 
 .action-bar {
@@ -352,35 +356,36 @@ const availableClients = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #27272A;
+  border-top: 1px solid var(--border-color, #27272A);
 }
 
 .btn {
-  padding: 10px 22px;
+  padding: 8px 20px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   border: none;
   transition: all 0.2s ease;
+  font-family: inherit;
 }
 
 .btn-primary {
-  background: #1976D2;
+  background: var(--accent-primary, #1976D2);
   color: #FFFFFF;
 }
 
-.btn-primary:hover {
-  background: #1565C0;
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover, #1565C0);
   box-shadow: 0 2px 10px rgba(25, 118, 210, 0.4);
 }
 
 .btn-secondary {
-  background: #27272A;
-  color: #E4E4E7;
+  background: var(--bg-sub, #27272A);
+  color: var(--text-main, #E4E4E7);
 }
 
 .btn-secondary:hover {
-  background: #3F3F46;
+  background: var(--border-color, #3F3F46);
 }
 </style>

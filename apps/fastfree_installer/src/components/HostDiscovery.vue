@@ -1,17 +1,15 @@
 <template>
-  <div class="screen-container">
+  <div class="screen-container" :class="{ 'is-rtl': isRtl }">
     <div class="header-box">
-      <div class="step-tag">Step 1 of 6</div>
-      <h2>Host Discovery & System Diagnostics</h2>
-      <p class="subtitle">
-        Probing local hardware capabilities, virtualization extensions, and NVMe/SSD storage.
-      </p>
+      <div class="step-tag">{{ t('discovery.stepTag') }}</div>
+      <h2>{{ t('discovery.title') }}</h2>
+      <p class="subtitle">{{ t('discovery.subtitle') }}</p>
     </div>
 
     <!-- Loading State -->
     <div v-if="loadingDiscovery" class="loading-state">
       <div class="spinner"></div>
-      <p class="loading-msg">Probing low-level system telemetry via Windows Win32 API & Sysinfo...</p>
+      <p class="loading-msg">{{ t('discovery.loadingMsg') }}</p>
     </div>
 
     <!-- Discovery Data Grid -->
@@ -21,11 +19,11 @@
         <div class="diag-card">
           <div class="card-header">
             <span class="icon">💻</span>
-            <span class="label">Host Machine Identity</span>
+            <span class="label">{{ t('discovery.hostIdentity') }}</span>
           </div>
           <div class="metric-value text-accent">{{ discoveryReport.host_name }}</div>
           <div class="metric-sub">
-            Logged User: <strong>{{ discoveryReport.user_name }}</strong> (Administrator Privileges)
+            {{ t('discovery.loggedUser') }}: <strong>{{ discoveryReport.user_name }}</strong> {{ t('discovery.adminPriv') }}
           </div>
         </div>
 
@@ -33,9 +31,9 @@
         <div class="diag-card">
           <div class="card-header">
             <span class="icon">⚡</span>
-            <span class="label">Processor Topology</span>
+            <span class="label">{{ t('discovery.processorTopology') }}</span>
           </div>
-          <div class="metric-value">{{ discoveryReport.cpu_count }} Logical Cores</div>
+          <div class="metric-value">{{ t('discovery.logicalCores', { count: discoveryReport.cpu_count }) }}</div>
           <div class="metric-sub truncate" :title="discoveryReport.cpu_brand">
             {{ discoveryReport.cpu_brand }}
           </div>
@@ -45,11 +43,11 @@
         <div class="diag-card">
           <div class="card-header">
             <span class="icon">🧠</span>
-            <span class="label">Physical Memory (RAM)</span>
+            <span class="label">{{ t('discovery.physicalMemory') }}</span>
           </div>
-          <div class="metric-value">{{ (discoveryReport.total_memory_mb / 1024).toFixed(1) }} GB Total</div>
+          <div class="metric-value">{{ t('discovery.totalMemory', { val: (discoveryReport.total_memory_mb / 1024).toFixed(1) }) }}</div>
           <div class="metric-sub">
-            Available Headroom: <strong>{{ (discoveryReport.available_memory_mb / 1024).toFixed(1) }} GB</strong>
+            {{ t('discovery.availableHeadroom') }}: <strong>{{ (discoveryReport.available_memory_mb / 1024).toFixed(1) }} {{ t('common.gb') }}</strong>
           </div>
         </div>
 
@@ -63,13 +61,13 @@
         >
           <div class="card-header">
             <span class="icon">🛡️</span>
-            <span class="label">Hyper-V Hypervisor</span>
+            <span class="label">{{ t('discovery.hypervEngine') }}</span>
           </div>
           <div
             class="metric-value"
             :class="discoveryReport.hyperv.ready_for_hyperv ? 'text-emerald' : 'text-amber'"
           >
-            {{ discoveryReport.hyperv.ready_for_hyperv ? 'Operational & Ready' : 'Configuration Notice' }}
+            {{ discoveryReport.hyperv.ready_for_hyperv ? t('discovery.hypervReady') : t('discovery.hypervNotice') }}
           </div>
           <div class="metric-sub">{{ discoveryReport.hyperv.status_reason }}</div>
         </div>
@@ -78,19 +76,19 @@
       <!-- Disks Table -->
       <div class="disks-section">
         <div class="section-title">
-          <span>Target Storage Drives</span>
-          <span class="disks-count">{{ discoveryReport.disks.length }} Drives Detected</span>
+          <span>{{ t('discovery.targetStorageDrives') }}</span>
+          <span class="disks-count">{{ t('discovery.drivesDetected', { count: discoveryReport.disks.length }) }}</span>
         </div>
         <div class="table-wrapper">
           <table class="disks-table">
             <thead>
               <tr>
-                <th>Drive</th>
-                <th>Mount</th>
-                <th>File System</th>
-                <th>Total Capacity</th>
-                <th>Free Space</th>
-                <th>Status</th>
+                <th>{{ t('discovery.colDrive') }}</th>
+                <th>{{ t('discovery.colMount') }}</th>
+                <th>{{ t('discovery.colFs') }}</th>
+                <th>{{ t('discovery.colTotal') }}</th>
+                <th>{{ t('discovery.colFree') }}</th>
+                <th>{{ t('discovery.colStatus') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -102,10 +100,10 @@
                 <td><strong>{{ disk.name || disk.mount_point }}</strong></td>
                 <td><code>{{ disk.mount_point }}</code></td>
                 <td>{{ disk.file_system }}</td>
-                <td>{{ disk.total_space_gb.toFixed(1) }} GB</td>
+                <td>{{ disk.total_space_gb.toFixed(1) }} {{ t('common.gb') }}</td>
                 <td>
                   <span :class="disk.available_space_gb >= 30 ? 'text-emerald' : 'text-amber'">
-                    {{ disk.available_space_gb.toFixed(1) }} GB Free
+                    {{ disk.available_space_gb.toFixed(1) }} {{ t('common.gb') }} {{ t('common.free') }}
                   </span>
                 </td>
                 <td>
@@ -113,9 +111,9 @@
                     v-if="disk.mount_point === discoveryReport.recommendation.target_disk_drive"
                     class="badge-pill badge-primary"
                   >
-                    Recommended for VHDX
+                    {{ t('discovery.recommendedVhdx') }}
                   </span>
-                  <span v-else class="badge-pill badge-neutral">Available</span>
+                  <span v-else class="badge-pill badge-neutral">{{ t('common.available') }}</span>
                 </td>
               </tr>
             </tbody>
@@ -126,22 +124,22 @@
 
     <!-- Error or Fallback -->
     <div v-else class="error-state">
-      <p class="error-msg">Failed to retrieve host diagnostic report.</p>
-      <button class="btn btn-secondary" @click="fetchSystemDiscovery">Retry Discovery</button>
+      <p class="error-msg">{{ t('discovery.errorReport') }}</p>
+      <button class="btn btn-secondary" @click="fetchSystemDiscovery">{{ t('discovery.retryDiscovery') }}</button>
     </div>
 
     <!-- Action Bar -->
     <div class="action-bar">
       <div class="diag-summary-pill">
         <span class="dot-live"></span>
-        <span>Host Environment Compatible</span>
+        <span>{{ t('discovery.envCompatible') }}</span>
       </div>
       <button
         class="btn btn-primary"
         :disabled="loadingDiscovery || !discoveryReport"
         @click="goToNextStep"
       >
-        Proceed to License Activation →
+        {{ t('discovery.proceedToLicense') }}
       </button>
     </div>
   </div>
@@ -154,6 +152,9 @@ import {
   discoveryReport,
   fetchSystemDiscovery,
 } from '../composables/useDiscovery';
+import { useI18n } from '../composables/useI18n';
+
+const { t, isRtl } = useI18n();
 
 function goToNextStep() {
   currentStep.value = 2;
@@ -168,28 +169,28 @@ function goToNextStep() {
 }
 
 .header-box {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .step-tag {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #38BDF8;
+  color: var(--accent-sky, #38BDF8);
   letter-spacing: 0.8px;
   margin-bottom: 4px;
 }
 
 .header-box h2 {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
-  color: #F8FAFC;
+  color: var(--text-main, #F8FAFC);
   margin: 0;
 }
 
 .subtitle {
-  color: #94A3B8;
-  font-size: 13px;
+  color: var(--text-muted, #94A3B8);
+  font-size: 12px;
   margin-top: 4px;
   margin-bottom: 0;
 }
@@ -218,7 +219,7 @@ function goToNextStep() {
 }
 
 .loading-msg {
-  color: #94A3B8;
+  color: var(--text-muted, #94A3B8);
   font-size: 13px;
 }
 
@@ -226,7 +227,7 @@ function goToNextStep() {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
   overflow-y: auto;
   padding-right: 4px;
 }
@@ -234,29 +235,29 @@ function goToNextStep() {
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  gap: 12px;
 }
 
 .diag-card {
-  background: #18181B;
-  border: 1px solid #27272A;
+  background: var(--bg-card, #18181B);
+  border: 1px solid var(--border-color, #27272A);
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background-color 0.2s;
 }
 
 .diag-card:hover {
-  border-color: #3F3F46;
+  border-color: var(--border-highlight, #3F3F46);
 }
 
 .diag-card.border-ok {
-  border-left: 4px solid #10B981;
+  border-inline-start: 4px solid #10B981;
 }
 
 .diag-card.border-warn {
-  border-left: 4px solid #F59E0B;
+  border-inline-start: 4px solid #F59E0B;
 }
 
 .card-header {
@@ -267,26 +268,26 @@ function goToNextStep() {
 }
 
 .card-header .icon {
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .card-header .label {
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  color: #A1A1AA;
+  color: var(--text-muted, #A1A1AA);
   letter-spacing: 0.5px;
 }
 
 .metric-value {
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 700;
-  color: #F8FAFC;
+  color: var(--text-main, #F8FAFC);
   margin-bottom: 4px;
 }
 
 .text-accent {
-  color: #38BDF8;
+  color: var(--accent-sky, #38BDF8);
 }
 
 .text-emerald {
@@ -299,7 +300,7 @@ function goToNextStep() {
 
 .metric-sub {
   font-size: 11px;
-  color: #71717A;
+  color: var(--text-muted, #71717A);
 }
 
 .truncate {
@@ -309,10 +310,10 @@ function goToNextStep() {
 }
 
 .disks-section {
-  background: #18181B;
-  border: 1px solid #27272A;
+  background: var(--bg-card, #18181B);
+  border: 1px solid var(--border-color, #27272A);
   border-radius: 10px;
-  padding: 12px 16px;
+  padding: 12px 14px;
 }
 
 .section-title {
@@ -321,13 +322,13 @@ function goToNextStep() {
   align-items: center;
   font-size: 12px;
   font-weight: 600;
-  color: #D4D4D8;
-  margin-bottom: 10px;
+  color: var(--text-secondary, #D4D4D8);
+  margin-bottom: 8px;
 }
 
 .disks-count {
   font-size: 11px;
-  color: #71717A;
+  color: var(--text-muted, #71717A);
 }
 
 .table-wrapper {
@@ -337,21 +338,21 @@ function goToNextStep() {
 .disks-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .disks-table th {
-  text-align: left;
-  padding: 8px 10px;
-  color: #71717A;
+  text-align: start;
+  padding: 6px 10px;
+  color: var(--text-muted, #71717A);
   font-weight: 600;
-  border-bottom: 1px solid #27272A;
+  border-bottom: 1px solid var(--border-color, #27272A);
 }
 
 .disks-table td {
-  padding: 8px 10px;
-  color: #D4D4D8;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 6px 10px;
+  color: var(--text-secondary, #D4D4D8);
+  border-bottom: 1px solid var(--border-color, #27272A);
 }
 
 .recommended-row {
@@ -367,22 +368,22 @@ function goToNextStep() {
 
 .badge-primary {
   background: rgba(25, 118, 210, 0.2);
-  color: #38BDF8;
+  color: var(--accent-sky, #38BDF8);
   border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
 .badge-neutral {
-  background: #27272A;
-  color: #A1A1AA;
+  background: var(--bg-sub, #27272A);
+  color: var(--text-muted, #A1A1AA);
 }
 
 .action-bar {
   margin-top: auto;
-  padding-top: 16px;
+  padding-top: 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #27272A;
+  border-top: 1px solid var(--border-color, #27272A);
 }
 
 .diag-summary-pill {
@@ -390,7 +391,7 @@ function goToNextStep() {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #A1A1AA;
+  color: var(--text-muted, #A1A1AA);
 }
 
 .dot-live {
@@ -402,22 +403,23 @@ function goToNextStep() {
 }
 
 .btn {
-  padding: 10px 22px;
+  padding: 8px 20px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   border: none;
   transition: all 0.2s ease;
+  font-family: inherit;
 }
 
 .btn-primary {
-  background: #1976D2;
+  background: var(--accent-primary, #1976D2);
   color: #FFFFFF;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #1565C0;
+  background: var(--accent-hover, #1565C0);
   box-shadow: 0 2px 10px rgba(25, 118, 210, 0.4);
 }
 
@@ -427,11 +429,11 @@ function goToNextStep() {
 }
 
 .btn-secondary {
-  background: #27272A;
-  color: #E4E4E7;
+  background: var(--bg-sub, #27272A);
+  color: var(--text-main, #E4E4E7);
 }
 
 .btn-secondary:hover {
-  background: #3F3F46;
+  background: var(--border-color, #3F3F46);
 }
 </style>
