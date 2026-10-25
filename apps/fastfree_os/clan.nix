@@ -87,6 +87,8 @@ in
     };
 
     fastfree-erp = {
+      module.name = "fastfree-erp";
+      module.input = "self";
       roles.default.machines = builtins.listToAttrs (map (client: {
         name = client;
         value = { };
