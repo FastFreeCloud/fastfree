@@ -63,6 +63,10 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 
+# Rust / Tauri
+**/src-tauri/target/
+**/src-tauri/gen/
+
 # Nix
 result
 result-*

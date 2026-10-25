@@ -1,0 +1,181 @@
+###############################################################################
+#  ███████╗ █████╗ ███████╗████████╗███████╗██████╗ ███████╗███████╗
+#  ██╔════╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██╔══██╗██╔════╝██╔════╝
+#  █████╗  ███████║███████╗   ██║   █████╗  ██████╔╝█████╗  █████╗  
+#  ██╔══╝  ██╔══██║╚════██║   ██║   ██╔══╝  ██╔══██╗██╔══╝  ██╔══╝  
+#  ██║     ██║  ██║███████║   ██║   ██║     ██║  ██║███████╗███████╗
+#  ╚═╝     ╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝
+#
+#       FastFree Desktop Pipeline — Tauri v2 Windows Installer
+# ─────────────────────────────────────────────────────────────────────────────
+#  • التطبيق:             مثبت حزمة سطح المكتب الذكي (FastFree Sovereign Node Installer)
+#  • مجلد المصدر:         apps/fastfree_installer
+#  • تقنية الواجهة:       Vue 3 + TypeScript + Vite
+#  • إطار العمل:          Tauri v2 + Rust (x86_64-pc-windows-msvc)
+#  • الحزمة الناتجة:      NSIS Setup Executable (FastFree-Node-Setup.exe)
+#  • مسار المخرجات:       apps/fastfree_installer/src-tauri/target/release/bundle/nsis/*.exe
+#  • نمط الـ Tag الدلالي: installer-v* (مثال: installer-v26.5.0)
+#
+#  آلية العمل:
+#    1. التشغيل التلقائي عند التغيير في apps/fastfree_installer/** على فرع master أو التشغيل اليدوي.
+#    2. تجهيز بيئة Node.js 22 و pnpm 10 و Rust toolchain (stable-x86_64-pc-windows-msvc).
+#    3. تثبيت الاعتماديات عبر pnpm install --no-frozen-lockfile.
+#    4. فحص الأنواع (vue-tsc --noEmit) وبناء واجهة الويب (vite build).
+#    5. بناء حزمة سطح المكتب بواسطة Tauri CLI بصيغة NSIS (pnpm tauri build --bundles nsis).
+#    6. تصدير ملف التثبيت FastFree-Node-Setup.exe ورفعه كـ Artifact و Release رسمي.
+###############################################################################
+
+name: "10_build_tauri_installer"
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'apps/fastfree_installer/**'
+      - '.github/workflows/10_build_tauri_installer.yaml'
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: "إنشاء Release رسمي على GitHub مع ملف المثبت (FastFree-Node-Setup.exe)؟"
+        type: boolean
+        default: true
+
+concurrency:
+  group: 10_build_tauri_installer-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: "بناء ونشر مثبت سطح المكتب Tauri v2 (Windows)"
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: "1. إعداد بيئة Git الآمنة"
+        shell: bash
+        run: |
+          git config --global safe.directory '*'
+          git config --global init.defaultBranch master
+          git config --global core.autocrlf false
+
+      - name: "2. استدعاء الكود المصدري"
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: "3. إعداد بيئة Node.js 22"
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: "4. إعداد وتفعيل pnpm 10"
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+          run_install: false
+
+      - name: "5. إعداد بيئة Rust Toolchain (stable-x86_64-pc-windows-msvc)"
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: x86_64-pc-windows-msvc
+
+      - name: "6. تفعيل الكاش السحابي للـ Rust & Cargo"
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: apps/fastfree_installer/src-tauri
+
+      - name: "7. تثبيت الحزم والمكتبات"
+        shell: bash
+        run: |
+          pnpm install --no-frozen-lockfile
+
+      - name: "8. فحص الأنواع وبناء واجهة الويب (Vue 3 + Vite)"
+        shell: bash
+        run: |
+          cd apps/fastfree_installer
+          pnpm exec vue-tsc --noEmit
+          pnpm exec vite build
+
+      - name: "9. بناء تطبيق سطح المكتب ومثبت NSIS بواسطة Tauri v2"
+        shell: bash
+        run: |
+          cd apps/fastfree_installer
+          pnpm tauri build --bundles nsis
+
+      - name: "10. تجهيز وتوحيد ملف المثبت النهائي"
+        shell: bash
+        run: |
+          DIST_DIR="apps/fastfree_installer/src-tauri/target/release/bundle/nsis"
+          echo "محتويات مجلد مخرجات NSIS:"
+          ls -la "$DIST_DIR"
+
+          # البحث عن مثبت NSIS الذي تم إنشاؤه وتوحيد تسميته
+          SETUP_EXE=$(find "$DIST_DIR" -maxdepth 1 -name "*.exe" | head -n 1)
+          if [ -n "$SETUP_EXE" ]; then
+            echo "تم العثور على المثبت: $SETUP_EXE"
+            cp "$SETUP_EXE" "$DIST_DIR/FastFree-Node-Setup.exe"
+            cp "$SETUP_EXE" "./FastFree-Node-Setup.exe"
+            echo "تم إنشاء FastFree-Node-Setup.exe بنجاح"
+          else
+            echo "خطأ: لم يتم العثور على أي ملف .exe داخل $DIST_DIR"
+            exit 1
+          fi
+
+      - name: "11. رفع ملف المثبت كـ Artifact"
+        uses: actions/upload-artifact@v6
+        with:
+          name: FastFree-Node-Setup
+          path: |
+            FastFree-Node-Setup.exe
+            apps/fastfree_installer/src-tauri/target/release/bundle/nsis/*.exe
+          retention-days: 14
+
+      - name: "12. حساب رقم الإصدار الدلالي القادم"
+        id: version
+        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.create_release) || (github.event_name == 'push' && github.ref == 'refs/heads/master') }}
+        shell: bash
+        run: |
+          APP_KEY="installer"
+          if [[ "$GITHUB_REF" == refs/tags/${APP_KEY}-v* ]]; then
+            NEXT_TAG="${GITHUB_REF#refs/tags/}"
+          else
+            RAW_TAGS=$(git tag -l "${APP_KEY}-v*" || true)
+            if [ -z "$RAW_TAGS" ]; then
+              LATEST_TAG=""
+            else
+              LATEST_TAG=$(echo "$RAW_TAGS" | grep -E "^${APP_KEY}-v[0-9]+\.[0-9]+\.[0-9]+$" | sort -V | tail -n1 || true)
+            fi
+
+            if [ -z "$LATEST_TAG" ]; then
+              NEXT_TAG="${APP_KEY}-v26.5.0"
+            else
+              VERSION="${LATEST_TAG#${APP_KEY}-v}"
+              MAJOR=$(echo "$VERSION" | cut -d. -f1)
+              MINOR=$(echo "$VERSION" | cut -d. -f2)
+              PATCH=$(echo "$VERSION" | cut -d. -f3)
+              NEXT_PATCH=$((PATCH + 1))
+              NEXT_TAG="${APP_KEY}-v${MAJOR}.${MINOR}.${NEXT_PATCH}"
+            fi
+          fi
+          echo "tag=${NEXT_TAG}" >> $GITHUB_OUTPUT
+          echo "Next release tag: ${NEXT_TAG}"
+
+      - name: "13. نشر Release رسمي على GitHub مع مثبت FastFree-Node-Setup.exe"
+        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.create_release) || (github.event_name == 'push' && github.ref == 'refs/heads/master') }}
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "FastFree Sovereign Node Installer ${{ steps.version.outputs.tag }}"
+          draft: false
+          prerelease: false
+          files: |
+            FastFree-Node-Setup.exe
+            apps/fastfree_installer/src-tauri/target/release/bundle/nsis/*.exe
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

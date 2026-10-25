@@ -41,3 +41,45 @@ pub struct SystemDiscoveryReport {
     pub hyperv: HyperVStatus,
     pub recommendation: VmAllocationRecommendation,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LicenseVerificationResult {
+    pub is_valid: bool,
+    pub key: String,
+    pub tier: String,
+    pub tier_name: String,
+    pub company_name: String,
+    pub expires_at: Option<String>,
+    pub max_users: u32,
+    pub max_nodes: u32,
+    pub eligible_clients: Vec<String>,
+    pub unlocked_features: Vec<String>,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WireGuardPeerConfig {
+    pub client_id: String,
+    pub controller_endpoint: String,
+    pub listen_port: u16,
+    pub controller_port: u16,
+    pub interface_name: String,
+    pub client_tunnel_ip: String,
+    pub controller_tunnel_ip: String,
+    pub mesh_subnet: String,
+    pub keepalive_seconds: u32,
+    pub public_key: String,
+    pub controller_public_key: String,
+    pub cipher: String,
+    pub mtu: u32,
+    pub status: String,
+    pub latency_ms: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VmActionStatus {
+    pub success: bool,
+    pub client_id: String,
+    pub state: String,
+    pub message: String,
+}
