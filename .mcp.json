@@ -35,6 +35,14 @@
         "@hypothesi/tauri-mcp-server@0.13.2"
       ],
       "type": "stdio"
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@4.4.4"
+      ],
+      "type": "stdio"
     }
   }
 }
