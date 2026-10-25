@@ -13,7 +13,7 @@ pub struct HostDiscoveryPipeline;
 impl HostDiscoveryPipeline {
     pub fn collect_report() -> Result<SystemDiscoveryReport, String> {
         let mut sys = System::new_with_specifics(
-            RefreshKind::new()
+            RefreshKind::nothing()
                 .with_cpu(CpuRefreshKind::everything())
                 .with_memory(MemoryRefreshKind::everything()),
         );
@@ -26,7 +26,7 @@ impl HostDiscoveryPipeline {
 
         let user_name = env::var("USERNAME")
             .or_else(|_| env::var("USER"))
-            .unwrap_or_else(|| "User".to_string());
+            .unwrap_or_else(|_| "User".to_string());
 
         let total_memory_mb = sys.total_memory() / (1024 * 1024);
         let available_memory_mb = sys.available_memory() / (1024 * 1024);
@@ -81,7 +81,7 @@ impl HostDiscoveryPipeline {
         let hardware_virt_enabled = {
             #[cfg(windows)]
             unsafe {
-                IsProcessorFeaturePresent(PF_VIRT_FIRMWARE_ENABLED)
+                IsProcessorFeaturePresent(PF_VIRT_FIRMWARE_ENABLED).as_bool()
             }
             #[cfg(not(windows))]
             false
@@ -116,10 +116,8 @@ impl HostDiscoveryPipeline {
         #[cfg(target_arch = "x86_64")]
         {
             use std::arch::x86_64::__cpuid;
-            unsafe {
-                let res = __cpuid(1);
-                (res.ecx & (1 << 31)) != 0
-            }
+            let res = __cpuid(1);
+            (res.ecx & (1 << 31)) != 0
         }
         #[cfg(not(target_arch = "x86_64"))]
         {
@@ -140,11 +138,14 @@ impl HostDiscoveryPipeline {
                     if let Ok(svc_handle) = svc {
                         let mut status = SERVICE_STATUS_PROCESS::default();
                         let mut bytes_needed = 0;
+                        let buf = std::slice::from_raw_parts_mut(
+                            &mut status as *mut _ as *mut u8,
+                            std::mem::size_of::<SERVICE_STATUS_PROCESS>(),
+                        );
                         let query = QueryServiceStatusEx(
                             svc_handle,
                             SC_STATUS_PROCESS_INFO,
-                            Some(&mut status as *mut _ as *mut u8),
-                            std::mem::size_of::<SERVICE_STATUS_PROCESS>() as u32,
+                            Some(buf),
                             &mut bytes_needed,
                         );
                         let is_running = query.is_ok() && status.dwCurrentState == SERVICE_RUNNING;
