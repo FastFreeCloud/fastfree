@@ -174,8 +174,13 @@ jobs:
           fi
           echo "Found VHDX: $VHDX_SRC ($(stat -c%s "$VHDX_SRC") bytes)"
 
-          echo "Publishing raw VHDX image for network bootstrapper..."
-          gh release upload clan-images "$VHDX_SRC" --clobber
+          echo "Compressing VHDX with zstd to comply with GitHub 2GB limit and optimize download..."
+          zstd -T0 -12 --rm "$VHDX_SRC" -o "${VHDX_SRC}.zst"
+          VHDX_ZST="${VHDX_SRC}.zst"
+          echo "Compressed image size: $(stat -c%s "$VHDX_ZST") bytes"
+
+          echo "Publishing compressed VHDX image for network bootstrapper..."
+          gh release upload clan-images "$VHDX_ZST" --clobber
 
           echo "Setting up Node.js for Tauri build..."
           npm install -g pnpm@11.11.0
