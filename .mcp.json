@@ -27,6 +27,14 @@
         "mcp"
       ],
       "type": "stdio"
+    },
+    "tauri": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@hypothesi/tauri-mcp-server@latest"
+      ],
+      "type": "stdio"
     }
   }
 }
