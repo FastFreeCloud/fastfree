@@ -1,5 +1,5 @@
 <template>
-  <div class="step-progress-bar">
+  <div class="step-progress-bar" :class="{ 'is-rtl': isRtl }">
     <div
       v-for="step in steps"
       :key="step.number"
@@ -15,8 +15,8 @@
         <span v-else>{{ step.number }}</span>
       </div>
       <div class="step-info">
-        <span class="step-title">{{ step.title }}</span>
-        <span class="step-subtitle">{{ step.subtitle }}</span>
+        <span class="step-title">{{ t(step.titleKey) }}</span>
+        <span class="step-subtitle">{{ t(step.subtitleKey) }}</span>
       </div>
       <div v-if="step.number < steps.length" class="step-line"></div>
     </div>
@@ -25,20 +25,23 @@
 
 <script setup lang="ts">
 import { currentStep } from '../composables/useDiscovery';
+import { useI18n } from '../composables/useI18n';
 
-interface Step {
+const { t, isRtl } = useI18n();
+
+interface StepConfig {
   number: number;
-  title: string;
-  subtitle: string;
+  titleKey: string;
+  subtitleKey: string;
 }
 
-const steps: Step[] = [
-  { number: 1, title: 'Discovery', subtitle: 'Host Diagnostics' },
-  { number: 2, title: 'License', subtitle: 'Cloud Activation' },
-  { number: 3, title: 'Node Sizing', subtitle: 'vCPU & RAM' },
-  { number: 4, title: 'WireGuard', subtitle: 'Mesh Peer Config' },
-  { number: 5, title: 'Deploy', subtitle: 'VHDX Provisioning' },
-  { number: 6, title: 'Launchpad', subtitle: 'Node Companion' },
+const steps: StepConfig[] = [
+  { number: 1, titleKey: 'steps.step1.title', subtitleKey: 'steps.step1.subtitle' },
+  { number: 2, titleKey: 'steps.step2.title', subtitleKey: 'steps.step2.subtitle' },
+  { number: 3, titleKey: 'steps.step3.title', subtitleKey: 'steps.step3.subtitle' },
+  { number: 4, titleKey: 'steps.step4.title', subtitleKey: 'steps.step4.subtitle' },
+  { number: 5, titleKey: 'steps.step5.title', subtitleKey: 'steps.step5.subtitle' },
+  { number: 6, titleKey: 'steps.step6.title', subtitleKey: 'steps.step6.subtitle' },
 ];
 
 function navigateIfAllowed(target: number) {
@@ -55,9 +58,10 @@ function navigateIfAllowed(target: number) {
   align-items: center;
   justify-content: space-between;
   padding: 12px 24px;
-  background: #18181B;
-  border-bottom: 1px solid #27272A;
+  background: var(--bg-card, #18181B);
+  border-bottom: 1px solid var(--border-color, #27272A);
   user-select: none;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 .step-item {
@@ -66,7 +70,7 @@ function navigateIfAllowed(target: number) {
   gap: 10px;
   position: relative;
   flex: 1;
-  opacity: 0.5;
+  opacity: 0.55;
   transition: all 0.25s ease;
 }
 
@@ -87,22 +91,22 @@ function navigateIfAllowed(target: number) {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #27272A;
-  color: #A1A1AA;
+  background: var(--bg-sub, #27272A);
+  color: var(--text-muted, #A1A1AA);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  border: 1px solid #3F3F46;
+  border: 1px solid var(--border-color, #3F3F46);
   flex-shrink: 0;
   transition: all 0.25s ease;
 }
 
 .step-item.active .step-badge {
-  background: #1976D2;
+  background: var(--accent-primary, #1976D2);
   color: #FFFFFF;
-  border-color: #38BDF8;
+  border-color: var(--accent-sky, #38BDF8);
   box-shadow: 0 0 10px rgba(25, 118, 210, 0.5);
 }
 
@@ -124,20 +128,20 @@ function navigateIfAllowed(target: number) {
 .step-title {
   font-size: 12px;
   font-weight: 600;
-  color: #F4F4F5;
+  color: var(--text-main, #F4F4F5);
   white-space: nowrap;
 }
 
 .step-subtitle {
   font-size: 10px;
-  color: #A1A1AA;
+  color: var(--text-muted, #A1A1AA);
   white-space: nowrap;
 }
 
 .step-line {
   flex: 1;
   height: 2px;
-  background: #27272A;
+  background: var(--border-color, #27272A);
   margin: 0 12px;
   min-width: 14px;
 }

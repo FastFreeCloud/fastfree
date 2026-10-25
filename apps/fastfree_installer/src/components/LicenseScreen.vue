@@ -1,23 +1,21 @@
 <template>
-  <div class="screen-container">
+  <div class="screen-container" :class="{ 'is-rtl': isRtl }">
     <div class="header-box">
-      <div class="step-tag">Step 2 of 6</div>
-      <h2>FastFree License Activation & Registry Verification</h2>
-      <p class="subtitle">
-        Validate your enterprise subscription key against the FastFree Cloud Registry or offline cryptographic signature.
-      </p>
+      <div class="step-tag">{{ t('license.stepTag') }}</div>
+      <h2>{{ t('license.title') }}</h2>
+      <p class="subtitle">{{ t('license.subtitle') }}</p>
     </div>
 
     <div class="content-body">
       <!-- Input Section -->
       <div class="input-card">
-        <label class="input-label" for="license-input">FastFree License Key:</label>
+        <label class="input-label" for="license-input">{{ t('license.licenseInputLabel') }}</label>
         <div class="input-row">
           <input
             id="license-input"
             v-model="licenseInput"
             type="text"
-            placeholder="e.g. FF-ENT-2026-SOVEREIGN-KEY"
+            :placeholder="t('license.placeholder')"
             class="text-input"
             :disabled="isVerifying"
             @keyup.enter="handleVerify"
@@ -28,13 +26,13 @@
             @click="handleVerify"
           >
             <span v-if="isVerifying" class="spinner-sm"></span>
-            <span v-else>Verify Key 🔍</span>
+            <span v-else>{{ t('license.verifyBtn') }}</span>
           </button>
         </div>
 
         <!-- Verification Mode and Test Presets -->
         <div class="presets-row">
-          <span class="preset-label">Google Sheets / FastFree Presets:</span>
+          <span class="preset-label">{{ t('license.presetsLabel') }}</span>
           <button
             type="button"
             class="preset-chip chip-ent"
@@ -70,10 +68,10 @@
             <input v-model="onlineVerification" type="checkbox" />
             <span class="checkmark"></span>
             <span class="check-text">
-              Verify against Cloud Registry (Google Sheets API Endpoint)
+              {{ t('license.onlineCheckLabel') }}
             </span>
           </label>
-          <span class="offline-badge">Offline Fallback Enabled</span>
+          <span class="offline-badge">{{ t('license.offlineFallback') }}</span>
         </div>
       </div>
 
@@ -81,7 +79,7 @@
       <div v-if="errorMessage" class="error-banner">
         <span class="error-icon">⚠️</span>
         <div class="error-details">
-          <strong>License Verification Failed</strong>
+          <strong>{{ t('license.verFailed') }}</strong>
           <p>{{ errorMessage }}</p>
         </div>
       </div>
@@ -94,36 +92,36 @@
           </div>
           <div class="status-pill status-active">
             <span class="dot-green"></span>
-            <span>Active & Cryptographically Verified</span>
+            <span>{{ t('license.activeVerified') }}</span>
           </div>
         </div>
 
         <div class="license-details-grid">
           <div class="detail-item">
-            <span class="detail-label">License Key</span>
+            <span class="detail-label">{{ t('license.keyLabel') }}</span>
             <span class="detail-val font-mono">{{ licenseState.key }}</span>
           </div>
           <div class="detail-item">
-            <span class="detail-label">Licensed Entity</span>
+            <span class="detail-label">{{ t('license.entityLabel') }}</span>
             <span class="detail-val">{{ licenseState.company_name }}</span>
           </div>
           <div class="detail-item">
-            <span class="detail-label">Node Quota</span>
+            <span class="detail-label">{{ t('license.quotaLabel') }}</span>
             <span class="detail-val text-accent">
-              Up to {{ licenseState.max_nodes }} Sovereign Node(s)
+              {{ t('license.nodesQuota', { count: licenseState.max_nodes }) }}
             </span>
           </div>
           <div class="detail-item">
-            <span class="detail-label">Seat Allocation</span>
+            <span class="detail-label">{{ t('license.seatLabel') }}</span>
             <span class="detail-val">
-              {{ licenseState.max_users >= 10000 ? 'Unlimited Local Users' : `${licenseState.max_users} Users` }}
+              {{ licenseState.max_users >= 10000 ? t('license.unlimitedUsers') : t('license.usersCount', { count: licenseState.max_users }) }}
             </span>
           </div>
         </div>
 
         <!-- Unlocked Packages & Capabilities -->
         <div class="unlocked-features-box">
-          <div class="features-title">Unlocked Enterprise Modules & Services:</div>
+          <div class="features-title">{{ t('license.unlockedModules') }}</div>
           <div class="feature-badges-wrap">
             <span
               v-for="feature in licenseState.unlocked_features"
@@ -140,14 +138,14 @@
     <!-- Action Bar -->
     <div class="action-bar">
       <button class="btn btn-secondary" @click="currentStep = 1">
-        ← Back to Discovery
+        {{ t('license.backToDiscovery') }}
       </button>
       <button
         class="btn btn-primary"
         :disabled="!licenseState || !licenseState.is_valid"
         @click="currentStep = 3"
       >
-        Configure Sovereign Node Sizing →
+        {{ t('license.configureSizing') }}
       </button>
     </div>
   </div>
@@ -160,6 +158,9 @@ import {
   licenseState,
   verifyLicense,
 } from '../composables/useDiscovery';
+import { useI18n } from '../composables/useI18n';
+
+const { t, isRtl } = useI18n();
 
 const licenseInput = ref('FF-ENT-2026-SOVEREIGN-KEY');
 const onlineVerification = ref(true);
@@ -195,7 +196,7 @@ function fillKey(key: string) {
 }
 
 function formatFeatureName(feature: string): string {
-  const map: Record<string, string> = {
+  const mapEn: Record<string, string> = {
     sovereign_hyperv_appliance: 'Hyper-V Sovereign Appliance',
     wireguard_mesh_vpn: 'WireGuard Encrypted Mesh',
     accounting_general_ledger: 'General Ledger & Accounts',
@@ -207,6 +208,21 @@ function formatFeatureName(feature: string): string {
     unlimited_local_users: 'Unlimited Enterprise Seats',
     evaluation_mode: '14-Day Evaluation Sandbox',
   };
+
+  const mapAr: Record<string, string> = {
+    sovereign_hyperv_appliance: 'بيئة العتاد السيادي على Hyper-V',
+    wireguard_mesh_vpn: 'نفق شبكة واير جارد المشفر',
+    accounting_general_ledger: 'دفتر الأستاذ العام والمحاسبة',
+    inventory_warehouse_suite: 'إدارة المخزون والمستودعات',
+    sales_and_crm_engine: 'المبيعات والعملاء والفواتير',
+    purchase_and_supply_chain: 'المشتريات وسلاسل الإمداد',
+    hr_payroll_management: 'الموارد البشرية والرواتب',
+    clan_nixos_self_healing: 'نظام الاستشفاء الذاتي Clan 26.05',
+    unlimited_local_users: 'تراخيص مستخدمين غير محدودة',
+    evaluation_mode: 'بيئة تجريبية تقييمية (14 يوماً)',
+  };
+
+  const map = isRtl.value ? mapAr : mapEn;
   return map[feature] || feature.replace(/_/g, ' ');
 }
 </script>
@@ -219,28 +235,28 @@ function formatFeatureName(feature: string): string {
 }
 
 .header-box {
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .step-tag {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #38BDF8;
+  color: var(--accent-sky, #38BDF8);
   letter-spacing: 0.8px;
   margin-bottom: 4px;
 }
 
 .header-box h2 {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
-  color: #F8FAFC;
+  color: var(--text-main, #F8FAFC);
   margin: 0;
 }
 
 .subtitle {
-  color: #94A3B8;
-  font-size: 13px;
+  color: var(--text-muted, #94A3B8);
+  font-size: 12px;
   margin-top: 4px;
   margin-bottom: 0;
 }
@@ -249,25 +265,25 @@ function formatFeatureName(feature: string): string {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   overflow-y: auto;
   padding-right: 4px;
 }
 
 .input-card {
-  background: #18181B;
-  border: 1px solid #27272A;
+  background: var(--bg-card, #18181B);
+  border: 1px solid var(--border-color, #27272A);
   border-radius: 10px;
-  padding: 16px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .input-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #E4E4E7;
+  color: var(--text-secondary, #E4E4E7);
 }
 
 .input-row {
@@ -277,91 +293,112 @@ function formatFeatureName(feature: string): string {
 
 .text-input {
   flex: 1;
-  background: #09090B;
-  border: 1px solid #3F3F46;
+  background: var(--bg-sub, #09090B);
+  border: 1px solid var(--border-color, #3F3F46);
   border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 14px;
-  color: #F8FAFC;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-main, #F8FAFC);
   font-family: 'Consolas', 'Courier New', monospace;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .text-input:focus {
-  border-color: #38BDF8;
+  border-color: var(--accent-sky, #38BDF8);
   box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
 }
 
 .btn-action {
-  background: #1976D2;
+  background: var(--accent-primary, #1976D2);
   color: #FFFFFF;
-  padding: 10px 18px;
+  padding: 8px 16px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 120px;
+  gap: 6px;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
 .btn-action:hover:not(:disabled) {
-  background: #1565C0;
+  background: var(--accent-hover, #1565C0);
+}
+
+.btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin 0.8s infinite linear;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .presets-row {
   display: flex;
   align-items: center;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 6px;
 }
 
 .preset-label {
   font-size: 11px;
-  color: #71717A;
+  color: var(--text-muted, #71717A);
+  margin-inline-end: 4px;
 }
 
 .preset-chip {
-  background: #27272A;
-  border: 1px solid #3F3F46;
-  color: #D4D4D8;
-  padding: 4px 10px;
-  border-radius: 14px;
-  font-size: 11px;
+  background: var(--bg-sub, #27272A);
+  border: 1px solid var(--border-color, #3F3F46);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 10px;
+  color: var(--text-muted, #A1A1AA);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.15s ease;
+  font-family: inherit;
 }
 
 .preset-chip:hover {
-  background: #3F3F46;
-  color: #FFFFFF;
+  background: var(--bg-hover, #3F3F46);
+  color: var(--text-main, #FFFFFF);
+  border-color: #52525B;
 }
 
 .chip-ent {
-  border-color: rgba(56, 189, 248, 0.4);
-  color: #38BDF8;
+  border-color: rgba(56, 189, 248, 0.3);
+  color: var(--accent-sky, #38BDF8);
 }
 
 .chip-std {
-  border-color: rgba(52, 211, 153, 0.4);
+  border-color: rgba(16, 185, 129, 0.3);
   color: #34D399;
 }
 
 .chip-trl {
-  border-color: rgba(251, 191, 36, 0.4);
+  border-color: rgba(245, 158, 11, 0.3);
   color: #FBBF24;
 }
 
 .registry-mode {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-top: 4px;
-  padding-top: 10px;
-  border-top: 1px solid #27272A;
+  align-items: center;
+  padding-top: 4px;
 }
 
 .checkbox-container {
@@ -369,47 +406,58 @@ function formatFeatureName(feature: string): string {
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  font-size: 12px;
-  color: #A1A1AA;
+  font-size: 11px;
+  color: var(--text-muted, #A1A1AA);
+  user-select: none;
+}
+
+.checkbox-container input {
+  cursor: pointer;
+  accent-color: #1976D2;
 }
 
 .offline-badge {
   font-size: 10px;
-  color: #71717A;
-  background: #27272A;
-  padding: 2px 8px;
-  border-radius: 10px;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .error-banner {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 8px;
   padding: 12px 14px;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
-  color: #FCA5A5;
-  font-size: 12px;
 }
 
 .error-icon {
-  font-size: 18px;
+  font-size: 16px;
+}
+
+.error-details strong {
+  color: #F87171;
+  font-size: 12px;
 }
 
 .error-details p {
-  margin: 4px 0 0 0;
-  color: #F87171;
+  color: #FCA5A5;
+  font-size: 11px;
+  margin: 2px 0 0 0;
 }
 
 .license-credential-card {
-  background: #18181B;
-  border: 1px solid #27272A;
+  background: var(--bg-card, #18181B);
+  border: 1px solid var(--border-color, #27272A);
   border-radius: 10px;
-  padding: 16px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .license-top {
@@ -419,29 +467,30 @@ function formatFeatureName(feature: string): string {
 }
 
 .badge-tier {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  padding: 4px 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 3px 10px;
   border-radius: 6px;
-  letter-spacing: 0.5px;
 }
 
 .tier-enterprise {
-  background: linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 100%);
-  color: #93C5FD;
-  border: 1px solid #3B82F6;
+  background: rgba(25, 118, 210, 0.2);
+  color: var(--accent-sky, #38BDF8);
+  border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
 .tier-standard {
-  background: linear-gradient(135deg, #064E3B 0%, #047857 100%);
-  color: #A7F3D0;
-  border: 1px solid #10B981;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .tier-trial {
-  background: linear-gradient(135deg, #78350F 0%, #B45309 100%);
-  color: #FDE68A;
-  border: 1px solid #F59E0B;
+  background: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .status-pill {
@@ -463,11 +512,7 @@ function formatFeatureName(feature: string): string {
 .license-details-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  background: #09090B;
-  border: 1px solid #27272A;
-  border-radius: 8px;
-  padding: 12px 14px;
+  gap: 10px;
 }
 
 .detail-item {
@@ -478,27 +523,28 @@ function formatFeatureName(feature: string): string {
 
 .detail-label {
   font-size: 10px;
-  font-weight: 600;
   text-transform: uppercase;
-  color: #71717A;
+  color: var(--text-muted, #71717A);
+  letter-spacing: 0.5px;
 }
 
 .detail-val {
   font-size: 13px;
   font-weight: 600;
-  color: #E4E4E7;
-}
-
-.font-mono {
-  font-family: 'Consolas', monospace;
-  font-size: 12px;
+  color: var(--text-main, #F8FAFC);
 }
 
 .text-accent {
-  color: #38BDF8;
+  color: var(--accent-sky, #38BDF8);
+}
+
+.font-mono {
+  font-family: 'Consolas', 'Courier New', monospace;
 }
 
 .unlocked-features-box {
+  border-top: 1px solid var(--border-color, #27272A);
+  padding-top: 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -507,8 +553,7 @@ function formatFeatureName(feature: string): string {
 .features-title {
   font-size: 11px;
   font-weight: 600;
-  color: #A1A1AA;
-  text-transform: uppercase;
+  color: var(--text-secondary, #D4D4D8);
 }
 
 .feature-badges-wrap {
@@ -518,53 +563,41 @@ function formatFeatureName(feature: string): string {
 }
 
 .feature-pill {
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #E2E8F0;
-  padding: 3px 9px;
+  background: var(--bg-sub, #27272A);
+  color: var(--text-secondary, #D4D4D8);
+  font-size: 10px;
+  padding: 3px 8px;
   border-radius: 6px;
-  font-size: 11px;
-}
-
-.spinner-sm {
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-top-color: #FFF;
-  border-radius: 50%;
-  animation: spin 0.8s infinite linear;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
+  border: 1px solid var(--border-color, #3F3F46);
 }
 
 .action-bar {
   margin-top: auto;
-  padding-top: 16px;
+  padding-top: 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #27272A;
+  border-top: 1px solid var(--border-color, #27272A);
 }
 
 .btn {
-  padding: 10px 22px;
+  padding: 8px 20px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   border: none;
   transition: all 0.2s ease;
+  font-family: inherit;
 }
 
 .btn-primary {
-  background: #1976D2;
+  background: var(--accent-primary, #1976D2);
   color: #FFFFFF;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #1565C0;
+  background: var(--accent-hover, #1565C0);
   box-shadow: 0 2px 10px rgba(25, 118, 210, 0.4);
 }
 
@@ -574,11 +607,11 @@ function formatFeatureName(feature: string): string {
 }
 
 .btn-secondary {
-  background: #27272A;
-  color: #E4E4E7;
+  background: var(--bg-sub, #27272A);
+  color: var(--text-main, #E4E4E7);
 }
 
 .btn-secondary:hover {
-  background: #3F3F46;
+  background: var(--border-color, #3F3F46);
 }
 </style>

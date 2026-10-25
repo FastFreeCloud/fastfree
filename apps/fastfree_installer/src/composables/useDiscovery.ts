@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
+import { logInfo, logWarn, logError, logSuccess } from './useDiagnostics';
 
 export interface DiskTelemetry {
   name: string;
@@ -99,49 +100,103 @@ export const isProvisioningDone = ref<boolean>(false);
 
 // Tauri Invocations
 export async function fetchSystemDiscovery(): Promise<SystemDiscoveryReport> {
-  const result = await invoke<SystemDiscoveryReport>('get_system_discovery_report');
-  discoveryReport.value = result;
-  if (result.recommendation) {
-    assignedCpuCores.value = result.recommendation.recommended_cores;
-    assignedRamMb.value = result.recommendation.recommended_ram_mb;
-    targetDiskDrive.value = result.recommendation.target_disk_drive;
+  logInfo('Discovery', 'Initiating system telemetry and hardware discovery...');
+  try {
+    const result = await invoke<SystemDiscoveryReport>('get_system_discovery_report');
+    discoveryReport.value = result;
+    if (result.recommendation) {
+      assignedCpuCores.value = result.recommendation.recommended_cores;
+      assignedRamMb.value = result.recommendation.recommended_ram_mb;
+      targetDiskDrive.value = result.recommendation.target_disk_drive;
+    }
+    logSuccess(
+      'Discovery',
+      `Hardware detected: ${result.cpu_count} vCPUs, ${(result.total_memory_mb / 1024).toFixed(1)} GB RAM, Hyper-V: ${
+        result.hyperv.ready_for_hyperv ? 'Ready' : 'Notice'
+      }`,
+      `Host: ${result.host_name}, Recommended: ${result.recommendation.recommended_cores} Cores / ${(
+        result.recommendation.recommended_ram_mb / 1024
+      ).toFixed(0)} GB RAM on ${result.recommendation.target_disk_drive}`
+    );
+    return result;
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    logError('Discovery', 'Hardware discovery failed', msg);
+    throw err;
   }
-  return result;
 }
 
 export async function dismissSplash(): Promise<void> {
   try {
     await invoke('close_splashscreen');
+    logInfo('Window', 'Splashscreen closed, main installer view presented.');
   } catch (err) {
     console.warn('Splashscreen dismiss warning:', err);
   }
 }
 
 export async function verifyLicense(key: string, onlineCheck: boolean = true): Promise<LicenseVerificationResult> {
-  const result = await invoke<LicenseVerificationResult>('verify_license_key', {
-    key,
-    onlineCheck,
-  });
-  licenseState.value = result;
-  if (result.eligible_clients.length > 0 && !result.eligible_clients.includes(selectedClientId.value)) {
-    selectedClientId.value = result.eligible_clients[0];
+  logInfo('Licensing', `Validating license key: ${key.substring(0, 10)}... (Online: ${onlineCheck})`);
+  try {
+    const result = await invoke<LicenseVerificationResult>('verify_license_key', {
+      key,
+      onlineCheck,
+    });
+    licenseState.value = result;
+    if (result.eligible_clients.length > 0 && !result.eligible_clients.includes(selectedClientId.value)) {
+      selectedClientId.value = result.eligible_clients[0];
+    }
+    if (result.is_valid) {
+      logSuccess(
+        'Licensing',
+        `License valid: ${result.tier_name} (${result.company_name})`,
+        `Max nodes: ${result.max_nodes}, Max users: ${result.max_users}, Eligible: [${result.eligible_clients.join(', ')}]`
+      );
+    } else {
+      logWarn('Licensing', `License verification notice: ${result.message}`);
+    }
+    return result;
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    logError('Licensing', 'License verification error', msg);
+    throw err;
   }
-  return result;
 }
 
 export async function fetchWireGuardConfig(clientId: string): Promise<WireGuardPeerConfig> {
-  const result = await invoke<WireGuardPeerConfig>('get_wireguard_status', {
-    clientId,
-  });
-  wireGuardConfig.value = result;
-  return result;
+  logInfo('WireGuard', `Querying WireGuard configuration for ${clientId}...`);
+  try {
+    const result = await invoke<WireGuardPeerConfig>('get_wireguard_status', {
+      clientId,
+    });
+    wireGuardConfig.value = result;
+    logSuccess(
+      'WireGuard',
+      `WireGuard topology ready: UDP Port ${result.listen_port}, Overlay ${result.client_tunnel_ip}`,
+      `Interface: ${result.interface_name}, Controller: ${result.controller_endpoint}:${result.controller_port}`
+    );
+    return result;
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    logError('WireGuard', `Failed to load WireGuard configuration for ${clientId}`, msg);
+    throw err;
+  }
 }
 
 export async function executeVmCommand(action: 'start' | 'stop' | 'restart', clientId: string): Promise<VmActionStatus> {
-  return await invoke<VmActionStatus>('manage_vm', {
-    action,
-    clientId,
-  });
+  logInfo('Hyper-V', `Executing VM power command: ${action} on ${clientId}...`);
+  try {
+    const res = await invoke<VmActionStatus>('manage_vm', {
+      action,
+      clientId,
+    });
+    logSuccess('Hyper-V', `VM ${clientId} state changed: ${res.state}`);
+    return res;
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    logError('Hyper-V', `Failed executing ${action} on ${clientId}`, msg);
+    throw err;
+  }
 }
 
 export async function minimizeToTray(): Promise<void> {

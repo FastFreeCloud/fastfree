@@ -52,7 +52,8 @@
       "digestAlgorithm": "sha256",
       "timestampUrl": "",
       "nsis": {
-        "installMode": "currentUser"
+        "installMode": "perMachine",
+        "languages": ["English", "Arabic"]
       }
     }
   },
