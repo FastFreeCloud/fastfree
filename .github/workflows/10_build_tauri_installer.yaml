@@ -39,6 +39,43 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: "2.5 حساب رقم الإصدار الدلالي وحقنه في ملفات الإعداد"
+        id: version
+        shell: bash
+        run: |
+          APP_KEY="installer"
+          git fetch --tags --force origin || true
+          RAW_TAGS=$(git tag -l "${APP_KEY}-v*" || true)
+          echo "Tags found on origin:"
+          echo "$RAW_TAGS"
+          if [ -z "$RAW_TAGS" ]; then
+            LATEST_TAG=""
+          else
+            LATEST_TAG=$(echo "$RAW_TAGS" | grep -E "^${APP_KEY}-v[0-9]+\.[0-9]+\.[0-9]+$" | sort -V | tail -n1 || true)
+          fi
+
+          if [ -z "$LATEST_TAG" ]; then
+            SEMVER="26.5.10"
+            NEXT_TAG="${APP_KEY}-v26.5.10"
+          else
+            VERSION="${LATEST_TAG#${APP_KEY}-v}"
+            MAJOR=$(echo "$VERSION" | cut -d. -f1)
+            MINOR=$(echo "$VERSION" | cut -d. -f2)
+            PATCH=$(echo "$VERSION" | cut -d. -f3)
+            NEXT_PATCH=$((PATCH + 1))
+            SEMVER="${MAJOR}.${MINOR}.${NEXT_PATCH}"
+            NEXT_TAG="${APP_KEY}-v${SEMVER}"
+          fi
+          echo "tag=${NEXT_TAG}" >> $GITHUB_OUTPUT
+          echo "semver=${SEMVER}" >> $GITHUB_OUTPUT
+          echo "Calculated target tag: ${NEXT_TAG} (SemVer: ${SEMVER})"
+
+          # Inject real version into tauri.conf.json and Cargo.toml
+          node -e "const fs=require('fs'); const p='apps/fastfree_installer/src-tauri/tauri.conf.json'; const c=JSON.parse(fs.readFileSync(p,'utf8')); c.version='${SEMVER}'; fs.writeFileSync(p, JSON.stringify(c, null, 2));"
+          sed -i "s/^version = \".*\"/version = \"${SEMVER}\"/" apps/fastfree_installer/src-tauri/Cargo.toml
+          echo "Configured tauri.conf.json version:"
+          grep '"version"' apps/fastfree_installer/src-tauri/tauri.conf.json
+
       - name: "3. إعداد بيئة Node.js 22"
         uses: actions/setup-node@v6
         with:
@@ -99,21 +136,22 @@ jobs:
             exit 1
           fi
 
-          # إذا تم توليد ملف توقيع التحديث .sig بواسطة Tauri
+          SEMVER="${{ steps.version.outputs.semver }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
           SIG_FILE=$(find "$DIST_DIR" -maxdepth 1 -name "*.sig" | head -n 1)
+          SIGNATURE=""
           if [ -n "$SIG_FILE" ]; then
             SIGNATURE=$(cat "$SIG_FILE")
             echo "تم العثور على توقيع التحديث الرقمي: $SIGNATURE"
-            VERSION="26.5.0"
-            PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-            node -e "const fs=require('fs'); const sig=fs.readFileSync(process.argv[1],'utf8').trim(); const p={version:'26.5.0',notes:'FastFree Auto-Update',pub_date:new Date().toISOString(),platforms:{'windows-x86_64':{signature:sig,url:'https://github.com/FastFreeCloud/fastfree/releases/latest/download/FastFree-Node-Setup.exe'}}}; fs.writeFileSync('./latest.json',JSON.stringify(p,null,2));" "$SIG_FILE"
-            cat ./latest.json
           else
-            echo "لم يتم العثور على ملف توقيع رقمي، توليد latest.json قياسي..."
-            node -e "const fs=require('fs'); const p={version:'26.5.0',notes:'FastFree Auto-Update',pub_date:new Date().toISOString(),platforms:{'windows-x86_64':{signature:'',url:'https://github.com/FastFreeCloud/fastfree/releases/latest/download/FastFree-Node-Setup.exe'}}}; fs.writeFileSync('./latest.json',JSON.stringify(p,null,2));"
-            cat ./latest.json
+            echo "توليد ملف latest.json بدون توقيع رقمي (وضع التثبيت المباشر)..."
           fi
+
+          node -e "const fs=require('fs'); const sig='${SIGNATURE}'; const p={version:'${SEMVER}',notes:'FastFree Node Performance & Security Update',pub_date:'${PUB_DATE}',platforms:{'windows-x86_64':{signature:sig,url:'https://github.com/FastFreeCloud/fastfree/releases/download/${TAG}/FastFree-Node-Setup.exe'}}}; fs.writeFileSync('./latest.json',JSON.stringify(p,null,2));"
+          echo "Generated latest.json:"
+          cat ./latest.json
 
       - name: "11. رفع ملف المثبت وملف التحديث كـ Artifact"
         uses: actions/upload-artifact@v6
@@ -125,37 +163,7 @@ jobs:
             apps/fastfree_installer/src-tauri/target/release/bundle/nsis/*.sig
           retention-days: 14
 
-      - name: "12. حساب رقم الإصدار الدلالي التالي"
-        id: version
-        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.create_release) || (github.event_name == 'push' && github.ref == 'refs/heads/master') }}
-        shell: bash
-        run: |
-          APP_KEY="installer"
-          if [[ "$GITHUB_REF" == refs/tags/${APP_KEY}-v* ]]; then
-            NEXT_TAG="${GITHUB_REF#refs/tags/}"
-          else
-            RAW_TAGS=$(git tag -l "${APP_KEY}-v*" || true)
-            if [ -z "$RAW_TAGS" ]; then
-              LATEST_TAG=""
-            else
-              LATEST_TAG=$(echo "$RAW_TAGS" | grep -E "^${APP_KEY}-v[0-9]+\.[0-9]+\.[0-9]+$" | sort -V | tail -n1 || true)
-            fi
-
-            if [ -z "$LATEST_TAG" ]; then
-              NEXT_TAG="${APP_KEY}-v26.5.0"
-            else
-              VERSION="${LATEST_TAG#${APP_KEY}-v}"
-              MAJOR=$(echo "$VERSION" | cut -d. -f1)
-              MINOR=$(echo "$VERSION" | cut -d. -f2)
-              PATCH=$(echo "$VERSION" | cut -d. -f3)
-              NEXT_PATCH=$((PATCH + 1))
-              NEXT_TAG="${APP_KEY}-v${MAJOR}.${MINOR}.${NEXT_PATCH}"
-            fi
-          fi
-          echo "tag=${NEXT_TAG}" >> $GITHUB_OUTPUT
-          echo "Next release tag: ${NEXT_TAG}"
-
-      - name: "13. نشر Release رسمي على GitHub مع التحديث التلقائي latest.json"
+      - name: "12. نشر Release رسمي على GitHub مع التحديث التلقائي latest.json"
         if: ${{ (github.event_name == 'workflow_dispatch' && inputs.create_release) || (github.event_name == 'push' && github.ref == 'refs/heads/master') }}
         uses: softprops/action-gh-release@v3
         with:
