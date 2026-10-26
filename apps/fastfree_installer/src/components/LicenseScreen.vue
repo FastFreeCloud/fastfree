@@ -161,6 +161,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
 import {
   currentStep,
   licenseState,
@@ -212,7 +213,8 @@ async function handleVerify() {
 
 async function handlePaste() {
   try {
-    const text = await navigator.clipboard.readText();
+    // Native Win32 API clipboard read via Rust - ZERO browser popups, ZERO mention of tauri.localhost
+    const text = await invoke<string>('read_clipboard_text');
     if (text) {
       licenseInput.value = text.trim();
     }

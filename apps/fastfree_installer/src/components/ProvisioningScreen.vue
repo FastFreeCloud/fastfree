@@ -83,6 +83,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
 import {
   currentStep,
   selectedClientId,
@@ -172,6 +173,27 @@ async function runProvisioning() {
     }
 
     await delay(300);
+  }
+
+  // Real backend Hyper-V provisioning execution
+  try {
+    currentPhaseText.value = 'Orchestrating Windows Hyper-V Appliance...';
+    await addLog('Invoking Windows Hyper-V engine & PowerShell orchestration...');
+    const realLogs = await invoke<Array<{ step: number; phase: string; message: string; success: boolean }>>(
+      'provision_sovereign_node',
+      {
+        clientId: selectedClientId.value,
+        cores: assignedCpuCores.value,
+        ramMb: assignedRamMb.value,
+        targetDrive: targetDiskDrive.value,
+      }
+    );
+    for (const r of realLogs) {
+      await addLog(`[${r.phase}] ${r.message}`);
+    }
+  } catch (err) {
+    console.warn('Real Hyper-V provisioning error:', err);
+    await addLog(`Hyper-V Notice: ${err}`);
   }
 
   isDone.value = true;

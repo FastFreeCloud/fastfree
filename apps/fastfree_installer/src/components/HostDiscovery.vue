@@ -73,6 +73,21 @@
         </div>
       </div>
 
+      <!-- Hyper-V Enable / Install Action Banner (If not ready) -->
+      <div v-if="!discoveryReport.hyperv.ready_for_hyperv" class="hyperv-enable-banner">
+        <div class="banner-left">
+          <span class="banner-icon">⚡</span>
+          <div class="banner-desc">
+            <strong>{{ isRtl ? 'محرك Hyper-V غير مفعّل على هذا النظام حالياً' : 'Hyper-V is not active on this Windows machine' }}</strong>
+            <p>{{ isRtl ? 'لتشغيل العقدة السيادية، يجب تفعيل ميزة Hyper-V في ويندوز. يمكنك تثبيتها وتفعيلها الآن بنقرة واحدة.' : 'Sovereign node requires Hyper-V feature. Click below to install and enable it automatically.' }}</p>
+          </div>
+        </div>
+        <button class="btn btn-hyperv-act" :disabled="isEnablingHyperV" @click="handleEnableHyperV">
+          <span v-if="isEnablingHyperV" class="spinner-sm"></span>
+          <span v-else>{{ isRtl ? 'تثبيت وتفعيل Hyper-V الآن ⚡' : 'Install & Enable Hyper-V Now ⚡' }}</span>
+        </button>
+      </div>
+
       <!-- Disks Table -->
       <div class="disks-section">
         <div class="section-title">
@@ -146,6 +161,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
 import {
   currentStep,
   loadingDiscovery,
@@ -155,6 +172,20 @@ import {
 import { useI18n } from '../composables/useI18n';
 
 const { t, isRtl } = useI18n();
+
+const isEnablingHyperV = ref(false);
+
+async function handleEnableHyperV() {
+  isEnablingHyperV.value = true;
+  try {
+    await invoke<string>('install_hyperv_feature');
+    await fetchSystemDiscovery();
+  } catch (err) {
+    console.error('Failed to enable Hyper-V:', err);
+  } finally {
+    isEnablingHyperV.value = false;
+  }
+}
 
 function goToNextStep() {
   currentStep.value = 2;
@@ -316,6 +347,51 @@ function goToNextStep() {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.hyperv-enable-banner {
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.15), rgba(239, 68, 68, 0.1));
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.banner-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.banner-icon {
+  font-size: 20px;
+}
+
+.banner-desc strong {
+  display: block;
+  font-size: 12px;
+  color: #FBBF24;
+}
+
+.banner-desc p {
+  margin: 2px 0 0 0;
+  font-size: 11px;
+  color: #FCD34D;
+}
+
+.btn-hyperv-act {
+  background: #D97706;
+  color: #FFFFFF;
+  padding: 6px 14px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.btn-hyperv-act:hover:not(:disabled) {
+  background: #B45309;
 }
 
 .disks-section {

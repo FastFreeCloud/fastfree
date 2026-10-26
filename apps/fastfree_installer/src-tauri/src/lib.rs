@@ -175,7 +175,10 @@ pub fn run() {
             commands::show_main_window,
             commands::get_diagnostic_logs,
             commands::export_diagnostic_bundle,
-            commands::check_admin_elevation
+            commands::check_admin_elevation,
+            commands::read_clipboard_text,
+            commands::install_hyperv_feature,
+            commands::provision_sovereign_node
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

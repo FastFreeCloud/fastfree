@@ -16,9 +16,7 @@
         "title": "FastFree Sovereign Node Installer",
         "width": 1060,
         "height": 700,
-        "minWidth": 980,
-        "minHeight": 650,
-        "resizable": true,
+        "resizable": false,
         "center": true,
         "decorations": false,
         "visible": false

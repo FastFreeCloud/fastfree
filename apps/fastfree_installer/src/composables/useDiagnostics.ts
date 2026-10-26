@@ -21,7 +21,7 @@ export const diagnosticLogs = ref<DiagnosticEntry[]>([
     level: 'info',
     source: 'Installer',
     message: 'FastFree Sovereign Companion booted (v26.05).',
-    details: 'Runtime target: Windows x86_64 Hyper-V / Tauri 2.0 Webview.',
+    details: 'Runtime target: Windows x86_64 Hyper-V Sovereign Core Engine v26.05',
   },
 ]);
 
