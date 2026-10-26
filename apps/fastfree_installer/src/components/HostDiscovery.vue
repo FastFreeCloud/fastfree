@@ -266,30 +266,31 @@ function goToNextStep() {
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 @media (max-width: 960px) {
   .cards-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .content-body {
-    overflow-y: auto;
-  }
 }
 
 .diag-card {
-  background: var(--bg-card, #18181B);
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
   border: 1px solid var(--border-color, #27272A);
-  border-radius: 10px;
+  border-radius: var(--radius-card, 14px);
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.2s, background-color 0.2s;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .diag-card:hover {
-  border-color: var(--border-highlight, #3F3F46);
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: var(--card-hover-shadow, 0 8px 25px -4px rgba(0, 0, 0, 0.45));
 }
 
 .diag-card.border-ok {
@@ -352,12 +353,13 @@ function goToNextStep() {
 .hyperv-enable-banner {
   background: linear-gradient(90deg, rgba(245, 158, 11, 0.15), rgba(239, 68, 68, 0.1));
   border: 1px solid rgba(245, 158, 11, 0.4);
-  border-radius: 10px;
+  border-radius: var(--radius-card, 14px);
   padding: 10px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.15);
 }
 
 .banner-left {
@@ -387,6 +389,7 @@ function goToNextStep() {
   color: #FFFFFF;
   padding: 6px 14px;
   font-size: 11px;
+  border-radius: var(--radius-inner, 10px);
   white-space: nowrap;
 }
 
@@ -395,10 +398,12 @@ function goToNextStep() {
 }
 
 .disks-section {
-  background: var(--bg-card, #18181B);
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
   border: 1px solid var(--border-color, #27272A);
-  border-radius: 10px;
+  border-radius: var(--radius-card, 14px);
   padding: 12px 14px;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
 }
 
 .section-title {

@@ -181,7 +181,7 @@ const availableClients = computed(() => {
 }
 
 .header-box {
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .step-tag {
@@ -209,21 +209,31 @@ const availableClients = computed(() => {
 
 .content-body {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 2px;
 }
 
 .config-card {
-  background: var(--bg-card, #18181B);
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
   border: 1px solid var(--border-color, #27272A);
-  border-radius: 10px;
+  border-radius: var(--radius-card, 14px);
   padding: 10px 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.config-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.3);
+  box-shadow: var(--card-hover-shadow, 0 8px 25px -4px rgba(0, 0, 0, 0.45));
 }
 
 .card-title-row {
@@ -242,8 +252,8 @@ const availableClients = computed(() => {
   font-size: 10px;
   color: var(--accent-sky, #38BDF8);
   background: rgba(56, 189, 248, 0.12);
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill, 9999px);
   border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
@@ -256,13 +266,14 @@ const availableClients = computed(() => {
   width: 100%;
   background: var(--bg-sub, #09090B);
   border: 1px solid var(--border-color, #3F3F46);
-  border-radius: 8px;
+  border-radius: var(--radius-inner, 10px);
   padding: 8px 12px;
   font-size: 12px;
   color: var(--text-main, #F8FAFC);
   outline: none;
   cursor: pointer;
   font-family: inherit;
+  transition: border-color 0.2s;
 }
 
 .custom-select:focus {
@@ -280,7 +291,7 @@ const availableClients = computed(() => {
   color: var(--accent-sky, #38BDF8);
   background: rgba(0, 0, 0, 0.3);
   padding: 1px 4px;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .slider-wrapper {
@@ -305,13 +316,15 @@ const availableClients = computed(() => {
 }
 
 .allocation-summary-box {
-  background: var(--bg-sub, #141416);
+  background: var(--card-glass-bg, var(--bg-sub, #141416));
   border: 1px solid var(--border-color, #27272A);
-  border-radius: 8px;
+  border-radius: var(--radius-card, 14px);
   padding: 8px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
 }
 
 .summary-item {

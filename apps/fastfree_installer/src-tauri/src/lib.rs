@@ -178,7 +178,8 @@ pub fn run() {
             commands::check_admin_elevation,
             commands::read_clipboard_text,
             commands::install_hyperv_feature,
-            commands::provision_node
+            commands::provision_node,
+            commands::check_vm_exists
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -192,21 +192,24 @@ async function testHandshake() {
 
 .content-body {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 2px;
 }
 
 .mesh-banner {
-  background: var(--bg-card, #18181B);
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
   border: 1px solid var(--border-color, #27272A);
-  border-radius: 10px;
+  border-radius: var(--radius-card, 14px);
   padding: 12px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
 }
 
 .banner-left {
@@ -225,8 +228,8 @@ async function testHandshake() {
 .node-pill {
   background: var(--bg-sub, #27272A);
   color: var(--text-main, #F4F4F5);
-  padding: 3px 8px;
-  border-radius: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill, 9999px);
   font-size: 11px;
   font-weight: 600;
   border: 1px solid var(--border-color, #3F3F46);
@@ -269,7 +272,7 @@ async function testHandshake() {
   border: 1px solid var(--border-color, #3F3F46);
   color: var(--text-main, #E4E4E7);
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-inner, 10px);
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -288,14 +291,29 @@ async function testHandshake() {
   gap: 10px;
 }
 
+@media (max-width: 900px) {
+  .params-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .param-card {
-  background: var(--bg-card, #18181B);
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
   border: 1px solid var(--border-color, #27272A);
-  border-radius: 8px;
+  border-radius: var(--radius-inner, 10px);
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 3px;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.param-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: var(--card-hover-shadow, 0 8px 25px -4px rgba(0, 0, 0, 0.45));
 }
 
 .param-name {
@@ -329,10 +347,12 @@ async function testHandshake() {
 }
 
 .security-card {
-  background: rgba(25, 118, 210, 0.05);
+  background: var(--card-glass-bg, rgba(25, 118, 210, 0.05));
   border: 1px solid rgba(25, 118, 210, 0.2);
-  border-radius: 8px;
+  border-radius: var(--radius-card, 14px);
   padding: 10px 14px;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
 }
 
 .sec-title {

@@ -276,7 +276,7 @@ function formatFeatureName(feature: string): string {
 }
 
 .header-box {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .step-tag {
@@ -304,21 +304,30 @@ function formatFeatureName(feature: string): string {
 
 .content-body {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.input-card {
-  background: var(--bg-card, #18181B);
-  border: 1px solid var(--border-color, #27272A);
-  border-radius: 12px;
-  padding: 16px;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.input-card {
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
+  border: 1px solid var(--border-color, #27272A);
+  border-radius: var(--radius-card, 14px);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.input-card:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+  box-shadow: var(--card-hover-shadow, 0 8px 25px -4px rgba(0, 0, 0, 0.45));
 }
 
 .input-header-row {
@@ -548,14 +557,21 @@ function formatFeatureName(feature: string): string {
 }
 
 .license-credential-card {
-  background: var(--bg-card, #18181B);
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
   border: 1px solid rgba(56, 189, 248, 0.25);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: var(--radius-card, 14px);
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  gap: 12px;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.license-credential-card:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: var(--card-hover-shadow, 0 8px 25px -4px rgba(0, 0, 0, 0.45));
 }
 
 .license-top {

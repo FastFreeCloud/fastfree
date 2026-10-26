@@ -254,13 +254,15 @@ function delay(ms: number) {
 }
 
 .progress-hero-card {
-  background: var(--bg-card, #18181B);
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
   border: 1px solid var(--border-color, #27272A);
-  border-radius: 10px;
+  border-radius: var(--radius-card, 14px);
   padding: 12px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
 }
 
 .hero-top {
@@ -306,14 +308,14 @@ function delay(ms: number) {
   width: 100%;
   height: 8px;
   background: var(--bg-sub, #27272A);
-  border-radius: 4px;
+  border-radius: var(--radius-pill, 9999px);
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, #1976D2, #38BDF8);
-  border-radius: 4px;
+  border-radius: var(--radius-pill, 9999px);
   transition: width 0.15s ease-out;
 }
 
@@ -330,12 +332,14 @@ function delay(ms: number) {
 
 .console-card {
   flex: 1;
+  min-height: 0;
   background: var(--bg-stream, #09090B);
   border: 1px solid var(--border-color, #27272A);
-  border-radius: 10px;
+  border-radius: var(--radius-card, 14px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
 }
 
 .console-header {
