@@ -65,25 +65,63 @@ pub async fn get_wireguard_status(client_id: String) -> Result<WireGuardPeerConf
 #[tauri::command]
 pub async fn manage_vm(action: String, client_id: String) -> Result<VmActionStatus, String> {
     let vm_name = format!("FastFree-{}", client_id);
+    let _ = ensure_hyperv_environment();
+
     let (target_state, ps_cmd) = match action.to_lowercase().as_str() {
         "start" => (
             "running",
             format!(
-                "$ErrorActionPreference = 'Stop'; try {{ Start-VM -Name '{0}' }} catch {{ Write-Error $_.Exception.Message; exit 1 }}",
+                r#"
+$ErrorActionPreference = 'Stop'
+try {{
+    $vm = Get-VM -Name '{0}' -ErrorAction SilentlyContinue
+    if (-not $vm) {{
+        throw "VM_NOT_FOUND: Virtual machine '{0}' does not exist in Hyper-V. Please provision the node first."
+    }}
+    Start-VM -Name '{0}'
+}} catch {{
+    Write-Error $_.Exception.Message
+    exit 1
+}}
+"#,
                 vm_name
             ),
         ),
         "stop" => (
             "stopped",
             format!(
-                "$ErrorActionPreference = 'Stop'; try {{ Stop-VM -Name '{0}' -Force }} catch {{ Write-Error $_.Exception.Message; exit 1 }}",
+                r#"
+$ErrorActionPreference = 'Stop'
+try {{
+    $vm = Get-VM -Name '{0}' -ErrorAction SilentlyContinue
+    if (-not $vm) {{
+        throw "VM_NOT_FOUND: Virtual machine '{0}' does not exist in Hyper-V."
+    }}
+    Stop-VM -Name '{0}' -Force
+}} catch {{
+    Write-Error $_.Exception.Message
+    exit 1
+}}
+"#,
                 vm_name
             ),
         ),
         "restart" => (
             "running",
             format!(
-                "$ErrorActionPreference = 'Stop'; try {{ Restart-VM -Name '{0}' -Force }} catch {{ Write-Error $_.Exception.Message; exit 1 }}",
+                r#"
+$ErrorActionPreference = 'Stop'
+try {{
+    $vm = Get-VM -Name '{0}' -ErrorAction SilentlyContinue
+    if (-not $vm) {{
+        throw "VM_NOT_FOUND: Virtual machine '{0}' does not exist in Hyper-V."
+    }}
+    Restart-VM -Name '{0}' -Force
+}} catch {{
+    Write-Error $_.Exception.Message
+    exit 1
+}}
+"#,
                 vm_name
             ),
         ),
@@ -128,6 +166,9 @@ pub async fn manage_vm(action: String, client_id: String) -> Result<VmActionStat
                 );
                 if !out.status.success() {
                     let err_detail = if !stderr.is_empty() { stderr } else { stdout };
+                    if err_detail.contains("VM_NOT_FOUND") {
+                        return Err(format!("VM_NOT_FOUND: {}", err_detail));
+                    }
                     return Err(format!("Hyper-V VM error: {}", err_detail));
                 }
             }
@@ -145,6 +186,119 @@ pub async fn manage_vm(action: String, client_id: String) -> Result<VmActionStat
         state: target_state.to_string(),
         message: format!("Virtual machine command '{}' executed successfully.", action),
     })
+}
+
+pub fn ensure_hyperv_environment() -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        use std::process::Command;
+        InstallerLogger::info(
+            "HYPERV_ENV",
+            "Verifying Hyper-V environment: VMMS service state and Hyper-V Administrators group...",
+        );
+
+        let script = r#"
+$ErrorActionPreference = 'SilentlyContinue'
+$res = @{ vmms_installed = $false; vmms_running = $false; in_group = $false }
+
+# 1. Check & start vmms service
+$vmms = Get-Service -Name 'vmms' -ErrorAction SilentlyContinue
+if ($vmms) {
+    $res.vmms_installed = $true
+    if ($vmms.StartType -ne 'Automatic') {
+        Set-Service -Name 'vmms' -StartupType Automatic -ErrorAction SilentlyContinue
+    }
+    if ($vmms.Status -ne 'Running') {
+        Start-Service -Name 'vmms' -ErrorAction SilentlyContinue
+        Start-Sleep -Milliseconds 600
+        $vmms = Get-Service -Name 'vmms' -ErrorAction SilentlyContinue
+    }
+    if ($vmms.Status -eq 'Running') {
+        $res.vmms_running = $true
+    }
+}
+
+# 2. Add current user to Hyper-V Administrators
+$user = $env:USERNAME
+net localgroup "Hyper-V Administrators" "$user" /add 2>&1 | Out-Null
+
+$members = net localgroup "Hyper-V Administrators" 2>&1
+if ($members -match $user) {
+    $res.in_group = $true
+}
+
+Write-Output "FASTFREE_ENV:vmms_installed=$($res.vmms_installed);vmms_running=$($res.vmms_running);in_group=$($res.in_group)"
+"#;
+
+        let output = Command::new("powershell")
+            .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script])
+            .output();
+
+        if let Ok(out) = output {
+            let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            InstallerLogger::info("HYPERV_ENV", &format!("Environment probe output: {}", stdout));
+            if stdout.contains("vmms_installed=False") {
+                return Err("Hyper-V Virtual Machine Management Service (vmms) is not installed on this host. Please enable Hyper-V in Windows Features.".to_string());
+            }
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn check_vm_exists(client_id: String) -> Result<bool, String> {
+    let vm_name = format!("FastFree-{}", client_id);
+    InstallerLogger::info(
+        "VM_CHECK",
+        &format!("Probing existence of Hyper-V VM '{}'...", vm_name),
+    );
+
+    #[cfg(windows)]
+    {
+        use std::process::Command;
+        let _ = ensure_hyperv_environment();
+
+        let script = format!(
+            r#"
+$ErrorActionPreference = 'SilentlyContinue'
+try {{
+    $vm = Get-VM -Name '{0}' -ErrorAction SilentlyContinue
+    if ($vm) {{
+        Write-Output "FASTFREE_VM_STATUS:EXISTS"
+    }} else {{
+        Write-Output "FASTFREE_VM_STATUS:NOT_FOUND"
+    }}
+}} catch {{
+    Write-Output "FASTFREE_VM_STATUS:NOT_FOUND"
+}}
+"#,
+            vm_name
+        );
+
+        let output = Command::new("powershell")
+            .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", &script])
+            .output();
+
+        match output {
+            Ok(out) => {
+                let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
+                let stderr = String::from_utf8_lossy(&out.stderr).trim().to_string();
+                InstallerLogger::info(
+                    "VM_CHECK",
+                    &format!("Status check for '{}': stdout='{}', stderr='{}'", vm_name, stdout, stderr),
+                );
+                Ok(stdout.contains("FASTFREE_VM_STATUS:EXISTS"))
+            }
+            Err(e) => {
+                let err_msg = format!("Failed to execute PowerShell for VM existence check: {}", e);
+                InstallerLogger::error("VM_CHECK", &err_msg);
+                Err(err_msg)
+            }
+        }
+    }
+
+    #[cfg(not(windows))]
+    Ok(false)
 }
 
 #[tauri::command]
@@ -325,6 +479,12 @@ pub async fn provision_node(
     {
         use std::fs;
         use std::process::Command;
+
+        // 0. Verify and configure Hyper-V prerequisites
+        if let Err(e) = ensure_hyperv_environment() {
+            InstallerLogger::error("PROVISIONING", &format!("Prerequisites failure: {}", e));
+            return Err(e);
+        }
 
         // 1. Create directory structure
         if let Err(e) = fs::create_dir_all(&vhdx_dir) {

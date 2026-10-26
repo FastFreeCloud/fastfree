@@ -11,19 +11,65 @@
     </div>
 
     <div class="content-body">
+      <!-- Warning Banner if VM is NOT created in Hyper-V -->
+      <div v-if="vmExists === false" class="hero-unprovisioned-card">
+        <div class="unprovisioned-icon-badge">⚠️</div>
+        <div class="unprovisioned-content">
+          <div class="unprovisioned-title-row">
+            <h3>{{ isRtl ? `الآلة الافتراضية (FastFree-${selectedClientId}) غير منشأة بعد في Hyper-V` : `Hyper-V VM (FastFree-${selectedClientId}) Not Provisioned Yet` }}</h3>
+            <span class="unprovisioned-status-pill">
+              <span class="dot-amber"></span>
+              <span>{{ isRtl ? 'تثبيت مطلوب' : 'Setup Required' }}</span>
+            </span>
+          </div>
+          <p class="unprovisioned-sub-text">
+            {{ isRtl
+              ? 'لم يتم العثور على الآلة الافتراضية مسجلة في Hyper-V. يمكنك إنشاء محول الشبكة الداخلي والقرص وتسجيل الآلة وتشغيلها فوراً بنقرة واحدة:'
+              : 'The virtual machine is not registered in Hyper-V yet. You can configure the virtual switch, disk, and deploy the appliance now with one click:'
+            }}
+          </p>
+          <div class="unprovisioned-actions-row">
+            <button
+              class="btn-instant-provision"
+              :disabled="isProvisioning"
+              @click="handleInstantProvisioning"
+            >
+              <span v-if="isProvisioning" class="spinner-tiny"></span>
+              <span v-else>{{ t('launchpad.createVmNow') }}</span>
+            </button>
+            <button
+              class="btn-revisit-setup"
+              :disabled="isProvisioning"
+              @click="handleRestartWizard"
+            >
+              {{ t('launchpad.restartWizard') }}
+            </button>
+          </div>
+          <div v-if="provisioningMessage" class="provisioning-live-text">
+            <span class="pulse-icon">⏳</span>
+            <span>{{ provisioningMessage }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Master Live Status Hero -->
-      <div class="hero-success-card">
-        <div class="success-icon-badge">✓</div>
+      <div class="hero-success-card" :class="{ 'is-warning': vmExists === false }">
+        <div class="success-icon-badge" :class="{ 'badge-amber': vmExists === false }">
+          {{ vmExists === false ? '!' : '✓' }}
+        </div>
         <div class="hero-text">
           <div class="node-title-row">
             <h3>{{ selectedClientId }} — {{ licenseState?.company_name || 'FastFree Enterprise Node' }}</h3>
-            <span class="live-status-pill">
-              <span class="dot-live"></span>
-              <span>{{ t('launchpad.onlineOperational') }}</span>
+            <span class="live-status-pill" :class="{ 'pill-amber': vmExists === false }">
+              <span :class="vmExists === false ? 'dot-amber' : 'dot-live'"></span>
+              <span>{{ vmExists === false ? (isRtl ? 'في انتظار التثبيت' : 'Setup Required') : t('launchpad.onlineOperational') }}</span>
             </span>
           </div>
           <p class="node-sub-text">
-            {{ isRtl ? 'تم اكتمال نشر وتثبيت البيئة بنجاح. تعمل الآلة الافتراضية بنظام NixOS Clan 26.05 مع اتصال دائم بشبكة واير جارد.' : 'Appliance deployed and running smoothly on NixOS Clan 26.05 with persistent WireGuard mesh tunnel.' }}
+            {{ vmExists === false
+              ? (isRtl ? 'الآلة الافتراضية غير مسجلة حالياً في Hyper-V. اضغط على زر "إنشاء وتثبيت الآلة الافتراضية الآن" أعلاه لتشغيلها.' : 'Virtual machine is not registered in Hyper-V yet. Click "Create & Install Virtual Machine Now" above.')
+              : (isRtl ? 'تم اكتمال نشر وتثبيت البيئة بنجاح. تعمل الآلة الافتراضية بنظام NixOS Clan 26.05 مع اتصال دائم بشبكة واير جارد.' : 'Appliance deployed and running smoothly on NixOS Clan 26.05 with persistent WireGuard mesh tunnel.')
+            }}
           </p>
         </div>
       </div>
@@ -158,6 +204,14 @@
             >
               ⏹ {{ t('launchpad.stopVm') }}
             </button>
+            <button
+              class="btn-vm-action btn-restart-wizard"
+              :disabled="vmActionBusy"
+              :title="t('launchpad.restartWizardHint')"
+              @click="handleRestartWizard"
+            >
+              🔄 {{ isRtl ? 'إعادة تشغيل المعالج' : 'Restart Setup' }}
+            </button>
           </div>
         </div>
         <p class="comp-desc">
@@ -181,6 +235,9 @@
           <span v-if="isCheckingUpdate" class="spinner-tiny"></span>
           <span v-else>🔄 {{ isRtl ? 'فحص التحديثات' : 'Check Updates' }}</span>
         </button>
+        <button class="btn btn-secondary" @click="handleRestartWizard" :title="t('launchpad.restartWizardHint')">
+          🔄 {{ isRtl ? 'إعادة تشغيل المعالج' : 'Restart Setup' }}
+        </button>
       </div>
       <button class="btn btn-primary btn-portal" @click="launchPortal">
         🚀 {{ t('launchpad.openErpPortal') }}
@@ -193,6 +250,7 @@
 import { ref, onMounted } from 'vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import {
+  currentStep,
   selectedClientId,
   wireGuardConfig,
   licenseState,
@@ -201,9 +259,11 @@ import {
   targetDiskDrive,
   executeVmCommand,
   minimizeToTray,
+  checkVmExists,
+  provisionNode,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
-import { logInfo, logError, logSuccess } from '../composables/useDiagnostics';
+import { logInfo, logWarn, logError, logSuccess } from '../composables/useDiagnostics';
 import { checkForUpdates, isCheckingUpdate } from '../composables/useAutoUpdater';
 
 const { t, isRtl } = useI18n();
@@ -211,6 +271,77 @@ const { t, isRtl } = useI18n();
 const copiedText = ref<string | null>(null);
 const vmActionBusy = ref(false);
 const actionNotice = ref('');
+const vmExists = ref<boolean | null>(null);
+const isCheckingVm = ref(false);
+const isProvisioning = ref(false);
+const provisioningMessage = ref('');
+
+async function checkVmStatus() {
+  isCheckingVm.value = true;
+  try {
+    const exists = await checkVmExists(selectedClientId.value);
+    vmExists.value = exists;
+    if (!exists) {
+      logWarn('Launchpad', `Hyper-V VM 'FastFree-${selectedClientId.value}' was not found in Hyper-V.`);
+    } else {
+      logInfo('Launchpad', `Hyper-V VM 'FastFree-${selectedClientId.value}' verified in Hyper-V.`);
+      try {
+        localStorage.setItem('fastfree_provisioned', 'true');
+      } catch {}
+    }
+  } catch (err) {
+    console.warn('Error checking VM existence:', err);
+    vmExists.value = false;
+  } finally {
+    isCheckingVm.value = false;
+  }
+}
+
+async function handleInstantProvisioning() {
+  if (isProvisioning.value) return;
+  isProvisioning.value = true;
+  provisioningMessage.value = isRtl.value
+    ? 'جارٍ تهيئة محول الشبكة وإعداد قرص VHDX وتسجيل الآلة الافتراضية في Hyper-V...'
+    : 'Configuring Virtual Switch, allocating VHDX, and deploying VM in Hyper-V...';
+  logInfo('Launchpad', `Instant VM provisioning triggered for ${selectedClientId.value}`);
+
+  try {
+    const logs = await provisionNode(
+      selectedClientId.value,
+      assignedCpuCores.value,
+      assignedRamMb.value,
+      targetDiskDrive.value
+    );
+    logSuccess('Launchpad', `Instant VM provisioning succeeded: ${logs.length} step(s) completed.`);
+    actionNotice.value = isRtl.value
+      ? 'تم إنشاء وتثبيت وتشغيل الآلة الافتراضية بنجاح! ✅'
+      : 'Virtual machine created, installed and started successfully! ✅';
+
+    await checkVmStatus();
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    actionNotice.value = isRtl.value
+      ? `تعذر إنشاء الآلة في Hyper-V: ${msg}`
+      : `Failed to create VM in Hyper-V: ${msg}`;
+    logError('Launchpad', 'Instant provisioning error', msg);
+  } finally {
+    isProvisioning.value = false;
+    provisioningMessage.value = '';
+    setTimeout(() => {
+      actionNotice.value = '';
+    }, 6000);
+  }
+}
+
+function handleRestartWizard() {
+  try {
+    localStorage.removeItem('fastfree_provisioned');
+  } catch (err) {
+    console.warn('Storage clear error:', err);
+  }
+  logInfo('Launchpad', 'Restarting setup wizard from Step 1 on user request.');
+  currentStep.value = 1;
+}
 
 async function handleManualCheckUpdate() {
   const hasUpdate = await checkForUpdates(false);
@@ -224,13 +355,8 @@ async function handleManualCheckUpdate() {
   }
 }
 
-onMounted(() => {
-  // Store persistent provisioning flag to keep user on Launchpad on any future launch
-  try {
-    localStorage.setItem('fastfree_provisioned', 'true');
-  } catch (err) {
-    console.warn('Storage error:', err);
-  }
+onMounted(async () => {
+  await checkVmStatus();
 });
 
 async function launchPortal() {
@@ -257,6 +383,13 @@ async function copyText(text: string) {
 }
 
 async function handleVmAction(action: 'start' | 'stop' | 'restart') {
+  if (vmExists.value === false) {
+    actionNotice.value = isRtl.value
+      ? '⚠️ الآلة الافتراضية غير منشأة بعد في Hyper-V. يرجى الضغط على زر "إنشاء وتثبيت الآلة الافتراضية الآن".'
+      : '⚠️ Virtual machine is not created yet. Please click "Create & Install Virtual Machine Now".';
+    return;
+  }
+
   vmActionBusy.value = true;
   actionNotice.value = action === 'restart'
     ? t('launchpad.vmRestarting', { client: selectedClientId.value })
@@ -269,14 +402,21 @@ async function handleVmAction(action: 'start' | 'stop' | 'restart') {
     actionNotice.value = res.message || t('launchpad.vmSuccess');
     logSuccess('VM', `VM ${action} succeeded for ${selectedClientId.value}`);
   } catch (err) {
-    const msg = `VM command failed: ${err}`;
-    actionNotice.value = msg;
-    logError('VM', msg);
+    const msg = String(err);
+    if (msg.includes('VM_NOT_FOUND') || msg.includes('unable to find a virtual machine')) {
+      vmExists.value = false;
+      actionNotice.value = isRtl.value
+        ? 'الآلة الافتراضية غير موجودة في Hyper-V. يمكنك إنشاؤها عبر الزر الظاهر بالأعلى.'
+        : 'Virtual machine not found in Hyper-V. You can create it using the button above.';
+    } else {
+      actionNotice.value = `VM command error: ${msg}`;
+    }
+    logError('VM', `VM ${action} failed`, msg);
   } finally {
     vmActionBusy.value = false;
     setTimeout(() => {
       actionNotice.value = '';
-    }, 4000);
+    }, 5000);
   }
 }
 
@@ -338,21 +478,175 @@ async function handleMinimizeToTray() {
 
 .content-body {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  overflow-y: hidden;
+  gap: 10px;
+  overflow-y: auto;
   padding-right: 2px;
 }
 
-.hero-success-card {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(25, 118, 210, 0.08));
-  border: 1px solid rgba(16, 185, 129, 0.3);
+.hero-unprovisioned-card {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(239, 68, 68, 0.1) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: var(--radius-hero, 16px);
+  padding: 14px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  box-shadow: 0 8px 30px -4px rgba(245, 158, 11, 0.22);
+  backdrop-filter: blur(12px);
+  animation: fadeIn 0.3s ease;
+}
+
+.unprovisioned-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.unprovisioned-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.unprovisioned-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.unprovisioned-title-row h3 {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #FBBF24;
+}
+
+.unprovisioned-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #FBBF24;
+  background: rgba(245, 158, 11, 0.15);
+  padding: 2px 8px;
   border-radius: 12px;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.unprovisioned-sub-text {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-secondary, #E2E8F0);
+  line-height: 1.45;
+}
+
+.unprovisioned-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.btn-instant-provision {
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35);
+}
+
+.btn-instant-provision:hover:not(:disabled) {
+  background: linear-gradient(135deg, #D97706, #B45309);
+  transform: translateY(-1px);
+}
+
+.btn-instant-provision:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btn-revisit-setup {
+  background: transparent;
+  color: var(--text-muted, #94A3B8);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-revisit-setup:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main, #FFFFFF);
+}
+
+.provisioning-live-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #FCD34D;
+  margin-top: 4px;
+}
+
+.pulse-icon {
+  animation: pulse-dot 1.5s infinite;
+}
+
+.hero-success-card.is-warning {
+  background: rgba(245, 158, 11, 0.05);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.success-icon-badge.badge-amber {
+  background: #F59E0B;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.3);
+}
+
+.live-status-pill.pill-amber {
+  color: #FBBF24;
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.dot-amber {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #F59E0B;
+}
+
+.hero-success-card {
+  background: var(--card-glass-bg, linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(25, 118, 210, 0.08)));
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--radius-card, 14px);
   padding: 12px 16px;
   display: flex;
   align-items: center;
   gap: 14px;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
 }
 
 .success-icon-badge {
@@ -425,13 +719,22 @@ async function handleMinimizeToTray() {
 }
 
 .spec-card {
-  background: var(--bg-card, #18181B);
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
   border: 1px solid var(--border-color, #27272A);
-  border-radius: 10px;
+  border-radius: var(--radius-card, 14px);
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.spec-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: var(--card-hover-shadow, 0 8px 25px -4px rgba(0, 0, 0, 0.45));
 }
 
 .spec-header {
@@ -501,14 +804,30 @@ async function handleMinimizeToTray() {
   gap: 10px;
 }
 
+@media (max-width: 900px) {
+  .telemetry-grid,
+  .endpoints-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .endpoint-card {
-  background: var(--bg-card, #18181B);
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
   border: 1px solid var(--border-color, #27272A);
-  border-radius: 10px;
+  border-radius: var(--radius-card, 14px);
   padding: 10px 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.endpoint-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: var(--card-hover-shadow, 0 8px 25px -4px rgba(0, 0, 0, 0.45));
 }
 
 .ep-header {
@@ -581,13 +900,15 @@ async function handleMinimizeToTray() {
 
 /* Companion VM Controls Card */
 .companion-card {
-  background: var(--bg-card, #18181B);
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
   border: 1px solid var(--border-color, #27272A);
-  border-radius: 10px;
+  border-radius: var(--radius-card, 14px);
   padding: 10px 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
 }
 
 .comp-title-row {
@@ -608,6 +929,7 @@ async function handleMinimizeToTray() {
 .vm-power-controls {
   display: flex;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 .btn-vm-action {
@@ -615,16 +937,17 @@ async function handleMinimizeToTray() {
   border: 1px solid var(--border-color, #3F3F46);
   color: var(--text-secondary, #D4D4D8);
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-inner, 8px);
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-vm-action:hover:not(:disabled) {
   background: var(--border-color, #3F3F46);
   color: #FFFFFF;
+  transform: translateY(-1px);
 }
 
 .btn-vm-action:disabled {
@@ -648,6 +971,15 @@ async function handleMinimizeToTray() {
 .btn-danger:hover:not(:disabled) {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.3);
+}
+
+.btn-restart-wizard {
+  color: #38BDF8;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.btn-restart-wizard:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.15);
 }
 
 .comp-desc {

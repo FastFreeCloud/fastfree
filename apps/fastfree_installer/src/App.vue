@@ -125,6 +125,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { invoke } from '@tauri-apps/api/core';
 import StepProgress from './components/StepProgress.vue';
 import HostDiscovery from './components/HostDiscovery.vue';
 import LicenseScreen from './components/LicenseScreen.vue';
@@ -154,7 +155,7 @@ import {
 
 const { t, locale, isRtl, toggleLocale, setLocale } = useI18n();
 const { theme, cycleTheme } = useTheme();
-const { isDiagnosticOpen, totalErrors, totalWarnings, logInfo } = useDiagnostics();
+const { isDiagnosticOpen, totalErrors, totalWarnings, logInfo, logWarn } = useDiagnostics();
 
 const appWindow = getCurrentWindow();
 
@@ -169,12 +170,21 @@ onMounted(async () => {
     // restricted storage fallback
   }
 
-  // If appliance was already provisioned on this node, boot directly to Launchpad
+  // Verify if appliance was already provisioned AND VM actually exists in Hyper-V
   try {
     const isProvisioned = localStorage.getItem('fastfree_provisioned') === 'true';
     if (isProvisioned) {
-      currentStep.value = 6;
-      logInfo('App', 'Appliance is already provisioned; opening directly in Control Center mode.');
+      const exists = await invoke<boolean>('check_vm_exists', { clientId: 'client2' });
+      if (exists) {
+        currentStep.value = 6;
+        logInfo('App', 'Appliance verified in Hyper-V; opening directly in Control Center mode.');
+      } else {
+        logWarn('App', 'Appliance flag was set but VM FastFree-client2 was not found in Hyper-V. Starting at Discovery for fresh setup.');
+        try {
+          localStorage.removeItem('fastfree_provisioned');
+        } catch {}
+        currentStep.value = 1;
+      }
     }
   } catch {
     // ignore
@@ -233,7 +243,7 @@ async function closeWindow() {
   --bg-header: #0A0F1D;
   --bg-stream: #080C17;
   --bg-hover: #1E293B;
-  --border-color: #1E293B;
+  --border-color: rgba(255, 255, 255, 0.08);
   --border-highlight: #334155;
   --text-main: #F8FAFC;
   --text-secondary: #CBD5E1;
@@ -242,6 +252,16 @@ async function closeWindow() {
   --accent-hover: #1565C0;
   --accent-emerald: #10B981;
   --accent-sky: #38BDF8;
+
+  /* Curved Glassmorphism Tokens */
+  --radius-card: 14px;
+  --radius-hero: 16px;
+  --radius-inner: 10px;
+  --radius-pill: 9999px;
+  --card-glass-bg: linear-gradient(145deg, rgba(21, 31, 50, 0.85) 0%, rgba(15, 23, 42, 0.75) 100%);
+  --card-glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+  --card-hover-shadow: 0 8px 25px -4px rgba(0, 0, 0, 0.45), 0 0 15px rgba(25, 118, 210, 0.15);
 }
 
 html[data-theme="light"],
@@ -252,7 +272,7 @@ html[data-theme="light"],
   --bg-header: #FFFFFF;
   --bg-stream: #F8FAFC;
   --bg-hover: #E2E8F0;
-  --border-color: #E2E8F0;
+  --border-color: rgba(0, 0, 0, 0.08);
   --border-highlight: #CBD5E1;
   --text-main: #0F172A;
   --text-secondary: #334155;
@@ -261,6 +281,11 @@ html[data-theme="light"],
   --accent-hover: #1565C0;
   --accent-emerald: #059669;
   --accent-sky: #0284C7;
+
+  --card-glass-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+  --card-glass-border: 1px solid rgba(0, 0, 0, 0.08);
+  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+  --card-hover-shadow: 0 8px 25px -4px rgba(0, 0, 0, 0.1), 0 0 15px rgba(25, 118, 210, 0.1);
 }
 
 html[data-theme="oled-black"],
@@ -271,7 +296,7 @@ html[data-theme="oled-black"],
   --bg-header: #000000;
   --bg-stream: #000000;
   --bg-hover: #171717;
-  --border-color: #262626;
+  --border-color: rgba(255, 255, 255, 0.08);
   --border-highlight: #404040;
   --text-main: #FFFFFF;
   --text-secondary: #D4D4D8;
@@ -280,6 +305,11 @@ html[data-theme="oled-black"],
   --accent-hover: #1565C0;
   --accent-emerald: #10B981;
   --accent-sky: #38BDF8;
+
+  --card-glass-bg: linear-gradient(145deg, rgba(14, 14, 14, 0.9) 0%, rgba(8, 8, 8, 0.85) 100%);
+  --card-glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.7);
+  --card-hover-shadow: 0 8px 25px -4px rgba(0, 0, 0, 0.8), 0 0 15px rgba(25, 118, 210, 0.2);
 }
 
 body, html {
@@ -321,23 +351,27 @@ body, html {
   background: var(--bg-app);
   color: var(--text-main);
   border: 1px solid var(--border-color);
-  border-radius: 10px;
+  border-radius: var(--radius-hero, 16px);
+  box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.06);
   overflow: hidden;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .titlebar {
-  height: 48px;
+  height: 44px;
   background: var(--bg-header);
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 16px;
   border-bottom: 1px solid var(--border-color);
+  border-top-left-radius: var(--radius-hero, 16px);
+  border-top-right-radius: var(--radius-hero, 16px);
   user-select: none;
   cursor: grab;
   position: relative;
   z-index: 50;
+  backdrop-filter: blur(12px);
 }
 
 .titlebar:active {
@@ -521,15 +555,13 @@ body, html {
 
 .content-wrapper {
   flex: 1;
-  padding: 20px 32px 28px 32px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  min-height: 0;
+  padding: clamp(12px, 2vh, 18px) clamp(16px, 2.5vw, 28px);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background: var(--bg-app);
-  max-width: 1350px;
   width: 100%;
-  margin: 0 auto;
 }
 
 /* Step transition */

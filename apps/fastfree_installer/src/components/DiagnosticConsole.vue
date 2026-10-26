@@ -208,10 +208,11 @@ function handleClear() {
   max-width: 860px;
   height: 85vh;
   max-height: 560px;
-  background: var(--bg-card, #18181B);
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
   border: 1px solid var(--border-color, #27272A);
-  border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  border-radius: var(--radius-hero, 16px);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -329,17 +330,18 @@ function handleClear() {
   background: var(--bg-card, #27272A);
   border: 1px solid var(--border-color, #3F3F46);
   color: var(--text-muted, #A1A1AA);
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill, 9999px);
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .pill-btn:hover {
   color: var(--text-main, #FFFFFF);
   border-color: #52525B;
+  transform: translateY(-1px);
 }
 
 .pill-btn.active {
@@ -418,7 +420,7 @@ function handleClear() {
   flex-direction: column;
   gap: 4px;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-inner, 10px);
   background: var(--bg-card, #18181B);
   border-inline-start: 3px solid #3F3F46;
   border: 1px solid var(--border-color, #27272A);
@@ -566,18 +568,19 @@ function handleClear() {
 
 .hud-btn {
   padding: 6px 14px;
-  border-radius: 6px;
+  border-radius: var(--radius-inner, 10px);
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid var(--border-color, #3F3F46);
   background: var(--bg-card, #27272A);
   color: var(--text-main, #F4F4F5);
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hud-btn:hover {
   background: #3F3F46;
+  transform: translateY(-1px);
 }
 
 .hud-btn-ghost {

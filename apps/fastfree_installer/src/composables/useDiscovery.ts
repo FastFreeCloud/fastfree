@@ -223,3 +223,38 @@ export async function showMainWindow(): Promise<void> {
     console.error('Show main window failed:', err);
   }
 }
+
+export async function checkVmExists(clientId: string): Promise<boolean> {
+  try {
+    return await invoke<boolean>('check_vm_exists', { clientId });
+  } catch (err) {
+    console.warn('check_vm_exists failed:', err);
+    return false;
+  }
+}
+
+export async function provisionNode(
+  clientId: string,
+  cores: number,
+  ramMb: number,
+  targetDrive: string
+): Promise<Array<{ step: number; phase: string; message: string; success: boolean }>> {
+  logInfo('Hyper-V', `Provisioning VM FastFree-${clientId} (Cores: ${cores}, RAM: ${ramMb}MB, Drive: ${targetDrive})...`);
+  try {
+    const logs = await invoke<Array<{ step: number; phase: string; message: string; success: boolean }>>(
+      'provision_node',
+      {
+        clientId,
+        cores,
+        ramMb,
+        targetDrive,
+      }
+    );
+    logSuccess('Hyper-V', `Appliance FastFree-${clientId} provisioned successfully in Hyper-V.`);
+    return logs;
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    logError('Hyper-V', `Provisioning failed for ${clientId}`, msg);
+    throw err;
+  }
+}

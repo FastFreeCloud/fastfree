@@ -74,7 +74,7 @@ function navigateIfAllowed(target: number) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
+  padding: 8px clamp(14px, 2vw, 24px);
   background: var(--bg-card, #18181B);
   border-bottom: 1px solid var(--border-color, #27272A);
   user-select: none;
@@ -84,7 +84,7 @@ function navigateIfAllowed(target: number) {
 .step-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   position: relative;
   flex: 1;
   opacity: 0.55;
@@ -105,26 +105,27 @@ function navigateIfAllowed(target: number) {
 }
 
 .step-badge {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
   background: var(--bg-sub, #27272A);
   color: var(--text-muted, #A1A1AA);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   border: 1px solid var(--border-color, #3F3F46);
   flex-shrink: 0;
-  transition: all 0.25s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .step-item.active .step-badge {
   background: var(--accent-primary, #1976D2);
   color: #FFFFFF;
   border-color: var(--accent-sky, #38BDF8);
-  box-shadow: 0 0 10px rgba(25, 118, 210, 0.5);
+  box-shadow: 0 0 12px rgba(25, 118, 210, 0.5);
+  transform: scale(1.05);
 }
 
 .step-item.completed .step-badge {
@@ -143,14 +144,14 @@ function navigateIfAllowed(target: number) {
 }
 
 .step-title {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11.5px;
+  font-weight: 700;
   color: var(--text-main, #F4F4F5);
   white-space: nowrap;
 }
 
 .step-subtitle {
-  font-size: 10px;
+  font-size: 9.5px;
   color: var(--text-muted, #A1A1AA);
   white-space: nowrap;
 }
@@ -159,8 +160,9 @@ function navigateIfAllowed(target: number) {
   flex: 1;
   height: 2px;
   background: var(--border-color, #27272A);
-  margin: 0 12px;
-  min-width: 14px;
+  margin: 0 8px;
+  min-width: 10px;
+  border-radius: 2px;
 }
 
 .step-item.completed .step-line {
@@ -172,7 +174,7 @@ function navigateIfAllowed(target: number) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 24px;
+  padding: 8px clamp(14px, 2vw, 24px);
   background: linear-gradient(90deg, rgba(16, 185, 129, 0.12), rgba(25, 118, 210, 0.08));
   border-bottom: 1px solid rgba(16, 185, 129, 0.3);
   user-select: none;

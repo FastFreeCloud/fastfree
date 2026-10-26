@@ -214,6 +214,11 @@ const messages: Record<Locale, Translations> = {
       vmRestarting: 'Restarting virtual machine {client}...',
       vmStopping: 'Stopping virtual machine {client}...',
       vmSuccess: 'Virtual machine action completed successfully.',
+      vmNotFoundTitle: 'Appliance Virtual Machine Not Found in Hyper-V',
+      vmNotFoundDesc: 'The virtual machine FastFree-{client} is not currently created or was removed from Hyper-V. You can provision it immediately or restart the setup wizard.',
+      createVmNow: '⚡ Create & Deploy Appliance Now',
+      restartWizard: '🔄 Restart Setup Wizard',
+      restartWizardHint: 'Reset setup state and return to Discovery',
     },
     diagnostics: {
       title: 'Diagnostic HUD & Telemetry Console',
@@ -444,6 +449,11 @@ const messages: Record<Locale, Translations> = {
       vmRestarting: 'جارٍ إعادة تشغيل الآلة الافتراضية {client}...',
       vmStopping: 'جارٍ إيقاف الآلة الافتراضية {client}...',
       vmSuccess: 'تم تنفيذ أمر الآلة الافتراضية بنجاح.',
+      vmNotFoundTitle: 'لم يتم العثور على الآلة الافتراضية في Hyper-V',
+      vmNotFoundDesc: 'الآلة الافتراضية FastFree-{client} غير موجودة حالياً في نظام Hyper-V أو قد تم حذفها. يمكنك إنشاؤها وتثبيتها الآن مباشرة أو إعادة تشغيل معالج الإعداد.',
+      createVmNow: '⚡ إنشاء وتثبيت الآلة الافتراضية الآن',
+      restartWizard: '🔄 إعادة تشغيل معالج الإعداد',
+      restartWizardHint: 'مسح ذاكرة الإعداد المؤقتة والعودة للخطوة 1',
     },
     diagnostics: {
       title: 'شاشة التشخيص ومراقبة الأحداث الحية',
