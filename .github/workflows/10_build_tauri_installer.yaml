@@ -70,8 +70,9 @@ jobs:
           echo "semver=${SEMVER}" >> $GITHUB_OUTPUT
           echo "Calculated target tag: ${NEXT_TAG} (SemVer: ${SEMVER})"
 
-          # Inject real version into tauri.conf.json and Cargo.toml
+          # Inject real version into tauri.conf.json, Cargo.toml, and package.json
           node -e "const fs=require('fs'); const p='apps/fastfree_installer/src-tauri/tauri.conf.json'; const c=JSON.parse(fs.readFileSync(p,'utf8')); c.version='${SEMVER}'; fs.writeFileSync(p, JSON.stringify(c, null, 2));"
+          node -e "const fs=require('fs'); const p='apps/fastfree_installer/package.json'; const c=JSON.parse(fs.readFileSync(p,'utf8')); c.version='${SEMVER}'; fs.writeFileSync(p, JSON.stringify(c, null, 2));"
           sed -i "s/^version = \".*\"/version = \"${SEMVER}\"/" apps/fastfree_installer/src-tauri/Cargo.toml
           echo "Configured tauri.conf.json version:"
           grep '"version"' apps/fastfree_installer/src-tauri/tauri.conf.json

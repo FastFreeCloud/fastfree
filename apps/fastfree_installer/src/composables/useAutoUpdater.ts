@@ -1,7 +1,8 @@
-import { ref } from 'vue';
+import { ref, shallowRef, toRaw, markRaw } from 'vue';
 import { check, Update } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import { getVersion } from '@tauri-apps/api/app';
 import { logInfo, logWarn, logError, logSuccess } from './useDiagnostics';
 
 export const isCheckingUpdate = ref(false);
@@ -11,11 +12,27 @@ export const updateNotes = ref('');
 export const isDownloadingUpdate = ref(false);
 export const downloadProgress = ref(0);
 export const updateError = ref('');
-export const currentUpdateObj = ref<Update | null>(null);
 export const manualDownloadUrl = ref('');
 
-// Current local running version
-export const CURRENT_APP_VERSION = '26.5.0';
+// Maintain unproxied raw native Update instance outside Vue reactivity to prevent:
+// "TypeError: Cannot read private member from an object whose class did not declare it"
+let rawNativeUpdate: Update | null = null;
+export const currentUpdateObj = shallowRef<Update | null>(null);
+
+// Current local running version (initialized dynamically)
+export const currentAppVersion = ref('26.5.0');
+
+export async function initAppVersion(): Promise<string> {
+  try {
+    const ver = await getVersion();
+    if (ver) {
+      currentAppVersion.value = ver;
+    }
+  } catch (err) {
+    console.warn('Failed to retrieve runtime app version:', err);
+  }
+  return currentAppVersion.value;
+}
 
 function compareSemver(v1: string, v2: string): number {
   const parts1 = v1.replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
@@ -39,20 +56,22 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
   isCheckingUpdate.value = true;
   updateError.value = '';
 
-  logInfo('Updater', `Checking for updates (silent=${silent})...`);
+  await initAppVersion();
+  logInfo('Updater', `Checking for updates (current: v${currentAppVersion.value}, silent=${silent})...`);
 
   // 1. First: Try native Tauri plugin updater
   try {
     const update = await check();
     if (update) {
-      currentUpdateObj.value = update;
+      rawNativeUpdate = markRaw(update);
+      currentUpdateObj.value = rawNativeUpdate;
       updateAvailable.value = true;
       updateVersion.value = update.version;
       updateNotes.value = update.body || 'FastFree Appliance Performance & Security Update';
-      manualDownloadUrl.value = '';
+      manualDownloadUrl.value = `https://github.com/FastFreeCloud/fastfree/releases/download/installer-v${update.version}/FastFree-Node-Setup.exe`;
       logSuccess(
         'Updater',
-        `New update found via native manifest: v${update.version}`,
+        `New update found: v${update.version}`,
         `Published: ${update.date || 'latest'}, Channel: Production Release`
       );
       return true;
@@ -72,7 +91,8 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
       const remoteVer = rawTag.replace(/^installer-v/, '').replace(/^v/, '');
       const asset = release.assets?.find((a: { name?: string }) => a.name?.endsWith('.exe'));
 
-      if (remoteVer && compareSemver(remoteVer, CURRENT_APP_VERSION) > 0) {
+      if (remoteVer && compareSemver(remoteVer, currentAppVersion.value) > 0) {
+        rawNativeUpdate = null;
         currentUpdateObj.value = null;
         updateAvailable.value = true;
         updateVersion.value = remoteVer;
@@ -92,6 +112,7 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
   }
 
   updateAvailable.value = false;
+  rawNativeUpdate = null;
   currentUpdateObj.value = null;
   manualDownloadUrl.value = '';
   logInfo('Updater', 'FastFree Companion is up to date (Latest Version).');
@@ -100,11 +121,11 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
 
 /**
  * Downloads and installs the pending update, then relaunches the companion cleanly.
- * If native installer plugin is active, installs automatically.
+ * If native installer plugin is active, installs automatically using unproxied instance.
  * Otherwise, launches the direct installer download.
  */
 export async function installPendingUpdate(): Promise<void> {
-  const update = currentUpdateObj.value;
+  const update = rawNativeUpdate || (currentUpdateObj.value ? toRaw(currentUpdateObj.value) : null);
 
   // Case A: Native updater object available
   if (update) {
@@ -141,16 +162,28 @@ export async function installPendingUpdate(): Promise<void> {
 
       logSuccess('Updater', 'Installation complete. Relaunching...');
       await relaunch();
+      return;
     } catch (err: unknown) {
       const msg = String(err || 'Failed to download and install update');
-      updateError.value = msg;
-      logError('Updater', 'Update installation failed', msg);
+      logError('Updater', 'Native update installation failed, triggering fallback', msg);
+
+      // Graceful fallback to direct installer URL if native plugin fails
+      if (manualDownloadUrl.value) {
+        logInfo('Updater', `Opening direct installer download: ${manualDownloadUrl.value}`);
+        try {
+          await openUrl(manualDownloadUrl.value);
+        } catch {
+          window.open(manualDownloadUrl.value, '_blank');
+        }
+      } else {
+        updateError.value = msg;
+      }
       isDownloadingUpdate.value = false;
     }
     return;
   }
 
-  // Case B: Manual / direct installer download fallback
+  // Case B: Direct installer download
   if (manualDownloadUrl.value) {
     logInfo('Updater', `Opening direct installer download: ${manualDownloadUrl.value}`);
     try {

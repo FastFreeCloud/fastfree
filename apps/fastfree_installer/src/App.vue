@@ -8,7 +8,7 @@
         </div>
         <div class="brand-text">
           <span class="title">{{ t('app.title') }}</span>
-          <span class="version-tag">{{ t('app.version') }}</span>
+          <span class="version-tag">v{{ currentAppVersion }}</span>
         </div>
       </div>
 
@@ -151,6 +151,8 @@ import {
   isDownloadingUpdate,
   downloadProgress,
   installPendingUpdate,
+  currentAppVersion,
+  initAppVersion,
 } from './composables/useAutoUpdater';
 
 const { t, locale, isRtl, toggleLocale, setLocale } = useI18n();
@@ -161,6 +163,7 @@ const appWindow = getCurrentWindow();
 
 onMounted(async () => {
   const bootStart = Date.now();
+  await initAppVersion();
   try {
     const savedLocale = localStorage.getItem('fastfree_installer_locale');
     if (savedLocale === 'ar' || savedLocale === 'en') {
