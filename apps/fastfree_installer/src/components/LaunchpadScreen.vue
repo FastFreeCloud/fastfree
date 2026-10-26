@@ -53,22 +53,42 @@
       </div>
 
       <!-- Master Live Status Hero -->
-      <div class="hero-success-card" :class="{ 'is-warning': vmExists === false }">
-        <div class="success-icon-badge" :class="{ 'badge-amber': vmExists === false }">
-          {{ vmExists === false ? '!' : '✓' }}
+      <div class="hero-success-card" :class="{ 'is-warning': vmExists === false, 'is-stopped': realVmState && realVmState.state !== 'Running' && realVmState.exists }">
+        <div class="success-icon-badge" :class="{ 'badge-amber': vmExists === false, 'badge-gray': realVmState && realVmState.state === 'Off' }">
+          {{ vmExists === false ? '!' : (realVmState && realVmState.state === 'Off' ? '⏹' : '✓') }}
         </div>
         <div class="hero-text">
           <div class="node-title-row">
             <h3>{{ selectedClientId }} — {{ licenseState?.company_name || 'FastFree Enterprise Node' }}</h3>
-            <span class="live-status-pill" :class="{ 'pill-amber': vmExists === false }">
-              <span :class="vmExists === false ? 'dot-amber' : 'dot-live'"></span>
-              <span>{{ vmExists === false ? (isRtl ? 'في انتظار التثبيت' : 'Setup Required') : t('launchpad.onlineOperational') }}</span>
+            <span class="live-status-pill" :class="{
+              'pill-amber': vmExists === false,
+              'pill-green': realVmState && realVmState.state === 'Running',
+              'pill-gray': realVmState && realVmState.state === 'Off'
+            }">
+              <span :class="{
+                'dot-amber': vmExists === false || (realVmState && realVmState.state === 'Starting'),
+                'dot-live': realVmState && realVmState.state === 'Running',
+                'dot-gray': realVmState && realVmState.state === 'Off'
+              }"></span>
+              <span>
+                {{
+                  vmExists === false
+                    ? (isRtl ? 'في انتظار التثبيت' : 'Setup Required')
+                    : (realVmState?.state === 'Running'
+                        ? (isRtl ? 'تعمل الآن في Hyper-V (Running)' : 'Live & Running in Hyper-V')
+                        : (realVmState?.state === 'Off'
+                            ? (isRtl ? 'متوقفة حالياً (Off)' : 'Appliance Off in Hyper-V')
+                            : (realVmState?.state || t('launchpad.onlineOperational'))))
+                }}
+              </span>
             </span>
           </div>
           <p class="node-sub-text">
             {{ vmExists === false
               ? (isRtl ? 'الآلة الافتراضية غير مسجلة حالياً في Hyper-V. اضغط على زر "إنشاء وتثبيت الآلة الافتراضية الآن" أعلاه لتشغيلها.' : 'Virtual machine is not registered in Hyper-V yet. Click "Create & Install Virtual Machine Now" above.')
-              : (isRtl ? 'تم اكتمال نشر وتثبيت البيئة بنجاح. تعمل الآلة الافتراضية بنظام NixOS Clan 26.05 مع اتصال دائم بشبكة واير جارد.' : 'Appliance deployed and running smoothly on NixOS Clan 26.05 with persistent WireGuard mesh tunnel.')
+              : (realVmState?.state === 'Running'
+                  ? (isRtl ? 'تم التحقق من تشغيل الآلة في Hyper-V بنجاح. تعمل بكامل طاقتها مع اتصال مشفر عبر واير جارد.' : 'Verified running in Hyper-V. Operating smoothly with active WireGuard mesh tunnel.')
+                  : (isRtl ? 'الآلة مسجلة في Hyper-V ولكنها متوقفة. اضغط على زر تشغيل (Start) بالأسفل.' : 'Appliance is registered in Hyper-V but currently Off. Click Start button below.'))
             }}
           </p>
         </div>
@@ -96,19 +116,27 @@
           </div>
         </div>
 
-        <!-- 2. Hardware Allocation -->
+        <!-- 2. Live Hyper-V Hardware Allocation -->
         <div class="spec-card">
           <div class="spec-header">
             <span class="spec-icon">⚡</span>
-            <span class="spec-title">{{ isRtl ? 'الموارد المخصصة للعتاد' : 'Allocated Hardware Resources' }}</span>
+            <span class="spec-title">{{ isRtl ? 'بيانات Hyper-V الحية' : 'Live Hyper-V Telemetry' }}</span>
           </div>
           <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'الأنوية:' : 'vCPU Cores:' }}</span>
-            <span class="spec-v font-bold text-accent">{{ assignedCpuCores }} {{ t('common.cores') }}</span>
+            <span class="spec-k">{{ isRtl ? 'الأنوية (vCPU):' : 'vCPU Cores:' }}</span>
+            <span class="spec-v font-bold text-accent">{{ realVmState?.cpu_cores || assignedCpuCores }} {{ t('common.cores') }}</span>
           </div>
           <div class="spec-item">
             <span class="spec-k">{{ isRtl ? 'الذاكرة (RAM):' : 'Memory (RAM):' }}</span>
-            <span class="spec-v font-bold text-emerald">{{ (assignedRamMb / 1024).toFixed(0) }} {{ t('common.gb') }}</span>
+            <span class="spec-v font-bold text-emerald">
+              {{ realVmState?.memory_mb ? (realVmState.memory_mb / 1024).toFixed(1) : (assignedRamMb / 1024).toFixed(0) }} {{ t('common.gb') }}
+            </span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-k">{{ isRtl ? 'مدة التشغيل الحية:' : 'Live Uptime:' }}</span>
+            <span class="spec-v font-mono text-xs text-accent">
+              {{ realVmState?.exists ? formatUptime(realVmState.uptime_seconds) : '-' }}
+            </span>
           </div>
           <div class="spec-item">
             <span class="spec-k">{{ isRtl ? 'القرص:' : 'Storage:' }}</span>
@@ -131,6 +159,12 @@
           <div class="spec-item">
             <span class="spec-k">{{ isRtl ? 'منفذ UDP:' : 'UDP Port:' }}</span>
             <span class="spec-v font-mono text-accent font-bold">{{ wireGuardConfig?.listen_port || 51822 }}</span>
+          </div>
+          <div v-if="realVmState?.ip_addresses?.length" class="spec-item">
+            <span class="spec-k">{{ isRtl ? 'عناوين Hyper-V:' : 'Hyper-V IPs:' }}</span>
+            <span class="spec-v font-mono text-xs text-accent truncate" :title="realVmState.ip_addresses.join(', ')">
+              {{ realVmState.ip_addresses.join(', ') }}
+            </span>
           </div>
           <div class="spec-item">
             <span class="spec-k">{{ isRtl ? 'المتحكم:' : 'Controller:' }}</span>
@@ -182,27 +216,30 @@
           <div class="vm-power-controls">
             <button
               class="btn-vm-action btn-start"
-              :disabled="vmActionBusy"
+              :disabled="!!(vmActionBusy || realVmState?.state === 'Running')"
               title="Start VM"
               @click="handleVmAction('start')"
             >
-              ▶ {{ isRtl ? 'تشغيل' : 'Start' }}
+              <span v-if="activeAction === 'start'" class="spinner-tiny"></span>
+              <span v-else>▶ {{ isRtl ? 'تشغيل' : 'Start' }}</span>
             </button>
             <button
               class="btn-vm-action"
-              :disabled="vmActionBusy"
+              :disabled="Boolean(vmActionBusy)"
               title="Restart Guest VM"
               @click="handleVmAction('restart')"
             >
-              🔄 {{ t('launchpad.restartVm') }}
+              <span v-if="activeAction === 'restart'" class="spinner-tiny"></span>
+              <span v-else>🔄 {{ t('launchpad.restartVm') }}</span>
             </button>
             <button
               class="btn-vm-action btn-danger"
-              :disabled="vmActionBusy"
+              :disabled="!!(vmActionBusy || realVmState?.state === 'Off')"
               title="Stop Guest VM"
               @click="handleVmAction('stop')"
             >
-              ⏹ {{ t('launchpad.stopVm') }}
+              <span v-if="activeAction === 'stop'" class="spinner-tiny"></span>
+              <span v-else>⏹ {{ t('launchpad.stopVm') }}</span>
             </button>
             <button
               class="btn-vm-action btn-restart-wizard"
@@ -247,7 +284,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import {
   currentStep,
@@ -259,8 +296,9 @@ import {
   targetDiskDrive,
   executeVmCommand,
   minimizeToTray,
-  checkVmExists,
+  getVmRealState,
   provisionNode,
+  type VmRealState,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
 import { logInfo, logWarn, logError, logSuccess } from '../composables/useDiagnostics';
@@ -270,31 +308,69 @@ const { t, isRtl } = useI18n();
 
 const copiedText = ref<string | null>(null);
 const vmActionBusy = ref(false);
+const activeAction = ref<'start' | 'stop' | 'restart' | null>(null);
 const actionNotice = ref('');
 const vmExists = ref<boolean | null>(null);
+const realVmState = ref<VmRealState | null>(null);
 const isCheckingVm = ref(false);
 const isProvisioning = ref(false);
 const provisioningMessage = ref('');
+let telemetryInterval: any = null;
+
+function formatUptime(seconds: number): string {
+  if (!seconds || seconds <= 0) return '0s';
+  const d = Math.floor(seconds / (3600 * 24));
+  const h = Math.floor((seconds % (3600 * 24)) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (d > 0) return `${d}d ${h}h ${m}m`;
+  if (h > 0) return `${h}h ${m}m ${s}s`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
 
 async function checkVmStatus() {
   isCheckingVm.value = true;
   try {
-    const exists = await checkVmExists(selectedClientId.value);
-    vmExists.value = exists;
-    if (!exists) {
+    const telemetry = await getVmRealState(selectedClientId.value);
+    realVmState.value = telemetry;
+    vmExists.value = telemetry.exists;
+    if (!telemetry.exists) {
       logWarn('Launchpad', `Hyper-V VM 'FastFree-${selectedClientId.value}' was not found in Hyper-V.`);
     } else {
-      logInfo('Launchpad', `Hyper-V VM 'FastFree-${selectedClientId.value}' verified in Hyper-V.`);
+      logInfo(
+        'Launchpad',
+        `Live Hyper-V verified for 'FastFree-${selectedClientId.value}': State=${telemetry.state}, Uptime=${telemetry.uptime_seconds}s, RAM=${telemetry.memory_mb}MB`
+      );
       try {
         localStorage.setItem('fastfree_provisioned', 'true');
       } catch {}
     }
   } catch (err) {
-    console.warn('Error checking VM existence:', err);
+    console.warn('Error checking VM status:', err);
     vmExists.value = false;
   } finally {
     isCheckingVm.value = false;
   }
+}
+
+async function waitForVmState(targetState: string, maxWaitMs = 15000, pollIntervalMs = 750): Promise<VmRealState> {
+  const startTime = Date.now();
+  while (Date.now() - startTime < maxWaitMs) {
+    try {
+      const state = await getVmRealState(selectedClientId.value);
+      realVmState.value = state;
+      vmExists.value = state.exists;
+      if (state.state.toLowerCase() === targetState.toLowerCase()) {
+        return state;
+      }
+    } catch {}
+    await new Promise((r) => setTimeout(r, pollIntervalMs));
+  }
+  const finalState = await getVmRealState(selectedClientId.value);
+  realVmState.value = finalState;
+  vmExists.value = finalState.exists;
+  return finalState;
 }
 
 async function handleInstantProvisioning() {
@@ -306,7 +382,7 @@ async function handleInstantProvisioning() {
   logInfo('Launchpad', `Instant VM provisioning triggered for ${selectedClientId.value}`);
 
   try {
-    const safeRam = Math.round((assignedRamMb.value || 8192) / 1024) * 1024 || 8192;
+    const safeRam = Math.max(1024, Math.floor(((assignedRamMb.value || 8192) + 64) / 128) * 128);
     const logs = await provisionNode(
       selectedClientId.value,
       assignedCpuCores.value || 4,
@@ -358,6 +434,18 @@ async function handleManualCheckUpdate() {
 
 onMounted(async () => {
   await checkVmStatus();
+  telemetryInterval = setInterval(async () => {
+    if (!isCheckingVm.value && !isProvisioning.value && !vmActionBusy.value) {
+      await checkVmStatus();
+    }
+  }, 4000);
+});
+
+onUnmounted(() => {
+  if (telemetryInterval) {
+    clearInterval(telemetryInterval);
+    telemetryInterval = null;
+  }
 });
 
 async function launchPortal() {
@@ -392,16 +480,29 @@ async function handleVmAction(action: 'start' | 'stop' | 'restart') {
   }
 
   vmActionBusy.value = true;
+  activeAction.value = action;
   actionNotice.value = action === 'restart'
     ? t('launchpad.vmRestarting', { client: selectedClientId.value })
     : action === 'start'
-    ? (isRtl.value ? `جارٍ بدء تشغيل العقدة ${selectedClientId.value}...` : `Starting VM ${selectedClientId.value}...`)
-    : t('launchpad.vmStopping', { client: selectedClientId.value });
+    ? (isRtl.value ? `جارٍ تشغيل العقدة ${selectedClientId.value} والتحقق من حالتها في Hyper-V...` : `Starting VM ${selectedClientId.value} and waiting for Hyper-V...`)
+    : (isRtl.value ? `جارٍ إيقاف العقدة ${selectedClientId.value} والتحقق من حالتها في Hyper-V...` : `Stopping VM ${selectedClientId.value} and waiting for Hyper-V...`);
 
   try {
     const res = await executeVmCommand(action, selectedClientId.value);
-    actionNotice.value = res.message || t('launchpad.vmSuccess');
-    logSuccess('VM', `VM ${action} succeeded for ${selectedClientId.value}`);
+    const targetState = action === 'stop' ? 'Off' : 'Running';
+
+    // Actively poll until Hyper-V reflects target state!
+    const confirmedState = await waitForVmState(targetState);
+    if (confirmedState.state.toLowerCase() === targetState.toLowerCase()) {
+      actionNotice.value = action === 'start'
+        ? (isRtl.value ? 'تم تأكيد تشغيل الآلة الافتراضية في Hyper-V بنجاح! ✅' : 'VM verified in Hyper-V Running state! ✅')
+        : action === 'stop'
+        ? (isRtl.value ? 'تم تأكيد إيقاف الآلة الافتراضية في Hyper-V بنجاح ⏹' : 'VM verified in Hyper-V Off state ⏹')
+        : (isRtl.value ? 'تمت إعادة تشغيل الآلة الافتراضية بنجاح 🔄' : 'VM restarted and verified in Hyper-V 🔄');
+      logSuccess('VM', `Hyper-V state confirmed for ${selectedClientId.value}: ${confirmedState.state}`);
+    } else {
+      actionNotice.value = res.message || t('launchpad.vmSuccess');
+    }
   } catch (err) {
     const msg = String(err);
     if (msg.includes('VM_NOT_FOUND') || msg.includes('unable to find a virtual machine')) {
@@ -410,11 +511,13 @@ async function handleVmAction(action: 'start' | 'stop' | 'restart') {
         ? 'الآلة الافتراضية غير موجودة في Hyper-V. يمكنك إنشاؤها عبر الزر الظاهر بالأعلى.'
         : 'Virtual machine not found in Hyper-V. You can create it using the button above.';
     } else {
-      actionNotice.value = `VM command error: ${msg}`;
+      actionNotice.value = `Hyper-V Error: ${msg}`;
     }
     logError('VM', `VM ${action} failed`, msg);
+    await checkVmStatus();
   } finally {
     vmActionBusy.value = false;
+    activeAction.value = null;
     setTimeout(() => {
       actionNotice.value = '';
     }, 5000);
@@ -620,9 +723,19 @@ async function handleMinimizeToTray() {
   border-color: rgba(245, 158, 11, 0.2);
 }
 
+.hero-success-card.is-stopped {
+  background: rgba(148, 163, 184, 0.08);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
 .success-icon-badge.badge-amber {
   background: #F59E0B;
   box-shadow: 0 0 14px rgba(245, 158, 11, 0.3);
+}
+
+.success-icon-badge.badge-gray {
+  background: #64748B;
+  box-shadow: 0 0 14px rgba(100, 116, 139, 0.3);
 }
 
 .live-status-pill.pill-amber {
@@ -631,11 +744,30 @@ async function handleMinimizeToTray() {
   border-color: rgba(245, 158, 11, 0.3);
 }
 
+.live-status-pill.pill-green {
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.live-status-pill.pill-gray {
+  color: #94A3B8;
+  background: rgba(148, 163, 184, 0.15);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
 .dot-amber {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: #F59E0B;
+}
+
+.dot-gray {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #94A3B8;
 }
 
 .hero-success-card {

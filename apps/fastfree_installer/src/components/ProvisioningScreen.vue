@@ -8,27 +8,47 @@
 
     <div class="content-body">
       <!-- Big Progress Card -->
-      <div class="progress-hero-card">
+      <div class="progress-hero-card" :class="{ 'is-failed': isFailed }">
         <div class="hero-top">
           <div class="phase-badge">
-            <span v-if="!isDone" class="spinner-tiny"></span>
+            <span v-if="!isDone && !isFailed" class="spinner-tiny"></span>
+            <span v-else-if="isFailed" class="fail-tiny">✕</span>
             <span v-else class="check-tiny">✓</span>
-            <span>{{ currentPhaseText }}</span>
+            <span :class="{ 'text-red': isFailed }">{{ currentPhaseText }}</span>
           </div>
-          <span class="pct-text">{{ progress }}%</span>
+          <span class="pct-text" :class="{ 'text-red': isFailed }">{{ isFailed ? '!' : `${progress}%` }}</span>
         </div>
 
         <div class="progress-track">
           <div
             class="progress-bar-fill"
             :style="{ width: `${progress}%` }"
-            :class="{ 'bar-complete': isDone }"
+            :class="{ 'bar-complete': isDone && !isFailed, 'bar-failed': isFailed }"
           ></div>
         </div>
 
         <div class="stats-row">
           <span>{{ t('provisioning.targetDrive', { path: `${targetDiskDrive}FastFree\\VMs\\${selectedClientId}.vhdx` }) }}</span>
           <span>{{ t('provisioning.vcpuRam', { cores: assignedCpuCores, ram: (assignedRamMb / 1024).toFixed(0) }) }}</span>
+        </div>
+      </div>
+
+      <!-- Real Error Banner if Provisioning Fails -->
+      <div v-if="isFailed" class="error-banner">
+        <div class="error-banner-icon">⚠️</div>
+        <div class="error-banner-content">
+          <div class="error-banner-title">
+            {{ isRtl ? 'تعذر إتمام تهيئة وتثبيت الآلة في Hyper-V' : 'Hyper-V Appliance Provisioning Failed' }}
+          </div>
+          <div class="error-banner-msg font-mono text-xs">{{ errorMessage }}</div>
+          <div class="error-banner-actions">
+            <button class="btn-retry" @click="retryProvisioning">
+              🔄 {{ isRtl ? 'إعادة المحاولة' : 'Retry Provisioning' }}
+            </button>
+            <button class="btn-back-sizing" @click="currentStep = 3">
+              ⚙️ {{ isRtl ? 'تعديل موارد العتاد (الأنوية والرام)' : 'Adjust Hardware Sizing' }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -60,7 +80,11 @@
     <!-- Action Bar -->
     <div class="action-bar">
       <div class="status-summary">
-        <span v-if="!isDone" class="status-live">
+        <span v-if="isFailed" class="status-failed">
+          <span class="dot-red-pulse"></span>
+          <span>{{ isRtl ? 'فشل التثبيت — انظر التقرير أعلاه' : 'Provisioning Failed — Check Details' }}</span>
+        </span>
+        <span v-else-if="!isDone" class="status-live">
           <span class="dot-amber"></span>
           <span>{{ t('provisioning.inProgressNotice') }}</span>
         </span>
@@ -72,7 +96,7 @@
 
       <button
         class="btn btn-primary"
-        :disabled="!isDone"
+        :disabled="!isDone || isFailed"
         @click="currentStep = 6"
       >
         {{ t('provisioning.continueToLaunchpad') }}
@@ -82,8 +106,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
   currentStep,
   selectedClientId,
@@ -92,20 +117,66 @@ import {
   targetDiskDrive,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
-import { logInfo, logSuccess } from '../composables/useDiagnostics';
+import { logInfo, logError, logSuccess } from '../composables/useDiagnostics';
 
 const { t, isRtl } = useI18n();
 
-const progress = ref(0);
+const progress = ref(5);
 const isDone = ref(false);
+const isFailed = ref(false);
+const errorMessage = ref('');
 const currentPhaseText = ref('');
 const logs = ref<string[]>([]);
 const logContainer = ref<HTMLElement | null>(null);
 
-onMounted(() => {
-  currentPhaseText.value = t('provisioning.phases.phase1');
-  runProvisioning();
+let unlistenStep: UnlistenFn | null = null;
+let unlistenFail: UnlistenFn | null = null;
+
+onMounted(async () => {
+  currentPhaseText.value = isRtl.value ? 'بدء تجهيز البيئة...' : 'Initializing environment...';
+  await setupEventListeners();
+  await runProvisioning();
 });
+
+onUnmounted(() => {
+  if (unlistenStep) unlistenStep();
+  if (unlistenFail) unlistenFail();
+});
+
+async function setupEventListeners() {
+  try {
+    unlistenStep = await listen<{ step: number; phase: string; message: string; success: boolean }>(
+      'provision-step',
+      async (event) => {
+        const payload = event.payload;
+        if (payload.step === 1) {
+          progress.value = 25;
+          currentPhaseText.value = payload.phase;
+        } else if (payload.step === 2) {
+          progress.value = 50;
+          currentPhaseText.value = payload.phase;
+        } else if (payload.step === 3) {
+          progress.value = 75;
+          currentPhaseText.value = payload.phase;
+        } else if (payload.step === 4) {
+          progress.value = 100;
+          currentPhaseText.value = payload.phase;
+        }
+        await addLog(`[${payload.phase}] ${payload.message}`);
+      }
+    );
+
+    unlistenFail = await listen<string>('provision-failed', async (event) => {
+      isFailed.value = true;
+      isDone.value = false;
+      errorMessage.value = event.payload;
+      currentPhaseText.value = isRtl.value ? 'فشل التثبيت في Hyper-V' : 'Hyper-V Provisioning Failed';
+      await addLog(`[ERROR] ${event.payload}`);
+    });
+  } catch (err) {
+    console.warn('Could not register Tauri provision event listeners:', err);
+  }
+}
 
 async function addLog(text: string) {
   const timestamp = new Date().toLocaleTimeString();
@@ -116,98 +187,68 @@ async function addLog(text: string) {
   }
 }
 
+async function retryProvisioning() {
+  isFailed.value = false;
+  errorMessage.value = '';
+  progress.value = 5;
+  isDone.value = false;
+  logs.value = [];
+  await runProvisioning();
+}
+
 async function runProvisioning() {
+  isFailed.value = false;
+  errorMessage.value = '';
+  isDone.value = false;
+  progress.value = 10;
+
+  const safeAlignedRam = Math.max(1024, Math.floor(((assignedRamMb.value || 8192) + 64) / 128) * 128);
+
   logInfo('Provisioning', `Starting deployment for ${selectedClientId.value}...`);
   await addLog(`Starting automated deployment pipeline for ${selectedClientId.value}...`);
-  await addLog(`Selected Drive: ${targetDiskDrive.value} | Cores: ${assignedCpuCores.value} | RAM: ${assignedRamMb.value} MB`);
+  await addLog(`Selected Drive: ${targetDiskDrive.value} | Cores: ${assignedCpuCores.value} | Aligned RAM: ${safeAlignedRam} MB`);
+  currentPhaseText.value = isRtl.value ? 'جارٍ تهيئة قرص التخزين ومحول الشبكة...' : 'Configuring storage and virtual switch...';
 
-  const phases = [
-    {
-      pct: 15,
-      text: t('provisioning.phases.phase1'),
-      log: t('provisioning.phases.log1', { path: `${targetDiskDrive.value}FastFree\\VMs\\${selectedClientId.value}.vhdx` }),
-    },
-    {
-      pct: 35,
-      text: t('provisioning.phases.phase2'),
-      log: t('provisioning.phases.log2'),
-    },
-    {
-      pct: 55,
-      text: t('provisioning.phases.phase3'),
-      log: t('provisioning.phases.log3', {
-        client: selectedClientId.value,
-        ram: assignedRamMb.value * 1024 * 1024,
-        cores: assignedCpuCores.value,
-      }),
-    },
-    {
-      pct: 70,
-      text: t('provisioning.phases.phase4'),
-      log: t('provisioning.phases.log4'),
-    },
-    {
-      pct: 88,
-      text: t('provisioning.phases.phase5'),
-      log: t('provisioning.phases.log5'),
-    },
-    {
-      pct: 100,
-      text: t('provisioning.phases.phase6'),
-      log: t('provisioning.phases.log6', { client: selectedClientId.value }),
-    },
-  ];
-
-  for (let i = 0; i < phases.length; i++) {
-    const phase = phases[i];
-    currentPhaseText.value = phase.text;
-    await addLog(phase.log);
-
-    const startPct = progress.value;
-    const endPct = phase.pct;
-    const stepDiff = (endPct - startPct) / 8;
-
-    for (let s = 1; s <= 8; s++) {
-      await delay(70);
-      progress.value = Math.min(100, Math.round(startPct + s * stepDiff));
-    }
-
-    await delay(300);
-  }
-
-  // Real backend Hyper-V provisioning execution
   try {
-    currentPhaseText.value = 'Orchestrating Windows Hyper-V Appliance...';
-    await addLog('Invoking Windows Hyper-V engine & PowerShell orchestration...');
     const realLogs = await invoke<Array<{ step: number; phase: string; message: string; success: boolean }>>(
       'provision_node',
       {
         clientId: selectedClientId.value,
         cores: assignedCpuCores.value || 4,
-        ramMb: Math.round((assignedRamMb.value || 8192) / 1024) * 1024 || 8192,
+        ramMb: safeAlignedRam,
         targetDrive: targetDiskDrive.value || 'C:\\',
       }
     );
+
+    // If events weren't already printed, ensure returned logs are logged
     for (const r of realLogs) {
-      await addLog(`[${r.phase}] ${r.message}`);
+      const exists = logs.value.some((l) => l.includes(r.message));
+      if (!exists) {
+        await addLog(`[${r.phase}] ${r.message}`);
+      }
     }
-  } catch (err) {
+
+    progress.value = 100;
+    isDone.value = true;
+    currentPhaseText.value = isRtl.value ? 'تم التثبيت والتحقق بنجاح!' : 'Provisioning Completed & Verified!';
+
+    try {
+      localStorage.setItem('fastfree_provisioned', 'true');
+    } catch (err) {
+      console.warn('Storage save error:', err);
+    }
+    logSuccess('Provisioning', `Appliance ${selectedClientId.value} provisioned and verified in Hyper-V Running state!`);
+    await addLog(`Provisioning verified. Virtual machine is Running and ready.`);
+  } catch (err: any) {
+    const msg = String(err?.message || err);
     console.warn('Real Hyper-V provisioning error:', err);
-    await addLog(`Hyper-V Notice: ${err}`);
+    isFailed.value = true;
+    isDone.value = false;
+    errorMessage.value = msg;
+    currentPhaseText.value = isRtl.value ? 'فشل التثبيت في Hyper-V' : 'Hyper-V Provisioning Failed';
+    logError('Provisioning', `Failed to deploy appliance ${selectedClientId.value}`, msg);
+    await addLog(`[ERROR] Hyper-V Provisioning Error: ${msg}`);
   }
-
-  isDone.value = true;
-  try {
-    localStorage.setItem('fastfree_provisioned', 'true');
-  } catch (err) {
-    console.warn('Storage save error:', err);
-  }
-  logSuccess('Provisioning', `Appliance ${selectedClientId.value} provisioned and verified online!`);
-  await addLog(`Provisioning completed. Node is ready and operational.`);
-}
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 </script>
 
@@ -434,6 +475,115 @@ function delay(ms: number) {
   border-radius: 50%;
   background: #F59E0B;
   box-shadow: 0 0 6px #F59E0B;
+}
+
+.status-failed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #EF4444;
+  font-weight: 600;
+}
+
+.dot-red-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #EF4444;
+  box-shadow: 0 0 8px #EF4444;
+  animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+.fail-tiny {
+  color: #EF4444;
+  font-weight: 700;
+}
+
+.text-red {
+  color: #EF4444 !important;
+}
+
+.bar-failed {
+  background: linear-gradient(90deg, #EF4444, #DC2626) !important;
+}
+
+.progress-hero-card.is-failed {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.error-banner {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.error-banner-icon {
+  font-size: 20px;
+}
+
+.error-banner-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.error-banner-title {
+  color: #F87171;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.error-banner-msg {
+  color: var(--text-secondary, #D4D4D8);
+  font-size: 11px;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.error-banner-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.btn-retry {
+  background: #DC2626;
+  color: #FFFFFF;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-retry:hover {
+  background: #B91C1C;
+}
+
+.btn-back-sizing {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main, #F8FAFC);
+  border: 1px solid var(--border-color, #3F3F46);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-back-sizing:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .btn {

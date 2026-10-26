@@ -79,6 +79,24 @@ export interface VmActionStatus {
   message: string;
 }
 
+export interface VmRealState {
+  exists: boolean;
+  state: string;
+  uptime_seconds: number;
+  memory_mb: number;
+  cpu_cores: number;
+  ip_addresses: string[];
+}
+
+export interface ProvisioningStepLog {
+  step: number;
+  phase: string;
+  message: string;
+  success: boolean;
+}
+
+export const liveVmState = ref<VmRealState | null>(null);
+
 // Global reactive wizard state
 export const currentStep = ref<number>(1);
 export const loadingDiscovery = ref<boolean>(true);
@@ -234,20 +252,38 @@ export async function checkVmExists(clientId: string): Promise<boolean> {
   }
 }
 
+export async function getVmRealState(clientId: string): Promise<VmRealState> {
+  try {
+    return await invoke<VmRealState>('get_vm_real_state', { clientId });
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    logWarn('Hyper-V', `Live VM telemetry query notice: ${msg}`);
+    return {
+      exists: false,
+      state: 'NotFound',
+      uptime_seconds: 0,
+      memory_mb: 0,
+      cpu_cores: 0,
+      ip_addresses: [],
+    };
+  }
+}
+
 export async function provisionNode(
   clientId: string,
   cores: number,
   ramMb: number,
   targetDrive: string
 ): Promise<Array<{ step: number; phase: string; message: string; success: boolean }>> {
-  logInfo('Hyper-V', `Provisioning VM FastFree-${clientId} (Cores: ${cores}, RAM: ${ramMb}MB, Drive: ${targetDrive})...`);
+  const safeAlignedRam = Math.max(1024, Math.floor((ramMb + 64) / 128) * 128);
+  logInfo('Hyper-V', `Provisioning VM FastFree-${clientId} (Cores: ${cores}, Aligned RAM: ${safeAlignedRam}MB, Drive: ${targetDrive})...`);
   try {
     const logs = await invoke<Array<{ step: number; phase: string; message: string; success: boolean }>>(
       'provision_node',
       {
         clientId,
         cores,
-        ramMb,
+        ramMb: safeAlignedRam,
         targetDrive,
       }
     );

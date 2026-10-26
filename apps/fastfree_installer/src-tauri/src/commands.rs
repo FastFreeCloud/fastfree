@@ -2,7 +2,7 @@ use crate::discovery::HostDiscoveryPipeline;
 use crate::dto::*;
 use crate::licensing::LicensingManager;
 use crate::logger::InstallerLogger;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 
 #[tauri::command]
 pub async fn get_system_discovery_report() -> Result<SystemDiscoveryReport, String> {
@@ -67,64 +67,11 @@ pub async fn manage_vm(action: String, client_id: String) -> Result<VmActionStat
     let vm_name = format!("FastFree-{}", client_id);
     let _ = ensure_hyperv_environment();
 
-    let (target_state, ps_cmd) = match action.to_lowercase().as_str() {
-        "start" => (
-            "running",
-            format!(
-                r#"
-$ErrorActionPreference = 'Stop'
-try {{
-    $vm = Get-VM -Name '{0}' -ErrorAction SilentlyContinue
-    if (-not $vm) {{
-        throw "VM_NOT_FOUND: Virtual machine '{0}' does not exist in Hyper-V. Please provision the node first."
-    }}
-    Start-VM -Name '{0}'
-}} catch {{
-    Write-Error $_.Exception.Message
-    exit 1
-}}
-"#,
-                vm_name
-            ),
-        ),
-        "stop" => (
-            "stopped",
-            format!(
-                r#"
-$ErrorActionPreference = 'Stop'
-try {{
-    $vm = Get-VM -Name '{0}' -ErrorAction SilentlyContinue
-    if (-not $vm) {{
-        throw "VM_NOT_FOUND: Virtual machine '{0}' does not exist in Hyper-V."
-    }}
-    Stop-VM -Name '{0}' -Force
-}} catch {{
-    Write-Error $_.Exception.Message
-    exit 1
-}}
-"#,
-                vm_name
-            ),
-        ),
-        "restart" => (
-            "running",
-            format!(
-                r#"
-$ErrorActionPreference = 'Stop'
-try {{
-    $vm = Get-VM -Name '{0}' -ErrorAction SilentlyContinue
-    if (-not $vm) {{
-        throw "VM_NOT_FOUND: Virtual machine '{0}' does not exist in Hyper-V."
-    }}
-    Restart-VM -Name '{0}' -Force
-}} catch {{
-    Write-Error $_.Exception.Message
-    exit 1
-}}
-"#,
-                vm_name
-            ),
-        ),
+    let ps_action = match action.to_lowercase().as_str() {
+        "start" => "start",
+        "stop" => "stop",
+        "restart" => "restart",
+        "status" => "status",
         _ => {
             let err_msg = format!("Unknown VM management action: {}", action);
             InstallerLogger::error("VM_PROVISIONING", &err_msg);
@@ -132,16 +79,52 @@ try {{
         }
     };
 
+    let ps_cmd = format!(
+        r#"
+$ErrorActionPreference = 'Stop'
+try {{
+    $vm = Get-VM -Name '{0}' -ErrorAction SilentlyContinue
+    if (-not $vm) {{
+        throw "VM_NOT_FOUND: Virtual machine '{0}' does not exist in Hyper-V. Please provision the node first."
+    }}
+
+    switch ('{1}') {{
+        'start' {{
+            if ($vm.State -ne 'Running') {{
+                Start-VM -Name '{0}' -ErrorAction Stop
+            }}
+        }}
+        'stop' {{
+            if ($vm.State -eq 'Running') {{
+                Stop-VM -Name '{0}' -Force -ErrorAction Stop
+            }}
+        }}
+        'restart' {{
+            Restart-VM -Name '{0}' -Force -ErrorAction Stop
+        }}
+        'status' {{
+            # Query only
+        }}
+    }}
+
+    Start-Sleep -Milliseconds 600
+    $updatedVm = Get-VM -Name '{0}' -ErrorAction Stop
+    $realState = $updatedVm.State.ToString()
+    Write-Output "FASTFREE_REAL_STATE:$realState"
+}} catch {{
+    Write-Error $_.Exception.Message
+    exit 1
+}}
+"#,
+        vm_name, ps_action
+    );
+
     InstallerLogger::info(
         "VM_PROVISIONING",
         &format!(
-            "Dispatching VM management action '{}' on VM '{}' (target_state: {})",
-            action, vm_name, target_state
+            "Dispatching VM management action '{}' on VM '{}'",
+            action, vm_name
         ),
-    );
-    InstallerLogger::info(
-        "VM_PROVISIONING",
-        &format!("Executing PowerShell command: '{}'", ps_cmd),
     );
 
     #[cfg(windows)]
@@ -171,6 +154,21 @@ try {{
                     }
                     return Err(format!("Hyper-V VM error: {}", err_detail));
                 }
+
+                let real_state = stdout
+                    .lines()
+                    .find(|line| line.starts_with("FASTFREE_REAL_STATE:"))
+                    .and_then(|line| line.strip_prefix("FASTFREE_REAL_STATE:"))
+                    .unwrap_or("Running")
+                    .trim()
+                    .to_string();
+
+                return Ok(VmActionStatus {
+                    success: true,
+                    client_id,
+                    state: real_state.clone(),
+                    message: format!("Virtual machine '{}' is now {}.", vm_name, real_state),
+                });
             }
             Err(e) => {
                 let msg = format!("Failed to spawn PowerShell for VM command: {}", e);
@@ -180,11 +178,122 @@ try {{
         }
     }
 
+    #[cfg(not(windows))]
     Ok(VmActionStatus {
         success: true,
         client_id,
-        state: target_state.to_string(),
-        message: format!("Virtual machine command '{}' executed successfully.", action),
+        state: "Running".to_string(),
+        message: format!("Non-Windows simulation for '{}'", action),
+    })
+}
+
+#[tauri::command]
+pub async fn get_vm_real_state(client_id: String) -> Result<VmRealState, String> {
+    let vm_name = format!("FastFree-{}", client_id);
+    InstallerLogger::info("VM_TELEMETRY", &format!("Querying live Hyper-V state for '{}'", vm_name));
+
+    #[cfg(windows)]
+    {
+        use std::process::Command;
+        let _ = ensure_hyperv_environment();
+
+        let ps_cmd = format!(
+            r#"
+$ErrorActionPreference = 'Stop'
+try {{
+    $vm = Get-VM -Name '{0}' -ErrorAction SilentlyContinue
+    if (-not $vm) {{
+        [PSCustomObject]@{{
+            exists = $false
+            state = "NotFound"
+            uptime_seconds = 0
+            memory_mb = 0
+            cpu_cores = 0
+            ip_addresses = @()
+        }} | ConvertTo-Json -Compress
+    }} else {{
+        $ips = @()
+        if ($vm.NetworkAdapters) {{
+            foreach ($adapter in $vm.NetworkAdapters) {{
+                if ($adapter.IPAddresses) {{
+                    foreach ($ip in $adapter.IPAddresses) {{
+                        if ($ip -and $ip -notmatch '^fe80:' -and $ip -ne '127.0.0.1' -and $ip -notmatch '^::') {{
+                            $ips += $ip
+                        }}
+                    }}
+                }}
+            }}
+        }}
+        $uptimeSec = 0
+        if ($vm.Uptime -and $vm.Uptime.TotalSeconds) {{
+            $uptimeSec = [math]::Floor($vm.Uptime.TotalSeconds)
+        }}
+        $memMb = [math]::Round($vm.MemoryAssigned / 1MB)
+        if ($memMb -eq 0) {{
+            $memMb = [math]::Round($vm.MemoryStartup / 1MB)
+        }}
+        [PSCustomObject]@{{
+            exists = $true
+            state = $vm.State.ToString()
+            uptime_seconds = [int64]$uptimeSec
+            memory_mb = [int64]$memMb
+            cpu_cores = [int]$vm.ProcessorCount
+            ip_addresses = $ips
+        }} | ConvertTo-Json -Compress
+    }}
+}} catch {{
+    Write-Error $_.Exception.Message
+    exit 1
+}}
+"#,
+            vm_name
+        );
+
+        let output = Command::new("powershell")
+            .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", &ps_cmd])
+            .output();
+
+        match output {
+            Ok(out) => {
+                let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
+                let stderr = String::from_utf8_lossy(&out.stderr).trim().to_string();
+                if !out.status.success() {
+                    let err_detail = if !stderr.is_empty() { stderr } else { stdout };
+                    InstallerLogger::warn("VM_TELEMETRY", &format!("Hyper-V telemetry error for '{}': {}", vm_name, err_detail));
+                    return Err(format!("Hyper-V telemetry error: {}", err_detail));
+                }
+
+                let json_line = stdout
+                    .lines()
+                    .filter(|l| l.trim().starts_with('{') && l.trim().ends_with('}'))
+                    .last()
+                    .unwrap_or(&stdout);
+
+                match serde_json::from_str::<VmRealState>(json_line) {
+                    Ok(state) => Ok(state),
+                    Err(e) => {
+                        let parse_err = format!("Failed to parse VM telemetry JSON: {} (raw: {})", e, json_line);
+                        InstallerLogger::error("VM_TELEMETRY", &parse_err);
+                        Err(parse_err)
+                    }
+                }
+            }
+            Err(e) => {
+                let err_msg = format!("Failed to invoke PowerShell for VM telemetry: {}", e);
+                InstallerLogger::error("VM_TELEMETRY", &err_msg);
+                Err(err_msg)
+            }
+        }
+    }
+
+    #[cfg(not(windows))]
+    Ok(VmRealState {
+        exists: false,
+        state: "NonWindows".to_string(),
+        uptime_seconds: 0,
+        memory_mb: 0,
+        cpu_cores: 0,
+        ip_addresses: vec![],
     })
 }
 
@@ -456,6 +565,7 @@ Start-Service -Name vmms -ErrorAction SilentlyContinue
 
 #[tauri::command]
 pub async fn provision_node(
+    app: AppHandle,
     client_id: String,
     cores: u32,
     ram_mb: u64,
@@ -474,12 +584,10 @@ pub async fn provision_node(
     let vhdx_dir = format!("{}\\FastFree\\VMs", target_drive.trim_end_matches('\\'));
     let vhdx_path = format!("{}\\{}.vhdx", vhdx_dir, client_id);
 
-    // Hyper-V requires VM memory to be aligned to a multiple of 2 MB,
-    // and recommends clean 128 MB / 1024 MB alignment to avoid memory modification faults.
-    let aligned_ram_mb = if ram_mb >= 1024 {
-        ((ram_mb + 64) / 128) * 128
-    } else {
-        ((ram_mb + 1) / 2) * 2
+    // Hyper-V memory alignment: ((ram_mb + 64) / 128) * 128, min 1024 MB
+    let aligned_ram_mb = {
+        let aligned = ((ram_mb + 64) / 128) * 128;
+        aligned.max(1024)
     };
     let ram_bytes = aligned_ram_mb * 1024 * 1024;
 
@@ -491,6 +599,7 @@ pub async fn provision_node(
         // 0. Verify and configure Hyper-V prerequisites
         if let Err(e) = ensure_hyperv_environment() {
             InstallerLogger::error("PROVISIONING", &format!("Prerequisites failure: {}", e));
+            let _ = app.emit("provision-failed", &e);
             return Err(e);
         }
 
@@ -498,14 +607,17 @@ pub async fn provision_node(
         if let Err(e) = fs::create_dir_all(&vhdx_dir) {
             let msg = format!("Failed to create VM directory '{}': {}", vhdx_dir, e);
             InstallerLogger::error("PROVISIONING", &msg);
+            let _ = app.emit("provision-failed", &msg);
             return Err(msg);
         }
-        step_logs.push(ProvisioningStepLog {
+        let step1 = ProvisioningStepLog {
             step: 1,
             phase: "Filesystem Allocation".to_string(),
-            message: format!("Created container directory at {}", vhdx_dir),
+            message: format!("Allocated VM container storage at {}", vhdx_dir),
             success: true,
-        });
+        };
+        let _ = app.emit("provision-step", &step1);
+        step_logs.push(step1);
 
         // 2. Ensure Hyper-V Service VMMS is running and user is in Hyper-V Administrators
         let _ = Command::new("powershell")
@@ -518,45 +630,118 @@ pub async fn provision_node(
             ])
             .output();
 
-        // 3. Ensure Virtual Switch exists
+        // 3. Ensure Virtual Switch exists with robust fallback
         let vswitch_script = r#"
-$sw = Get-VMSwitch -Name 'FastFree-Default-Switch' -ErrorAction SilentlyContinue
+$switchName = 'FastFree-Default-Switch'
+$sw = Get-VMSwitch -Name $switchName -ErrorAction SilentlyContinue
 if (-not $sw) {
-    New-VMSwitch -Name 'FastFree-Default-Switch' -SwitchType Internal -Notes 'FastFree Mesh Switch' | Out-Null
+    try {
+        $sw = New-VMSwitch -Name $switchName -SwitchType Internal -Notes 'FastFree Mesh Switch' -ErrorAction Stop
+        $switchName = $sw.Name
+    } catch {
+        $sw = Get-VMSwitch -Name 'Default Switch' -ErrorAction SilentlyContinue
+        if (-not $sw) {
+            $sw = Get-VMSwitch -ErrorAction SilentlyContinue | Select-Object -First 1
+        }
+        if ($sw) {
+            $switchName = $sw.Name
+        } else {
+            throw "Failed to create or locate a virtual switch in Hyper-V: $($_.Exception.Message)"
+        }
+    }
 }
+Write-Output "FASTFREE_SWITCH_READY:$switchName"
 "#;
-        let _ = Command::new("powershell")
+        let sw_out = Command::new("powershell")
             .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", vswitch_script])
             .output();
 
-        step_logs.push(ProvisioningStepLog {
-            step: 2,
-            phase: "Virtual Switch & Mesh".to_string(),
-            message: "Configured FastFree-Default-Switch (Internal NAT & WireGuard bridge).".to_string(),
-            success: true,
-        });
+        let switch_name = match sw_out {
+            Ok(ref out) if out.status.success() => {
+                let stdout = String::from_utf8_lossy(&out.stdout).to_string();
+                stdout
+                    .lines()
+                    .find(|l| l.starts_with("FASTFREE_SWITCH_READY:"))
+                    .and_then(|l| l.strip_prefix("FASTFREE_SWITCH_READY:"))
+                    .unwrap_or("FastFree-Default-Switch")
+                    .trim()
+                    .to_string()
+            }
+            Ok(ref out) => {
+                let err = String::from_utf8_lossy(&out.stderr).to_string();
+                InstallerLogger::error("PROVISIONING", &format!("Switch creation error: {}", err));
+                let msg = format!("Virtual switch initialization failed: {}", err.trim());
+                let _ = app.emit("provision-failed", &msg);
+                return Err(msg);
+            }
+            Err(e) => {
+                let msg = format!("Failed to spawn PowerShell for switch check: {}", e);
+                InstallerLogger::error("PROVISIONING", &msg);
+                let _ = app.emit("provision-failed", &msg);
+                return Err(msg);
+            }
+        };
 
-        // 4. Create Generation 2 VM, configure resources, and verify creation
+        let step2 = ProvisioningStepLog {
+            step: 2,
+            phase: "Virtual Switch & Networking".to_string(),
+            message: format!("Configured Hyper-V Virtual Switch: '{}'.", switch_name),
+            success: true,
+        };
+        let _ = app.emit("provision-step", &step2);
+        step_logs.push(step2);
+
+        // 4. Create Generation 2 VM, configure resources, attach VHDX, and verify 'Running' state
         let vm_script = format!(
             r#"
 $ErrorActionPreference = 'Stop'
 try {{
     $vm = Get-VM -Name '{vm_name}' -ErrorAction SilentlyContinue
     if (-not $vm) {{
-        New-VM -Name '{vm_name}' -Generation 2 -MemoryStartupBytes {ram_bytes} -SwitchName 'FastFree-Default-Switch' -NewVHDPath '{vhdx_path}' -NewVHDSizeBytes 64GB | Out-Null
+        $vhdxExists = Test-Path -LiteralPath '{vhdx_path}'
+        if ($vhdxExists) {{
+            New-VM -Name '{vm_name}' -Generation 2 -MemoryStartupBytes {ram_bytes} -SwitchName '{switch_name}' -VHDPath '{vhdx_path}' | Out-Null
+        }} else {{
+            New-VM -Name '{vm_name}' -Generation 2 -MemoryStartupBytes {ram_bytes} -SwitchName '{switch_name}' -NewVHDPath '{vhdx_path}' -NewVHDSizeBytes 64GB | Out-Null
+        }}
         Set-VMProcessor -VMName '{vm_name}' -Count {cores} | Out-Null
         Set-VMMemory -VMName '{vm_name}' -DynamicMemoryEnabled $false | Out-Null
+        Set-VMFirmware -VMName '{vm_name}' -EnableSecureBoot On -SecureBootTemplate 'MicrosoftUEFICertificateAuthority' -ErrorAction SilentlyContinue | Out-Null
+        Set-VM -VMName '{vm_name}' -AutomaticStopAction ShutDown -ErrorAction SilentlyContinue | Out-Null
     }} else {{
         Set-VMProcessor -VMName '{vm_name}' -Count {cores} -ErrorAction SilentlyContinue | Out-Null
         Set-VMMemory -VMName '{vm_name}' -StartupBytes {ram_bytes} -DynamicMemoryEnabled $false -ErrorAction SilentlyContinue | Out-Null
     }}
-    Start-VM -Name '{vm_name}' -ErrorAction SilentlyContinue | Out-Null
-    
-    $vCheck = Get-VM -Name '{vm_name}' -ErrorAction SilentlyContinue
+
+    $vCheck = Get-VM -Name '{vm_name}' -ErrorAction Stop
     if (-not $vCheck) {{
         throw "VM '{vm_name}' could not be registered in Hyper-V."
     }}
-    Write-Output "FASTFREE_VM_DEPLOYED_SUCCESSFULLY"
+
+    if ($vCheck.State -ne 'Running') {{
+        Start-VM -Name '{vm_name}' -ErrorAction Stop
+    }}
+
+    # Real verification: Poll up to 10 seconds to verify it enters 'Running' state
+    $timeoutSec = 10
+    $timer = [System.Diagnostics.Stopwatch]::StartNew()
+    $currentState = "Unknown"
+    while ($timer.Elapsed.TotalSeconds -lt $timeoutSec) {{
+        $poll = Get-VM -Name '{vm_name}' -ErrorAction SilentlyContinue
+        if ($poll) {{
+            $currentState = $poll.State.ToString()
+            if ($currentState -eq 'Running') {{
+                break
+            }}
+        }}
+        Start-Sleep -Milliseconds 500
+    }}
+
+    if ($currentState -ne 'Running') {{
+        throw "Virtual Machine '{vm_name}' was registered but failed to reach 'Running' state. Current state: '$currentState'."
+    }}
+
+    Write-Output "FASTFREE_VM_DEPLOYED_SUCCESSFULLY:STATE=$currentState"
 }} catch {{
     Write-Error $_.Exception.Message
     exit 1
@@ -565,7 +750,8 @@ try {{
             vm_name = vm_name,
             ram_bytes = ram_bytes,
             vhdx_path = vhdx_path,
-            cores = cores
+            cores = cores,
+            switch_name = switch_name
         );
 
         let vm_res = Command::new("powershell")
@@ -577,30 +763,48 @@ try {{
                 let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
                 let stderr = String::from_utf8_lossy(&out.stderr).trim().to_string();
                 if out.status.success() || stdout.contains("FASTFREE_VM_DEPLOYED_SUCCESSFULLY") {
-                    step_logs.push(ProvisioningStepLog {
+                    let step3 = ProvisioningStepLog {
                         step: 3,
                         phase: "Hyper-V Virtual Machine Creation".to_string(),
-                        message: format!("Successfully deployed VM '{}' (Generation 2, {} vCPUs, {} MB RAM, dynamic VHDX).", vm_name, cores, aligned_ram_mb),
+                        message: format!("Successfully registered VM '{}' (Generation 2, {} vCPUs, {} MB aligned RAM, VHDX: {}).", vm_name, cores, aligned_ram_mb, vhdx_path),
                         success: true,
-                    });
-                    step_logs.push(ProvisioningStepLog {
+                    };
+                    let _ = app.emit("provision-step", &step3);
+                    step_logs.push(step3);
+
+                    let step4 = ProvisioningStepLog {
                         step: 4,
-                        phase: "Power & State Initialization".to_string(),
-                        message: format!("Virtual machine '{}' signaled to start.", vm_name),
+                        phase: "Power & State Verification".to_string(),
+                        message: format!("Virtual machine '{}' verified in Hyper-V 'Running' state.", vm_name),
                         success: true,
-                    });
+                    };
+                    let _ = app.emit("provision-step", &step4);
+                    step_logs.push(step4);
                 } else {
                     let err_msg = if !stderr.is_empty() { stderr } else { stdout };
                     InstallerLogger::error("PROVISIONING", &format!("VM creation failure: {}", err_msg));
-                    return Err(format!("Failed to provision Hyper-V VM: {}", err_msg));
+                    let full_err = format!("Failed to provision Hyper-V VM: {}", err_msg);
+                    let _ = app.emit("provision-failed", &full_err);
+                    return Err(full_err);
                 }
             }
             Err(e) => {
                 let err_msg = format!("Failed to spawn PowerShell VM creation: {}", e);
                 InstallerLogger::error("PROVISIONING", &err_msg);
+                let _ = app.emit("provision-failed", &err_msg);
                 return Err(err_msg);
             }
         }
+    }
+
+    #[cfg(not(windows))]
+    {
+        step_logs.push(ProvisioningStepLog {
+            step: 1,
+            phase: "Simulation".to_string(),
+            message: "Non-Windows host simulation.".to_string(),
+            success: true,
+        });
     }
 
     Ok(step_logs)

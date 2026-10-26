@@ -83,3 +83,13 @@ pub struct VmActionStatus {
     pub state: String,
     pub message: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VmRealState {
+    pub exists: bool,
+    pub state: String,
+    pub uptime_seconds: u64,
+    pub memory_mb: u64,
+    pub cpu_cores: u32,
+    pub ip_addresses: Vec<String>,
+}

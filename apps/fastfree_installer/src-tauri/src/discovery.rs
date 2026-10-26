@@ -190,10 +190,10 @@ impl HostDiscoveryPipeline {
         let host_headroom_mb: u64 = 4096;
 
         let target_half = host_ram_mb / 2;
-        let max_allocatable = ((host_ram_mb.saturating_sub(host_headroom_mb)) / 1024) * 1024;
+        let max_allocatable = ((host_ram_mb.saturating_sub(host_headroom_mb) + 64) / 128) * 128;
 
-        // Ensure Hyper-V memory alignment to clean 1024 MB (1 GB) boundaries
-        let aligned_half = ((target_half + 512) / 1024) * 1024;
+        // Ensure Hyper-V memory alignment: ((ram_mb + 64) / 128) * 128
+        let aligned_half = ((target_half + 64) / 128) * 128;
         let recommended_ram_mb = aligned_half
             .max(min_ram_mb)
             .min(max_allocatable.max(min_ram_mb))
