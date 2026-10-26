@@ -119,7 +119,20 @@
         <!-- 2. Live Hyper-V Hardware Allocation -->
         <div class="spec-card">
           <div class="spec-header">
-            <span class="spec-icon">⚡</span>
+            <span class="spec-icon">
+              <svg class="spec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                <rect x="9" y="9" width="6" height="6"></rect>
+                <line x1="9" y1="1" x2="9" y2="4"></line>
+                <line x1="15" y1="1" x2="15" y2="4"></line>
+                <line x1="9" y1="20" x2="9" y2="23"></line>
+                <line x1="15" y1="20" x2="15" y2="23"></line>
+                <line x1="20" y1="9" x2="23" y2="9"></line>
+                <line x1="20" y1="15" x2="23" y2="15"></line>
+                <line x1="1" y1="9" x2="4" y2="9"></line>
+                <line x1="1" y1="15" x2="4" y2="15"></line>
+              </svg>
+            </span>
             <span class="spec-title">{{ isRtl ? 'بيانات Hyper-V الحية' : 'Live Hyper-V Telemetry' }}</span>
           </div>
           <div class="spec-item">
@@ -882,6 +895,14 @@ async function handleMinimizeToTray() {
 
 .spec-icon {
   font-size: 13px;
+  display: flex;
+  align-items: center;
+}
+
+.spec-svg {
+  width: 14px;
+  height: 14px;
+  stroke: #38BDF8;
 }
 
 .spec-item {

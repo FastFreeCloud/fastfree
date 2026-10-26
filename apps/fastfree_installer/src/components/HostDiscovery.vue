@@ -30,7 +30,20 @@
         <!-- CPU Card -->
         <div class="diag-card">
           <div class="card-header">
-            <span class="icon">⚡</span>
+            <span class="icon">
+              <svg class="card-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                <rect x="9" y="9" width="6" height="6"></rect>
+                <line x1="9" y1="1" x2="9" y2="4"></line>
+                <line x1="15" y1="1" x2="15" y2="4"></line>
+                <line x1="9" y1="20" x2="9" y2="23"></line>
+                <line x1="15" y1="20" x2="15" y2="23"></line>
+                <line x1="20" y1="9" x2="23" y2="9"></line>
+                <line x1="20" y1="15" x2="23" y2="15"></line>
+                <line x1="1" y1="9" x2="4" y2="9"></line>
+                <line x1="1" y1="15" x2="4" y2="15"></line>
+              </svg>
+            </span>
             <span class="label">{{ t('discovery.processorTopology') }}</span>
           </div>
           <div class="metric-value">{{ t('discovery.logicalCores', { count: discoveryReport.cpu_count }) }}</div>
@@ -76,7 +89,14 @@
       <!-- Hyper-V Enable / Install Action Banner (If not ready) -->
       <div v-if="!discoveryReport.hyperv.ready_for_hyperv" class="hyperv-enable-banner">
         <div class="banner-left">
-          <span class="banner-icon">⚡</span>
+          <span class="banner-icon">
+            <svg class="banner-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+              <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+              <line x1="6" y1="6" x2="6.01" y2="6"></line>
+              <line x1="6" y1="18" x2="6.01" y2="18"></line>
+            </svg>
+          </span>
           <div class="banner-desc">
             <strong>{{ isRtl ? 'محرك Hyper-V غير مفعّل على هذا النظام حالياً' : 'Hyper-V is not active on this Windows machine' }}</strong>
             <p>{{ isRtl ? 'لتشغيل العقدة، يجب تفعيل ميزة Hyper-V في ويندوز. يمكنك تثبيتها وتفعيلها الآن بنقرة واحدة.' : 'FastFree node requires Hyper-V feature. Click below to install and enable it automatically.' }}</p>
@@ -84,7 +104,7 @@
         </div>
         <button class="btn btn-hyperv-act" :disabled="isEnablingHyperV" @click="handleEnableHyperV">
           <span v-if="isEnablingHyperV" class="spinner-sm"></span>
-          <span v-else>{{ isRtl ? 'تثبيت وتفعيل Hyper-V الآن ⚡' : 'Install & Enable Hyper-V Now ⚡' }}</span>
+          <span v-else>{{ isRtl ? 'تثبيت وتفعيل Hyper-V الآن' : 'Install & Enable Hyper-V Now' }}</span>
         </button>
       </div>
 
@@ -368,8 +388,22 @@ function goToNextStep() {
   gap: 10px;
 }
 
+.card-svg {
+  width: 17px;
+  height: 17px;
+  stroke: #38BDF8;
+}
+
 .banner-icon {
-  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-svg {
+  width: 22px;
+  height: 22px;
+  stroke: #FBBF24;
 }
 
 .banner-desc strong {
