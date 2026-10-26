@@ -140,7 +140,8 @@ max_table_age_days = 90
 frontend = ['frontend']
 erp = ['frontend', 'erp-modules']
 os = ['nixos-clan']
-full = ['frontend', 'erp-modules', 'nixos-clan']
+installer = ['desktop-installer']
+full = ['frontend', 'erp-modules', 'nixos-clan', 'desktop-installer']
 
 [[scopes]]
 path = 'packages'
@@ -157,6 +158,10 @@ profile = 'erp'
 [[scopes]]
 path = 'apps/fastfree_os'
 profile = 'os'
+
+[[scopes]]
+path = 'apps/fastfree_installer'
+profile = 'installer'
 
 # ---------------------------------------------------------
 # ROLES MANIFEST & DEFINITIONS (Per-Agent Workflows)
@@ -241,9 +246,31 @@ domains = ['frontend', 'erp-modules', 'nixos-clan']
 [roles.match]
 groups = ['herdr:reviewer', 'agent:auditor']
 
+# 5. Desktop & Systems Architect
+[[roles]]
+name = 'desktop-architect'
+extends = 'frontend-engineer'
+description = 'Desktop systems architect building Tauri v2 Windows installers and Hyper-V engines'
+domains = ['desktop-installer']
+
+[roles.match]
+groups = ['herdr:desktop', 'agent:tauri']
+
 # ---------------------------------------------------------
 # DETERMINISTIC VERIFIERS (CI & Git Gates)
 # ---------------------------------------------------------
+[[verifiers]]
+name = 'installer-tauri-conf'
+type = 'file_exists'
+path = 'apps/fastfree_installer/src-tauri/tauri.conf.json'
+severity = 'error'
+
+[[verifiers]]
+name = 'installer-cargo-toml'
+type = 'file_exists'
+path = 'apps/fastfree_installer/src-tauri/Cargo.toml'
+severity = 'error'
+
 [[verifiers]]
 name = 'flake-exists'
 type = 'file_exists'
