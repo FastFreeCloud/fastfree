@@ -3,6 +3,11 @@ import { check, Update } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { getVersion } from '@tauri-apps/api/app';
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from '@tauri-apps/plugin-notification';
 import { logInfo, logWarn, logError, logSuccess } from './useDiagnostics';
 
 export const isCheckingUpdate = ref(false);
@@ -18,6 +23,12 @@ export const manualDownloadUrl = ref('');
 // "TypeError: Cannot read private member from an object whose class did not declare it"
 let rawNativeUpdate: Update | null = null;
 export const currentUpdateObj = shallowRef<Update | null>(null);
+
+// Track last notified version to prevent repetitive desktop notifications
+let lastNotifiedVersion = '';
+
+// Background periodic timer
+let autoUpdateTimer: ReturnType<typeof setInterval> | null = null;
 
 // Current local running version (initialized dynamically)
 export const currentAppVersion = ref('26.5.0');
@@ -44,6 +55,28 @@ function compareSemver(v1: string, v2: string): number {
     if (p1 < p2) return -1;
   }
   return 0;
+}
+
+/**
+ * Dispatches an official native Windows desktop notification toast above the taskbar clock.
+ */
+export async function dispatchDesktopNotification(title: string, body: string): Promise<void> {
+  try {
+    let granted = await isPermissionGranted();
+    if (!granted) {
+      const permission = await requestPermission();
+      granted = permission === 'granted';
+    }
+    if (granted) {
+      sendNotification({
+        title,
+        body,
+      });
+      logSuccess('Notification', `Desktop notification dispatched: ${title}`);
+    }
+  } catch (err) {
+    logWarn('Notification', 'Desktop notification notice:', String(err));
+  }
 }
 
 /**
@@ -74,6 +107,15 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
         `New update found: v${update.version}`,
         `Published: ${update.date || 'latest'}, Channel: Production Release`
       );
+
+      // Notify the user via Windows desktop toast if this version hasn't been notified yet
+      if (lastNotifiedVersion !== update.version) {
+        lastNotifiedVersion = update.version;
+        await dispatchDesktopNotification(
+          '⚡ تحديث جديد متوفر لـ FastFree',
+          `تم إصدار النسخة الجديدة v${update.version}. افتح التطبيق لتثبيت التحديث بنقرة واحدة.`
+        );
+      }
       return true;
     }
   } catch (err: unknown) {
@@ -104,6 +146,14 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
           `New release detected via GitHub API: v${remoteVer} (${rawTag})`,
           `Asset: ${manualDownloadUrl.value}`
         );
+
+        if (lastNotifiedVersion !== remoteVer) {
+          lastNotifiedVersion = remoteVer;
+          await dispatchDesktopNotification(
+            '⚡ تحديث جديد متوفر لـ FastFree',
+            `تم إصدار النسخة الجديدة v${remoteVer}. انقر لفتح التطبيق وتثبيت التحديث بنقرة واحدة.`
+          );
+        }
         return true;
       }
     }
@@ -191,5 +241,45 @@ export async function installPendingUpdate(): Promise<void> {
     } catch {
       window.open(manualDownloadUrl.value, '_blank');
     }
+  }
+}
+
+/**
+ * Opens manual installer download URL directly in browser.
+ */
+export async function openManualDownload(): Promise<void> {
+  if (manualDownloadUrl.value) {
+    logInfo('Updater', `Manual installer download triggered: ${manualDownloadUrl.value}`);
+    try {
+      await openUrl(manualDownloadUrl.value);
+    } catch {
+      window.open(manualDownloadUrl.value, '_blank');
+    }
+  }
+}
+
+/**
+ * Starts automatic background polling for updates at specified intervals (default 30 mins).
+ */
+export function startAutoUpdatePolling(intervalMinutes: number = 30): void {
+  if (autoUpdateTimer) return;
+  logInfo('Updater', `Auto-update background polling initialized (every ${intervalMinutes} min).`);
+
+  autoUpdateTimer = setInterval(async () => {
+    try {
+      await checkForUpdates(true);
+    } catch (err) {
+      console.warn('Background periodic update check error:', err);
+    }
+  }, intervalMinutes * 60 * 1000);
+}
+
+/**
+ * Stops background update polling.
+ */
+export function stopAutoUpdatePolling(): void {
+  if (autoUpdateTimer) {
+    clearInterval(autoUpdateTimer);
+    autoUpdateTimer = null;
   }
 }

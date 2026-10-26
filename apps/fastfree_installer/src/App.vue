@@ -90,14 +90,23 @@
             <div class="progress-bar-fill" :style="{ width: `${downloadProgress}%` }"></div>
             <span class="progress-pct">{{ downloadProgress }}%</span>
           </div>
-          <button
-            v-else
-            class="btn-install-update"
-            @click="installPendingUpdate"
-          >
-            ⚡ {{ isRtl ? 'تثبيت التحديث وإعادة التشغيل' : 'Update & Restart' }}
-          </button>
-          <button v-if="!isDownloadingUpdate" class="btn-dismiss-update" @click="updateAvailable = false">✕</button>
+          <template v-else>
+            <button
+              class="btn-install-update"
+              @click="installPendingUpdate"
+            >
+              ⚡ {{ isRtl ? 'تثبيت التحديث وإعادة التشغيل' : 'Update & Restart' }}
+            </button>
+            <button
+              v-if="manualDownloadUrl"
+              class="btn-direct-download"
+              :title="isRtl ? 'تحميل ملف المثبت مباشرة عبر المتصفح' : 'Download Installer Directly'"
+              @click="openManualDownload"
+            >
+              🌐 {{ isRtl ? 'تحميل يدوي' : 'Direct' }}
+            </button>
+            <button class="btn-dismiss-update" @click="updateAvailable = false">✕</button>
+          </template>
         </div>
       </div>
     </transition>
@@ -126,6 +135,7 @@
 import { onMounted } from 'vue';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import StepProgress from './components/StepProgress.vue';
 import HostDiscovery from './components/HostDiscovery.vue';
 import LicenseScreen from './components/LicenseScreen.vue';
@@ -153,6 +163,9 @@ import {
   installPendingUpdate,
   currentAppVersion,
   initAppVersion,
+  manualDownloadUrl,
+  openManualDownload,
+  startAutoUpdatePolling,
 } from './composables/useAutoUpdater';
 
 const { t, locale, isRtl, toggleLocale, setLocale } = useI18n();
@@ -195,10 +208,23 @@ onMounted(async () => {
 
   logInfo('App', `Installer application loaded in ${locale.value.toUpperCase()} mode.`);
 
-  // Proactively check for updates in background
+  // Proactively check for updates on startup
   setTimeout(() => {
     checkForUpdates(true);
   }, 2500);
+
+  // Initialize automated background polling (every 30 minutes)
+  startAutoUpdatePolling(30);
+
+  // Listen to manual update check requests from Windows Taskbar Tray Menu (near clock)
+  try {
+    await listen('trigger-check-updates', async () => {
+      logInfo('Tray', 'Manual update check requested from taskbar tray menu');
+      await checkForUpdates(false);
+    });
+  } catch (err) {
+    console.warn('Tray event listener notice:', err);
+  }
 
   window.addEventListener('keydown', (e) => {
     if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'i') || (e.ctrlKey && e.key.toLowerCase() === 'r')) {
@@ -667,6 +693,25 @@ body, html {
 .btn-install-update:hover {
   background: #059669;
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+.btn-direct-download {
+  background: rgba(255, 255, 255, 0.08);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-direct-download:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38BDF8;
+  color: #FFFFFF;
 }
 
 .btn-dismiss-update {

@@ -6,9 +6,9 @@ pub mod logger;
 
 use logger::InstallerLogger;
 use tauri::{
-    menu::{Menu, MenuItem},
+    menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Manager,
+    Emitter, Manager,
 };
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -60,24 +60,34 @@ pub fn run() {
         .setup(|app| {
             InstallerLogger::info("BOOT", "Tauri core setup phase completed.");
 
-            // Build Context Menu for System Tray Companion
-            let open_portal = MenuItem::with_id(app, "open_portal", "Open FastFree ERP Portal 🌐", true, None::<&str>)?;
-            let show_window = MenuItem::with_id(app, "show_window", "Open Setup Companion 🖥️", true, None::<&str>)?;
-            let start_vm = MenuItem::with_id(app, "start_vm", "Start FastFree VM (Hyper-V) ▶", true, None::<&str>)?;
-            let restart_vm = MenuItem::with_id(app, "restart_vm", "Restart FastFree VM 🔄", true, None::<&str>)?;
-            let stop_vm = MenuItem::with_id(app, "stop_vm", "Stop FastFree VM ⏹", true, None::<&str>)?;
-            let check_updates = MenuItem::with_id(app, "check_updates", "Check for Updates ⬇", true, None::<&str>)?;
-            let exit_app = MenuItem::with_id(app, "exit_app", "Exit FastFree ✕", true, None::<&str>)?;
+            // Build Elegant Context Menu for System Tray Companion (Near Windows Clock)
+            let title_item = MenuItem::with_id(app, "title_item", "⚡ FastFree Node Companion", false, None::<&str>)?;
+            let sep1 = PredefinedMenuItem::separator(app)?;
+            let open_portal = MenuItem::with_id(app, "open_portal", "🌐 دخول بوابة ERP (Open Portal)", true, None::<&str>)?;
+            let show_window = MenuItem::with_id(app, "show_window", "💻 فتح لوحة التحكم (Control Center)", true, None::<&str>)?;
+            let sep2 = PredefinedMenuItem::separator(app)?;
+            let start_vm = MenuItem::with_id(app, "start_vm", "▶️ تشغيل العقدة (Start VM)", true, None::<&str>)?;
+            let restart_vm = MenuItem::with_id(app, "restart_vm", "🔄 إعادة تشغيل العقدة (Restart VM)", true, None::<&str>)?;
+            let stop_vm = MenuItem::with_id(app, "stop_vm", "⏹️ إيقاف مؤقت (Stop VM)", true, None::<&str>)?;
+            let sep3 = PredefinedMenuItem::separator(app)?;
+            let check_updates = MenuItem::with_id(app, "check_updates", "⚡ فحص وتثبيت التحديثات (Check Updates)", true, None::<&str>)?;
+            let sep4 = PredefinedMenuItem::separator(app)?;
+            let exit_app = MenuItem::with_id(app, "exit_app", "✕ إغلاق التطبيق نهائياً (Exit)", true, None::<&str>)?;
 
             let tray_menu = Menu::with_items(
                 app,
                 &[
+                    &title_item,
+                    &sep1,
                     &open_portal,
                     &show_window,
+                    &sep2,
                     &start_vm,
                     &restart_vm,
                     &stop_vm,
+                    &sep3,
                     &check_updates,
+                    &sep4,
                     &exit_app,
                 ],
             )?;
@@ -133,8 +143,13 @@ pub fn run() {
                             }
                         }
                         "check_updates" => {
-                            InstallerLogger::info("TRAY", "Opening GitHub releases page");
-                            let _ = tauri_plugin_opener::open_url("https://github.com/FastFreeCloud/fastfree/releases", None::<&str>);
+                            InstallerLogger::info("TRAY", "Checking for updates from tray menu");
+                            if let Some(main) = app.get_webview_window("main") {
+                                let _ = main.show();
+                                let _ = main.unminimize();
+                                let _ = main.set_focus();
+                                let _ = main.emit("trigger-check-updates", ());
+                            }
                         }
                         "exit_app" => {
                             InstallerLogger::info("TRAY", "Exiting FastFree Companion");
@@ -144,13 +159,21 @@ pub fn run() {
                     }
                 })
                 .on_tray_icon_event(|tray, event| {
-                    if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
-                        let app = tray.app_handle();
-                        if let Some(main) = app.get_webview_window("main") {
-                            let _ = main.show();
-                            let _ = main.unminimize();
-                            let _ = main.set_focus();
+                    match event {
+                        TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. }
+                        | TrayIconEvent::DoubleClick { button: MouseButton::Left, .. } => {
+                            let app = tray.app_handle();
+                            if let Some(main) = app.get_webview_window("main") {
+                                if main.is_visible().unwrap_or(false) && !main.is_minimized().unwrap_or(false) {
+                                    let _ = main.hide();
+                                } else {
+                                    let _ = main.show();
+                                    let _ = main.unminimize();
+                                    let _ = main.set_focus();
+                                }
+                            }
                         }
+                        _ => {}
                     }
                 })
                 .build(app)?;
