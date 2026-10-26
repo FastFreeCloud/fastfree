@@ -6,7 +6,7 @@ ai_rulez_version = '5.7.0'
 profile = 'full'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:73d9730580e911f189cb1d4cdac2c26f654d089adcc478306e00721319c041cb'
+tree = 'sha256:e63d98ad43ff3e3e8dd78ac1ad846173f9cac880b46e6a7e2ecbbc5a3a3ffe1a'
 
 [[served]]
 name = 'ai-rulez'
@@ -40,6 +40,13 @@ source = '.ai-rulez/domains/frontend/skills/android-build-release/SKILL.md'
 commit = ''
 digest = 'sha256:3a56ea0002829b423d3f0e7c29b90fb07b6b072cb9b843b30caf4b7e14027e58'
 view = 'profile:full'
+
+[[served]]
+name = 'android-build-release'
+source = '.ai-rulez/domains/frontend/skills/android-build-release/SKILL.md'
+commit = ''
+digest = 'sha256:3a56ea0002829b423d3f0e7c29b90fb07b6b072cb9b843b30caf4b7e14027e58'
+view = 'role:desktop-architect'
 
 [[served]]
 name = 'android-build-release'
@@ -76,6 +83,19 @@ digest = 'sha256:cd90a24a4c655ebba4d67e3feaa350e11e2b85c47b6e811714a2f107d71ab2c
 view = 'role:reviewer'
 
 [[served]]
+name = 'check-installer'
+source = ''
+commit = ''
+digest = 'sha256:1c6be6acb5239fdf6c858416331903b8772979f9953787b6b37a1dc2d5963a43'
+
+[[served]]
+name = 'check-installer'
+source = ''
+commit = ''
+digest = 'sha256:1c6be6acb5239fdf6c858416331903b8772979f9953787b6b37a1dc2d5963a43'
+view = 'profile:full'
+
+[[served]]
 name = 'check-poster'
 source = ''
 commit = ''
@@ -147,6 +167,13 @@ source = '.agents/skills/composio'
 commit = ''
 digest = 'sha256:1d94d7e333b8fe03a22769c9904974efc1b475f408fc1c54e420b8fb7882a70b'
 view = 'profile:full'
+
+[[served]]
+name = 'composio'
+source = '.agents/skills/composio'
+commit = ''
+digest = 'sha256:1d94d7e333b8fe03a22769c9904974efc1b475f408fc1c54e420b8fb7882a70b'
+view = 'role:desktop-architect'
 
 [[served]]
 name = 'composio'
@@ -414,6 +441,13 @@ name = 'play-console-setup'
 source = '.ai-rulez/domains/frontend/skills/play-console-setup/SKILL.md'
 commit = ''
 digest = 'sha256:47a854f47a56d03f60931230ef594eb3e2a3c63dbdfdbad4f90d879c1ae2056f'
+view = 'role:desktop-architect'
+
+[[served]]
+name = 'play-console-setup'
+source = '.ai-rulez/domains/frontend/skills/play-console-setup/SKILL.md'
+commit = ''
+digest = 'sha256:47a854f47a56d03f60931230ef594eb3e2a3c63dbdfdbad4f90d879c1ae2056f'
 view = 'role:erp-architect'
 
 [[served]]
@@ -435,6 +469,13 @@ source = '.ai-rulez/domains/frontend/skills/play-publish-automation/SKILL.md'
 commit = ''
 digest = 'sha256:988fdc654c929b483b21a2b253ae2c4ab66dafad7ebf76cca84a439a50864f72'
 view = 'profile:full'
+
+[[served]]
+name = 'play-publish-automation'
+source = '.ai-rulez/domains/frontend/skills/play-publish-automation/SKILL.md'
+commit = ''
+digest = 'sha256:988fdc654c929b483b21a2b253ae2c4ab66dafad7ebf76cca84a439a50864f72'
+view = 'role:desktop-architect'
 
 [[served]]
 name = 'play-publish-automation'
@@ -580,6 +621,13 @@ digest = 'sha256:8eed93c55cd210aaefa35cff5106a6f70bab91c28407067ae89c0c2d5991927
 
 [[item]]
 kind = 'command'
+id = 'check-installer'
+domain = 'desktop-installer'
+path = 'domains/desktop-installer/commands/check-installer.md'
+digest = 'sha256:4a949551b9f7a1e962fd39e7de5749357a5c70e3f673b8c159bfc1ccf85486ca'
+
+[[item]]
+kind = 'command'
 id = 'check-poster'
 domain = 'frontend'
 path = 'domains/frontend/commands/check-poster.md'
@@ -620,6 +668,11 @@ digest = 'sha256:67337e8afb054a7e75caf2a1bd043d05d30d4e027d4e19643cfaefe0fb7f75b
 
 [[item]]
 kind = 'role'
+id = 'desktop-architect'
+digest = 'sha256:d852ec2a3fac9fc0f87d1efed66d6a668b8cb73fc822be08c48dc517aee2134f'
+
+[[item]]
+kind = 'role'
 id = 'devops-clan'
 digest = 'sha256:af1ede88be4130612b96cddcbc3e3f6f284e707c4300472bde0d93b45a925501'
 
@@ -649,6 +702,13 @@ kind = 'rule'
 id = 'secure-secrets'
 path = 'rules/secure-secrets.md'
 digest = 'sha256:fef961d1a0b1bbdac822980bfcea9ad07a0694c131c36753f58d59aeb8bcd9a6'
+
+[[item]]
+kind = 'rule'
+id = 'desktop-installer'
+domain = 'desktop-installer'
+path = 'domains/desktop-installer/rules/desktop-installer.md'
+digest = 'sha256:71adaf6056817ebd5aeb2ebe3be262d235830f769588a142abb6ab2c28a7ed42'
 
 [[item]]
 kind = 'rule'
@@ -827,6 +887,16 @@ digest = 'sha256:adcc1082ed19cc501ecee5e4c4ee2a4ee0887fccc70be2bb96c7d219ba63010
 
 [[item]]
 kind = 'verifier'
+id = 'installer-cargo-toml'
+digest = 'sha256:364f7f720cf9696357276f945e058158cb42a9896bb79d8f195ba542aa9d45d4'
+
+[[item]]
+kind = 'verifier'
+id = 'installer-tauri-conf'
+digest = 'sha256:7ba3ca7aaf1206569dd9f4e343f83a3dfcaa46485b07353dd1f0ca224fbc327c'
+
+[[item]]
+kind = 'verifier'
 id = 'nixos-no-plaintext-secrets'
 digest = 'sha256:9f9bb5dfeb8a7ee19daa3b1cc7c86e4de1b67551dae969c89f66bbf608dca4ca'
 
@@ -857,6 +927,10 @@ digest = 'sha256:a5b000c16b07039ef24e156144eeda878d01e0f99e1551ad5c65cb8aaab1885
 [[output]]
 path = '.agents/skills/caveman/SKILL.md'
 digest = 'sha256:5841709b2f6d69a6de839fc77911ba33423510e1c3a8dba3e12f04096d3d3d7a'
+
+[[output]]
+path = '.agents/skills/check-installer/SKILL.md'
+digest = 'sha256:4682007b5b8cd55d8754fb8249cdd2f00887f6552dfef56529f1e8dd35bb4720'
 
 [[output]]
 path = '.agents/skills/check-poster/SKILL.md'
@@ -1168,7 +1242,7 @@ digest = 'sha256:867a55ddf7d7d6cfb6b99dc9905fb67a5043aefd6e8f572db2643966cb7ec79
 
 [[output]]
 path = '.ai-rulez/roles.json'
-digest = 'sha256:28917a5de3ce75828f94c404d9b82be03461e54df8080a5789fb4a9a4ac3b7c7'
+digest = 'sha256:f8a963632b497fdded1bc09c8daf1a3e65898d6ca5097cc6adb95af7d97d29bf'
 
 [[output]]
 path = '.claude/rules/erp-invariants.md'
@@ -1197,6 +1271,10 @@ digest = 'sha256:936b8d51febcf73888320f2dfb27a8ba9d5b272a461db2533eb1c3d2ff2ce4d
 [[output]]
 path = '.claude/skills/caveman/SKILL.md'
 digest = 'sha256:7acb5a484de66d661ea8675ffe29924ea01df14e2565243fca86a1bd1afa28e5'
+
+[[output]]
+path = '.claude/skills/check-installer/SKILL.md'
+digest = 'sha256:01885334960668deed006e1d5acf1487862d521456c8ae8fdeb0bbd31bdefc6a'
 
 [[output]]
 path = '.claude/skills/check-poster/SKILL.md'
@@ -1507,6 +1585,10 @@ path = '.claude/skills/web-backend-release/SKILL.md'
 digest = 'sha256:66001539f901aab42a949bfdf790fa5e90bb427b9e9811e8d5cb7832c6cdf3df'
 
 [[output]]
+path = '.opencode/commands/check-installer.md'
+digest = 'sha256:7efc60d8f490f5a110f21a9230f54fef1f40bde63b8e8d71b206668e3f680cc3'
+
+[[output]]
 path = '.opencode/commands/check-poster.md'
 digest = 'sha256:3c904b45e825883b269b6ec6ed51c8c90191ab56bc3b7372eee1101e0806c6aa'
 
@@ -1684,7 +1766,7 @@ digest = 'sha256:676ddffc944ea32cc2ef9069d75d2f6db14857f9884ea142231bea0ef95a16f
 
 [[output]]
 path = 'AGENTS.md'
-digest = 'sha256:6e2189367473ce711e3c04178eef82f3f994fd259ea11effeddda6e3cf57ddcb'
+digest = 'sha256:68808334caa74e612a080ecae5286b927ca74bbfafe45916f09dcd4fd62f294b'
 
 [[output]]
 path = 'CLAUDE.md'
@@ -1692,8 +1774,8 @@ digest = 'sha256:71bc73c292a2adb25eabe7c0e6f22776193bef75dab71b286cd8e4f63b44bf6
 
 [[output]]
 path = 'llms-full.txt'
-digest = 'sha256:1bb692dcfff60cc16db88248d50b9713b1d9e4c4e135f148bc753e34ca9b7bbb'
+digest = 'sha256:6ba102ed20545ec452e6c13d056f723f85fb352f901e3fa73b9ae06d890feee6'
 
 [[output]]
 path = 'llms.txt'
-digest = 'sha256:fdc483c0f9c52e53bdf59735d7e63c5066ed71f93e399d5dbf53cd536469c68a'
+digest = 'sha256:c6caec88d19051737f11237d3debd6c45f437d976323b5bdfc7dce35b42d03a4'
