@@ -20,10 +20,19 @@ const here = path.dirname(fileURLToPath(import.meta.url));
  * inside the repository and from a standalone copy of the package.
  */
 function findBrandDir() {
+  if (process.env.FASTFREE_BRAND_ASSETS && fs.existsSync(process.env.FASTFREE_BRAND_ASSETS)) {
+    return process.env.FASTFREE_BRAND_ASSETS;
+  }
   let dir = here;
   for (let depth = 0; depth < 8; depth += 1) {
-    const candidate = path.join(dir, 'brand', 'assets');
-    if (fs.existsSync(candidate)) return candidate;
+    const candidates = [
+      path.join(dir, '.ai-rulez', 'domains', 'frontend', 'skills', 'fastfree-brand', 'assets'),
+      path.join(dir, '.agents', 'skills', 'fastfree-brand', 'assets'),
+      path.join(dir, 'brand', 'assets')
+    ];
+    for (const candidate of candidates) {
+      if (fs.existsSync(candidate)) return candidate;
+    }
     const parent = path.dirname(dir);
     if (parent === dir) break;
     dir = parent;
