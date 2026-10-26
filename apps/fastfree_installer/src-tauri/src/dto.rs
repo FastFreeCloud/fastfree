@@ -93,3 +93,20 @@ pub struct VmRealState {
     pub cpu_cores: u32,
     pub ip_addresses: Vec<String>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateInfo {
+    pub available: bool,
+    pub current_version: String,
+    pub version: String,
+    pub date: Option<String>,
+    pub body: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateProgressPayload {
+    pub chunk_length: usize,
+    pub downloaded_bytes: u64,
+    pub total_bytes: Option<u64>,
+    pub progress_pct: u32,
+}

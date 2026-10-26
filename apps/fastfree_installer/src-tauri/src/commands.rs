@@ -827,3 +827,92 @@ pub async fn show_main_window(app: AppHandle) -> Result<(), String> {
     }
     Ok(())
 }
+
+#[tauri::command]
+pub async fn check_app_update(app: AppHandle) -> Result<Option<UpdateInfo>, String> {
+    use tauri_plugin_updater::UpdaterExt;
+
+    InstallerLogger::info("UPDATER", "Checking for updates via native Tauri Rust updater...");
+    let updater = app.updater().map_err(|e| {
+        let msg = format!("Failed to initialize updater: {}", e);
+        InstallerLogger::error("UPDATER", &msg);
+        msg
+    })?;
+
+    match updater.check().await {
+        Ok(Some(update)) => {
+            InstallerLogger::info(
+                "UPDATER",
+                &format!("Native update detected: v{} (current: v{})", update.version, update.current_version),
+            );
+            Ok(Some(UpdateInfo {
+                available: true,
+                current_version: update.current_version.clone(),
+                version: update.version.clone(),
+                date: update.date.map(|d| d.to_string()),
+                body: update.body.clone(),
+            }))
+        }
+        Ok(None) => {
+            InstallerLogger::info("UPDATER", "Native updater reports application is up to date.");
+            Ok(None)
+        }
+        Err(e) => {
+            let msg = format!("Native updater check error: {}", e);
+            InstallerLogger::warn("UPDATER", &msg);
+            Err(msg)
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn install_app_update(app: AppHandle) -> Result<(), String> {
+    use tauri_plugin_updater::UpdaterExt;
+
+    InstallerLogger::info("UPDATER", "Initiating native Rust download and install pipeline...");
+    let updater = app.updater().map_err(|e| format!("Failed to initialize updater: {}", e))?;
+    let update = updater
+        .check()
+        .await
+        .map_err(|e| format!("Update check failed: {}", e))?
+        .ok_or_else(|| "No update available to install".to_string())?;
+
+    let app_handle = app.clone();
+    let mut downloaded: u64 = 0;
+
+    update
+        .download_and_install(
+            move |chunk_length, content_length| {
+                downloaded += chunk_length as u64;
+                let pct = if let Some(total) = content_length {
+                    if total > 0 {
+                        ((downloaded as f64 / total as f64) * 100.0).min(99.0) as u32
+                    } else {
+                        50
+                    }
+                } else {
+                    50
+                };
+
+                let payload = UpdateProgressPayload {
+                    chunk_length,
+                    downloaded_bytes: downloaded,
+                    total_bytes: content_length,
+                    progress_pct: pct,
+                };
+                let _ = app_handle.emit("updater-progress", payload);
+            },
+            || {
+                InstallerLogger::info("UPDATER", "Native download finished. Verifying signature and launching installer...");
+            },
+        )
+        .await
+        .map_err(|e| {
+            let err_msg = format!("Failed to download and install update: {}", e);
+            InstallerLogger::error("UPDATER", &err_msg);
+            err_msg
+        })?;
+
+    InstallerLogger::info("UPDATER", "Update installed. System restarting...");
+    Ok(())
+}
