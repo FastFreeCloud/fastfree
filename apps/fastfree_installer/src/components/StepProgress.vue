@@ -12,7 +12,11 @@
       @click="navigateIfAllowed(step.number)"
     >
       <div class="step-badge">
-        <span v-if="currentStep > step.number" class="check">✓</span>
+        <span v-if="currentStep > step.number" class="check">
+          <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </span>
         <span v-else>{{ step.number }}</span>
       </div>
       <div class="step-info">
@@ -135,7 +139,15 @@ function navigateIfAllowed(target: number) {
 }
 
 .check {
-  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.check-svg {
+  width: 13px;
+  height: 13px;
+  stroke: #FFFFFF;
 }
 
 .step-info {

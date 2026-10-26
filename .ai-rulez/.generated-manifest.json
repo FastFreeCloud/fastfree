@@ -1,6 +1,7 @@
 {
   "version": "1",
   "files": [
+    ".agents/rules/desktop-installer.md",
     ".agents/rules/erp-invariants.md",
     ".agents/rules/frontend-quasar.md",
     ".agents/rules/nixos-clan.md",
@@ -87,6 +88,7 @@
     ".agents/skills/typecheck-all/SKILL.md",
     ".agents/skills/web-backend-release/SKILL.md",
     ".ai-rulez/roles.json",
+    ".claude/rules/desktop-installer.md",
     ".claude/rules/erp-invariants.md",
     ".claude/rules/frontend-quasar.md",
     ".claude/rules/nixos-clan.md",

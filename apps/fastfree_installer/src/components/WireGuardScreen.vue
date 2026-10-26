@@ -18,7 +18,16 @@
         <div class="banner-left">
           <div class="tunnel-indicator">
             <span class="node-pill">{{ t('wireguard.localAppliance', { client: selectedClientId }) }}</span>
-            <span class="arrow-wire">{{ t('wireguard.tunnelArrow', { port: wireGuardConfig.listen_port }) }}</span>
+            <span class="arrow-wire">
+              <svg class="tunnel-lock-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span>{{ t('wireguard.tunnelArrow', { port: wireGuardConfig.listen_port }) }}</span>
+              <svg class="tunnel-dir-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline :points="isRtl ? '15 18 9 12 15 6' : '9 18 15 12 9 6'"></polyline>
+              </svg>
+            </span>
             <span class="node-pill pill-controller">{{ t('wireguard.controllerNode') }}</span>
           </div>
           <div class="handshake-status">
@@ -28,7 +37,13 @@
           </div>
         </div>
         <button class="btn-ping" :disabled="isTestingPing" @click="testHandshake">
-          {{ isTestingPing ? t('wireguard.pinging') : t('wireguard.testHandshake') }}
+          <span v-if="isTestingPing" class="spinner-tiny"></span>
+          <span v-else class="btn-flex">
+            <svg class="ping-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            <span>{{ t('wireguard.testHandshake') }}</span>
+          </span>
         </button>
       </div>
 
@@ -74,7 +89,11 @@
       <!-- Security / Clan Invariant Notice -->
       <div class="security-card">
         <div class="sec-title">
-          <span class="sec-icon">🛡️</span>
+          <span class="sec-icon">
+            <svg class="sec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </span>
           <span>{{ t('wireguard.clanInvariantTitle') }}</span>
         </div>
         <p class="sec-body" v-html="t('wireguard.clanInvariantBody', { client: selectedClientId })"></p>
@@ -87,7 +106,15 @@
         {{ t('wireguard.backToSizing') }}
       </button>
       <button class="btn btn-primary btn-deploy" @click="currentStep = 5">
-        {{ t('wireguard.deployVhdx') }}
+        <span class="btn-flex">
+          <svg class="deploy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
+            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+          </svg>
+          <span>{{ t('wireguard.deployVhdx') }}</span>
+        </span>
       </button>
     </div>
   </div>
@@ -244,6 +271,21 @@ async function testHandshake() {
   font-size: 11px;
   color: #10B981;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tunnel-lock-svg {
+  width: 12px;
+  height: 12px;
+  stroke: #10B981;
+}
+
+.tunnel-dir-svg {
+  width: 12px;
+  height: 12px;
+  stroke: #10B981;
 }
 
 .handshake-status {
@@ -420,5 +462,29 @@ async function testHandshake() {
 
 .btn-secondary:hover {
   background: var(--border-color, #3F3F46);
+}
+
+.sec-svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--accent-sky, #38BDF8);
+}
+
+.ping-svg {
+  width: 12px;
+  height: 12px;
+  stroke: var(--text-main, #E4E4E7);
+}
+
+.deploy-svg {
+  width: 13px;
+  height: 13px;
+  stroke: #FFFFFF;
+}
+
+.btn-flex {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 </style>

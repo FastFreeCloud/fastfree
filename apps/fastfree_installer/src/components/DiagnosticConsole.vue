@@ -21,7 +21,10 @@
             <small>{{ t('diagnostics.warnings') }}</small>
           </div>
           <button class="btn-close-hud" :title="t('diagnostics.close')" @click="isDiagnosticOpen = false">
-            ✕
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
       </header>
@@ -66,14 +69,21 @@
             class="search-input"
             :placeholder="t('diagnostics.searchPlaceholder')"
           />
-          <button v-if="searchQuery" class="clear-search" @click="searchQuery = ''">✕</button>
+          <button v-if="searchQuery" class="clear-search" @click="searchQuery = ''">
+            <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
       </div>
 
       <!-- Logs Stream View -->
       <div class="hud-log-stream">
         <div v-if="filteredLogs.length === 0" class="no-logs">
-          <span>📡</span>
+          <svg class="no-logs-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
           <p>{{ t('diagnostics.noLogs') }}</p>
         </div>
 
@@ -108,19 +118,34 @@
             <span>Telemetry Stream Active</span>
           </span>
           <span v-if="copySuccessNotice" class="notice-pill-sm text-emerald">
-            ✓ {{ t('diagnostics.logsCopied') }}
+            <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>{{ t('diagnostics.logsCopied') }}</span>
           </span>
         </div>
 
         <div class="footer-actions">
           <button class="hud-btn hud-btn-ghost" @click="handleClear">
-            🗑 {{ t('diagnostics.clearLogs') }}
+            <svg class="btn-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>{{ t('diagnostics.clearLogs') }}</span>
           </button>
           <button class="hud-btn" @click="handleOpenLog">
-            📄 {{ t('diagnostics.openLogFile') }}
+            <svg class="btn-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+              <polyline points="13 2 13 9 20 9"></polyline>
+            </svg>
+            <span>{{ t('diagnostics.openLogFile') }}</span>
           </button>
           <button class="hud-btn hud-btn-primary" @click="handleCopy">
-            📋 {{ t('diagnostics.copyLogs') }}
+            <svg class="btn-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>{{ t('diagnostics.copyLogs') }}</span>
           </button>
         </div>
       </footer>

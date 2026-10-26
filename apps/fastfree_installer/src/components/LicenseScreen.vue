@@ -11,7 +11,13 @@
       <div class="input-card">
         <div class="input-header-row">
           <label class="input-label" for="license-input">
-            <span class="label-icon">🔑</span>
+            <span class="label-icon">
+              <svg class="ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="7.5" cy="15.5" r="5.5"></circle>
+                <path d="m21 2-9.6 9.6"></path>
+                <path d="m15.5 7.5 3 3L22 7l-3-3"></path>
+              </svg>
+            </span>
             <span>{{ t('license.licenseInputLabel') }}</span>
           </label>
           <div class="cloud-status-badge">
@@ -41,7 +47,11 @@
               :title="t('license.pasteBtn')"
               @click="handlePaste"
             >
-              📋 {{ t('license.pasteBtn') }}
+              <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+              </svg>
+              <span>{{ t('license.pasteBtn') }}</span>
             </button>
             <button
               v-else
@@ -50,7 +60,10 @@
               title="Clear"
               @click="licenseInput = ''"
             >
-              ✕
+              <svg class="btn-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
             </button>
           </div>
 
@@ -76,15 +89,32 @@
             :class="{ copied: hwidCopied }"
             @click="copyHwid"
           >
-            <span v-if="hwidCopied">✓ {{ t('license.hwidCopied') }}</span>
-            <span v-else>📋 {{ t('license.copyHwid') }}</span>
+            <span v-if="hwidCopied" class="btn-content">
+              <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>{{ t('license.hwidCopied') }}</span>
+            </span>
+            <span v-else class="btn-content">
+              <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>{{ t('license.copyHwid') }}</span>
+            </span>
           </button>
         </div>
       </div>
 
       <!-- Verification Error Banner -->
       <div v-if="errorMessage" class="error-banner">
-        <span class="error-icon">⚠️</span>
+        <span class="error-icon">
+          <svg class="ui-svg-err" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </span>
         <div class="error-details">
           <strong>{{ t('license.verFailed') }}</strong>
           <p>{{ errorMessage }}</p>
@@ -136,7 +166,10 @@
               :key="feature"
               class="feature-pill"
             >
-              ✓ {{ formatFeatureName(feature) }}
+              <svg class="pill-check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>{{ formatFeatureName(feature) }}</span>
             </span>
           </div>
         </div>
@@ -412,6 +445,9 @@ function formatFeatureName(feature: string): string {
   padding: 4px 8px;
   font-size: 11px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   transition: all 0.15s ease;
 }
 
@@ -429,10 +465,62 @@ function formatFeatureName(feature: string): string {
   font-size: 13px;
   cursor: pointer;
   padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-clear:hover {
   color: #FFFFFF;
+}
+
+.ui-svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--accent-sky, #38BDF8);
+}
+
+.btn-svg {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+}
+
+.btn-svg-sm {
+  width: 12px;
+  height: 12px;
+}
+
+.ui-svg-err {
+  width: 20px;
+  height: 20px;
+  stroke: #EF4444;
+}
+
+.btn-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pill-check-svg {
+  width: 11px;
+  height: 11px;
+  stroke: #34D399;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.feature-pill {
+  background: var(--bg-sub, #09090B);
+  color: var(--text-secondary, #D4D4D8);
+  font-size: 10px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #27272A);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .btn-action {

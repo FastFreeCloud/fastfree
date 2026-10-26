@@ -6,7 +6,7 @@ ai_rulez_version = '5.7.0'
 profile = 'full'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:e63d98ad43ff3e3e8dd78ac1ad846173f9cac880b46e6a7e2ecbbc5a3a3ffe1a'
+tree = 'sha256:6bc355f968548eeae9de7b41c3795018ceeb1e338f6d23c595e2e67fd348730e'
 
 [[served]]
 name = 'ai-rulez'
@@ -708,7 +708,7 @@ kind = 'rule'
 id = 'desktop-installer'
 domain = 'desktop-installer'
 path = 'domains/desktop-installer/rules/desktop-installer.md'
-digest = 'sha256:71adaf6056817ebd5aeb2ebe3be262d235830f769588a142abb6ab2c28a7ed42'
+digest = 'sha256:48597f048d54434fa578f7ea4b17ce230ef7410053b81b6a13b8f74406456fd3'
 
 [[item]]
 kind = 'rule'
@@ -899,6 +899,10 @@ digest = 'sha256:7ba3ca7aaf1206569dd9f4e343f83a3dfcaa46485b07353dd1f0ca224fbc327
 kind = 'verifier'
 id = 'nixos-no-plaintext-secrets'
 digest = 'sha256:9f9bb5dfeb8a7ee19daa3b1cc7c86e4de1b67551dae969c89f66bbf608dca4ca'
+
+[[output]]
+path = '.agents/rules/desktop-installer.md'
+digest = 'sha256:55841b7aed129c8a1d008daa278a3155d630381ea7382e19456e68defa956593'
 
 [[output]]
 path = '.agents/rules/erp-invariants.md'
@@ -1242,7 +1246,11 @@ digest = 'sha256:867a55ddf7d7d6cfb6b99dc9905fb67a5043aefd6e8f572db2643966cb7ec79
 
 [[output]]
 path = '.ai-rulez/roles.json'
-digest = 'sha256:f8a963632b497fdded1bc09c8daf1a3e65898d6ca5097cc6adb95af7d97d29bf'
+digest = 'sha256:827a9bf586f9c2cade4918d094f72ea248113b46796e65e407d04abad56d7797'
+
+[[output]]
+path = '.claude/rules/desktop-installer.md'
+digest = 'sha256:4002fc2a617be1aa8a324e63d0347d2b62710f3ca3f5d75e9c256830e038bf74'
 
 [[output]]
 path = '.claude/rules/erp-invariants.md'
@@ -1766,7 +1774,7 @@ digest = 'sha256:676ddffc944ea32cc2ef9069d75d2f6db14857f9884ea142231bea0ef95a16f
 
 [[output]]
 path = 'AGENTS.md'
-digest = 'sha256:68808334caa74e612a080ecae5286b927ca74bbfafe45916f09dcd4fd62f294b'
+digest = 'sha256:8f4bfa381ee8cbcf9fbf04cfb5649eea9903034a76436ea855e344afc0d20bbf'
 
 [[output]]
 path = 'CLAUDE.md'

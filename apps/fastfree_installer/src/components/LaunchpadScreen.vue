@@ -13,7 +13,13 @@
     <div class="content-body">
       <!-- Warning Banner if VM is NOT created in Hyper-V -->
       <div v-if="vmExists === false" class="hero-unprovisioned-card">
-        <div class="unprovisioned-icon-badge">⚠️</div>
+        <div class="unprovisioned-icon-badge">
+          <svg class="badge-svg-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
         <div class="unprovisioned-content">
           <div class="unprovisioned-title-row">
             <h3>{{ isRtl ? `الآلة الافتراضية (FastFree-${selectedClientId}) غير منشأة بعد في Hyper-V` : `Hyper-V VM (FastFree-${selectedClientId}) Not Provisioned Yet` }}</h3>
@@ -46,7 +52,7 @@
             </button>
           </div>
           <div v-if="provisioningMessage" class="provisioning-live-text">
-            <span class="pulse-icon">⏳</span>
+            <span class="spinner-tiny"></span>
             <span>{{ provisioningMessage }}</span>
           </div>
         </div>
@@ -55,7 +61,16 @@
       <!-- Master Live Status Hero -->
       <div class="hero-success-card" :class="{ 'is-warning': vmExists === false, 'is-stopped': realVmState && realVmState.state !== 'Running' && realVmState.exists }">
         <div class="success-icon-badge" :class="{ 'badge-amber': vmExists === false, 'badge-gray': realVmState && realVmState.state === 'Off' }">
-          {{ vmExists === false ? '!' : (realVmState && realVmState.state === 'Off' ? '⏹' : '✓') }}
+          <svg v-if="vmExists === false" class="badge-status-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <svg v-else-if="realVmState && realVmState.state === 'Off'" class="badge-status-svg" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+          </svg>
+          <svg v-else class="badge-status-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
         </div>
         <div class="hero-text">
           <div class="node-title-row">
@@ -99,7 +114,14 @@
         <!-- 1. License & Entity -->
         <div class="spec-card">
           <div class="spec-header">
-            <span class="spec-icon">📜</span>
+            <span class="spec-icon">
+              <svg class="spec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+            </span>
             <span class="spec-title">{{ isRtl ? 'بيانات الترخيص والمؤسسة' : 'License & Client Entity' }}</span>
           </div>
           <div class="spec-item">
@@ -162,7 +184,12 @@
         <!-- 3. Network & WireGuard Mesh -->
         <div class="spec-card">
           <div class="spec-header">
-            <span class="spec-icon">🔒</span>
+            <span class="spec-icon">
+              <svg class="spec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
             <span class="spec-title">{{ isRtl ? 'الشبكة والنفق المشفر' : 'WireGuard Mesh Network' }}</span>
           </div>
           <div class="spec-item">
@@ -191,7 +218,13 @@
         <!-- Local Web Portal Card -->
         <div class="endpoint-card">
           <div class="ep-header">
-            <span class="ep-icon">🌐</span>
+            <span class="ep-icon">
+              <svg class="ep-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+            </span>
             <span class="ep-label">{{ t('launchpad.localPortalAddress') }}</span>
           </div>
           <div class="ep-url font-mono">http://{{ selectedClientId }}.fastfree.local</div>
@@ -206,7 +239,11 @@
         <!-- WireGuard Gateway Card -->
         <div class="endpoint-card">
           <div class="ep-header">
-            <span class="ep-icon">🛡️</span>
+            <span class="ep-icon">
+              <svg class="ep-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </span>
             <span class="ep-label">{{ t('launchpad.wgOverlayIp') }}</span>
           </div>
           <div class="ep-url font-mono">{{ wireGuardConfig?.client_tunnel_ip || '10.24.0.2/32' }}</div>
@@ -223,7 +260,12 @@
       <div class="companion-card">
         <div class="comp-title-row">
           <div class="comp-title">
-            <span class="comp-icon">⚙️</span>
+            <span class="comp-icon">
+              <svg class="comp-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </span>
             <span>{{ isRtl ? 'إدارة وتحكم الآلة الافتراضية (Hyper-V Power)' : 'Hyper-V VM Power Management' }}</span>
           </div>
           <div class="vm-power-controls">
@@ -234,7 +276,12 @@
               @click="handleVmAction('start')"
             >
               <span v-if="activeAction === 'start'" class="spinner-tiny"></span>
-              <span v-else>▶ {{ isRtl ? 'تشغيل' : 'Start' }}</span>
+              <span v-else class="btn-flex">
+                <svg class="action-btn-svg" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span>{{ isRtl ? 'تشغيل' : 'Start' }}</span>
+              </span>
             </button>
             <button
               class="btn-vm-action"
@@ -243,7 +290,13 @@
               @click="handleVmAction('restart')"
             >
               <span v-if="activeAction === 'restart'" class="spinner-tiny"></span>
-              <span v-else>🔄 {{ t('launchpad.restartVm') }}</span>
+              <span v-else class="btn-flex">
+                <svg class="action-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+                <span>{{ t('launchpad.restartVm') }}</span>
+              </span>
             </button>
             <button
               class="btn-vm-action btn-danger"
@@ -252,7 +305,12 @@
               @click="handleVmAction('stop')"
             >
               <span v-if="activeAction === 'stop'" class="spinner-tiny"></span>
-              <span v-else>⏹ {{ t('launchpad.stopVm') }}</span>
+              <span v-else class="btn-flex">
+                <svg class="action-btn-svg" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                </svg>
+                <span>{{ t('launchpad.stopVm') }}</span>
+              </span>
             </button>
             <button
               class="btn-vm-action btn-restart-wizard"
@@ -260,7 +318,13 @@
               :title="t('launchpad.restartWizardHint')"
               @click="handleRestartWizard"
             >
-              🔄 {{ isRtl ? 'إعادة تشغيل المعالج' : 'Restart Setup' }}
+              <span class="btn-flex">
+                <svg class="action-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="1 4 1 10 7 10"></polyline>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                <span>{{ isRtl ? 'إعادة تشغيل المعالج' : 'Restart Setup' }}</span>
+              </span>
             </button>
           </div>
         </div>
@@ -279,18 +343,38 @@
     <div class="action-bar">
       <div class="action-left">
         <button class="btn btn-secondary" @click="handleMinimizeToTray">
-          📥 {{ t('launchpad.minimizeToTray') }}
+          <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+          </svg>
+          <span>{{ t('launchpad.minimizeToTray') }}</span>
         </button>
         <button class="btn btn-secondary" :disabled="isCheckingUpdate" @click="handleManualCheckUpdate">
           <span v-if="isCheckingUpdate" class="spinner-tiny"></span>
-          <span v-else>🔄 {{ isRtl ? 'فحص التحديثات' : 'Check Updates' }}</span>
+          <span v-else class="btn-flex">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            <span>{{ isRtl ? 'فحص التحديثات' : 'Check Updates' }}</span>
+          </span>
         </button>
         <button class="btn btn-secondary" @click="handleRestartWizard" :title="t('launchpad.restartWizardHint')">
-          🔄 {{ isRtl ? 'إعادة تشغيل المعالج' : 'Restart Setup' }}
+          <span class="btn-flex">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            <span>{{ isRtl ? 'إعادة تشغيل المعالج' : 'Restart Setup' }}</span>
+          </span>
         </button>
       </div>
       <button class="btn btn-primary btn-portal" @click="launchPortal">
-        🚀 {{ t('launchpad.openErpPortal') }}
+        <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+        <span>{{ t('launchpad.openErpPortal') }}</span>
       </button>
     </div>
   </div>
@@ -404,8 +488,8 @@ async function handleInstantProvisioning() {
     );
     logSuccess('Launchpad', `Instant VM provisioning succeeded: ${logs.length} step(s) completed.`);
     actionNotice.value = isRtl.value
-      ? 'تم إنشاء وتثبيت وتشغيل الآلة الافتراضية بنجاح! ✅'
-      : 'Virtual machine created, installed and started successfully! ✅';
+      ? 'تم إنشاء وتثبيت وتشغيل الآلة الافتراضية بنجاح!'
+      : 'Virtual machine created, installed and started successfully!';
 
     await checkVmStatus();
   } catch (err: any) {
@@ -437,8 +521,8 @@ async function handleManualCheckUpdate() {
   const hasUpdate = await checkForUpdates(false);
   if (!hasUpdate) {
     actionNotice.value = isRtl.value
-      ? 'أنت تستخدم أحدث إصدار معتمد من فاست فري ✅'
-      : 'FastFree Companion is fully up to date ✅';
+      ? 'أنت تستخدم أحدث إصدار معتمد من فاست فري'
+      : 'FastFree Companion is fully up to date';
     setTimeout(() => {
       actionNotice.value = '';
     }, 4000);
@@ -487,8 +571,8 @@ async function copyText(text: string) {
 async function handleVmAction(action: 'start' | 'stop' | 'restart') {
   if (vmExists.value === false) {
     actionNotice.value = isRtl.value
-      ? '⚠️ الآلة الافتراضية غير منشأة بعد في Hyper-V. يرجى الضغط على زر "إنشاء وتثبيت الآلة الافتراضية الآن".'
-      : '⚠️ Virtual machine is not created yet. Please click "Create & Install Virtual Machine Now".';
+      ? 'الآلة الافتراضية غير منشأة بعد في Hyper-V. يرجى الضغط على زر "إنشاء وتثبيت الآلة الافتراضية الآن".'
+      : 'Virtual machine is not created yet. Please click "Create & Install Virtual Machine Now".';
     return;
   }
 
@@ -508,10 +592,10 @@ async function handleVmAction(action: 'start' | 'stop' | 'restart') {
     const confirmedState = await waitForVmState(targetState);
     if (confirmedState.state.toLowerCase() === targetState.toLowerCase()) {
       actionNotice.value = action === 'start'
-        ? (isRtl.value ? 'تم تأكيد تشغيل الآلة الافتراضية في Hyper-V بنجاح! ✅' : 'VM verified in Hyper-V Running state! ✅')
+        ? (isRtl.value ? 'تم تأكيد تشغيل الآلة الافتراضية في Hyper-V بنجاح!' : 'VM verified in Hyper-V Running state!')
         : action === 'stop'
-        ? (isRtl.value ? 'تم تأكيد إيقاف الآلة الافتراضية في Hyper-V بنجاح ⏹' : 'VM verified in Hyper-V Off state ⏹')
-        : (isRtl.value ? 'تمت إعادة تشغيل الآلة الافتراضية بنجاح 🔄' : 'VM restarted and verified in Hyper-V 🔄');
+        ? (isRtl.value ? 'تم تأكيد إيقاف الآلة الافتراضية في Hyper-V بنجاح' : 'VM verified in Hyper-V Off state')
+        : (isRtl.value ? 'تمت إعادة تشغيل الآلة الافتراضية بنجاح' : 'VM restarted and verified in Hyper-V');
       logSuccess('VM', `Hyper-V state confirmed for ${selectedClientId.value}: ${confirmedState.state}`);
     } else {
       actionNotice.value = res.message || t('launchpad.vmSuccess');
@@ -1197,5 +1281,44 @@ async function handleMinimizeToTray() {
 
 .btn-secondary:hover {
   background: var(--border-color, #3F3F46);
+}
+
+.badge-svg-warn {
+  width: 22px;
+  height: 22px;
+  stroke: #F59E0B;
+}
+
+.badge-status-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.ep-svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--accent-sky, #38BDF8);
+}
+
+.comp-svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--accent-sky, #38BDF8);
+}
+
+.action-btn-svg {
+  width: 12px;
+  height: 12px;
+}
+
+.btn-svg {
+  width: 13px;
+  height: 13px;
+}
+
+.btn-flex {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 </style>

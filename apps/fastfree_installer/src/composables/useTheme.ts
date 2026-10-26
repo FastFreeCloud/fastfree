@@ -10,9 +10,9 @@ export interface ThemeOption {
 }
 
 export const availableThemes: ThemeOption[] = [
-  { id: 'dark', name: 'Dark Mode', nameAr: 'الداكن', icon: '🌙' },
-  { id: 'light', name: 'Light Mode', nameAr: 'الفاتح', icon: '☀️' },
-  { id: 'oled-black', name: 'Midnight OLED', nameAr: 'سواد أومليد', icon: '🌑' },
+  { id: 'dark', name: 'Dark Mode', nameAr: 'الداكن', icon: 'moon' },
+  { id: 'light', name: 'Light Mode', nameAr: 'الفاتح', icon: 'sun' },
+  { id: 'oled-black', name: 'Midnight OLED', nameAr: 'سواد أومليد', icon: 'circle' },
 ];
 
 const THEME_STORAGE_KEY = 'fastfree_installer_theme';
