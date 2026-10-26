@@ -203,7 +203,9 @@ pub fn run() {
             commands::install_hyperv_feature,
             commands::provision_node,
             commands::check_vm_exists,
-            commands::get_vm_real_state
+            commands::get_vm_real_state,
+            commands::check_app_update,
+            commands::install_app_update
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

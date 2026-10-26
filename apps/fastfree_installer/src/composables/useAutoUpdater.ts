@@ -1,6 +1,6 @@
-import { ref, shallowRef, computed, toRaw, markRaw } from 'vue';
-import { check, Update } from '@tauri-apps/plugin-updater';
-import { relaunch } from '@tauri-apps/plugin-process';
+import { ref, computed } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { getVersion } from '@tauri-apps/api/app';
 import {
@@ -10,8 +10,24 @@ import {
 } from '@tauri-apps/plugin-notification';
 import { logInfo, logWarn, logError, logSuccess } from './useDiagnostics';
 
+export interface UpdateInfo {
+  available: boolean;
+  current_version: string;
+  version: string;
+  date: string | null;
+  body: string | null;
+}
+
+export interface UpdateProgressPayload {
+  chunk_length: number;
+  downloaded_bytes: number;
+  total_bytes: number | null;
+  progress_pct: number;
+}
+
 export const isCheckingUpdate = ref(false);
 export const updateAvailable = ref(false);
+export const isMandatoryUpdate = ref(true); // Mandatory by default
 export const updateVersion = ref('');
 export const updateNotes = ref('');
 export const isDownloadingUpdate = ref(false);
@@ -31,11 +47,6 @@ export function formatBytes(bytes: number): string {
 
 export const downloadedBytesFormatted = computed(() => formatBytes(downloadedBytes.value));
 export const totalBytesFormatted = computed(() => formatBytes(totalBytes.value));
-
-// Maintain unproxied raw native Update instance outside Vue reactivity to prevent:
-// "TypeError: Cannot read private member from an object whose class did not declare it"
-let rawNativeUpdate: Update | null = null;
-export const currentUpdateObj = shallowRef<Update | null>(null);
 
 // Track last notified version to prevent repetitive desktop notifications
 let lastNotifiedVersion = '';
@@ -93,9 +104,8 @@ export async function dispatchDesktopNotification(title: string, body: string): 
 }
 
 /**
- * Checks for updates against the GitHub Releases manifest (latest.json)
+ * Checks for updates using native Rust Tauri updater command (zero JS Proxy/private member issues)
  * and falls back to querying the GitHub Releases API directly.
- * Can be run silently on startup or interactively on user request.
  */
 export async function checkForUpdates(silent: boolean = true): Promise<boolean> {
   if (isCheckingUpdate.value) return false;
@@ -105,34 +115,32 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
   await initAppVersion();
   logInfo('Updater', `Checking for updates (current: v${currentAppVersion.value}, silent=${silent})...`);
 
-  // 1. First: Try native Tauri plugin updater
+  // 1. Primary: Native Rust Tauri Updater command (Type-safe & Zero Private-field errors)
   try {
-    const update = await check();
-    if (update) {
-      rawNativeUpdate = markRaw(update);
-      currentUpdateObj.value = rawNativeUpdate;
+    const update = await invoke<UpdateInfo | null>('check_app_update');
+    if (update && update.available) {
       updateAvailable.value = true;
+      isMandatoryUpdate.value = true;
       updateVersion.value = update.version;
-      updateNotes.value = update.body || 'FastFree Appliance Performance & Security Update';
+      updateNotes.value = update.body || 'FastFree Appliance Mandatory Engine & Security Update';
       manualDownloadUrl.value = `https://github.com/FastFreeCloud/fastfree/releases/download/installer-v${update.version}/FastFree-Node-Setup.exe`;
       logSuccess(
         'Updater',
-        `New update found: v${update.version}`,
+        `Mandatory update found: v${update.version}`,
         `Published: ${update.date || 'latest'}, Channel: Production Release`
       );
 
-      // Notify the user via Windows desktop toast if this version hasn't been notified yet
       if (lastNotifiedVersion !== update.version) {
         lastNotifiedVersion = update.version;
         await dispatchDesktopNotification(
-          '⚡ تحديث جديد متوفر لـ FastFree',
-          `تم إصدار النسخة الجديدة v${update.version}. افتح التطبيق لتثبيت التحديث بنقرة واحدة.`
+          '⚡ تحديث إلزامي متوفر لـ FastFree',
+          `تم إصدار النسخة الإلزامية v${update.version}. يتطلب النظام التحديث للاستمرار.`
         );
       }
       return true;
     }
   } catch (err: unknown) {
-    logWarn('Updater', 'Native updater check notice:', String(err));
+    logWarn('Updater', 'Native Rust updater check notice:', String(err));
   }
 
   // 2. Fallback: Query GitHub Releases API directly for live releases
@@ -147,24 +155,23 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
       const asset = release.assets?.find((a: { name?: string }) => a.name?.endsWith('.exe'));
 
       if (remoteVer && compareSemver(remoteVer, currentAppVersion.value) > 0) {
-        rawNativeUpdate = null;
-        currentUpdateObj.value = null;
         updateAvailable.value = true;
+        isMandatoryUpdate.value = true;
         updateVersion.value = remoteVer;
-        updateNotes.value = release.body || 'FastFree Appliance Performance & Security Update';
+        updateNotes.value = release.body || 'FastFree Appliance Mandatory Engine & Security Update';
         manualDownloadUrl.value = asset?.browser_download_url
           || `https://github.com/FastFreeCloud/fastfree/releases/download/${rawTag}/FastFree-Node-Setup.exe`;
         logSuccess(
           'Updater',
-          `New release detected via GitHub API: v${remoteVer} (${rawTag})`,
+          `Mandatory release detected via GitHub API: v${remoteVer} (${rawTag})`,
           `Asset: ${manualDownloadUrl.value}`
         );
 
         if (lastNotifiedVersion !== remoteVer) {
           lastNotifiedVersion = remoteVer;
           await dispatchDesktopNotification(
-            '⚡ تحديث جديد متوفر لـ FastFree',
-            `تم إصدار النسخة الجديدة v${remoteVer}. انقر لفتح التطبيق وتثبيت التحديث بنقرة واحدة.`
+            '⚡ تحديث إلزامي متوفر لـ FastFree',
+            `تم إصدار النسخة الإلزامية v${remoteVer}. يتطلب النظام التحديث للاستمرار.`
           );
         }
         return true;
@@ -175,85 +182,58 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
   }
 
   updateAvailable.value = false;
-  rawNativeUpdate = null;
-  currentUpdateObj.value = null;
   manualDownloadUrl.value = '';
   logInfo('Updater', 'FastFree Companion is up to date (Latest Version).');
   return false;
 }
 
 /**
- * Downloads and installs the pending update, then relaunches the companion cleanly.
- * If native installer plugin is active, installs automatically using unproxied instance.
- * Otherwise, launches the direct installer download.
+ * Downloads and installs the pending update natively via Rust.
+ * Streams real download byte progress via the 'updater-progress' Tauri event.
  */
 export async function installPendingUpdate(): Promise<void> {
-  const update = rawNativeUpdate || (currentUpdateObj.value ? toRaw(currentUpdateObj.value) : null);
+  if (isDownloadingUpdate.value) return;
 
-  // Case A: Native updater object available
-  if (update) {
-    isDownloadingUpdate.value = true;
-    downloadProgress.value = 0;
-    downloadedBytes.value = 0;
-    totalBytes.value = 0;
-    updateError.value = '';
+  isDownloadingUpdate.value = true;
+  downloadProgress.value = 0;
+  downloadedBytes.value = 0;
+  totalBytes.value = 0;
+  updateError.value = '';
 
-    logInfo('Updater', `Starting download for FastFree v${update.version}...`);
+  logInfo('Updater', `Starting native download for FastFree v${updateVersion.value}...`);
 
-    try {
-      await update.downloadAndInstall((event) => {
-        switch (event.event) {
-          case 'Started':
-            totalBytes.value = event.data.contentLength || 0;
-            downloadedBytes.value = 0;
-            logInfo('Updater', `Update download started. Content size: ${totalBytes.value} bytes`);
-            break;
-          case 'Progress':
-            downloadedBytes.value += event.data.chunkLength;
-            if (totalBytes.value > 0) {
-              downloadProgress.value = Math.min(99, Math.round((downloadedBytes.value / totalBytes.value) * 100));
-            } else {
-              downloadProgress.value = Math.min(99, downloadProgress.value + 5);
-            }
-            break;
-          case 'Finished':
-            downloadProgress.value = 100;
-            downloadedBytes.value = totalBytes.value;
-            logSuccess('Updater', 'Update downloaded and verified. Relaunching application...');
-            break;
-        }
-      });
-
-      logSuccess('Updater', 'Installation complete. Relaunching...');
-      await relaunch();
-      return;
-    } catch (err: unknown) {
-      const msg = String(err || 'Failed to download and install update');
-      logError('Updater', 'Native update installation failed, triggering fallback', msg);
-
-      // Graceful fallback to direct installer URL if native plugin fails
-      if (manualDownloadUrl.value) {
-        logInfo('Updater', `Opening direct installer download: ${manualDownloadUrl.value}`);
-        try {
-          await openUrl(manualDownloadUrl.value);
-        } catch {
-          window.open(manualDownloadUrl.value, '_blank');
-        }
-      } else {
-        updateError.value = msg;
+  let unlistenProgress: UnlistenFn | null = null;
+  try {
+    unlistenProgress = await listen<UpdateProgressPayload>('updater-progress', (event) => {
+      const payload = event.payload;
+      downloadedBytes.value = payload.downloaded_bytes;
+      if (payload.total_bytes && payload.total_bytes > 0) {
+        totalBytes.value = payload.total_bytes;
       }
-      isDownloadingUpdate.value = false;
-    }
-    return;
-  }
+      downloadProgress.value = payload.progress_pct;
+    });
 
-  // Case B: Direct installer download
-  if (manualDownloadUrl.value) {
-    logInfo('Updater', `Opening direct installer download: ${manualDownloadUrl.value}`);
-    try {
-      await openUrl(manualDownloadUrl.value);
-    } catch {
-      window.open(manualDownloadUrl.value, '_blank');
+    await invoke('install_app_update');
+    logSuccess('Updater', 'Installation complete. Application is restarting...');
+  } catch (err: unknown) {
+    const msg = String(err || 'Failed to download and install update');
+    logError('Updater', 'Native update installation failed, triggering fallback', msg);
+
+    // Graceful fallback to direct installer URL if native plugin fails
+    if (manualDownloadUrl.value) {
+      logInfo('Updater', `Opening direct installer download: ${manualDownloadUrl.value}`);
+      try {
+        await openUrl(manualDownloadUrl.value);
+      } catch {
+        window.open(manualDownloadUrl.value, '_blank');
+      }
+    } else {
+      updateError.value = msg;
+    }
+    isDownloadingUpdate.value = false;
+  } finally {
+    if (unlistenProgress) {
+      unlistenProgress();
     }
   }
 }
