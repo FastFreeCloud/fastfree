@@ -198,8 +198,6 @@
       <path d="M 256,234 Q 256,256 234,256 Q 256,256 256,278 Q 256,256 278,256 Q 256,256 256,234 Z" fill="#FFFFFF" />
     </g>
   </g>
-    
-  </g>
 
   <!-- App Title Pill -->
   <text x="256" y="475" font-family="'Cairo', 'Segoe UI', 'Roboto', sans-serif" font-size="20" font-weight="800"
