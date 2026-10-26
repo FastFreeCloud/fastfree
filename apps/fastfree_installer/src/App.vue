@@ -120,6 +120,17 @@ onMounted(async () => {
     // restricted storage fallback
   }
 
+  // If appliance was already provisioned on this node, boot directly to Launchpad
+  try {
+    const isProvisioned = localStorage.getItem('fastfree_provisioned') === 'true';
+    if (isProvisioned) {
+      currentStep.value = 6;
+      logInfo('App', 'Appliance is already provisioned; opening directly in Sovereign Control Center mode.');
+    }
+  } catch {
+    // ignore
+  }
+
   logInfo('App', `Installer application loaded in ${locale.value.toUpperCase()} mode.`);
 
   try {
@@ -152,12 +163,8 @@ async function toggleMaximize() {
 }
 
 async function closeWindow() {
-  // If provisioning is complete or at launchpad, minimize cleanly to tray
-  if (currentStep.value >= 5) {
-    await minimizeToTray();
-  } else {
-    appWindow.close();
-  }
+  // Never terminate the app; always minimize cleanly to system tray
+  await minimizeToTray();
 }
 </script>
 

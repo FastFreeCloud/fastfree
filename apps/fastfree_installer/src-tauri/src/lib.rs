@@ -43,6 +43,14 @@ pub fn run() {
     }
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            InstallerLogger::info("SINGLE_INSTANCE", "Secondary instance launch intercepted; focusing existing window.");
+            if let Some(main) = app.get_webview_window("main") {
+                let _ = main.show();
+                let _ = main.unminimize();
+                let _ = main.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_opener::init())

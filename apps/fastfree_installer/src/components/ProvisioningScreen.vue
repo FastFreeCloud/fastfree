@@ -175,6 +175,11 @@ async function runProvisioning() {
   }
 
   isDone.value = true;
+  try {
+    localStorage.setItem('fastfree_provisioned', 'true');
+  } catch (err) {
+    console.warn('Storage save error:', err);
+  }
   logSuccess('Provisioning', `Appliance ${selectedClientId.value} provisioned and verified online!`);
   await addLog(`Provisioning completed. Node is ready and operational.`);
 }

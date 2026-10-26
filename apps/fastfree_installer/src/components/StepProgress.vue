@@ -1,5 +1,6 @@
 <template>
-  <div class="step-progress-bar" :class="{ 'is-rtl': isRtl }">
+  <!-- Wizard Steps Bar: Shown only during initial setup (Steps 1-5) -->
+  <div v-if="currentStep < 6" class="step-progress-bar" :class="{ 'is-rtl': isRtl }">
     <div
       v-for="step in steps"
       :key="step.number"
@@ -19,6 +20,18 @@
         <span class="step-subtitle">{{ t(step.subtitleKey) }}</span>
       </div>
       <div v-if="step.number < steps.length" class="step-line"></div>
+    </div>
+  </div>
+
+  <!-- Operational Appliance Status Bar: Shown once node is deployed (Step 6 / Launchpad) -->
+  <div v-else class="appliance-status-bar" :class="{ 'is-rtl': isRtl }">
+    <div class="status-left">
+      <span class="pulse-live-dot"></span>
+      <span class="status-title">{{ isRtl ? 'بيئة العقدة السيادية تعمل بنجاح' : 'FastFree Sovereign Node Appliance — Fully Operational' }}</span>
+      <span class="appliance-tag">Hyper-V Gen 2</span>
+    </div>
+    <div class="status-right">
+      <span class="status-hint">{{ isRtl ? 'الإعداد والتهيئة مكتملان بالكامل • تم قفل التكوين لضمان استقرار العتاد' : 'Configuration locked for system integrity • Live in System Tray' }}</span>
     </div>
   </div>
 </template>
@@ -45,6 +58,10 @@ const steps: StepConfig[] = [
 ];
 
 function navigateIfAllowed(target: number) {
+  // STRICT INVARIANT: If setup is completed and on Launchpad (Step 6), navigation back is locked!
+  if (currentStep.value >= 6) {
+    return;
+  }
   // Allow jumping backwards to already visited steps prior to provisioning
   if (target < currentStep.value && currentStep.value < 5) {
     currentStep.value = target;
@@ -148,5 +165,62 @@ function navigateIfAllowed(target: number) {
 
 .step-item.completed .step-line {
   background: #059669;
+}
+
+/* Post-Provisioning Appliance Status Bar */
+.appliance-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12), rgba(25, 118, 210, 0.08));
+  border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+  user-select: none;
+}
+
+.status-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pulse-live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 10px #10B981;
+  animation: pulse-live 2s infinite ease-in-out;
+}
+
+@keyframes pulse-live {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+.status-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #34D399;
+}
+
+.appliance-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: #38BDF8;
+  background: rgba(56, 189, 248, 0.15);
+  padding: 1px 7px;
+  border-radius: 4px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.status-right {
+  display: flex;
+  align-items: center;
+}
+
+.status-hint {
+  font-size: 11px;
+  color: var(--text-muted, #94A3B8);
 }
 </style>
