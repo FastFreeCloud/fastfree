@@ -106,7 +106,8 @@ export async function fetchSystemDiscovery(): Promise<SystemDiscoveryReport> {
     discoveryReport.value = result;
     if (result.recommendation) {
       assignedCpuCores.value = result.recommendation.recommended_cores;
-      assignedRamMb.value = result.recommendation.recommended_ram_mb;
+      const rawRam = result.recommendation.recommended_ram_mb;
+      assignedRamMb.value = Math.round(rawRam / 1024) * 1024 || 8192;
       targetDiskDrive.value = result.recommendation.target_disk_drive;
     }
     logSuccess(

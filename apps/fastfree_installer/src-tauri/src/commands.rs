@@ -473,7 +473,15 @@ pub async fn provision_node(
     let vm_name = format!("FastFree-{}", client_id);
     let vhdx_dir = format!("{}\\FastFree\\VMs", target_drive.trim_end_matches('\\'));
     let vhdx_path = format!("{}\\{}.vhdx", vhdx_dir, client_id);
-    let ram_bytes = ram_mb * 1024 * 1024;
+
+    // Hyper-V requires VM memory to be aligned to a multiple of 2 MB,
+    // and recommends clean 128 MB / 1024 MB alignment to avoid memory modification faults.
+    let aligned_ram_mb = if ram_mb >= 1024 {
+        ((ram_mb + 64) / 128) * 128
+    } else {
+        ((ram_mb + 1) / 2) * 2
+    };
+    let ram_bytes = aligned_ram_mb * 1024 * 1024;
 
     #[cfg(windows)]
     {
@@ -572,7 +580,7 @@ try {{
                     step_logs.push(ProvisioningStepLog {
                         step: 3,
                         phase: "Hyper-V Virtual Machine Creation".to_string(),
-                        message: format!("Successfully deployed VM '{}' (Generation 2, {} vCPUs, {} MB RAM, dynamic VHDX).", vm_name, cores, ram_mb),
+                        message: format!("Successfully deployed VM '{}' (Generation 2, {} vCPUs, {} MB RAM, dynamic VHDX).", vm_name, cores, aligned_ram_mb),
                         success: true,
                     });
                     step_logs.push(ProvisioningStepLog {

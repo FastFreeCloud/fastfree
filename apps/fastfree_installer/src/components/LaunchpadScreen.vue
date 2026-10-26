@@ -306,11 +306,12 @@ async function handleInstantProvisioning() {
   logInfo('Launchpad', `Instant VM provisioning triggered for ${selectedClientId.value}`);
 
   try {
+    const safeRam = Math.round((assignedRamMb.value || 8192) / 1024) * 1024 || 8192;
     const logs = await provisionNode(
       selectedClientId.value,
-      assignedCpuCores.value,
-      assignedRamMb.value,
-      targetDiskDrive.value
+      assignedCpuCores.value || 4,
+      safeRam,
+      targetDiskDrive.value || 'C:\\'
     );
     logSuccess('Launchpad', `Instant VM provisioning succeeded: ${logs.length} step(s) completed.`);
     actionNotice.value = isRtl.value
