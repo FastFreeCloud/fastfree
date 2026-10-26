@@ -36,6 +36,9 @@ export function resolveBrandFile(explicit) {
     return path.resolve(env);
   }
 
+  const localCandidate = path.join(here, 'brand.json');
+  if (fs.existsSync(localCandidate)) return localCandidate;
+
   let dir = here;
   for (let depth = 0; depth < 8; depth += 1) {
     const candidate = path.join(dir, 'brand', 'brand.json');

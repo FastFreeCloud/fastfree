@@ -16,16 +16,25 @@ const here = path.dirname(fileURLToPath(import.meta.url));
  * Walk up until the brand folder with the loader is found.
  */
 function findBrandDir() {
+  if (process.env.FASTFREE_BRAND_DIR && fs.existsSync(path.join(process.env.FASTFREE_BRAND_DIR, 'loader.mjs'))) {
+    return process.env.FASTFREE_BRAND_DIR;
+  }
   let dir = here;
   for (let depth = 0; depth < 8; depth += 1) {
-    const candidate = path.join(dir, 'brand');
-    if (fs.existsSync(path.join(candidate, 'loader.mjs'))) return candidate;
+    const candidates = [
+      path.join(dir, '.ai-rulez', 'domains', 'frontend', 'skills', 'fastfree-brand'),
+      path.join(dir, '.agents', 'skills', 'fastfree-brand'),
+      path.join(dir, 'brand')
+    ];
+    for (const candidate of candidates) {
+      if (fs.existsSync(path.join(candidate, 'loader.mjs'))) return candidate;
+    }
     const parent = path.dirname(dir);
     if (parent === dir) break;
     dir = parent;
   }
   throw new Error(
-    'brand/loader.mjs was not found. Set FASTFREE_BRAND_FILE to brand/brand.json.',
+    'fastfree-brand loader.mjs was not found. Set FASTFREE_BRAND_DIR or ensure .agents/skills/fastfree-brand/ exists.',
   );
 }
 

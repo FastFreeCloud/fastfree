@@ -172,12 +172,14 @@ description = 'Frontend developer building Vue 3, Quasar UI, and LowCode client 
 domains = ['frontend']
 
 [roles.skill_mode]
+'frontend/fastfree-poster' = 'on'
 'frontend/quasar-quality-gates' = 'on'
 'frontend/play-console-setup' = 'user-invocable-only'
 'frontend/play-publish-automation' = 'user-invocable-only'
 'frontend/android-build-release' = 'user-invocable-only'
 
 [roles.delivery]
+'frontend/fastfree-poster' = 'static'
 'frontend/play-*' = 'served'
 'frontend/android-build-release' = 'served'
 

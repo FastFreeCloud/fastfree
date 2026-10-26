@@ -201,6 +201,7 @@
       "skill_modes": {
         "android-build-release": "user-invocable-only",
         "erp-domain-development": "on",
+        "fastfree-poster": "on",
         "play-console-setup": "user-invocable-only",
         "play-publish-automation": "user-invocable-only",
         "quasar-quality-gates": "on"
@@ -208,6 +209,7 @@
       "delivery": {
         "erp-modules/erp-domain-development": "static",
         "frontend/android-build-release": "served",
+        "frontend/fastfree-poster": "static",
         "frontend/play-*": "served"
       },
       "items": [
@@ -355,8 +357,18 @@
           "domain": "frontend",
           "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
           "delivery": "static",
-          "bytes": 379302,
+          "bytes": 353086,
           "tokens": 310
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-poster",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/fastfree-poster/SKILL.md",
+          "mode": "on",
+          "delivery": "static",
+          "bytes": 2990,
+          "tokens": 738
         },
         {
           "kind": "skill",
@@ -387,6 +399,14 @@
           "delivery": "static",
           "bytes": 1881,
           "tokens": 526
+        },
+        {
+          "kind": "command",
+          "id": "check-poster",
+          "domain": "frontend",
+          "path": "domains/frontend/commands/check-poster.md",
+          "bytes": 242,
+          "tokens": 58
         },
         {
           "kind": "command",
@@ -422,14 +442,14 @@
         }
       ],
       "totals": {
-        "items": 25,
-        "bytes": 522210,
-        "tokens": 21790,
+        "items": 27,
+        "bytes": 499226,
+        "tokens": 22586,
         "by_kind": {
           "check": 2,
-          "command": 2,
+          "command": 3,
           "rule": 4,
-          "skill": 17
+          "skill": 18
         },
         "served_skills": 3,
         "served_tokens": 7072
@@ -449,12 +469,14 @@
       ],
       "skill_modes": {
         "android-build-release": "user-invocable-only",
+        "fastfree-poster": "on",
         "play-console-setup": "user-invocable-only",
         "play-publish-automation": "user-invocable-only",
         "quasar-quality-gates": "on"
       },
       "delivery": {
         "frontend/android-build-release": "served",
+        "frontend/fastfree-poster": "static",
         "frontend/play-*": "served"
       },
       "items": [
@@ -584,8 +606,18 @@
           "domain": "frontend",
           "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
           "delivery": "static",
-          "bytes": 379302,
+          "bytes": 353086,
           "tokens": 310
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-poster",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/fastfree-poster/SKILL.md",
+          "mode": "on",
+          "delivery": "static",
+          "bytes": 2990,
+          "tokens": 738
         },
         {
           "kind": "skill",
@@ -616,6 +648,14 @@
           "delivery": "static",
           "bytes": 1881,
           "tokens": 526
+        },
+        {
+          "kind": "command",
+          "id": "check-poster",
+          "domain": "frontend",
+          "path": "domains/frontend/commands/check-poster.md",
+          "bytes": 242,
+          "tokens": 58
         },
         {
           "kind": "command",
@@ -651,14 +691,14 @@
         }
       ],
       "totals": {
-        "items": 23,
-        "bytes": 518790,
-        "tokens": 20956,
+        "items": 25,
+        "bytes": 495806,
+        "tokens": 21752,
         "by_kind": {
           "check": 2,
-          "command": 2,
+          "command": 3,
           "rule": 3,
-          "skill": 16
+          "skill": 17
         },
         "served_skills": 3,
         "served_tokens": 7072
@@ -848,8 +888,17 @@
           "domain": "frontend",
           "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
           "delivery": "static",
-          "bytes": 379302,
+          "bytes": 353086,
           "tokens": 310
+        },
+        {
+          "kind": "skill",
+          "id": "fastfree-poster",
+          "domain": "frontend",
+          "path": "domains/frontend/skills/fastfree-poster/SKILL.md",
+          "delivery": "static",
+          "bytes": 2990,
+          "tokens": 738
         },
         {
           "kind": "skill",
@@ -897,6 +946,14 @@
           "delivery": "static",
           "bytes": 2207,
           "tokens": 594
+        },
+        {
+          "kind": "command",
+          "id": "check-poster",
+          "domain": "frontend",
+          "path": "domains/frontend/commands/check-poster.md",
+          "bytes": 242,
+          "tokens": 58
         },
         {
           "kind": "command",
@@ -948,14 +1005,14 @@
         }
       ],
       "totals": {
-        "items": 30,
-        "bytes": 528835,
-        "tokens": 23573,
+        "items": 32,
+        "bytes": 505851,
+        "tokens": 24369,
         "by_kind": {
           "check": 3,
-          "command": 3,
+          "command": 4,
           "rule": 5,
-          "skill": 19
+          "skill": 20
         },
         "served_skills": 0,
         "served_tokens": 0
