@@ -1,15 +1,19 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FastFree Starting...</title>
+    <title>FastFree Sovereign Node Starting...</title>
     <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
       body {
         margin: 0;
-        background: radial-gradient(circle at center, #1E293B 0%, #0F172A 100%);
+        padding: 24px;
+        background: radial-gradient(circle at 50% 30%, #172554 0%, #0B1120 70%, #030712 100%);
         color: #F8FAFC;
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -17,57 +21,122 @@
         height: 100vh;
         overflow: hidden;
         user-select: none;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        border-radius: 16px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 40px rgba(25, 118, 210, 0.2);
       }
-      .logo {
+      .logo-wrap {
+        position: relative;
         width: 64px;
         height: 64px;
         margin-bottom: 16px;
-        animation: pulse 2s infinite ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .logo-glow {
+        position: absolute;
+        inset: -6px;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.5) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: pulse-glow 2.5s infinite ease-in-out;
+      }
+      .logo-icon {
+        position: relative;
+        font-size: 36px;
+        filter: drop-shadow(0 4px 12px rgba(56, 189, 248, 0.6));
       }
       .title {
-        font-size: 18px;
-        font-weight: 600;
+        font-size: 19px;
+        font-weight: 700;
         letter-spacing: 0.5px;
+        background: linear-gradient(135deg, #FFFFFF 0%, #BAE6FD 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
       }
-      .subtitle {
+      .badge {
+        font-size: 10px;
+        font-weight: 700;
+        color: #38BDF8;
+        background: rgba(56, 189, 248, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        padding: 2px 10px;
+        border-radius: 12px;
+        margin-top: 6px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+      }
+      .status-text {
         font-size: 12px;
         color: #94A3B8;
-        margin-top: 6px;
+        margin-top: 18px;
+        height: 18px;
+        text-align: center;
+        transition: opacity 0.3s ease;
       }
-      .loader {
-        width: 140px;
-        height: 3px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
-        margin-top: 20px;
+      .loader-track {
+        width: 220px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 4px;
+        margin-top: 14px;
         overflow: hidden;
         position: relative;
       }
       .loader-bar {
         position: absolute;
-        width: 50%;
+        width: 45%;
         height: 100%;
-        background: #1976D2;
-        border-radius: 2px;
-        animation: loading 1.5s infinite ease-in-out;
+        background: linear-gradient(90deg, #1976D2, #38BDF8, #60A5FA);
+        border-radius: 4px;
+        animation: sweep 1.8s infinite ease-in-out;
       }
-      @keyframes loading {
+      .footer-note {
+        font-size: 10px;
+        color: #64748B;
+        margin-top: 16px;
+      }
+      @keyframes sweep {
         0% { left: -50%; }
         100% { left: 100%; }
       }
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); opacity: 0.9; }
-        50% { transform: scale(1.05); opacity: 1; }
+      @keyframes pulse-glow {
+        0%, 100% { transform: scale(1); opacity: 0.6; }
+        50% { transform: scale(1.15); opacity: 1; }
       }
     </style>
   </head>
   <body>
+    <div class="logo-wrap">
+      <div class="logo-glow"></div>
+      <div class="logo-icon">⚡</div>
+    </div>
     <div class="title">FastFree Sovereign Node</div>
-    <div class="subtitle">Detecting hardware & initializing installer...</div>
-    <div class="loader">
+    <div class="badge">Hyper-V Edition 26.05</div>
+    <div id="status" class="status-text">جارٍ فحص صلاحيات النظام ونواة Hyper-V...</div>
+    <div class="loader-track">
       <div class="loader-bar"></div>
     </div>
+    <div class="footer-note">Enterprise Self-Healing Ecosystem</div>
+
+    <script>
+      const messages = [
+        "جارٍ فحص صلاحيات النظام ونواة Hyper-V...",
+        "فحص حاويات التخزين وواجهات الشبكة السيادية...",
+        "التحقق من بيئة العتاد وتخصيص الموارد...",
+        "بدء تشغيل معالج الإعداد السيادي..."
+      ];
+      let idx = 0;
+      const el = document.getElementById("status");
+      setInterval(() => {
+        idx = (idx + 1) % messages.length;
+        el.style.opacity = 0;
+        setTimeout(() => {
+          el.innerText = messages[idx];
+          el.style.opacity = 1;
+        }, 200);
+      }, 700);
+    </script>
   </body>
 </html>

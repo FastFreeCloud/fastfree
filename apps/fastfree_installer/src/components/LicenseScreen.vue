@@ -9,17 +9,51 @@
     <div class="content-body">
       <!-- Input Section -->
       <div class="input-card">
-        <label class="input-label" for="license-input">{{ t('license.licenseInputLabel') }}</label>
+        <div class="input-header-row">
+          <label class="input-label" for="license-input">
+            <span class="label-icon">🔑</span>
+            <span>{{ t('license.licenseInputLabel') }}</span>
+          </label>
+          <div class="cloud-status-badge">
+            <span class="status-dot-pulse"></span>
+            <span>{{ t('license.cloudRegistryStatus') }}</span>
+          </div>
+        </div>
+
         <div class="input-row">
-          <input
-            id="license-input"
-            v-model="licenseInput"
-            type="text"
-            :placeholder="t('license.placeholder')"
-            class="text-input"
-            :disabled="isVerifying"
-            @keyup.enter="handleVerify"
-          />
+          <div class="input-wrapper">
+            <input
+              id="license-input"
+              v-model="licenseInput"
+              type="text"
+              :placeholder="t('license.placeholder')"
+              class="text-input"
+              :disabled="isVerifying"
+              autofocus
+              spellcheck="false"
+              autocomplete="off"
+              @keyup.enter="handleVerify"
+            />
+            <button
+              v-if="!licenseInput"
+              type="button"
+              class="btn-paste"
+              :title="t('license.pasteBtn')"
+              @click="handlePaste"
+            >
+              📋 {{ t('license.pasteBtn') }}
+            </button>
+            <button
+              v-else
+              type="button"
+              class="btn-clear"
+              title="Clear"
+              @click="licenseInput = ''"
+            >
+              ✕
+            </button>
+          </div>
+
           <button
             class="btn btn-action"
             :disabled="isVerifying || !licenseInput.trim()"
@@ -30,57 +64,33 @@
           </button>
         </div>
 
-        <!-- Verification Mode and Test Presets -->
-        <div class="presets-row">
-          <span class="preset-label">{{ t('license.presetsLabel') }}</span>
+        <!-- Hardware Identity Card (HWID) -->
+        <div class="hwid-card">
+          <div class="hwid-info">
+            <span class="hwid-label">{{ t('license.hwidLabel') }}</span>
+            <code class="hwid-val">{{ machineHwid || 'Loading HWID...' }}</code>
+          </div>
           <button
             type="button"
-            class="preset-chip chip-ent"
-            @click="fillKey('FF-CL02-7K2M-9P4W-1X88')"
+            class="btn-copy-hwid"
+            :class="{ copied: hwidCopied }"
+            @click="copyHwid"
           >
-            client2 (Riyadh Sovereign)
+            <span v-if="hwidCopied">✓ {{ t('license.hwidCopied') }}</span>
+            <span v-else>📋 {{ t('license.copyHwid') }}</span>
           </button>
-          <button
-            type="button"
-            class="preset-chip chip-ent"
-            @click="fillKey('FF-ENT-2026-SOVEREIGN-KEY')"
-          >
-            Master Enterprise
-          </button>
-          <button
-            type="button"
-            class="preset-chip chip-std"
-            @click="fillKey('FF-STD-2026-BUSINESS-KEY')"
-          >
-            Commercial Standard
-          </button>
-          <button
-            type="button"
-            class="preset-chip chip-trl"
-            @click="fillKey('FF-TRL-2026-EVALUATION-KEY')"
-          >
-            14-Day Trial
-          </button>
-        </div>
-
-        <div class="registry-mode">
-          <label class="checkbox-container">
-            <input v-model="onlineVerification" type="checkbox" />
-            <span class="checkmark"></span>
-            <span class="check-text">
-              {{ t('license.onlineCheckLabel') }}
-            </span>
-          </label>
-          <span class="offline-badge">{{ t('license.offlineFallback') }}</span>
         </div>
       </div>
 
-      <!-- Verification Error -->
+      <!-- Verification Error Banner -->
       <div v-if="errorMessage" class="error-banner">
         <span class="error-icon">⚠️</span>
         <div class="error-details">
           <strong>{{ t('license.verFailed') }}</strong>
           <p>{{ errorMessage }}</p>
+          <div class="error-support-tip">
+            {{ t('license.supportNotice') }}
+          </div>
         </div>
       </div>
 
@@ -98,18 +108,16 @@
 
         <div class="license-details-grid">
           <div class="detail-item">
+            <span class="detail-label">{{ t('license.entityLabel') }}</span>
+            <span class="detail-val font-semibold">{{ licenseState.company_name }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">{{ t('license.assignedNode') }}</span>
+            <span class="detail-val text-accent font-mono">{{ licenseState.eligible_clients[0] || 'client2' }}</span>
+          </div>
+          <div class="detail-item">
             <span class="detail-label">{{ t('license.keyLabel') }}</span>
             <span class="detail-val font-mono">{{ licenseState.key }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">{{ t('license.entityLabel') }}</span>
-            <span class="detail-val">{{ licenseState.company_name }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">{{ t('license.quotaLabel') }}</span>
-            <span class="detail-val text-accent">
-              {{ t('license.nodesQuota', { count: licenseState.max_nodes }) }}
-            </span>
           </div>
           <div class="detail-item">
             <span class="detail-label">{{ t('license.seatLabel') }}</span>
@@ -157,42 +165,73 @@ import {
   currentStep,
   licenseState,
   verifyLicense,
+  fetchMachineHwid,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
 
 const { t, isRtl } = useI18n();
 
-const licenseInput = ref('FF-ENT-2026-SOVEREIGN-KEY');
-const onlineVerification = ref(true);
+const licenseInput = ref('');
+const machineHwid = ref('');
 const isVerifying = ref(false);
 const errorMessage = ref('');
+const hwidCopied = ref(false);
 
 onMounted(async () => {
-  // If not verified yet, verify the default enterprise key automatically
-  if (!licenseState.value) {
-    await handleVerify();
-  } else {
+  // Fetch machine HWID for user display and support reference
+  try {
+    machineHwid.value = await fetchMachineHwid();
+  } catch (e) {
+    console.warn('Could not load HWID:', e);
+  }
+
+  // Restore already validated license key if present in state
+  if (licenseState.value && licenseState.value.is_valid) {
     licenseInput.value = licenseState.value.key;
   }
 });
 
 async function handleVerify() {
-  if (!licenseInput.value.trim()) return;
+  const cleanKey = licenseInput.value.trim().toUpperCase();
+  if (!cleanKey) return;
+
   isVerifying.value = true;
   errorMessage.value = '';
 
   try {
-    await verifyLicense(licenseInput.value.trim(), onlineVerification.value);
+    const res = await verifyLicense(cleanKey, true);
+    if (!res.is_valid) {
+      errorMessage.value = res.message || t('license.verFailed');
+    }
   } catch (err: unknown) {
-    errorMessage.value = String(err || 'Failed to verify license key');
+    errorMessage.value = String(err || t('license.verFailed'));
   } finally {
     isVerifying.value = false;
   }
 }
 
-function fillKey(key: string) {
-  licenseInput.value = key;
-  handleVerify();
+async function handlePaste() {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text) {
+      licenseInput.value = text.trim();
+    }
+  } catch (err) {
+    console.warn('Clipboard read error:', err);
+  }
+}
+
+async function copyHwid() {
+  if (!machineHwid.value) return;
+  try {
+    await navigator.clipboard.writeText(machineHwid.value);
+    hwidCopied.value = true;
+    setTimeout(() => {
+      hwidCopied.value = false;
+    }, 2500);
+  } catch (err) {
+    console.warn('Clipboard write error:', err);
+  }
 }
 
 function formatFeatureName(feature: string): string {
@@ -273,17 +312,52 @@ function formatFeatureName(feature: string): string {
 .input-card {
   background: var(--bg-card, #18181B);
   border: 1px solid var(--border-color, #27272A);
-  border-radius: 10px;
-  padding: 14px;
+  border-radius: 12px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+}
+
+.input-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .input-label {
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary, #E4E4E7);
+}
+
+.cloud-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: #38BDF8;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.status-dot-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #38BDF8;
+  box-shadow: 0 0 6px #38BDF8;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.3); }
 }
 
 .input-row {
@@ -291,43 +365,85 @@ function formatFeatureName(feature: string): string {
   gap: 10px;
 }
 
-.text-input {
+.input-wrapper {
+  position: relative;
   flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.text-input {
+  width: 100%;
   background: var(--bg-sub, #09090B);
   border: 1px solid var(--border-color, #3F3F46);
   border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 13px;
+  padding: 10px 14px;
+  font-size: 14px;
   color: var(--text-main, #F8FAFC);
   font-family: 'Consolas', 'Courier New', monospace;
+  letter-spacing: 0.5px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .text-input:focus {
   border-color: var(--accent-sky, #38BDF8);
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+}
+
+.btn-paste {
+  position: absolute;
+  inset-inline-end: 8px;
+  background: var(--bg-card, #27272A);
+  border: 1px solid var(--border-color, #3F3F46);
+  color: var(--text-muted, #A1A1AA);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-paste:hover {
+  background: var(--border-color, #3F3F46);
+  color: #FFFFFF;
+}
+
+.btn-clear {
+  position: absolute;
+  inset-inline-end: 10px;
+  background: none;
+  border: none;
+  color: var(--text-muted, #71717A);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.btn-clear:hover {
+  color: #FFFFFF;
 }
 
 .btn-action {
   background: var(--accent-primary, #1976D2);
   color: #FFFFFF;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   transition: all 0.2s ease;
-  font-family: inherit;
+  white-space: nowrap;
 }
 
 .btn-action:hover:not(:disabled) {
   background: var(--accent-hover, #1565C0);
+  box-shadow: 0 4px 14px rgba(25, 118, 210, 0.35);
 }
 
 .btn-action:disabled {
@@ -335,129 +451,109 @@ function formatFeatureName(feature: string): string {
   cursor: not-allowed;
 }
 
-.spinner-sm {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #FFFFFF;
-  border-radius: 50%;
-  animation: spin 0.8s infinite linear;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.presets-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.preset-label {
-  font-size: 11px;
-  color: var(--text-muted, #71717A);
-  margin-inline-end: 4px;
-}
-
-.preset-chip {
-  background: var(--bg-sub, #27272A);
-  border: 1px solid var(--border-color, #3F3F46);
-  border-radius: 6px;
-  padding: 3px 8px;
-  font-size: 10px;
-  color: var(--text-muted, #A1A1AA);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-family: inherit;
-}
-
-.preset-chip:hover {
-  background: var(--bg-hover, #3F3F46);
-  color: var(--text-main, #FFFFFF);
-  border-color: #52525B;
-}
-
-.chip-ent {
-  border-color: rgba(56, 189, 248, 0.3);
-  color: var(--accent-sky, #38BDF8);
-}
-
-.chip-std {
-  border-color: rgba(16, 185, 129, 0.3);
-  color: #34D399;
-}
-
-.chip-trl {
-  border-color: rgba(245, 158, 11, 0.3);
-  color: #FBBF24;
-}
-
-.registry-mode {
+.hwid-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 4px;
+  background: var(--bg-sub, #09090B);
+  border: 1px solid var(--border-color, #27272A);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 2px;
 }
 
-.checkbox-container {
+.hwid-info {
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer;
+  overflow: hidden;
+}
+
+.hwid-label {
   font-size: 11px;
-  color: var(--text-muted, #A1A1AA);
-  user-select: none;
+  color: var(--text-muted, #71717A);
+  white-space: nowrap;
 }
 
-.checkbox-container input {
-  cursor: pointer;
-  accent-color: #1976D2;
-}
-
-.offline-badge {
-  font-size: 10px;
-  color: #10B981;
-  background: rgba(16, 185, 129, 0.1);
+.hwid-val {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text-secondary, #A1A1AA);
+  background: rgba(255, 255, 255, 0.04);
   padding: 2px 6px;
   border-radius: 4px;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-copy-hwid {
+  background: var(--bg-card, #18181B);
+  border: 1px solid var(--border-color, #3F3F46);
+  color: var(--text-muted, #A1A1AA);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.btn-copy-hwid:hover {
+  background: var(--border-color, #3F3F46);
+  color: #FFFFFF;
+}
+
+.btn-copy-hwid.copied {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34D399;
 }
 
 .error-banner {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 8px;
-  padding: 12px 14px;
+  border-radius: 10px;
+  padding: 14px 16px;
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
 }
 
 .error-icon {
-  font-size: 16px;
+  font-size: 18px;
+  line-height: 1;
 }
 
 .error-details strong {
   color: #F87171;
-  font-size: 12px;
+  font-size: 13px;
+  display: block;
 }
 
 .error-details p {
   color: #FCA5A5;
+  font-size: 12px;
+  margin: 4px 0 0 0;
+}
+
+.error-support-tip {
+  margin-top: 8px;
   font-size: 11px;
-  margin: 2px 0 0 0;
+  color: var(--text-muted, #94A3B8);
+  border-top: 1px solid rgba(239, 68, 68, 0.15);
+  padding-top: 6px;
 }
 
 .license-credential-card {
   background: var(--bg-card, #18181B);
-  border: 1px solid var(--border-color, #27272A);
-  border-radius: 10px;
-  padding: 14px 16px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 12px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .license-top {
@@ -471,26 +567,20 @@ function formatFeatureName(feature: string): string {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 6px;
 }
 
 .tier-enterprise {
   background: rgba(25, 118, 210, 0.2);
   color: var(--accent-sky, #38BDF8);
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  border: 1px solid rgba(56, 189, 248, 0.35);
 }
 
 .tier-standard {
   background: rgba(16, 185, 129, 0.15);
   color: #34D399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.tier-trial {
-  background: rgba(245, 158, 11, 0.15);
-  color: #FBBF24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(16, 185, 129, 0.35);
 }
 
 .status-pill {
@@ -498,7 +588,12 @@ function formatFeatureName(feature: string): string {
   align-items: center;
   gap: 6px;
   font-size: 11px;
+  font-weight: 600;
   color: #34D399;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .dot-green {
@@ -506,13 +601,13 @@ function formatFeatureName(feature: string): string {
   height: 7px;
   border-radius: 50%;
   background: #10B981;
-  box-shadow: 0 0 6px #10B981;
+  box-shadow: 0 0 8px #10B981;
 }
 
 .license-details-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .detail-item {
@@ -534,6 +629,10 @@ function formatFeatureName(feature: string): string {
   color: var(--text-main, #F8FAFC);
 }
 
+.font-semibold {
+  font-weight: 700;
+}
+
 .text-accent {
   color: var(--accent-sky, #38BDF8);
 }
@@ -544,7 +643,7 @@ function formatFeatureName(feature: string): string {
 
 .unlocked-features-box {
   border-top: 1px solid var(--border-color, #27272A);
-  padding-top: 10px;
+  padding-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -563,12 +662,12 @@ function formatFeatureName(feature: string): string {
 }
 
 .feature-pill {
-  background: var(--bg-sub, #27272A);
+  background: var(--bg-sub, #09090B);
   color: var(--text-secondary, #D4D4D8);
   font-size: 10px;
-  padding: 3px 8px;
+  padding: 4px 9px;
   border-radius: 6px;
-  border: 1px solid var(--border-color, #3F3F46);
+  border: 1px solid var(--border-color, #27272A);
 }
 
 .action-bar {
@@ -581,9 +680,9 @@ function formatFeatureName(feature: string): string {
 }
 
 .btn {
-  padding: 8px 20px;
+  padding: 9px 22px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   border: none;
@@ -613,5 +712,18 @@ function formatFeatureName(feature: string): string {
 
 .btn-secondary:hover {
   background: var(--border-color, #3F3F46);
+}
+
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin 0.8s infinite linear;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>

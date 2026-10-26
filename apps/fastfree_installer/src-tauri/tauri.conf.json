@@ -14,9 +14,11 @@
       {
         "label": "main",
         "title": "FastFree Sovereign Node Installer",
-        "width": 960,
-        "height": 640,
-        "resizable": false,
+        "width": 1060,
+        "height": 700,
+        "minWidth": 980,
+        "minHeight": 650,
+        "resizable": true,
         "center": true,
         "decorations": false,
         "visible": false
@@ -24,8 +26,8 @@
       {
         "label": "splashscreen",
         "url": "splashscreen.html",
-        "width": 440,
-        "height": 260,
+        "width": 480,
+        "height": 320,
         "resizable": false,
         "center": true,
         "decorations": false,
