@@ -1,5 +1,5 @@
 <template>
-  <div class="installer-app" :class="[`theme-${theme}`, { 'is-rtl': isRtl }]" :dir="isRtl ? 'rtl' : 'ltr'">
+  <div class="installer-app" @contextmenu.prevent :class="[`theme-${theme}`, { 'is-rtl': isRtl }]" :dir="isRtl ? 'rtl' : 'ltr'">
     <!-- Custom Draggable Titlebar -->
     <header data-tauri-drag-region class="titlebar">
       <div class="brand">
@@ -49,10 +49,9 @@
         </button>
       </div>
 
-      <!-- Window Minimize / Maximize / Close Controls -->
+      <!-- Window Minimize / Close Controls -->
       <div class="window-controls">
         <button class="win-btn" :title="t('app.minimize')" @click="minimizeWindow">🗕</button>
-        <button class="win-btn" title="Maximize / Restore" @click="toggleMaximize">🗖</button>
         <button class="win-btn close" :title="t('app.close')" @click="closeWindow">✕</button>
       </div>
     </header>
@@ -133,6 +132,12 @@ onMounted(async () => {
 
   logInfo('App', `Installer application loaded in ${locale.value.toUpperCase()} mode.`);
 
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'i') || (e.ctrlKey && e.key.toLowerCase() === 'r')) {
+      e.preventDefault();
+    }
+  });
+
   try {
     await fetchSystemDiscovery();
   } catch (err) {
@@ -151,15 +156,6 @@ onMounted(async () => {
 
 function minimizeWindow() {
   appWindow.minimize();
-}
-
-async function toggleMaximize() {
-  const isMax = await appWindow.isMaximized();
-  if (isMax) {
-    await appWindow.unmaximize();
-  } else {
-    await appWindow.maximize();
-  }
 }
 
 async function closeWindow() {
