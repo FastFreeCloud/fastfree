@@ -96,8 +96,21 @@
 
         <div class="update-actions">
           <div v-if="isDownloadingUpdate" class="progress-box">
-            <div class="progress-bar-fill" :style="{ width: `${downloadProgress}%` }"></div>
-            <span class="progress-pct">{{ downloadProgress }}%</span>
+            <div class="progress-info-row">
+              <span class="progress-bytes">{{ downloadedBytesFormatted }} / {{ totalBytesFormatted }}</span>
+              <span class="progress-pct">{{ downloadProgress }}%</span>
+            </div>
+            <div class="progress-track-sm">
+              <div class="progress-bar-fill" :style="{ width: `${downloadProgress}%` }"></div>
+            </div>
+            <button
+              v-if="manualDownloadUrl"
+              class="btn-direct-download btn-sm-download"
+              :title="isRtl ? 'تحميل ملف المثبت مباشرة عبر المتصفح' : 'Download Installer Directly'"
+              @click="openManualDownload"
+            >
+              🌐 {{ isRtl ? 'تحميل مباشر' : 'Direct Download' }}
+            </button>
           </div>
           <template v-else>
             <button
@@ -169,6 +182,8 @@ import {
   updateVersion,
   isDownloadingUpdate,
   downloadProgress,
+  downloadedBytesFormatted,
+  totalBytesFormatted,
   installPendingUpdate,
   currentAppVersion,
   initAppVersion,
@@ -744,31 +759,47 @@ body, html {
 }
 
 .progress-box {
-  width: 140px;
-  height: 18px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 9px;
-  position: relative;
-  overflow: hidden;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
 }
 
-.progress-bar-fill {
-  position: absolute;
-  inset-inline-start: 0;
-  top: 0;
-  bottom: 0;
-  background: #10B981;
-  transition: width 0.2s ease;
+.progress-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-family: var(--font-mono, monospace);
+  color: #38BDF8;
+}
+
+.progress-bytes {
+  font-weight: 600;
 }
 
 .progress-pct {
-  position: relative;
-  font-size: 10px;
   font-weight: 700;
-  color: #FFFFFF;
+  color: #10B981;
+}
+
+.progress-track-sm {
+  width: 120px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-track-sm .progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10B981, #38BDF8);
+  transition: width 0.2s ease;
+}
+
+.btn-sm-download {
+  padding: 3px 8px;
+  font-size: 10.5px;
 }
 
 .slide-down-enter-active,

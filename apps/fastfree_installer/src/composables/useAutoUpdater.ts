@@ -1,4 +1,4 @@
-import { ref, shallowRef, toRaw, markRaw } from 'vue';
+import { ref, shallowRef, computed, toRaw, markRaw } from 'vue';
 import { check, Update } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { openUrl } from '@tauri-apps/plugin-opener';
@@ -16,8 +16,21 @@ export const updateVersion = ref('');
 export const updateNotes = ref('');
 export const isDownloadingUpdate = ref(false);
 export const downloadProgress = ref(0);
+export const downloadedBytes = ref(0);
+export const totalBytes = ref(0);
 export const updateError = ref('');
 export const manualDownloadUrl = ref('');
+
+export function formatBytes(bytes: number): string {
+  if (!bytes || bytes <= 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+}
+
+export const downloadedBytesFormatted = computed(() => formatBytes(downloadedBytes.value));
+export const totalBytesFormatted = computed(() => formatBytes(totalBytes.value));
 
 // Maintain unproxied raw native Update instance outside Vue reactivity to prevent:
 // "TypeError: Cannot read private member from an object whose class did not declare it"
@@ -181,30 +194,31 @@ export async function installPendingUpdate(): Promise<void> {
   if (update) {
     isDownloadingUpdate.value = true;
     downloadProgress.value = 0;
+    downloadedBytes.value = 0;
+    totalBytes.value = 0;
     updateError.value = '';
 
     logInfo('Updater', `Starting download for FastFree v${update.version}...`);
 
     try {
-      let downloadedBytes = 0;
-      let totalBytes = 0;
-
       await update.downloadAndInstall((event) => {
         switch (event.event) {
           case 'Started':
-            totalBytes = event.data.contentLength || 0;
-            logInfo('Updater', `Update download started. Content size: ${totalBytes} bytes`);
+            totalBytes.value = event.data.contentLength || 0;
+            downloadedBytes.value = 0;
+            logInfo('Updater', `Update download started. Content size: ${totalBytes.value} bytes`);
             break;
           case 'Progress':
-            downloadedBytes += event.data.chunkLength;
-            if (totalBytes > 0) {
-              downloadProgress.value = Math.min(99, Math.round((downloadedBytes / totalBytes) * 100));
+            downloadedBytes.value += event.data.chunkLength;
+            if (totalBytes.value > 0) {
+              downloadProgress.value = Math.min(99, Math.round((downloadedBytes.value / totalBytes.value) * 100));
             } else {
               downloadProgress.value = Math.min(99, downloadProgress.value + 5);
             }
             break;
           case 'Finished':
             downloadProgress.value = 100;
+            downloadedBytes.value = totalBytes.value;
             logSuccess('Updater', 'Update downloaded and verified. Relaunching application...');
             break;
         }
