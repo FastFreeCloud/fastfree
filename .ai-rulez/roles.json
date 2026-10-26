@@ -48,8 +48,8 @@
           "id": "desktop-installer",
           "domain": "desktop-installer",
           "path": "domains/desktop-installer/rules/desktop-installer.md",
-          "bytes": 1708,
-          "tokens": 417
+          "bytes": 1703,
+          "tokens": 415
         },
         {
           "kind": "rule",
@@ -257,8 +257,8 @@
       ],
       "totals": {
         "items": 27,
-        "bytes": 497751,
-        "tokens": 22232,
+        "bytes": 497746,
+        "tokens": 22230,
         "by_kind": {
           "check": 2,
           "command": 4,

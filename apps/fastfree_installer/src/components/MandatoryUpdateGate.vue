@@ -24,7 +24,12 @@
           <span class="node-label">{{ isRtl ? 'النسخة الحالية' : 'Current Version' }}</span>
           <span class="node-ver font-mono">v{{ currentAppVersion }}</span>
         </div>
-        <div class="bridge-arrow">➔</div>
+        <div class="bridge-arrow">
+          <svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline :points="isRtl ? '12 5 5 12 12 19' : '12 5 19 12 12 19'"></polyline>
+          </svg>
+        </div>
         <div class="version-node target">
           <span class="node-label">{{ isRtl ? 'النسخة الإلزامية' : 'Required Version' }}</span>
           <span class="node-ver font-mono text-emerald">v{{ updateVersion }}</span>
@@ -47,7 +52,13 @@
       </div>
 
       <div v-if="updateError" class="update-error-alert">
-        <span class="error-icon">⚠️</span>
+        <span class="error-icon">
+          <svg class="err-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </span>
         <span class="error-text">{{ updateError }}</span>
       </div>
 
@@ -73,12 +84,23 @@
           :disabled="isDownloadingUpdate"
           @click="openManualDownload"
         >
-          🌐 {{ isRtl ? 'تحميل مباشر كملف مستقل' : 'Download Direct Installer' }}
+          <span class="btn-inner">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            <span>{{ isRtl ? 'تحميل مباشر كملف مستقل' : 'Download Direct Installer' }}</span>
+          </span>
         </button>
       </div>
 
       <div class="mandatory-footer-notice">
-        🔒 {{ isRtl ? 'تم قفل الانتقال في المعالج لحين تطبيق التحديث لضمان تكامل النظام.' : 'Setup wizard navigation is locked until the update is applied.' }}
+        <svg class="lock-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <span>{{ isRtl ? 'تم قفل الانتقال في المعالج لحين تطبيق التحديث لضمان تكامل النظام.' : 'Setup wizard navigation is locked until the update is applied.' }}</span>
       </div>
     </div>
   </div>
@@ -307,10 +329,31 @@ const { isRtl } = useI18n();
 }
 
 .mandatory-footer-notice {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   font-size: 11px;
   color: #64748B;
   font-weight: 500;
+}
+
+.arrow-svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--accent-sky, #38BDF8);
+}
+
+.err-svg {
+  width: 16px;
+  height: 16px;
+  stroke: #EF4444;
+}
+
+.lock-svg {
+  width: 13px;
+  height: 13px;
+  stroke: #64748B;
 }
 
 .spinner-tiny {

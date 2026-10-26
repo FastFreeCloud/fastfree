@@ -1,7 +1,7 @@
 ---
 name: desktop-installer
 priority: critical
-applies_to:
+paths:
   - "apps/fastfree_installer/**"
 ---
 

@@ -21,7 +21,11 @@
           :title="t('app.diagHud')"
           @click="isDiagnosticOpen = !isDiagnosticOpen"
         >
-          <span class="tool-icon">📡</span>
+          <span class="tool-icon">
+            <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+          </span>
           <span class="hud-label">{{ t('diagnostics.hudBadge') }}</span>
           <span v-if="totalErrors > 0" class="mini-pill pill-err">{{ totalErrors }}</span>
           <span v-else-if="totalWarnings > 0" class="mini-pill pill-warn">{{ totalWarnings }}</span>

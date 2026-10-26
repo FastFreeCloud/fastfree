@@ -8,7 +8,7 @@ Use MCP server: npx -y ai-rulez@latest mcp --allow-any-dir --serve-skills
 Regenerate: ai-rulez generate
 
 Docs: https://github.com/Goldziher/ai-rulez
-Content-Hash: blake3:904f4d53682d41afc2f20346a3d35a9f9c14aac236db39a60dae8985ec938ee1
+Content-Hash: blake3:66ef0eeecb52bb79c86da7bb09c15a00716f2dcf752489c37477a726ce0c5acb
 -->
 
 # fastfree
@@ -18,6 +18,8 @@ FastFree Sovereign Monorepo & Multi-Agent OS Ecosystem
 ## Rules
 
 ### desktop-installer
+
+_Applies to: `apps/fastfree_installer/**`_
 
 **Priority:** critical
 

@@ -12,8 +12,17 @@
         <div class="hero-top">
           <div class="phase-badge">
             <span v-if="!isDone && !isFailed" class="spinner-tiny"></span>
-            <span v-else-if="isFailed" class="fail-tiny">✕</span>
-            <span v-else class="check-tiny">✓</span>
+            <span v-else-if="isFailed" class="fail-tiny">
+              <svg class="phase-svg-fail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </span>
+            <span v-else class="check-tiny">
+              <svg class="phase-svg-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </span>
             <span :class="{ 'text-red': isFailed }">{{ currentPhaseText }}</span>
           </div>
           <span class="pct-text" :class="{ 'text-red': isFailed }">{{ isFailed ? '!' : `${progress}%` }}</span>
@@ -35,7 +44,13 @@
 
       <!-- Real Error Banner if Provisioning Fails -->
       <div v-if="isFailed" class="error-banner">
-        <div class="error-banner-icon">⚠️</div>
+        <div class="error-banner-icon">
+          <svg class="err-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
         <div class="error-banner-content">
           <div class="error-banner-title">
             {{ isRtl ? 'تعذر إتمام تهيئة وتثبيت الآلة في Hyper-V' : 'Hyper-V Appliance Provisioning Failed' }}
@@ -43,10 +58,22 @@
           <div class="error-banner-msg font-mono text-xs">{{ errorMessage }}</div>
           <div class="error-banner-actions">
             <button class="btn-retry" @click="retryProvisioning">
-              🔄 {{ isRtl ? 'إعادة المحاولة' : 'Retry Provisioning' }}
+              <span class="btn-flex">
+                <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+                <span>{{ isRtl ? 'إعادة المحاولة' : 'Retry Provisioning' }}</span>
+              </span>
             </button>
             <button class="btn-back-sizing" @click="currentStep = 3">
-              ⚙️ {{ isRtl ? 'تعديل موارد العتاد (الأنوية والرام)' : 'Adjust Hardware Sizing' }}
+              <span class="btn-flex">
+                <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                <span>{{ isRtl ? 'تعديل موارد العتاد (الأنوية والرام)' : 'Adjust Hardware Sizing' }}</span>
+              </span>
             </button>
           </div>
         </div>
@@ -502,6 +529,37 @@ async function runProvisioning() {
 .fail-tiny {
   color: #EF4444;
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+.phase-svg-fail {
+  width: 13px;
+  height: 13px;
+  stroke: #EF4444;
+}
+
+.phase-svg-ok {
+  width: 13px;
+  height: 13px;
+  stroke: #10B981;
+}
+
+.err-svg {
+  width: 22px;
+  height: 22px;
+  stroke: #EF4444;
+}
+
+.btn-svg {
+  width: 12px;
+  height: 12px;
+}
+
+.btn-flex {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .text-red {

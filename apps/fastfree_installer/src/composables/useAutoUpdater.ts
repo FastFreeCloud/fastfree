@@ -133,7 +133,7 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
       if (lastNotifiedVersion !== update.version) {
         lastNotifiedVersion = update.version;
         await dispatchDesktopNotification(
-          '⚡ تحديث إلزامي متوفر لـ FastFree',
+          'تحديث إلزامي متوفر لـ FastFree',
           `تم إصدار النسخة الإلزامية v${update.version}. يتطلب النظام التحديث للاستمرار.`
         );
       }
@@ -170,7 +170,7 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
         if (lastNotifiedVersion !== remoteVer) {
           lastNotifiedVersion = remoteVer;
           await dispatchDesktopNotification(
-            '⚡ تحديث إلزامي متوفر لـ FastFree',
+            'تحديث إلزامي متوفر لـ FastFree',
             `تم إصدار النسخة الإلزامية v${remoteVer}. يتطلب النظام التحديث للاستمرار.`
           );
         }

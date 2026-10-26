@@ -18,7 +18,13 @@
         <!-- Identity Card -->
         <div class="diag-card">
           <div class="card-header">
-            <span class="icon">💻</span>
+            <span class="icon">
+              <svg class="card-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+            </span>
             <span class="label">{{ t('discovery.hostIdentity') }}</span>
           </div>
           <div class="metric-value text-accent">{{ discoveryReport.host_name }}</div>
@@ -55,7 +61,18 @@
         <!-- RAM Card -->
         <div class="diag-card">
           <div class="card-header">
-            <span class="icon">🧠</span>
+            <span class="icon">
+              <svg class="card-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                <line x1="6" y1="19" x2="6" y2="21"></line>
+                <line x1="10" y1="19" x2="10" y2="21"></line>
+                <line x1="14" y1="19" x2="14" y2="21"></line>
+                <line x1="18" y1="19" x2="18" y2="21"></line>
+                <circle cx="7" cy="12" r="1.5"></circle>
+                <circle cx="12" cy="12" r="1.5"></circle>
+                <circle cx="17" cy="12" r="1.5"></circle>
+              </svg>
+            </span>
             <span class="label">{{ t('discovery.physicalMemory') }}</span>
           </div>
           <div class="metric-value">{{ t('discovery.totalMemory', { val: (discoveryReport.total_memory_mb / 1024).toFixed(1) }) }}</div>
@@ -73,7 +90,11 @@
           }"
         >
           <div class="card-header">
-            <span class="icon">🛡️</span>
+            <span class="icon">
+              <svg class="card-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </span>
             <span class="label">{{ t('discovery.hypervEngine') }}</span>
           </div>
           <div
