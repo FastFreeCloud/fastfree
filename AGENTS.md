@@ -8,7 +8,7 @@ Use MCP server: npx -y ai-rulez@latest mcp --allow-any-dir --serve-skills
 Regenerate: ai-rulez generate
 
 Docs: https://github.com/Goldziher/ai-rulez
-Content-Hash: blake3:66ef0eeecb52bb79c86da7bb09c15a00716f2dcf752489c37477a726ce0c5acb
+Content-Hash: blake3:a9b017a9a2ff0abe5e7c4cb445850e16310d52d502c2fbb2caf193dcd8f0e1f5
 -->
 
 # fastfree
@@ -47,6 +47,27 @@ When working within `apps/fastfree_installer`:
    - Application updates must use native Rust `tauri_plugin_updater::UpdaterExt` rather than JavaScript Web APIs.
    - Mandatory update gate locks wizard progress when a required version is pending.
    - Real VM status is queried live via Hyper-V PowerShell commands.
+
+6. **Multi-Agent Verification Mandate (Herdr + OpenCode)**:
+   - For all architectural, security, or release validations of `apps/fastfree_installer`, the active AI agent MUST orchestrate an independent verification loop via Herdr MCP and OpenCode (`herdr-review-loop`).
+   - The primary agent spins up Herdr (`herdr server` / `herdr_status`) and opens an OpenCode reviewer session via `herdr_open_agent(name="opencode-reviewer", ...)`.
+   - OpenCode independently inspects code changes, runs build checks (`vue-tsc`, `vite build`, `cargo check`), audits Windows 11 Fluent 2 compliance, and provides an objective sign-off (`VERDICT: APPROVE`).
+   - No release or installer finalization is accepted without this dual-agent Herdr + OpenCode audit.
+
+### multi-agent-orchestration
+
+**Priority:** critical
+
+FastFree is designed to run in a collaborative multi-agent ecosystem:
+
+1. **Herdr Workspace Requirement**:
+   - The Herdr terminal workspace manager (`herdr server`) connects AI agents across parallel panes and worktrees.
+   - Any AI assistant acting on major subsystem completions, core packages, or release testing MUST utilize Herdr MCP tools (`herdr_status`, `herdr_open_agent`, `herdr_agent_prompt`, `herdr_agent_read`, `herdr_agent_wait`).
+
+2. **OpenCode Independent Reviewer Invariant**:
+   - Critical milestones (such as finalizing the Desktop Installer, OS deployment profiles, or lowcode runtime invariants) must not rely solely on a single agent's self-assessment.
+   - The primary agent (e.g. Antigravity) acts as **Writer / Implementer**, and MUST launch **OpenCode** via Herdr (`herdr-review-loop`) as an independent **Reviewer**.
+   - The reviewer evaluates code on disk without confirmation bias and returns `VERDICT: APPROVE` or `CHANGES NEEDED`.
 
 ### nixos-clan
 

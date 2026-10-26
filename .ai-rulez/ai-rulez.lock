@@ -6,7 +6,7 @@ ai_rulez_version = '5.7.0'
 profile = 'full'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:6bc355f968548eeae9de7b41c3795018ceeb1e338f6d23c595e2e67fd348730e'
+tree = 'sha256:d3358ee528848223bf0000d83d25f526627a58c69b38dfca35b38f2f7409dd05'
 
 [[served]]
 name = 'ai-rulez'
@@ -699,6 +699,12 @@ digest = 'sha256:f4771f0ec354b7587cf42027ed45ac4f823c0c88732e9293b1648094dbafef3
 
 [[item]]
 kind = 'rule'
+id = 'multi-agent-orchestration'
+path = 'rules/multi-agent-orchestration.md'
+digest = 'sha256:6b1ad70e71cebda298ce3ce0aff18821501cd3913c1b03584240110f985b28c3'
+
+[[item]]
+kind = 'rule'
 id = 'secure-secrets'
 path = 'rules/secure-secrets.md'
 digest = 'sha256:fef961d1a0b1bbdac822980bfcea9ad07a0694c131c36753f58d59aeb8bcd9a6'
@@ -708,7 +714,7 @@ kind = 'rule'
 id = 'desktop-installer'
 domain = 'desktop-installer'
 path = 'domains/desktop-installer/rules/desktop-installer.md'
-digest = 'sha256:48597f048d54434fa578f7ea4b17ce230ef7410053b81b6a13b8f74406456fd3'
+digest = 'sha256:434ea90006d06ff4d44961bc14dc2c973d0bbc1653319d4330647227f5ea5eb5'
 
 [[item]]
 kind = 'rule'
@@ -902,7 +908,7 @@ digest = 'sha256:9f9bb5dfeb8a7ee19daa3b1cc7c86e4de1b67551dae969c89f66bbf608dca4c
 
 [[output]]
 path = '.agents/rules/desktop-installer.md'
-digest = 'sha256:55841b7aed129c8a1d008daa278a3155d630381ea7382e19456e68defa956593'
+digest = 'sha256:1263352bd6c25343d7c90ac6926c069ccffed910f620639342a18e5edac67f58'
 
 [[output]]
 path = '.agents/rules/erp-invariants.md'
@@ -1246,11 +1252,11 @@ digest = 'sha256:867a55ddf7d7d6cfb6b99dc9905fb67a5043aefd6e8f572db2643966cb7ec79
 
 [[output]]
 path = '.ai-rulez/roles.json'
-digest = 'sha256:827a9bf586f9c2cade4918d094f72ea248113b46796e65e407d04abad56d7797'
+digest = 'sha256:acdb47d098429efcefad81a5b20df7d32627473c7cbf8d87df3182a68afa1b41'
 
 [[output]]
 path = '.claude/rules/desktop-installer.md'
-digest = 'sha256:4002fc2a617be1aa8a324e63d0347d2b62710f3ca3f5d75e9c256830e038bf74'
+digest = 'sha256:323d7c31a7c6167bb5c4c1cdf80f3404542b5615e631f53696067c2c3cb6f11f'
 
 [[output]]
 path = '.claude/rules/erp-invariants.md'
@@ -1774,7 +1780,7 @@ digest = 'sha256:676ddffc944ea32cc2ef9069d75d2f6db14857f9884ea142231bea0ef95a16f
 
 [[output]]
 path = 'AGENTS.md'
-digest = 'sha256:8f4bfa381ee8cbcf9fbf04cfb5649eea9903034a76436ea855e344afc0d20bbf'
+digest = 'sha256:0bb57070bb576427a4d27c5c7168a0345255b87fb5196e487732768028f5b31a'
 
 [[output]]
 path = 'CLAUDE.md'
@@ -1782,8 +1788,8 @@ digest = 'sha256:71bc73c292a2adb25eabe7c0e6f22776193bef75dab71b286cd8e4f63b44bf6
 
 [[output]]
 path = 'llms-full.txt'
-digest = 'sha256:6ba102ed20545ec452e6c13d056f723f85fb352f901e3fa73b9ae06d890feee6'
+digest = 'sha256:e0df9c2ddd4b51f186116ac8eaa2cf6e70bb79320c6a42f54562dd90f0ea6c5b'
 
 [[output]]
 path = 'llms.txt'
-digest = 'sha256:c6caec88d19051737f11237d3debd6c45f437d976323b5bdfc7dce35b42d03a4'
+digest = 'sha256:244b6bc27cb3f84db7dad7bb3d784e8c568e1c07bccc7c6968d4024c03429de1'

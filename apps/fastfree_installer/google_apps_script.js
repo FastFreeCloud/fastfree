@@ -29,10 +29,10 @@ const DEFAULT_HEADERS = [
  */
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu("⚡ FastFree Node")
-    .addItem("➕ إنشاء ترخيص عميل جديد (Create License)", "createNewLicensePrompt")
+  ui.createMenu("FastFree Node")
+    .addItem("إنشاء ترخيص عميل جديد (Create License)", "createNewLicensePrompt")
     .addSeparator()
-    .addItem("🛠️ تهيئة أعمدة الجدول (Setup Headers)", "setupHeaders")
+    .addItem("تهيئة أعمدة الجدول (Setup Headers)", "setupHeaders")
     .addToUi();
 }
 
@@ -52,7 +52,7 @@ function setupHeaders() {
     .setFontColor("#ffffff")
     .setFontWeight("bold");
     
-  SpreadsheetApp.getUi().alert("✅ تم ضبط رؤوس الأعمدة بنجاح!");
+  SpreadsheetApp.getUi().alert("تم ضبط رؤوس الأعمدة بنجاح!");
 }
 
 /**
@@ -72,7 +72,7 @@ function createNewLicensePrompt() {
 
   const orgName = response.getResponseText().trim();
   if (!orgName) {
-    ui.alert("⚠️ يرجى إدخال اسم الشركة!");
+    ui.alert("يرجى إدخال اسم الشركة!");
     return;
   }
 
@@ -118,7 +118,7 @@ function createNewLicensePrompt() {
   sheet.appendRow(newRow);
 
   ui.alert(
-    "🎉 تم إنشاء الترخيص بنجاح!\n\n" +
+    "تم إنشاء الترخيص بنجاح!\n\n" +
     "اسم العميل: " + orgName + "\n" +
     "رقم العقدة: " + nodeId + "\n" +
     "كود الترخيص: " + licenseKey + "\n" +
@@ -276,7 +276,7 @@ function doPost(e) {
 }
 
 function doGet(e) {
-  return ContentService.createTextOutput("FastFree Licensing Plane is LIVE ✅");
+  return ContentService.createTextOutput("FastFree Licensing Plane is LIVE");
 }
 
 function jsonResponse(obj) {

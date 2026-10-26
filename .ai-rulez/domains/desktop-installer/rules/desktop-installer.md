@@ -31,3 +31,9 @@ When working within `apps/fastfree_installer`:
    - Application updates must use native Rust `tauri_plugin_updater::UpdaterExt` rather than JavaScript Web APIs.
    - Mandatory update gate locks wizard progress when a required version is pending.
    - Real VM status is queried live via Hyper-V PowerShell commands.
+
+6. **Multi-Agent Verification Mandate (Herdr + OpenCode)**:
+   - For all architectural, security, or release validations of `apps/fastfree_installer`, the active AI agent MUST orchestrate an independent verification loop via Herdr MCP and OpenCode (`herdr-review-loop`).
+   - The primary agent spins up Herdr (`herdr server` / `herdr_status`) and opens an OpenCode reviewer session via `herdr_open_agent(name="opencode-reviewer", ...)`.
+   - OpenCode independently inspects code changes, runs build checks (`vue-tsc`, `vite build`, `cargo check`), audits Windows 11 Fluent 2 compliance, and provides an objective sign-off (`VERDICT: APPROVE`).
+   - No release or installer finalization is accepted without this dual-agent Herdr + OpenCode audit.
