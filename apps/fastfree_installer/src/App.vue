@@ -56,6 +56,35 @@
       </div>
     </header>
 
+    <!-- Floating Live Auto-Update Alert Banner -->
+    <transition name="slide-down">
+      <div v-if="updateAvailable" class="update-banner">
+        <div class="update-info">
+          <span class="update-pulse-icon">🚀</span>
+          <div class="update-texts">
+            <span class="update-head">{{ isRtl ? 'تحديث سيادي جديد متوفر!' : 'Sovereign Update Available!' }}</span>
+            <span class="update-tag">v{{ updateVersion }}</span>
+            <span class="update-desc">{{ isRtl ? 'تم إصدار تحسينات أداء وتأمين جديدة وجاهزة للتثبيت المباشر.' : 'Performance & security updates ready to install.' }}</span>
+          </div>
+        </div>
+
+        <div class="update-actions">
+          <div v-if="isDownloadingUpdate" class="progress-box">
+            <div class="progress-bar-fill" :style="{ width: `${downloadProgress}%` }"></div>
+            <span class="progress-pct">{{ downloadProgress }}%</span>
+          </div>
+          <button
+            v-else
+            class="btn-install-update"
+            @click="installPendingUpdate"
+          >
+            ⚡ {{ isRtl ? 'تثبيت التحديث وإعادة التشغيل' : 'Update & Restart' }}
+          </button>
+          <button v-if="!isDownloadingUpdate" class="btn-dismiss-update" @click="updateAvailable = false">✕</button>
+        </div>
+      </div>
+    </transition>
+
     <!-- Top Step Progress Navigation -->
     <StepProgress />
 
@@ -97,6 +126,14 @@ import {
 import { useI18n } from './composables/useI18n';
 import { useTheme } from './composables/useTheme';
 import { useDiagnostics } from './composables/useDiagnostics';
+import {
+  checkForUpdates,
+  updateAvailable,
+  updateVersion,
+  isDownloadingUpdate,
+  downloadProgress,
+  installPendingUpdate,
+} from './composables/useAutoUpdater';
 
 const { t, locale, isRtl, toggleLocale, setLocale } = useI18n();
 const { theme, cycleTheme, availableThemes } = useTheme();
@@ -131,6 +168,11 @@ onMounted(async () => {
   }
 
   logInfo('App', `Installer application loaded in ${locale.value.toUpperCase()} mode.`);
+
+  // Proactively check for sovereign updates in background
+  setTimeout(() => {
+    checkForUpdates(true);
+  }, 2500);
 
   window.addEventListener('keydown', (e) => {
     if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'i') || (e.ctrlKey && e.key.toLowerCase() === 'r')) {
@@ -484,5 +526,135 @@ body, html {
 
 .is-rtl .fade-slide-leave-to {
   transform: translateX(12px);
+}
+
+/* Auto-Update Floating Banner */
+.update-banner {
+  background: linear-gradient(90deg, #1E1B4B 0%, #172554 100%);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.4);
+  padding: 8px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  z-index: 40;
+}
+
+.update-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.update-pulse-icon {
+  font-size: 18px;
+  animation: pulse-icon 2s infinite ease-in-out;
+}
+
+@keyframes pulse-icon {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.update-texts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.update-head {
+  font-size: 12px;
+  font-weight: 700;
+  color: #38BDF8;
+}
+
+.update-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: #1976D2;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.update-desc {
+  font-size: 11px;
+  color: #94A3B8;
+}
+
+.update-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-install-update {
+  background: #10B981;
+  color: #FFFFFF;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-install-update:hover {
+  background: #059669;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+.btn-dismiss-update {
+  background: none;
+  border: none;
+  color: #64748B;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 12px;
+}
+
+.btn-dismiss-update:hover {
+  color: #F8FAFC;
+}
+
+.progress-box {
+  width: 140px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-bar-fill {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  bottom: 0;
+  background: #10B981;
+  transition: width 0.2s ease;
+}
+
+.progress-pct {
+  position: relative;
+  font-size: 10px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.25s ease-out;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-100%);
 }
 </style>

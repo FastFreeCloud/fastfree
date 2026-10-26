@@ -173,9 +173,15 @@
 
     <!-- Master Action Bar (No Back Button; Locked Post-Provisioning) -->
     <div class="action-bar">
-      <button class="btn btn-secondary" @click="handleMinimizeToTray">
-        📥 {{ t('launchpad.minimizeToTray') }}
-      </button>
+      <div class="action-left">
+        <button class="btn btn-secondary" @click="handleMinimizeToTray">
+          📥 {{ t('launchpad.minimizeToTray') }}
+        </button>
+        <button class="btn btn-secondary" :disabled="isCheckingUpdate" @click="handleManualCheckUpdate">
+          <span v-if="isCheckingUpdate" class="spinner-tiny"></span>
+          <span v-else>🔄 {{ isRtl ? 'فحص التحديثات' : 'Check Updates' }}</span>
+        </button>
+      </div>
       <button class="btn btn-primary btn-portal" @click="launchPortal">
         🚀 {{ t('launchpad.openErpPortal') }}
       </button>
@@ -198,12 +204,25 @@ import {
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
 import { logInfo, logError, logSuccess } from '../composables/useDiagnostics';
+import { checkForUpdates, isCheckingUpdate } from '../composables/useAutoUpdater';
 
 const { t, isRtl } = useI18n();
 
 const copiedText = ref<string | null>(null);
 const vmActionBusy = ref(false);
 const actionNotice = ref('');
+
+async function handleManualCheckUpdate() {
+  const hasUpdate = await checkForUpdates(false);
+  if (!hasUpdate) {
+    actionNotice.value = isRtl.value
+      ? 'أنت تستخدم أحدث إصدار معتمد من فاست فري ✅'
+      : 'FastFree Sovereign Companion is fully up to date ✅';
+    setTimeout(() => {
+      actionNotice.value = '';
+    }, 4000);
+  }
+}
 
 onMounted(() => {
   // Store persistent provisioning flag to keep user on Launchpad on any future launch
@@ -656,6 +675,12 @@ async function handleMinimizeToTray() {
   justify-content: space-between;
   align-items: center;
   border-top: 1px solid var(--border-color, #27272A);
+}
+
+.action-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .btn {
