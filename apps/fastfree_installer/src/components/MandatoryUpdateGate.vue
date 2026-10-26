@@ -1,7 +1,9 @@
 <template>
   <div class="mandatory-update-container" :class="{ 'is-rtl': isRtl }">
     <div class="mandatory-card">
-      <div class="mandatory-icon-badge">⚡</div>
+      <div class="mandatory-icon-badge">
+        <img src="/logo.svg" class="gate-logo" alt="FastFree" />
+      </div>
       
       <div class="mandatory-header">
         <div class="mandatory-badge-tag">
@@ -56,7 +58,14 @@
           @click="installPendingUpdate"
         >
           <span v-if="isDownloadingUpdate" class="spinner-tiny"></span>
-          <span v-else>⚡ {{ isRtl ? 'تثبيت التحديث الآن وإعادة التشغيل' : 'Install Update & Restart Now' }}</span>
+          <span v-else class="btn-inner">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>{{ isRtl ? 'تثبيت التحديث الآن وإعادة التشغيل' : 'Install Update & Restart Now' }}</span>
+          </span>
         </button>
         <button
           v-if="manualDownloadUrl"
@@ -120,16 +129,33 @@ const { isRtl } = useI18n();
 }
 
 .mandatory-icon-badge {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(239, 68, 68, 0.2));
-  border: 1px solid rgba(245, 158, 11, 0.4);
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  color: #F59E0B;
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+}
+
+.gate-logo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 240, 255, 0.5));
+}
+
+.btn-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-svg {
+  width: 16px;
+  height: 16px;
 }
 
 .mandatory-header h2 {

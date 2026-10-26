@@ -61,16 +61,16 @@ pub fn run() {
             InstallerLogger::info("BOOT", "Tauri core setup phase completed.");
 
             // Build Elegant Context Menu for System Tray Companion (Near Windows Clock)
-            let title_item = MenuItem::with_id(app, "title_item", "⚡ FastFree Node Companion", false, None::<&str>)?;
+            let title_item = MenuItem::with_id(app, "title_item", "FastFree Node Companion", false, None::<&str>)?;
             let sep1 = PredefinedMenuItem::separator(app)?;
             let open_portal = MenuItem::with_id(app, "open_portal", "🌐 دخول بوابة ERP (Open Portal)", true, None::<&str>)?;
             let show_window = MenuItem::with_id(app, "show_window", "💻 فتح لوحة التحكم (Control Center)", true, None::<&str>)?;
             let sep2 = PredefinedMenuItem::separator(app)?;
-            let start_vm = MenuItem::with_id(app, "start_vm", "▶️ تشغيل العقدة (Start VM)", true, None::<&str>)?;
+            let start_vm = MenuItem::with_id(app, "start_vm", "▶ تشغيل العقدة (Start VM)", true, None::<&str>)?;
             let restart_vm = MenuItem::with_id(app, "restart_vm", "🔄 إعادة تشغيل العقدة (Restart VM)", true, None::<&str>)?;
-            let stop_vm = MenuItem::with_id(app, "stop_vm", "⏹️ إيقاف مؤقت (Stop VM)", true, None::<&str>)?;
+            let stop_vm = MenuItem::with_id(app, "stop_vm", "⏹ إيقاف مؤقت (Stop VM)", true, None::<&str>)?;
             let sep3 = PredefinedMenuItem::separator(app)?;
-            let check_updates = MenuItem::with_id(app, "check_updates", "⚡ فحص وتثبيت التحديثات (Check Updates)", true, None::<&str>)?;
+            let check_updates = MenuItem::with_id(app, "check_updates", "🔄 فحص وتثبيت التحديثات (Check Updates)", true, None::<&str>)?;
             let sep4 = PredefinedMenuItem::separator(app)?;
             let exit_app = MenuItem::with_id(app, "exit_app", "✕ إغلاق التطبيق نهائياً (Exit)", true, None::<&str>)?;
 

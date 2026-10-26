@@ -4,7 +4,7 @@
     <header data-tauri-drag-region class="titlebar">
       <div class="brand">
         <div class="brand-icon-wrap">
-          <span class="brand-icon">⚡</span>
+          <img src="/logo.svg" class="brand-logo-img" alt="FastFree" />
         </div>
         <div class="brand-text">
           <span class="title">{{ t('app.title') }}</span>
@@ -390,16 +390,17 @@ body, html {
 .brand-icon-wrap {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #1976D2, #38BDF8);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+  flex-shrink: 0;
 }
 
-.brand-icon {
-  font-size: 14px;
+.brand-logo-img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 240, 255, 0.45));
 }
 
 .brand-text {

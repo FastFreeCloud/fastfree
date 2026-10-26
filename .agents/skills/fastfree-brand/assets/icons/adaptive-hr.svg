@@ -66,7 +66,7 @@
     </defs>
   
   <!-- Centered strictly inside Android Adaptive Safe Viewport (center 216, 216) -->
-  <g transform="translate(216, 200) scale(0.68) translate(-256, -256)">
+  <g transform="translate(216, 216) scale(0.72) translate(-256, -256)">
     
   <g id="adapt-hr-infinity-mark" transform="translate(256, 256) scale(1) translate(-256, -256)" filter="url(#adapt-hr-drop-shadow)">
     <!-- Ambient Connection Circuit Lines behind mark -->
@@ -156,31 +156,7 @@
       <!-- 4-Point Sparkle Star -->
       <path d="M 256,234 Q 256,256 234,256 Q 256,256 256,278 Q 256,256 278,256 Q 256,256 256,234 Z" fill="#FFFFFF" />
     </g>
-
-    <!-- Apex Floating Hex Medallion (from Facebook Logo) -->
-    <g id="adapt-hr-apex-crest" transform="translate(256, 110) scale(0.65) translate(-256, -110)">
-      <polygon points="256,80 282,95 282,125 256,140 230,125 230,95"
-               fill="#1E293B" stroke="#94A3B8" stroke-width="2.5" />
-      <circle cx="256" cy="110" r="14" fill="none" stroke="#38BDF8" stroke-width="2" />
-      <path d="M 256,98 V 122 M 244,110 H 268" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" />
-    </g>
   </g>
   
-  </g>
-  <!-- Dedicated App Glyph centered below infinity nexus inside safe circle -->
-  <g transform="translate(216, 290) scale(0.85) translate(-256, -385)">
-    <circle cx="256" cy="385" r="28" fill="#030712" stroke="#0284C7" stroke-width="2.5" />
-    
-      <!-- Human Capital Keystone & Collaborative Talent Glyph -->
-      <g stroke="#C084FC" stroke-width="2" fill="none">
-        <circle cx="256" cy="374" r="8" fill="#38BDF8" stroke="none" />
-        <path d="M 240,404 C 240,392 248,388 256,388 C 264,388 272,392 272,404" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round" />
-        <!-- Flanking collaborative nodes -->
-        <circle cx="232" cy="382" r="5" fill="#C084FC" stroke="none" opacity="0.8" />
-        <path d="M 222,406 C 222,397 227,395 232,395" stroke="#C084FC" stroke-width="1.8" stroke-linecap="round" />
-        <circle cx="280" cy="382" r="5" fill="#C084FC" stroke="none" opacity="0.8" />
-        <path d="M 290,406 C 290,397 285,395 280,395" stroke="#C084FC" stroke-width="1.8" stroke-linecap="round" />
-      </g>
-    
   </g>
 </svg>

@@ -66,7 +66,7 @@
     </defs>
   
   <!-- Centered strictly inside Android Adaptive Safe Viewport (center 216, 216) -->
-  <g transform="translate(216, 200) scale(0.68) translate(-256, -256)">
+  <g transform="translate(216, 216) scale(0.72) translate(-256, -256)">
     
   <g id="adapt-pos-infinity-mark" transform="translate(256, 256) scale(1) translate(-256, -256)" filter="url(#adapt-pos-drop-shadow)">
     <!-- Ambient Connection Circuit Lines behind mark -->
@@ -156,35 +156,7 @@
       <!-- 4-Point Sparkle Star -->
       <path d="M 256,234 Q 256,256 234,256 Q 256,256 256,278 Q 256,256 278,256 Q 256,256 256,234 Z" fill="#FFFFFF" />
     </g>
-
-    <!-- Apex Floating Hex Medallion (from Facebook Logo) -->
-    <g id="adapt-pos-apex-crest" transform="translate(256, 110) scale(0.65) translate(-256, -110)">
-      <polygon points="256,80 282,95 282,125 256,140 230,125 230,95"
-               fill="#1E293B" stroke="#94A3B8" stroke-width="2.5" />
-      <circle cx="256" cy="110" r="14" fill="none" stroke="#38BDF8" stroke-width="2" />
-      <path d="M 256,98 V 122 M 244,110 H 268" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" />
-    </g>
   </g>
   
-  </g>
-  <!-- Dedicated App Glyph centered below infinity nexus inside safe circle -->
-  <g transform="translate(216, 290) scale(0.85) translate(-256, -385)">
-    <circle cx="256" cy="385" r="28" fill="#030712" stroke="#E11D48" stroke-width="2.5" />
-    
-      <!-- High-Speed Barcode Beam & Lightning Checkout Glyph -->
-      <g stroke="#FB7185" stroke-width="2" fill="none">
-        <line x1="228" y1="372" x2="228" y2="408" stroke-width="3" />
-        <line x1="235" y1="372" x2="235" y2="408" stroke-width="1.5" />
-        <line x1="240" y1="372" x2="240" y2="408" stroke-width="4" />
-        <line x1="248" y1="372" x2="248" y2="408" stroke-width="2" />
-        <line x1="255" y1="372" x2="255" y2="408" stroke-width="3.5" />
-        <line x1="263" y1="372" x2="263" y2="408" stroke-width="1" />
-        <line x1="270" y1="372" x2="270" y2="408" stroke-width="3" />
-        <line x1="277" y1="372" x2="277" y2="408" stroke-width="2" />
-        <line x1="284" y1="372" x2="284" y2="408" stroke-width="4" />
-        <!-- Red Laser Beam Scan Line -->
-        <line x1="220" y1="390" x2="292" y2="390" stroke="#FFE4E6" stroke-width="2.5" />
-      </g>
-    
   </g>
 </svg>
