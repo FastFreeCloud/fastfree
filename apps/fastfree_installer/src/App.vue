@@ -321,7 +321,7 @@ body, html {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Segoe UI Variable Text', 'Segoe UI Variable Display', 'IBM Plex Sans Arabic', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-app);
   color: var(--text-main);
   user-select: none;

@@ -38,6 +38,13 @@
         },
         {
           "kind": "rule",
+          "id": "multi-agent-orchestration",
+          "path": "rules/multi-agent-orchestration.md",
+          "bytes": 1186,
+          "tokens": 283
+        },
+        {
+          "kind": "rule",
           "id": "secure-secrets",
           "path": "rules/secure-secrets.md",
           "bytes": 623,
@@ -48,8 +55,8 @@
           "id": "desktop-installer",
           "domain": "desktop-installer",
           "path": "domains/desktop-installer/rules/desktop-installer.md",
-          "bytes": 1703,
-          "tokens": 415
+          "bytes": 2450,
+          "tokens": 590
         },
         {
           "kind": "rule",
@@ -256,13 +263,13 @@
         }
       ],
       "totals": {
-        "items": 27,
-        "bytes": 497746,
-        "tokens": 22230,
+        "items": 28,
+        "bytes": 499679,
+        "tokens": 22688,
         "by_kind": {
           "check": 2,
           "command": 4,
-          "rule": 4,
+          "rule": 5,
           "skill": 17
         },
         "served_skills": 3,
@@ -296,6 +303,13 @@
           "path": "rules/code-quality.md",
           "bytes": 380,
           "tokens": 88
+        },
+        {
+          "kind": "rule",
+          "id": "multi-agent-orchestration",
+          "path": "rules/multi-agent-orchestration.md",
+          "bytes": 1186,
+          "tokens": 283
         },
         {
           "kind": "rule",
@@ -438,13 +452,13 @@
         }
       ],
       "totals": {
-        "items": 18,
-        "bytes": 112846,
-        "tokens": 14000,
+        "items": 19,
+        "bytes": 114032,
+        "tokens": 14283,
         "by_kind": {
           "check": 1,
           "command": 1,
-          "rule": 3,
+          "rule": 4,
           "skill": 13
         },
         "served_skills": 0,
@@ -486,6 +500,13 @@
           "path": "rules/code-quality.md",
           "bytes": 380,
           "tokens": 88
+        },
+        {
+          "kind": "rule",
+          "id": "multi-agent-orchestration",
+          "path": "rules/multi-agent-orchestration.md",
+          "bytes": 1186,
+          "tokens": 283
         },
         {
           "kind": "rule",
@@ -709,13 +730,13 @@
         }
       ],
       "totals": {
-        "items": 27,
-        "bytes": 499182,
-        "tokens": 22586,
+        "items": 28,
+        "bytes": 500368,
+        "tokens": 22869,
         "by_kind": {
           "check": 2,
           "command": 3,
-          "rule": 4,
+          "rule": 5,
           "skill": 18
         },
         "served_skills": 3,
@@ -753,6 +774,13 @@
           "path": "rules/code-quality.md",
           "bytes": 380,
           "tokens": 88
+        },
+        {
+          "kind": "rule",
+          "id": "multi-agent-orchestration",
+          "path": "rules/multi-agent-orchestration.md",
+          "bytes": 1186,
+          "tokens": 283
         },
         {
           "kind": "rule",
@@ -958,13 +986,13 @@
         }
       ],
       "totals": {
-        "items": 25,
-        "bytes": 495762,
-        "tokens": 21752,
+        "items": 26,
+        "bytes": 496948,
+        "tokens": 22035,
         "by_kind": {
           "check": 2,
           "command": 3,
-          "rule": 3,
+          "rule": 4,
           "skill": 17
         },
         "served_skills": 3,
@@ -1006,6 +1034,13 @@
           "path": "rules/code-quality.md",
           "bytes": 380,
           "tokens": 88
+        },
+        {
+          "kind": "rule",
+          "id": "multi-agent-orchestration",
+          "path": "rules/multi-agent-orchestration.md",
+          "bytes": 1186,
+          "tokens": 283
         },
         {
           "kind": "rule",
@@ -1272,13 +1307,13 @@
         }
       ],
       "totals": {
-        "items": 32,
-        "bytes": 505807,
-        "tokens": 24369,
+        "items": 33,
+        "bytes": 506993,
+        "tokens": 24652,
         "by_kind": {
           "check": 3,
           "command": 4,
-          "rule": 5,
+          "rule": 6,
           "skill": 20
         },
         "served_skills": 0,

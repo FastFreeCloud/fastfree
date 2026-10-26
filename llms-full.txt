@@ -15,6 +15,23 @@ Follow these coding standards:
 - Keep functions small and focused (typically < 50 lines)
 - Handle errors explicitly, never silently
 
+## Multi-Agent Orchestration with Herdr & OpenCode
+
+Source: .ai-rulez/rules/multi-agent-orchestration.md
+
+### Multi-Agent Orchestration with Herdr & OpenCode
+
+FastFree is designed to run in a collaborative multi-agent ecosystem:
+
+1. **Herdr Workspace Requirement**:
+   - The Herdr terminal workspace manager (`herdr server`) connects AI agents across parallel panes and worktrees.
+   - Any AI assistant acting on major subsystem completions, core packages, or release testing MUST utilize Herdr MCP tools (`herdr_status`, `herdr_open_agent`, `herdr_agent_prompt`, `herdr_agent_read`, `herdr_agent_wait`).
+
+2. **OpenCode Independent Reviewer Invariant**:
+   - Critical milestones (such as finalizing the Desktop Installer, OS deployment profiles, or lowcode runtime invariants) must not rely solely on a single agent's self-assessment.
+   - The primary agent (e.g. Antigravity) acts as **Writer / Implementer**, and MUST launch **OpenCode** via Herdr (`herdr-review-loop`) as an independent **Reviewer**.
+   - The reviewer evaluates code on disk without confirmation bias and returns `VERDICT: APPROVE` or `CHANGES NEEDED`.
+
 ## Zero Plaintext Secrets Policy
 
 Source: .ai-rulez/rules/secure-secrets.md
@@ -55,6 +72,12 @@ When working within `apps/fastfree_installer`:
    - Application updates must use native Rust `tauri_plugin_updater::UpdaterExt` rather than JavaScript Web APIs.
    - Mandatory update gate locks wizard progress when a required version is pending.
    - Real VM status is queried live via Hyper-V PowerShell commands.
+
+6. **Multi-Agent Verification Mandate (Herdr + OpenCode)**:
+   - For all architectural, security, or release validations of `apps/fastfree_installer`, the active AI agent MUST orchestrate an independent verification loop via Herdr MCP and OpenCode (`herdr-review-loop`).
+   - The primary agent spins up Herdr (`herdr server` / `herdr_status`) and opens an OpenCode reviewer session via `herdr_open_agent(name="opencode-reviewer", ...)`.
+   - OpenCode independently inspects code changes, runs build checks (`vue-tsc`, `vite build`, `cargo check`), audits Windows 11 Fluent 2 compliance, and provides an objective sign-off (`VERDICT: APPROVE`).
+   - No release or installer finalization is accepted without this dual-agent Herdr + OpenCode audit.
 
 ## FastFree ERP Domain Invariants
 
