@@ -27,25 +27,42 @@
           <span v-else-if="totalWarnings > 0" class="mini-pill pill-warn">{{ totalWarnings }}</span>
         </button>
 
-        <!-- Theme Mode Switcher -->
+        <!-- Professional Theme Icon Button -->
         <button
-          class="tool-btn theme-btn"
-          :title="`${t('app.themeToggle')}: ${currentThemeOption?.name}`"
+          class="tool-btn icon-btn theme-btn"
+          :title="isRtl ? 'تبديل المظهر' : 'Toggle Theme'"
           @click="cycleTheme"
         >
-          <span class="tool-icon">{{ currentThemeOption?.icon || '🌓' }}</span>
-          <span class="theme-label">{{ isRtl ? currentThemeOption?.nameAr : currentThemeOption?.name }}</span>
+          <!-- Sun icon when dark -->
+          <svg v-if="theme !== 'light'" class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <!-- Moon icon when light -->
+          <svg v-else class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
         </button>
 
-        <!-- Bilingual Language Toggle -->
+        <!-- Professional Language Icon Button -->
         <button
-          class="tool-btn lang-btn"
-          :title="t('app.langToggle')"
+          class="tool-btn icon-btn lang-btn"
+          :title="locale === 'ar' ? 'Switch to English' : 'التحويل إلى العربية'"
           @click="toggleLocale"
         >
-          <span class="lang-tag" :class="{ active: locale === 'ar' }">عربي</span>
-          <span class="lang-sep">|</span>
-          <span class="lang-tag" :class="{ active: locale === 'en' }">EN</span>
+          <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="lang-code">{{ locale === 'ar' ? 'EN' : 'ع' }}</span>
         </button>
       </div>
 
@@ -62,7 +79,7 @@
         <div class="update-info">
           <span class="update-pulse-icon">🚀</span>
           <div class="update-texts">
-            <span class="update-head">{{ isRtl ? 'تحديث سيادي جديد متوفر!' : 'Sovereign Update Available!' }}</span>
+            <span class="update-head">{{ isRtl ? 'تحديث جديد متوفر!' : 'New Update Available!' }}</span>
             <span class="update-tag">v{{ updateVersion }}</span>
             <span class="update-desc">{{ isRtl ? 'تم إصدار تحسينات أداء وتأمين جديدة وجاهزة للتثبيت المباشر.' : 'Performance & security updates ready to install.' }}</span>
           </div>
@@ -106,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import StepProgress from './components/StepProgress.vue';
 import HostDiscovery from './components/HostDiscovery.vue';
@@ -136,12 +153,8 @@ import {
 } from './composables/useAutoUpdater';
 
 const { t, locale, isRtl, toggleLocale, setLocale } = useI18n();
-const { theme, cycleTheme, availableThemes } = useTheme();
+const { theme, cycleTheme } = useTheme();
 const { isDiagnosticOpen, totalErrors, totalWarnings, logInfo } = useDiagnostics();
-
-const currentThemeOption = computed(() => {
-  return availableThemes.find(t => t.id === theme.value) || availableThemes[0];
-});
 
 const appWindow = getCurrentWindow();
 
@@ -161,7 +174,7 @@ onMounted(async () => {
     const isProvisioned = localStorage.getItem('fastfree_provisioned') === 'true';
     if (isProvisioned) {
       currentStep.value = 6;
-      logInfo('App', 'Appliance is already provisioned; opening directly in Sovereign Control Center mode.');
+      logInfo('App', 'Appliance is already provisioned; opening directly in Control Center mode.');
     }
   } catch {
     // ignore
@@ -169,7 +182,7 @@ onMounted(async () => {
 
   logInfo('App', `Installer application loaded in ${locale.value.toUpperCase()} mode.`);
 
-  // Proactively check for sovereign updates in background
+  // Proactively check for updates in background
   setTimeout(() => {
     checkForUpdates(true);
   }, 2500);
@@ -213,7 +226,7 @@ async function closeWindow() {
 }
 
 :root {
-  /* Default: sovereign-dark */
+  /* Default: dark */
   --bg-app: #0B1120;
   --bg-card: #151F32;
   --bg-sub: #0F172A;
@@ -439,25 +452,40 @@ body, html {
   color: #FFFFFF;
 }
 
-.lang-btn {
-  font-family: inherit;
-  padding: 0 10px;
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  position: relative;
 }
 
-.lang-tag {
-  opacity: 0.6;
-  transition: opacity 0.15s ease;
+.tool-svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.lang-tag.active {
-  opacity: 1;
+.icon-btn:hover .tool-svg {
+  transform: scale(1.12) rotate(8deg);
+}
+
+.lang-code {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 8.5px;
+  font-weight: 800;
   color: var(--accent-sky);
-  font-weight: 700;
-}
-
-.lang-sep {
-  opacity: 0.3;
-  margin: 0 3px;
+  line-height: 1;
+  background: var(--bg-card);
+  padding: 1px 2px;
+  border-radius: 3px;
+  border: 1px solid rgba(56, 189, 248, 0.4);
 }
 
 .window-controls {

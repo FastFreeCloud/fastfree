@@ -20,8 +20,8 @@ export const diagnosticLogs = ref<DiagnosticEntry[]>([
     timeFormatted: new Date().toLocaleTimeString(),
     level: 'info',
     source: 'Installer',
-    message: 'FastFree Sovereign Companion booted (v26.05).',
-    details: 'Runtime target: Windows x86_64 Hyper-V Sovereign Core Engine v26.05',
+    message: 'FastFree Node Companion booted (v26.05).',
+    details: 'Runtime target: Windows x86_64 Hyper-V Core Engine v26.05',
   },
 ]);
 
@@ -77,7 +77,7 @@ export const totalWarnings = computed(() => {
 });
 
 export function exportLogsText(): string {
-  const header = `FastFree Sovereign Node Installer - Diagnostic Forensic Log\nGenerated: ${new Date().toISOString()}\n======================================================\n\n`;
+  const header = `FastFree Node Installer - Diagnostic Forensic Log\nGenerated: ${new Date().toISOString()}\n======================================================\n\n`;
   const entries = diagnosticLogs.value
     .map(
       l =>

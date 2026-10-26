@@ -130,7 +130,7 @@ impl LicensingManager {
 
         let fallback = std::env::var("COMPUTERNAME")
             .or_else(|_| std::env::var("HOSTNAME"))
-            .unwrap_or_else(|_| "FASTFREE-SOVEREIGN-NODE".to_string());
+            .unwrap_or_else(|_| "FASTFREE-ENTERPRISE-NODE".to_string());
         InstallerLogger::warn(
             "HWID_PROBE",
             &format!("Hardware GUID probe fell back to system hostname: {}", fallback),
@@ -351,12 +351,12 @@ impl LicensingManager {
                         let tier_name = lic
                             .tier_name
                             .clone()
-                            .unwrap_or_else(|| format!("FastFree Sovereign Node License ({})", node_id));
+                            .unwrap_or_else(|| format!("FastFree Node License ({})", node_id));
 
                         let org_name = lic
                             .organization
                             .clone()
-                            .unwrap_or_else(|| format!("Sovereign Enterprise Org - {}", node_id));
+                            .unwrap_or_else(|| format!("Enterprise Client - {}", node_id));
 
                         let expires_at = lic
                             .expires_at
@@ -407,7 +407,7 @@ impl LicensingManager {
                             eligible_clients: eligible,
                             unlocked_features: Self::get_standard_features(),
                             message: format!(
-                                "Google Sheets Control Plane: Sovereign Node {} bound and validated{}.",
+                                "Google Sheets Control Plane: Node {} bound and validated{}.",
                                 node_id,
                                 token_preview
                             ),
@@ -496,10 +496,10 @@ impl LicensingManager {
                         ));
                     }
 
-                    // Fallback gracefully to offline sovereign pattern only upon network outage
+                    // Fallback gracefully to offline pattern only upon network outage
                     if let Ok(mut offline_result) = Self::verify_offline_pattern(&clean_key) {
                         offline_result.message = format!(
-                            "{} (Network unreachable [{}] - Sovereign Offline Fallback Active - HWID: {})",
+                            "{} (Network unreachable [{}] - Offline Fallback Active - HWID: {})",
                             offline_result.message,
                             net_err,
                             hwid
@@ -520,7 +520,7 @@ impl LicensingManager {
                         Self::save_license_cache(app, &cached);
                         InstallerLogger::warn(
                             "LICENSING",
-                            &format!("Network outage fallback active for offline sovereign pattern: {}", clean_key),
+                            &format!("Network outage fallback active for offline pattern: {}", clean_key),
                         );
                         return Ok(offline_result);
                     }
@@ -542,7 +542,7 @@ impl LicensingManager {
         }
 
         // 3. Fallback to local cryptographic / pattern offline validation
-        InstallerLogger::info("LICENSING", "Validating sovereign key pattern (Offline Mode).");
+        InstallerLogger::info("LICENSING", "Validating key pattern (Offline Mode).");
         let mut offline_result = Self::verify_offline_pattern(&clean_key)?;
         offline_result.message = format!(
             "{} (Local offline validation active - HWID: {})",
@@ -583,7 +583,7 @@ impl LicensingManager {
         }
     }
 
-    /// Offline Sovereign Pattern Validation Fallback
+    /// Offline Pattern Validation Fallback
     pub fn verify_offline_pattern(clean_key: &str) -> Result<LicenseVerificationResult, String> {
         if clean_key.starts_with("FF-CL") {
             let node_num: String = clean_key
@@ -600,15 +600,15 @@ impl LicensingManager {
                 is_valid: true,
                 key: clean_key.to_string(),
                 tier: "enterprise".to_string(),
-                tier_name: format!("FastFree Sovereign Node License ({})", target_node),
-                company_name: format!("Sovereign Enterprise Org - {}", target_node),
+                tier_name: format!("FastFree Node License ({})", target_node),
+                company_name: format!("Enterprise Client - {}", target_node),
                 expires_at: Some("2028-12-31T23:59:59Z".to_string()),
                 max_users: 50,
                 max_nodes: 10,
                 eligible_clients: eligible,
                 unlocked_features: Self::get_standard_features(),
                 message: format!(
-                    "Google Sheets Control Plane: Sovereign Node {} offline fallback validated.",
+                    "Google Sheets Control Plane: Node {} offline fallback validated.",
                     target_node
                 ),
             });
@@ -616,21 +616,20 @@ impl LicensingManager {
 
         if clean_key.starts_with("FF-ENT")
             || clean_key.contains("ENTERPRISE")
-            || clean_key.contains("SOVEREIGN")
         {
             let eligible = (2..=11).map(|n| format!("client{}", n)).collect();
             return Ok(LicenseVerificationResult {
                 is_valid: true,
                 key: clean_key.to_string(),
                 tier: "enterprise".to_string(),
-                tier_name: "FastFree Sovereign Enterprise".to_string(),
-                company_name: "FastFree Sovereign Client Org".to_string(),
+                tier_name: "FastFree Enterprise".to_string(),
+                company_name: "FastFree Enterprise Client".to_string(),
                 expires_at: Some("2028-12-31T23:59:59Z".to_string()),
                 max_users: 10000,
                 max_nodes: 10,
                 eligible_clients: eligible,
                 unlocked_features: Self::get_standard_features(),
-                message: "Enterprise Sovereign License verified successfully (Offline Validation).".to_string(),
+                message: "Enterprise License verified successfully (Offline Validation).".to_string(),
             });
         }
 

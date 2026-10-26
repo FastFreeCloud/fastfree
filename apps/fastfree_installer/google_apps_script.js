@@ -1,5 +1,5 @@
 /**
- * FastFree Sovereign Cloud Licensing Plane (Google Apps Script)
+ * FastFree Cloud Licensing Plane (Google Apps Script)
  * Sheet ID: 1WM3vVved271m8ZrTbivM5s38xSZF5NzxjpsWNb2SfH8
  * Tab Name: Licenses
  */
@@ -249,7 +249,7 @@ function doPost(e) {
 
     // 6. نجاح التفعيل وإرجاع البيانات للعقدة
     const nodeId = colNode !== -1 ? String(rowData[colNode] || "client2") : "client2";
-    const orgName = colOrg !== -1 ? String(rowData[colOrg] || "Sovereign Client") : "Sovereign Client";
+    const orgName = colOrg !== -1 ? String(rowData[colOrg] || "Enterprise Client") : "Enterprise Client";
     const tier = colTier !== -1 ? String(rowData[colTier] || "enterprise") : "enterprise";
 
     return jsonResponse({
@@ -276,7 +276,7 @@ function doPost(e) {
 }
 
 function doGet(e) {
-  return ContentService.createTextOutput("FastFree Sovereign Licensing Plane is LIVE ✅");
+  return ContentService.createTextOutput("FastFree Licensing Plane is LIVE ✅");
 }
 
 function jsonResponse(obj) {

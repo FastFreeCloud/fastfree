@@ -79,7 +79,7 @@
           <span class="banner-icon">⚡</span>
           <div class="banner-desc">
             <strong>{{ isRtl ? 'محرك Hyper-V غير مفعّل على هذا النظام حالياً' : 'Hyper-V is not active on this Windows machine' }}</strong>
-            <p>{{ isRtl ? 'لتشغيل العقدة السيادية، يجب تفعيل ميزة Hyper-V في ويندوز. يمكنك تثبيتها وتفعيلها الآن بنقرة واحدة.' : 'Sovereign node requires Hyper-V feature. Click below to install and enable it automatically.' }}</p>
+            <p>{{ isRtl ? 'لتشغيل العقدة، يجب تفعيل ميزة Hyper-V في ويندوز. يمكنك تثبيتها وتفعيلها الآن بنقرة واحدة.' : 'FastFree node requires Hyper-V feature. Click below to install and enable it automatically.' }}</p>
           </div>
         </div>
         <button class="btn btn-hyperv-act" :disabled="isEnablingHyperV" @click="handleEnableHyperV">

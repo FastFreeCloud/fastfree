@@ -4,7 +4,7 @@
     <div class="header-box">
       <div class="step-tag-live">
         <span class="live-dot-pulse"></span>
-        <span>{{ isRtl ? 'لوحة التحكم السيادية للعقدة — Hyper-V' : 'FastFree Sovereign Node Control Center — Hyper-V' }}</span>
+        <span>{{ isRtl ? 'لوحة التحكم للعقدة — Hyper-V' : 'FastFree Node Control Center — Hyper-V' }}</span>
       </div>
       <h2>{{ t('launchpad.title') }}</h2>
       <p class="subtitle">{{ t('launchpad.subtitle') }}</p>
@@ -23,7 +23,7 @@
             </span>
           </div>
           <p class="node-sub-text">
-            {{ isRtl ? 'تم اكتمال نشر وتثبيت البيئة السيادية بنجاح. تعمل الآلة الافتراضية بنظام NixOS Clan 26.05 مع اتصال دائم بشبكة واير جارد.' : 'Sovereign appliance deployed and running smoothly on NixOS Clan 26.05 with persistent WireGuard mesh tunnel.' }}
+            {{ isRtl ? 'تم اكتمال نشر وتثبيت البيئة بنجاح. تعمل الآلة الافتراضية بنظام NixOS Clan 26.05 مع اتصال دائم بشبكة واير جارد.' : 'Appliance deployed and running smoothly on NixOS Clan 26.05 with persistent WireGuard mesh tunnel.' }}
           </p>
         </div>
       </div>
@@ -38,7 +38,7 @@
           </div>
           <div class="spec-item">
             <span class="spec-k">{{ isRtl ? 'المنشأة:' : 'Entity:' }}</span>
-            <span class="spec-v font-bold">{{ licenseState?.company_name || 'Enterprise Sovereign Client' }}</span>
+            <span class="spec-v font-bold">{{ licenseState?.company_name || 'Enterprise Client' }}</span>
           </div>
           <div class="spec-item">
             <span class="spec-k">{{ isRtl ? 'الفئة:' : 'Tier:' }}</span>
@@ -131,13 +131,13 @@
         <div class="comp-title-row">
           <div class="comp-title">
             <span class="comp-icon">⚙️</span>
-            <span>{{ isRtl ? 'إدارة وتحكم الآلة الافتراضية (Hyper-V Power)' : 'Hyper-V Sovereign VM Power Management' }}</span>
+            <span>{{ isRtl ? 'إدارة وتحكم الآلة الافتراضية (Hyper-V Power)' : 'Hyper-V VM Power Management' }}</span>
           </div>
           <div class="vm-power-controls">
             <button
               class="btn-vm-action btn-start"
               :disabled="vmActionBusy"
-              title="Start Sovereign VM"
+              title="Start VM"
               @click="handleVmAction('start')"
             >
               ▶ {{ isRtl ? 'تشغيل' : 'Start' }}
@@ -217,7 +217,7 @@ async function handleManualCheckUpdate() {
   if (!hasUpdate) {
     actionNotice.value = isRtl.value
       ? 'أنت تستخدم أحدث إصدار معتمد من فاست فري ✅'
-      : 'FastFree Sovereign Companion is fully up to date ✅';
+      : 'FastFree Companion is fully up to date ✅';
     setTimeout(() => {
       actionNotice.value = '';
     }, 4000);
@@ -261,7 +261,7 @@ async function handleVmAction(action: 'start' | 'stop' | 'restart') {
   actionNotice.value = action === 'restart'
     ? t('launchpad.vmRestarting', { client: selectedClientId.value })
     : action === 'start'
-    ? (isRtl.value ? `جارٍ بدء تشغيل العقدة السيادية ${selectedClientId.value}...` : `Starting sovereign VM ${selectedClientId.value}...`)
+    ? (isRtl.value ? `جارٍ بدء تشغيل العقدة ${selectedClientId.value}...` : `Starting VM ${selectedClientId.value}...`)
     : t('launchpad.vmStopping', { client: selectedClientId.value });
 
   try {

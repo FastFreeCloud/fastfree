@@ -106,7 +106,7 @@ impl InstallerLogger {
 
         let mut bundle = String::new();
         bundle.push_str("================================================================================\n");
-        bundle.push_str(" FASTFREE SOVEREIGN NODE - FORENSIC DIAGNOSTIC BUNDLE\n");
+        bundle.push_str(" FASTFREE ENTERPRISE NODE - FORENSIC DIAGNOSTIC BUNDLE\n");
         bundle.push_str("================================================================================\n");
         bundle.push_str(&format!("Generated At: {}\n", Self::get_timestamp()));
         bundle.push_str(&format!("Target Host Architecture: {} / {}\n", std::env::consts::OS, std::env::consts::ARCH));

@@ -180,7 +180,7 @@ async function runProvisioning() {
     currentPhaseText.value = 'Orchestrating Windows Hyper-V Appliance...';
     await addLog('Invoking Windows Hyper-V engine & PowerShell orchestration...');
     const realLogs = await invoke<Array<{ step: number; phase: string; message: string; success: boolean }>>(
-      'provision_sovereign_node',
+      'provision_node',
       {
         clientId: selectedClientId.value,
         cores: assignedCpuCores.value,

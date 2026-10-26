@@ -23,7 +23,7 @@
             :key="client"
             :value="client"
           >
-            {{ client }} (FastFree Sovereign Appliance Node — Hyper-V)
+            {{ client }} (FastFree Appliance Node — Hyper-V)
           </option>
         </select>
         <p class="hint-text" v-html="t('sizing.clientHint')"></p>
@@ -111,7 +111,7 @@
         <div class="summary-item">
           <span class="sum-label">{{ t('sizing.workloadClass') }}</span>
           <span class="sum-val text-accent">
-            {{ assignedRamMb >= 8192 ? t('sizing.prodErp') : t('sizing.stdSovereign') }}
+            {{ assignedRamMb >= 8192 ? t('sizing.prodErp') : t('sizing.stdEnterprise') }}
           </span>
         </div>
         <div class="summary-item">

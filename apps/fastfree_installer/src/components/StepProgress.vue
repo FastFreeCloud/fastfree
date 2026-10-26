@@ -27,7 +27,7 @@
   <div v-else class="appliance-status-bar" :class="{ 'is-rtl': isRtl }">
     <div class="status-left">
       <span class="pulse-live-dot"></span>
-      <span class="status-title">{{ isRtl ? 'بيئة العقدة السيادية تعمل بنجاح' : 'FastFree Sovereign Node Appliance — Fully Operational' }}</span>
+      <span class="status-title">{{ isRtl ? 'بيئة العقدة تعمل بنجاح' : 'FastFree Node Appliance — Fully Operational' }}</span>
       <span class="appliance-tag">Hyper-V Gen 2</span>
     </div>
     <div class="status-right">

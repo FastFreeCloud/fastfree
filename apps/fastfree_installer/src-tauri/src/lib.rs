@@ -15,7 +15,7 @@ use tauri::{
 pub fn run() {
     InstallerLogger::info(
         "BOOT",
-        "FastFree Sovereign Node Setup Companion initializing (v26.5.0)...",
+        "FastFree Node Setup Companion initializing (v26.5.0)...",
     );
     InstallerLogger::info(
         "BOOT",
@@ -63,9 +63,9 @@ pub fn run() {
             // Build Context Menu for System Tray Companion
             let open_portal = MenuItem::with_id(app, "open_portal", "Open FastFree ERP Portal 🌐", true, None::<&str>)?;
             let show_window = MenuItem::with_id(app, "show_window", "Open Setup Companion 🖥️", true, None::<&str>)?;
-            let start_vm = MenuItem::with_id(app, "start_vm", "Start Sovereign VM (Hyper-V) ▶", true, None::<&str>)?;
-            let restart_vm = MenuItem::with_id(app, "restart_vm", "Restart Sovereign VM 🔄", true, None::<&str>)?;
-            let stop_vm = MenuItem::with_id(app, "stop_vm", "Stop Sovereign VM ⏹", true, None::<&str>)?;
+            let start_vm = MenuItem::with_id(app, "start_vm", "Start FastFree VM (Hyper-V) ▶", true, None::<&str>)?;
+            let restart_vm = MenuItem::with_id(app, "restart_vm", "Restart FastFree VM 🔄", true, None::<&str>)?;
+            let stop_vm = MenuItem::with_id(app, "stop_vm", "Stop FastFree VM ⏹", true, None::<&str>)?;
             let check_updates = MenuItem::with_id(app, "check_updates", "Check for Updates ⬇", true, None::<&str>)?;
             let exit_app = MenuItem::with_id(app, "exit_app", "Exit FastFree ✕", true, None::<&str>)?;
 
@@ -84,7 +84,7 @@ pub fn run() {
 
             // Register System Tray Icon
             let _tray = TrayIconBuilder::with_id("fastfree-companion-tray")
-                .tooltip("FastFree Sovereign Node Companion")
+                .tooltip("FastFree Node Companion")
                 .icon(app.default_window_icon().cloned().expect("icon must be present"))
                 .menu(&tray_menu)
                 .show_menu_on_left_click(false)
@@ -178,7 +178,7 @@ pub fn run() {
             commands::check_admin_elevation,
             commands::read_clipboard_text,
             commands::install_hyperv_feature,
-            commands::provision_sovereign_node
+            commands::provision_node
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
