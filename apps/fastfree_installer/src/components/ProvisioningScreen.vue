@@ -183,9 +183,9 @@ async function runProvisioning() {
       'provision_node',
       {
         clientId: selectedClientId.value,
-        cores: assignedCpuCores.value,
-        ramMb: assignedRamMb.value,
-        targetDrive: targetDiskDrive.value,
+        cores: assignedCpuCores.value || 4,
+        ramMb: Math.round((assignedRamMb.value || 8192) / 1024) * 1024 || 8192,
+        targetDrive: targetDiskDrive.value || 'C:\\',
       }
     );
     for (const r of realLogs) {
