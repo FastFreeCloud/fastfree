@@ -66,10 +66,19 @@
         </button>
       </div>
 
-      <!-- Window Minimize / Close Controls -->
+      <!-- Native Windows Fluent Caption Buttons -->
       <div class="window-controls">
-        <button class="win-btn" :title="t('app.minimize')" @click="minimizeWindow">🗕</button>
-        <button class="win-btn close" :title="t('app.close')" @click="closeWindow">✕</button>
+        <button class="win-btn" :title="t('app.minimize')" @click="minimizeWindow">
+          <svg class="caption-svg" viewBox="0 0 10 10">
+            <line x1="0" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1" />
+          </svg>
+        </button>
+        <button class="win-btn close" :title="t('app.close')" @click="closeWindow">
+          <svg class="caption-svg" viewBox="0 0 10 10">
+            <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.1" />
+            <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.1" />
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -387,12 +396,14 @@ body, html {
 }
 
 .titlebar {
-  height: 44px;
+  height: 40px;
   background: var(--bg-header);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 16px;
+  padding: 0;
+  padding-inline-start: 16px;
+  padding-inline-end: 0;
   border-bottom: 1px solid var(--border-color);
   border-top-left-radius: var(--radius-hero, 16px);
   border-top-right-radius: var(--radius-hero, 16px);
@@ -553,7 +564,8 @@ body, html {
 
 .window-controls {
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  height: 40px;
   -webkit-app-region: no-drag;
 }
 
@@ -561,24 +573,28 @@ body, html {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  width: 36px;
-  height: 32px;
+  width: 46px;
+  height: 40px;
   cursor: pointer;
-  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
-  border-radius: 4px;
+  transition: background-color 0.1s ease, color 0.1s ease;
+  padding: 0;
+}
+
+.caption-svg {
+  width: 10px;
+  height: 10px;
 }
 
 .win-btn:hover {
-  background: var(--bg-hover);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-main);
 }
 
 .win-btn.close:hover {
-  background: #E11D48;
+  background: #C42B1C;
   color: #FFFFFF;
 }
 
