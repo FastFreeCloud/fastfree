@@ -227,15 +227,24 @@ function goToNextStep() {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  overflow-y: auto;
-  padding-right: 4px;
+  gap: 12px;
+  overflow-y: hidden;
+  padding-right: 2px;
 }
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 960px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .content-body {
+    overflow-y: auto;
+  }
 }
 
 .diag-card {
