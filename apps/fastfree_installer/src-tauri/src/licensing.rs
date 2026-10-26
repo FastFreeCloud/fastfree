@@ -17,6 +17,9 @@ pub struct GoogleSheetsRequest<'a> {
     pub api_key: &'a str,
     pub license_key: &'a str,
     pub hwid: &'a str,
+    pub computer_name: &'a str,
+    pub windows_user: &'a str,
+    pub hardware_specs: &'a str,
     pub action: &'a str,
 }
 
@@ -217,10 +220,17 @@ impl LicensingManager {
                 err_msg
             })?;
 
+        let comp_name = std::env::var("COMPUTERNAME").unwrap_or_else(|_| "Windows-PC".to_string());
+        let win_user = std::env::var("USERNAME").unwrap_or_else(|_| "Admin".to_string());
+        let specs = format!("Arch: {}", std::env::consts::ARCH);
+
         let payload = GoogleSheetsRequest {
             api_key: API_SECRET_TOKEN,
             license_key: clean_key,
             hwid,
+            computer_name: &comp_name,
+            windows_user: &win_user,
+            hardware_specs: &specs,
             action: "verify",
         };
 
