@@ -32,6 +32,11 @@ pub async fn verify_license_key(
 }
 
 #[tauri::command]
+pub async fn get_machine_hwid() -> Result<String, String> {
+    Ok(LicensingManager::get_machine_hwid())
+}
+
+#[tauri::command]
 pub async fn get_wireguard_status(client_id: String) -> Result<WireGuardPeerConfig, String> {
     let num_str: String = client_id.chars().filter(|c| c.is_ascii_digit()).collect();
     let n: u16 = num_str.parse().unwrap_or(2);

@@ -3,9 +3,13 @@
     <!-- Custom Draggable Titlebar -->
     <header data-tauri-drag-region class="titlebar">
       <div class="brand">
-        <span class="logo-dot"></span>
-        <span class="title">{{ t('app.title') }}</span>
-        <span class="version-tag">{{ t('app.version') }}</span>
+        <div class="brand-icon-wrap">
+          <span class="brand-icon">⚡</span>
+        </div>
+        <div class="brand-text">
+          <span class="title">{{ t('app.title') }}</span>
+          <span class="version-tag">{{ t('app.version') }}</span>
+        </div>
       </div>
 
       <!-- Center Titlebar Tools (Language, Theme, Diagnostic HUD) -->
@@ -25,7 +29,7 @@
 
         <!-- Theme Mode Switcher -->
         <button
-          class="tool-btn"
+          class="tool-btn theme-btn"
           :title="`${t('app.themeToggle')}: ${currentThemeOption?.name}`"
           @click="cycleTheme"
         >
@@ -45,9 +49,10 @@
         </button>
       </div>
 
-      <!-- Window Minimize / Close Controls -->
+      <!-- Window Minimize / Maximize / Close Controls -->
       <div class="window-controls">
-        <button class="win-btn" :title="t('app.minimize')" @click="minimizeWindow">−</button>
+        <button class="win-btn" :title="t('app.minimize')" @click="minimizeWindow">🗕</button>
+        <button class="win-btn" title="Maximize / Restore" @click="toggleMaximize">🗖</button>
         <button class="win-btn close" :title="t('app.close')" @click="closeWindow">✕</button>
       </div>
     </header>
@@ -105,6 +110,7 @@ const currentThemeOption = computed(() => {
 const appWindow = getCurrentWindow();
 
 onMounted(async () => {
+  const bootStart = Date.now();
   try {
     const savedLocale = localStorage.getItem('fastfree_installer_locale');
     if (savedLocale === 'ar' || savedLocale === 'en') {
@@ -121,6 +127,12 @@ onMounted(async () => {
   } catch (err) {
     console.error('System discovery failed:', err);
   } finally {
+    // Ensure splash displays gracefully for at least 2500ms
+    const elapsed = Date.now() - bootStart;
+    const minSplashDuration = 2500;
+    if (elapsed < minSplashDuration) {
+      await new Promise(resolve => setTimeout(resolve, minSplashDuration - elapsed));
+    }
     loadingDiscovery.value = false;
     await dismissSplash();
   }
@@ -128,6 +140,15 @@ onMounted(async () => {
 
 function minimizeWindow() {
   appWindow.minimize();
+}
+
+async function toggleMaximize() {
+  const isMax = await appWindow.isMaximized();
+  if (isMax) {
+    await appWindow.unmaximize();
+  } else {
+    await appWindow.maximize();
+  }
 }
 
 async function closeWindow() {
@@ -248,15 +269,17 @@ body, html {
 }
 
 .titlebar {
-  height: 42px;
+  height: 48px;
   background: var(--bg-header);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 14px;
+  padding: 0 16px;
   border-bottom: 1px solid var(--border-color);
   user-select: none;
   cursor: grab;
+  position: relative;
+  z-index: 50;
 }
 
 .titlebar:active {
@@ -269,17 +292,30 @@ body, html {
   gap: 10px;
 }
 
-.logo-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #1976D2;
-  box-shadow: 0 0 8px #38BDF8;
+.brand-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1976D2, #38BDF8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+
+.brand-icon {
+  font-size: 14px;
+}
+
+.brand-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .title {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 13.5px;
+  font-weight: 700;
   color: var(--text-main);
   letter-spacing: 0.3px;
 }
@@ -288,16 +324,17 @@ body, html {
   font-size: 10px;
   font-weight: 700;
   color: #38BDF8;
-  background: rgba(56, 189, 248, 0.15);
-  padding: 1px 6px;
-  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 2px 7px;
+  border-radius: 6px;
   letter-spacing: 0.5px;
 }
 
 .titlebar-tools {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   -webkit-app-region: no-drag;
 }
 
@@ -305,22 +342,23 @@ body, html {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 6px;
-  font-size: 11px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 7px;
+  font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.15s ease;
+  gap: 7px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tool-btn:hover {
   background: var(--bg-hover);
   border-color: var(--border-highlight);
   color: var(--text-main);
+  transform: translateY(-1px);
 }
 
 .tool-icon {
@@ -358,7 +396,7 @@ body, html {
 
 .lang-btn {
   font-family: inherit;
-  padding: 0 8px;
+  padding: 0 10px;
 }
 
 .lang-tag {
@@ -374,7 +412,7 @@ body, html {
 
 .lang-sep {
   opacity: 0.3;
-  margin: 0 2px;
+  margin: 0 3px;
 }
 
 .window-controls {
@@ -387,14 +425,15 @@ body, html {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  width: 32px;
+  width: 36px;
   height: 32px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
+  border-radius: 4px;
 }
 
 .win-btn:hover {
@@ -409,11 +448,15 @@ body, html {
 
 .content-wrapper {
   flex: 1;
-  padding: 22px 28px;
-  overflow: hidden;
+  padding: 20px 32px 28px 32px;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   background: var(--bg-app);
+  max-width: 1350px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 /* Step transition */

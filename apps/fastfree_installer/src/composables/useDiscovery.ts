@@ -135,6 +135,15 @@ export async function dismissSplash(): Promise<void> {
   }
 }
 
+export async function fetchMachineHwid(): Promise<string> {
+  try {
+    return await invoke<string>('get_machine_hwid');
+  } catch (err) {
+    console.warn('Failed to fetch HWID:', err);
+    return 'UNKNOWN-HWID';
+  }
+}
+
 export async function verifyLicense(key: string, onlineCheck: boolean = true): Promise<LicenseVerificationResult> {
   logInfo('Licensing', `Validating license key: ${key.substring(0, 10)}... (Online: ${onlineCheck})`);
   try {

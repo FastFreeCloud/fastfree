@@ -160,6 +160,7 @@ pub fn run() {
             commands::get_system_discovery_report,
             commands::close_splashscreen,
             commands::verify_license_key,
+            commands::get_machine_hwid,
             commands::get_wireguard_status,
             commands::manage_vm,
             commands::minimize_to_tray,
