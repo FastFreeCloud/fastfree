@@ -17,16 +17,16 @@
 4. أضف بيانات افتراضية للعملاء (من `client2` حتى `client11`) كما يلي:
 
 ```csv
-FF-CL02-7K2M-9P4W-1X88,client2,Al-Riyadh Sovereign Enterprise,hyperv_sovereign,50,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Initial provision for Hyper-V Client 2
-FF-CL03-8B3N-0Q5X-2Y99,client3,Jeddah Logistics Core,hyperv_sovereign,25,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Initial provision for Hyper-V Client 3
-FF-CL04-9C4P-1R6Y-3Z00,client4,Dammam Industrial Manufacturing,hyperv_sovereign,100,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,High-capacity cluster node
-FF-CL05-0D5Q-2S7Z-4A11,client5,Medina Retail Distribution,hyperv_sovereign,30,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Retail & POS deployment
-FF-CL06-1E6R-3T8A-5B22,client6,Mecca Hospitality Systems,hyperv_sovereign,50,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Hotel & Restaurant appliance
+FF-CL02-7K2M-9P4W-1X88,client2,Al-Riyadh Enterprise,hyperv_enterprise,50,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Initial provision for Hyper-V Client 2
+FF-CL03-8B3N-0Q5X-2Y99,client3,Jeddah Logistics Core,hyperv_enterprise,25,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Initial provision for Hyper-V Client 3
+FF-CL04-9C4P-1R6Y-3Z00,client4,Dammam Industrial Manufacturing,hyperv_enterprise,100,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,High-capacity cluster node
+FF-CL05-0D5Q-2S7Z-4A11,client5,Medina Retail Distribution,hyperv_enterprise,30,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Retail & POS deployment
+FF-CL06-1E6R-3T8A-5B22,client6,Mecca Hospitality Systems,hyperv_enterprise,50,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Hotel & Restaurant appliance
 FF-CL07-2F7S-4U9B-6C33,client7,Al-Khobar Financial Services,enterprise_cluster,150,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Financial services primary node
-FF-CL08-3G8T-5V0C-7D44,client8,Abha Health Networks,hyperv_sovereign,20,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Healthcare clinic node
-FF-CL09-4H9U-6W1D-8E55,client9,Tabuk Agriculture Hub,hyperv_sovereign,15,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Cold-storage & logistics node
-FF-CL10-5I0V-7X2E-9F66,client10,Jizan Trade Corporation,hyperv_sovereign,40,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Wholesale import node
-FF-CL11-6J1W-8Y3F-0G77,client11,Hail Wholesale Exchange,hyperv_sovereign,30,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Trading & Ledger branch
+FF-CL08-3G8T-5V0C-7D44,client8,Abha Health Networks,hyperv_enterprise,20,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Healthcare clinic node
+FF-CL09-4H9U-6W1D-8E55,client9,Tabuk Agriculture Hub,hyperv_enterprise,15,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Cold-storage & logistics node
+FF-CL10-5I0V-7X2E-9F66,client10,Jizan Trade Corporation,hyperv_enterprise,40,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Wholesale import node
+FF-CL11-6J1W-8Y3F-0G77,client11,Hail Wholesale Exchange,hyperv_enterprise,30,,ACTIVE,2028-12-31T23:59:59Z,2026-10-25T00:00:00Z,,Trading & Ledger branch
 ```
 
 > [!NOTE]
@@ -41,7 +41,7 @@ FF-CL11-6J1W-8Y3F-0G77,client11,Hail Wholesale Exchange,hyperv_sovereign,30,,ACT
 
 ```javascript
 /**
- * FastFree Sovereign Licensing Control Plane API
+ * FastFree Licensing Control Plane API
  * Pure Google Apps Script Web App for HMAC/Ed25519 signed offline-tolerant licensing.
  */
 

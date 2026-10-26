@@ -1,6 +1,6 @@
 import { ref, onMounted } from 'vue';
 
-export type ThemeMode = 'sovereign-dark' | 'light' | 'oled-black';
+export type ThemeMode = 'dark' | 'light' | 'oled-black';
 
 export interface ThemeOption {
   id: ThemeMode;
@@ -10,14 +10,14 @@ export interface ThemeOption {
 }
 
 export const availableThemes: ThemeOption[] = [
-  { id: 'sovereign-dark', name: 'Sovereign Dark', nameAr: 'السيادي الداكن', icon: '🌌' },
-  { id: 'light', name: 'Clean Slate', nameAr: 'المؤسسي الفاتح', icon: '☀️' },
+  { id: 'dark', name: 'Dark Mode', nameAr: 'الداكن', icon: '🌙' },
+  { id: 'light', name: 'Light Mode', nameAr: 'الفاتح', icon: '☀️' },
   { id: 'oled-black', name: 'Midnight OLED', nameAr: 'سواد أومليد', icon: '🌑' },
 ];
 
 const THEME_STORAGE_KEY = 'fastfree_installer_theme';
 
-export const currentTheme = ref<ThemeMode>('sovereign-dark');
+export const currentTheme = ref<ThemeMode>('dark');
 
 export function applyTheme(theme: ThemeMode) {
   currentTheme.value = theme;
@@ -41,13 +41,13 @@ export function useTheme() {
   onMounted(() => {
     try {
       const saved = localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode | null;
-      if (saved && availableThemes.some(t => t.id === saved)) {
+      if (saved && (saved === 'dark' || saved === 'light' || saved === 'oled-black')) {
         applyTheme(saved);
       } else {
-        applyTheme('sovereign-dark');
+        applyTheme('dark');
       }
     } catch {
-      applyTheme('sovereign-dark');
+      applyTheme('dark');
     }
   });
 

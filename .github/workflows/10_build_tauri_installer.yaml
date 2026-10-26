@@ -160,7 +160,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: "FastFree Sovereign Node Installer ${{ steps.version.outputs.tag }}"
+          name: "FastFree Node Installer ${{ steps.version.outputs.tag }}"
           draft: false
           prerelease: false
           files: |

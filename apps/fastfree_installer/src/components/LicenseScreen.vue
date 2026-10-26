@@ -238,7 +238,7 @@ async function copyHwid() {
 
 function formatFeatureName(feature: string): string {
   const mapEn: Record<string, string> = {
-    sovereign_hyperv_appliance: 'Hyper-V Sovereign Appliance',
+    sovereign_hyperv_appliance: 'Hyper-V Enterprise Appliance',
     wireguard_mesh_vpn: 'WireGuard Encrypted Mesh',
     accounting_general_ledger: 'General Ledger & Accounts',
     inventory_warehouse_suite: 'Multi-Warehouse Inventory',
@@ -251,7 +251,7 @@ function formatFeatureName(feature: string): string {
   };
 
   const mapAr: Record<string, string> = {
-    sovereign_hyperv_appliance: 'بيئة العتاد السيادي على Hyper-V',
+    sovereign_hyperv_appliance: 'بيئة العتاد المؤسسي على Hyper-V',
     wireguard_mesh_vpn: 'نفق شبكة واير جارد المشفر',
     accounting_general_ledger: 'دفتر الأستاذ العام والمحاسبة',
     inventory_warehouse_suite: 'إدارة المخزون والمستودعات',

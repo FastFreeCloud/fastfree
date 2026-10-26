@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "FastFree Sovereign Node Installer",
+        "title": "FastFree Node Installer",
         "width": 1060,
         "height": 700,
         "resizable": false,

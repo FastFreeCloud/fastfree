@@ -21,7 +21,7 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
   isCheckingUpdate.value = true;
   updateError.value = '';
 
-  logInfo('Updater', `Checking for sovereign updates (silent=${silent})...`);
+  logInfo('Updater', `Checking for updates (silent=${silent})...`);
 
   try {
     const update = await check();
@@ -29,11 +29,11 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
       currentUpdateObj.value = update;
       updateAvailable.value = true;
       updateVersion.value = update.version;
-      updateNotes.value = update.body || 'FastFree Sovereign Appliance Performance & Security Update';
+      updateNotes.value = update.body || 'FastFree Appliance Performance & Security Update';
       logSuccess(
         'Updater',
         `New update found: v${update.version}`,
-        `Published: ${update.date}, Manifest URL: ${update.downloadUrl || 'GitHub'}`
+        `Published: ${update.date || 'latest'}, Channel: Production Release`
       );
       return true;
     } else {

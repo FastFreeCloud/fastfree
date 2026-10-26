@@ -68,15 +68,24 @@ pub async fn manage_vm(action: String, client_id: String) -> Result<VmActionStat
     let (target_state, ps_cmd) = match action.to_lowercase().as_str() {
         "start" => (
             "running",
-            format!("Start-VM -Name '{}' -ErrorAction SilentlyContinue", vm_name),
+            format!(
+                "$ErrorActionPreference = 'Stop'; try {{ Start-VM -Name '{0}' }} catch {{ Write-Error $_.Exception.Message; exit 1 }}",
+                vm_name
+            ),
         ),
         "stop" => (
             "stopped",
-            format!("Stop-VM -Name '{}' -Force -ErrorAction SilentlyContinue", vm_name),
+            format!(
+                "$ErrorActionPreference = 'Stop'; try {{ Stop-VM -Name '{0}' -Force }} catch {{ Write-Error $_.Exception.Message; exit 1 }}",
+                vm_name
+            ),
         ),
         "restart" => (
             "running",
-            format!("Restart-VM -Name '{}' -Force -ErrorAction SilentlyContinue", vm_name),
+            format!(
+                "$ErrorActionPreference = 'Stop'; try {{ Restart-VM -Name '{0}' -Force }} catch {{ Write-Error $_.Exception.Message; exit 1 }}",
+                vm_name
+            ),
         ),
         _ => {
             let err_msg = format!("Unknown VM management action: {}", action);
@@ -106,21 +115,26 @@ pub async fn manage_vm(action: String, client_id: String) -> Result<VmActionStat
 
         match output {
             Ok(out) => {
+                let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
+                let stderr = String::from_utf8_lossy(&out.stderr).trim().to_string();
                 InstallerLogger::info(
                     "VM_PROVISIONING",
                     &format!(
                         "VM command executed with exit status: {:?} (stdout: {}, stderr: {})",
                         out.status.code(),
-                        String::from_utf8_lossy(&out.stdout).trim(),
-                        String::from_utf8_lossy(&out.stderr).trim()
+                        stdout,
+                        stderr
                     ),
                 );
+                if !out.status.success() {
+                    let err_detail = if !stderr.is_empty() { stderr } else { stdout };
+                    return Err(format!("Hyper-V VM error: {}", err_detail));
+                }
             }
             Err(e) => {
-                InstallerLogger::error(
-                    "VM_PROVISIONING",
-                    &format!("Failed to spawn PowerShell for VM command: {}", e),
-                );
+                let msg = format!("Failed to spawn PowerShell for VM command: {}", e);
+                InstallerLogger::error("VM_PROVISIONING", &msg);
+                return Err(msg);
             }
         }
     }
@@ -287,7 +301,7 @@ Start-Service -Name vmms -ErrorAction SilentlyContinue
 }
 
 #[tauri::command]
-pub async fn provision_sovereign_node(
+pub async fn provision_node(
     client_id: String,
     cores: u32,
     ram_mb: u64,
@@ -321,20 +335,26 @@ pub async fn provision_sovereign_node(
         step_logs.push(ProvisioningStepLog {
             step: 1,
             phase: "Filesystem Allocation".to_string(),
-            message: format!("Created sovereign container directory at {}", vhdx_dir),
+            message: format!("Created container directory at {}", vhdx_dir),
             success: true,
         });
 
-        // 2. Ensure Hyper-V Service VMMS is running
+        // 2. Ensure Hyper-V Service VMMS is running and user is in Hyper-V Administrators
         let _ = Command::new("powershell")
-            .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "Start-Service -Name vmms -ErrorAction SilentlyContinue"])
+            .args([
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "Set-Service -Name vmms -StartupType Automatic -ErrorAction SilentlyContinue; Start-Service -Name vmms -ErrorAction SilentlyContinue; net localgroup 'Hyper-V Administrators' \"$env:USERNAME\" /add 2>&1 | Out-Null",
+            ])
             .output();
 
         // 3. Ensure Virtual Switch exists
         let vswitch_script = r#"
 $sw = Get-VMSwitch -Name 'FastFree-Default-Switch' -ErrorAction SilentlyContinue
 if (-not $sw) {
-    New-VMSwitch -Name 'FastFree-Default-Switch' -SwitchType Internal -Notes 'FastFree Sovereign Mesh Switch' | Out-Null
+    New-VMSwitch -Name 'FastFree-Default-Switch' -SwitchType Internal -Notes 'FastFree Mesh Switch' | Out-Null
 }
 "#;
         let _ = Command::new("powershell")
@@ -348,19 +368,31 @@ if (-not $sw) {
             success: true,
         });
 
-        // 4. Create Generation 2 VM and virtual disk
+        // 4. Create Generation 2 VM, configure resources, and verify creation
         let vm_script = format!(
             r#"
-$vm = Get-VM -Name '{vm_name}' -ErrorAction SilentlyContinue
-if (-not $vm) {{
-    New-VM -Name '{vm_name}' -Generation 2 -MemoryStartupBytes {ram_bytes} -SwitchName 'FastFree-Default-Switch' -NewVHDPath '{vhdx_path}' -NewVHDSizeBytes 64GB | Out-Null
-    Set-VMProcessor -VMName '{vm_name}' -Count {cores} | Out-Null
-    Set-VMMemory -VMName '{vm_name}' -DynamicMemoryEnabled $false | Out-Null
-}} else {{
-    Set-VMProcessor -VMName '{vm_name}' -Count {cores} -ErrorAction SilentlyContinue | Out-Null
-    Set-VMMemory -VMName '{vm_name}' -StartupBytes {ram_bytes} -DynamicMemoryEnabled $false -ErrorAction SilentlyContinue | Out-Null
+$ErrorActionPreference = 'Stop'
+try {{
+    $vm = Get-VM -Name '{vm_name}' -ErrorAction SilentlyContinue
+    if (-not $vm) {{
+        New-VM -Name '{vm_name}' -Generation 2 -MemoryStartupBytes {ram_bytes} -SwitchName 'FastFree-Default-Switch' -NewVHDPath '{vhdx_path}' -NewVHDSizeBytes 64GB | Out-Null
+        Set-VMProcessor -VMName '{vm_name}' -Count {cores} | Out-Null
+        Set-VMMemory -VMName '{vm_name}' -DynamicMemoryEnabled $false | Out-Null
+    }} else {{
+        Set-VMProcessor -VMName '{vm_name}' -Count {cores} -ErrorAction SilentlyContinue | Out-Null
+        Set-VMMemory -VMName '{vm_name}' -StartupBytes {ram_bytes} -DynamicMemoryEnabled $false -ErrorAction SilentlyContinue | Out-Null
+    }}
+    Start-VM -Name '{vm_name}' -ErrorAction SilentlyContinue | Out-Null
+    
+    $vCheck = Get-VM -Name '{vm_name}' -ErrorAction SilentlyContinue
+    if (-not $vCheck) {{
+        throw "VM '{vm_name}' could not be registered in Hyper-V."
+    }}
+    Write-Output "FASTFREE_VM_DEPLOYED_SUCCESSFULLY"
+}} catch {{
+    Write-Error $_.Exception.Message
+    exit 1
 }}
-Start-VM -Name '{vm_name}' -ErrorAction SilentlyContinue | Out-Null
 "#,
             vm_name = vm_name,
             ram_bytes = ram_bytes,
@@ -374,8 +406,9 @@ Start-VM -Name '{vm_name}' -ErrorAction SilentlyContinue | Out-Null
 
         match vm_res {
             Ok(out) => {
-                let err_str = String::from_utf8_lossy(&out.stderr).trim().to_string();
-                if out.status.success() || err_str.is_empty() {
+                let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
+                let stderr = String::from_utf8_lossy(&out.stderr).trim().to_string();
+                if out.status.success() || stdout.contains("FASTFREE_VM_DEPLOYED_SUCCESSFULLY") {
                     step_logs.push(ProvisioningStepLog {
                         step: 3,
                         phase: "Hyper-V Virtual Machine Creation".to_string(),
@@ -389,12 +422,9 @@ Start-VM -Name '{vm_name}' -ErrorAction SilentlyContinue | Out-Null
                         success: true,
                     });
                 } else {
-                    step_logs.push(ProvisioningStepLog {
-                        step: 3,
-                        phase: "Hyper-V VM Notice".to_string(),
-                        message: format!("Provisioning dispatched: {}", err_str),
-                        success: true,
-                    });
+                    let err_msg = if !stderr.is_empty() { stderr } else { stdout };
+                    InstallerLogger::error("PROVISIONING", &format!("VM creation failure: {}", err_msg));
+                    return Err(format!("Failed to provision Hyper-V VM: {}", err_msg));
                 }
             }
             Err(e) => {
