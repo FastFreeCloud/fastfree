@@ -43,6 +43,13 @@
         "@upstash/context7-mcp@4.4.4"
       ],
       "type": "stdio"
+    },
+    "fastfree-poster": {
+      "command": "node",
+      "args": [
+        "fastfree_mcp_tools/fastfree_poster_mcp/src/index.js"
+      ],
+      "type": "stdio"
     }
   }
 }

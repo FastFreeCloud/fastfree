@@ -2,11 +2,11 @@
 # Refresh it with `ai-rulez lock`; `ai-rulez generate --locked` fails when it is stale.
 
 version = 1
-ai_rulez_version = '5.6.3'
+ai_rulez_version = '5.7.0'
 profile = 'full'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:0af5bb863ff17d4122578acf58975735e6663277637772baab5e81bf76c89906'
+tree = 'sha256:45153325cc0f6db12fbcb6613f2dca945df3bc802559eaf551f9ac6330cd01d5'
 
 [[served]]
 name = 'ai-rulez'
@@ -73,6 +73,26 @@ name = 'caveman'
 source = '.ai-rulez/skills/caveman/SKILL.md'
 commit = ''
 digest = 'sha256:cd90a24a4c655ebba4d67e3feaa350e11e2b85c47b6e811714a2f107d71ab2cc'
+view = 'role:reviewer'
+
+[[served]]
+name = 'check-poster'
+source = ''
+commit = ''
+digest = 'sha256:5fb41a9eb8203251deea47f733af0dedec545224ad8bb82721d92174dcbca6ab'
+
+[[served]]
+name = 'check-poster'
+source = ''
+commit = ''
+digest = 'sha256:5fb41a9eb8203251deea47f733af0dedec545224ad8bb82721d92174dcbca6ab'
+view = 'profile:full'
+
+[[served]]
+name = 'check-poster'
+source = ''
+commit = ''
+digest = 'sha256:5fb41a9eb8203251deea47f733af0dedec545224ad8bb82721d92174dcbca6ab'
 view = 'role:reviewer'
 
 [[served]]
@@ -180,20 +200,20 @@ view = 'role:reviewer'
 name = 'fastfree-brand'
 source = '.ai-rulez/domains/frontend/skills/fastfree-brand/SKILL.md'
 commit = ''
-digest = 'sha256:58d0e82ed9aa8405413522747da7ca254faa7e5dfe4dadbe1f7011efa90fba44'
+digest = 'sha256:a0e0810088929ada83220258668a05b08487a87a735299d3f32fd42ac141ccd4'
 
 [[served]]
 name = 'fastfree-brand'
 source = '.ai-rulez/domains/frontend/skills/fastfree-brand/SKILL.md'
 commit = ''
-digest = 'sha256:58d0e82ed9aa8405413522747da7ca254faa7e5dfe4dadbe1f7011efa90fba44'
+digest = 'sha256:a0e0810088929ada83220258668a05b08487a87a735299d3f32fd42ac141ccd4'
 view = 'profile:full'
 
 [[served]]
 name = 'fastfree-brand'
 source = '.ai-rulez/domains/frontend/skills/fastfree-brand/SKILL.md'
 commit = ''
-digest = 'sha256:58d0e82ed9aa8405413522747da7ca254faa7e5dfe4dadbe1f7011efa90fba44'
+digest = 'sha256:a0e0810088929ada83220258668a05b08487a87a735299d3f32fd42ac141ccd4'
 view = 'role:reviewer'
 
 [[served]]
@@ -234,6 +254,26 @@ name = 'fastfree-guide'
 source = '.ai-rulez/skills/fastfree-guide/SKILL.md'
 commit = ''
 digest = 'sha256:4039f0493fea62b158ae9b281ce5875da731300893727670cea2b706ee7b357b'
+view = 'role:reviewer'
+
+[[served]]
+name = 'fastfree-poster'
+source = '.ai-rulez/domains/frontend/skills/fastfree-poster/SKILL.md'
+commit = ''
+digest = 'sha256:04739b4f66c72ef38532f7d16c0def592ac792d5bf6655271e40d0aeba3893e1'
+
+[[served]]
+name = 'fastfree-poster'
+source = '.ai-rulez/domains/frontend/skills/fastfree-poster/SKILL.md'
+commit = ''
+digest = 'sha256:04739b4f66c72ef38532f7d16c0def592ac792d5bf6655271e40d0aeba3893e1'
+view = 'profile:full'
+
+[[served]]
+name = 'fastfree-poster'
+source = '.ai-rulez/domains/frontend/skills/fastfree-poster/SKILL.md'
+commit = ''
+digest = 'sha256:04739b4f66c72ef38532f7d16c0def592ac792d5bf6655271e40d0aeba3893e1'
 view = 'role:reviewer'
 
 [[served]]
@@ -540,6 +580,13 @@ digest = 'sha256:8eed93c55cd210aaefa35cff5106a6f70bab91c28407067ae89c0c2d5991927
 
 [[item]]
 kind = 'command'
+id = 'check-poster'
+domain = 'frontend'
+path = 'domains/frontend/commands/check-poster.md'
+digest = 'sha256:17d2a9f191fda2ff84dbf804df3b63adc0e4ac7fa651502077d565b901a11db7'
+
+[[item]]
+kind = 'command'
 id = 'lint-all'
 domain = 'frontend'
 path = 'domains/frontend/commands/lint-all.md'
@@ -584,7 +631,7 @@ digest = 'sha256:74be7142c59886550afe7eaa8fae8a6010999b2129b64b87e0d01158e145f92
 [[item]]
 kind = 'role'
 id = 'frontend-engineer'
-digest = 'sha256:d2e0e1f4e13b11b510c9b6ffdbff40248c542d8ad71b714ad25701aa7ca228e7'
+digest = 'sha256:a8ed500fc244a684b2afe49aac1a91ade6e89ba9b6b72cd933809fc6ee5f91ad'
 
 [[item]]
 kind = 'role'
@@ -714,7 +761,14 @@ kind = 'skill'
 id = 'fastfree-brand'
 domain = 'frontend'
 path = 'domains/frontend/skills/fastfree-brand'
-digest = 'sha256:52c9e69e11e66e018e5eed89fb94085a4f31b15d84a44f62933a212dc224626d'
+digest = 'sha256:3c29086f786d483b7d0c3c286bb4e87a9b4ab67dd98e2b6ae7a19a971a4bef87'
+
+[[item]]
+kind = 'skill'
+id = 'fastfree-poster'
+domain = 'frontend'
+path = 'domains/frontend/skills/fastfree-poster'
+digest = 'sha256:c7f97526466d1863d26f27d8f5c5cd9d4e09948c3ea213596b2dc4261201428c'
 
 [[item]]
 kind = 'skill'
@@ -805,6 +859,10 @@ path = '.agents/skills/caveman/SKILL.md'
 digest = 'sha256:5841709b2f6d69a6de839fc77911ba33423510e1c3a8dba3e12f04096d3d3d7a'
 
 [[output]]
+path = '.agents/skills/check-poster/SKILL.md'
+digest = 'sha256:2c82ac58e09fc2124d239c927cd340f6fb59c8f5bc1d7cd77fb27b8c76691004'
+
+[[output]]
 path = '.agents/skills/clan-check/SKILL.md'
 digest = 'sha256:30bb466518d2dd69c4fb6973e434b8794758d03df4cce999890cc9b853a94c4c'
 
@@ -826,7 +884,7 @@ digest = 'sha256:3e582baf6bb653888177078c382820e9bc5a1dd7899869a84539f2376ff5938
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-erp-fg.svg'
-digest = 'sha256:79210975f15e9c5f1f33bf9a050da55668913b3e58f048b42f94f9a91d9d985f'
+digest = 'sha256:0542fec4a19c712c2af89f126f1e65f6b9e1b102225bbbd463bf37df6b4f02bd'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-bg.svg'
@@ -834,7 +892,7 @@ digest = 'sha256:fb94703073333eca3bb431f614c274f7747df005fe9f60c276d643ee18a01ca
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-fg.svg'
-digest = 'sha256:8511e81a15fbba898672c6d2bd4f1bb61cb2f47b72e751c8e838f5591853aa75'
+digest = 'sha256:7fe1588e4729253badef4a3dc4152fa63aac37373ac6dcad9547def4e55e3496'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-ledger-bg.svg'
@@ -842,7 +900,7 @@ digest = 'sha256:13fba6d025e82a529993016e3478db0aa67367847ff926f5cd01245f37667b4
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-ledger-fg.svg'
-digest = 'sha256:da68eb55ba41e33911a9c2a2d53540cb26df65cde1203b6756fdb3f2e3616765'
+digest = 'sha256:b886251d241aec285a711933a7d65c86373e2b1f819d29f299d0d7508734388c'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-panel-bg.svg'
@@ -850,7 +908,7 @@ digest = 'sha256:c168f2ed00b1a034c8ece0a0db42627d5ea75babca6fcf8859a4cdf07ac455e
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-panel-fg.svg'
-digest = 'sha256:a6260a1d05d855c1daa3893c2aba1066d6dfcf690295d183bf4ad9f50f3d787a'
+digest = 'sha256:11b36f9bbc1ea100487250c2f638c4779e48ad6ebd77738457079284a614fb4a'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-pos-bg.svg'
@@ -858,7 +916,7 @@ digest = 'sha256:7aec6262baebc764e822740e2f3724f11ef852e66a67d660204f9cdcec0dfc1
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-pos-fg.svg'
-digest = 'sha256:ac6d8bc30744fa5d1840dc15a11522631a7f9ded398f73f87e15e96c4e9857fc'
+digest = 'sha256:bb97ddfd699078fd7de3bd7be12c02cf6878d3aa540efad9caa98da5f30cac9a'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-website-bg.svg'
@@ -866,67 +924,67 @@ digest = 'sha256:38616a48d11bbf30e45adeb6c828d3261314fd2488b0126f2afb9d8ea4a617a
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-website-fg.svg'
-digest = 'sha256:b01107675c75a553511fa4d590046aadf57f218abbdc18cfe8b47c7d23c4ca27'
+digest = 'sha256:86ff6d8051bd07a4c3cb6f356deeb4631814b78589fbe057a3e5ecb05036fa22'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/icons/adaptive-erp.svg'
-digest = 'sha256:bba331a869284be3bfd599c90d5ec7aeabed5e23cfdbe1c1d7f53d8e84d37f56'
+digest = 'sha256:7d67cf5b177c0d277213c8f5c58d70730d5722ea712c3c31283ca3d1813f016a'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/icons/adaptive-hr.svg'
-digest = 'sha256:c955fb903930fdb8456121e23c574719140ff8c243edd39d895a612c6fca5059'
+digest = 'sha256:10edc30852ac4ae7cce11ded8b44b4085e50479510e559ae6e88e6d9e84069d8'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/icons/adaptive-ledger.svg'
-digest = 'sha256:0b182c5dd82c5e30a5165dc55c7fcbde37f37e2811ad850a2002bd6bd05af4d2'
+digest = 'sha256:f1f6cf57045a5f522192261075d37a3addc56e0618d506526439c09d17f0024f'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/icons/adaptive-panel.svg'
-digest = 'sha256:83215e9b889bd804c75af6ca31bdd2f0a204d2339db684920cca3861893fc53e'
+digest = 'sha256:aea95b4dfacaea9c69281b63281b1a1a4d280db310278898588fbc02b0abe538'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/icons/adaptive-pos.svg'
-digest = 'sha256:0410af6e6739cc49dad001f81df0b2a5cfd4a9222502aef84cf8e6db3b900212'
+digest = 'sha256:3e4cbbd0be8a2c9c547a7e35e24c8397bd83edf37aed896a4834b6a931be37aa'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/icons/adaptive-website.svg'
-digest = 'sha256:52d48acf3565d184ea422b35f20c45f8a9e3d5ee53737376dce4982c5fa61277'
+digest = 'sha256:aa3986898fba6fe813322101c491727fbf648c66b86b5218c91d7cc905c414b4'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/icons/icon-erp.svg'
-digest = 'sha256:7bcc2d0c373c59c4b12c740855625f4ad4d4e68703acb15d57bd157700af9ee1'
+digest = 'sha256:8b8e4ff9bc89f83546c483acb91839d4b5e59d95562de7e64b690f90e9a8c7f7'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/icons/icon-hr.svg'
-digest = 'sha256:f0f066cc630d50a7bca339c3a3fed0e89c3d7e38025c0ae1b0a2be493e0de485'
+digest = 'sha256:94c8cbb911eb9523e877d642c8f3f67eedc6c85fff983604fe53da290e0ed848'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/icons/icon-ledger.svg'
-digest = 'sha256:900714ffdcadfd4e6fff68abc1ccab71c1e91a9901f35f982d63c24590fe5b7e'
+digest = 'sha256:c517d94fdc3eb65accbfa9f663a32947f42cb842a629c79a9bd2b60762ae0b36'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/icons/icon-panel.svg'
-digest = 'sha256:f5c6bdf4dca460945e4f7fdfdbbcf3cc090a934d7df257098fa8840eb7a90683'
+digest = 'sha256:a2cd1bd2d410212ba3f90ed43f2a42fbc6fc3887e1c8d9c0e41852c3205acaee'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/icons/icon-pos.svg'
-digest = 'sha256:86141f23e5d3f82b19d2e3aff6d287120fa4f374a1bb1861ed650b3d96566c62'
+digest = 'sha256:392a226699f7fb07c4c37edc7d022bba6483782e91017c0d9d1cc36cc0979d5a'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/icons/icon-website.svg'
-digest = 'sha256:0b0118c02187b04703d39a6aeaedfdcdad125043f0231f83d0fcba71b2a8226e'
+digest = 'sha256:ca34eb2fa7baeb3cf43d2271d5b2321742f10602aa80ee5cf79b0be661955405'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/logo/fastfree-brand-logo-dark.svg'
-digest = 'sha256:4b42791d77b9d6b6540af2d921371897d152ca0bb33664833bbea44cfa7423cb'
+digest = 'sha256:65ba61863b278d313cca27e8e2e77555ad84e72adbcfa9876400eab877e4d988'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/logo/fastfree-brand-logo-light.svg'
-digest = 'sha256:4f24cb77d374a89c6b962009376aa899174e7f5b070a8ceac6eb093806c28e34'
+digest = 'sha256:100149f68ed73df9c200d6966d7fa06bcb3cbce0b3d46531ee0c23974d753eb0'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/logo/fastfree-infinity-mark.svg'
-digest = 'sha256:179272c1ec9e564f520b289754469a222984ec61d2c5efece425e79a7bffc745'
+digest = 'sha256:dcc612260685179a782bceb06588b53d0a59a0380a80b2a0ba1b940c9f67149d'
 
 [[output]]
 path = '.agents/skills/fastfree-brand/assets/splash/splash-erp-1080p.svg'
@@ -1045,6 +1103,10 @@ path = '.agents/skills/fastfree-guide/scripts/sync-mcp.sh'
 digest = 'sha256:1b32fb49082a7de6d764ec90f8a46275652a2e3859c22fb9f7b0ecd89c6f5493'
 
 [[output]]
+path = '.agents/skills/fastfree-poster/SKILL.md'
+digest = 'sha256:9e225ce40f8e592257f49a7a72d62b5206277b8963f5f9c954e5743061d64e9d'
+
+[[output]]
 path = '.agents/skills/fastfree-test/SKILL.md'
 digest = 'sha256:73fa2a07dcd7f2f7da89e3b62b25a5dbfc073453e1c2c177455864d890fd98fe'
 
@@ -1106,7 +1168,7 @@ digest = 'sha256:867a55ddf7d7d6cfb6b99dc9905fb67a5043aefd6e8f572db2643966cb7ec79
 
 [[output]]
 path = '.ai-rulez/roles.json'
-digest = 'sha256:9aa75c1a74c1371d125e6b4ee279d55beef8623337b8e5565a79952392df7632'
+digest = 'sha256:a0a0ee0577950574fefdaf10204c6471ea981b0182bf9dad317e4b3010cb65eb'
 
 [[output]]
 path = '.claude/rules/erp-invariants.md'
@@ -1137,6 +1199,10 @@ path = '.claude/skills/caveman/SKILL.md'
 digest = 'sha256:7acb5a484de66d661ea8675ffe29924ea01df14e2565243fca86a1bd1afa28e5'
 
 [[output]]
+path = '.claude/skills/check-poster/SKILL.md'
+digest = 'sha256:c528ad9bf61ff6e6b6a680e71bf62e389c19d453c6e4d22c8e53ec2613d7219b'
+
+[[output]]
 path = '.claude/skills/clan-check/SKILL.md'
 digest = 'sha256:cb044da96eb41c252beedb1dcc0bc1384a7f2b75bea824a30a47b081348c5c49'
 
@@ -1158,7 +1224,7 @@ digest = 'sha256:52cf9b18b348649876ba99dd375d5e8986ca2273d5cbd3baf23773f1c778b75
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-erp-fg.svg'
-digest = 'sha256:fb0a069b84ed6fe4bd12d03daec4fdc61dad3ac26b324785cef022bac0079367'
+digest = 'sha256:c9161a67e73f2e7000d90863b0b7efd417fdee27e44900ac37f67696368b8051'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-bg.svg'
@@ -1166,7 +1232,7 @@ digest = 'sha256:0f1e4c74b5ff6a37bcc5cc8eb88fea94f341299438a774ba1a9dd88bdf7812f
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-fg.svg'
-digest = 'sha256:40d6fe1a3d00769f1dac35276dad2622bb21b78f2ebead5b264d71510f02fc1d'
+digest = 'sha256:1347cde03f5ed23313bbff0de31aa09af7640c29de5d1b560c3611d68fc2bb7d'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-ledger-bg.svg'
@@ -1174,7 +1240,7 @@ digest = 'sha256:a396a7ddeee28f69c24dc7c689af93c29ff4df8e7caa0e5a71bacf2de59d8ad
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-ledger-fg.svg'
-digest = 'sha256:c37c816ec6b4cc4297e4b99c93544ac6ffec3469354d1bd2952042e0e6bb402c'
+digest = 'sha256:3c6205387238c62be4774cbb223ced97558a22c9e7e7671e1f2dbf4f2340144e'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-panel-bg.svg'
@@ -1182,7 +1248,7 @@ digest = 'sha256:dcac401984badb510bb9e9da8f06be39e836e842b6121298a6fc626bbe2b0ff
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-panel-fg.svg'
-digest = 'sha256:2b8fe5163ac4a1c630bb0d6009afe68a6c722b5f4dd1e37ef8b21b139ab9b8aa'
+digest = 'sha256:f2e727707fd8f0f0664766350c25c5ce31da40f06739ab90b131d8382eb60cba'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-pos-bg.svg'
@@ -1190,7 +1256,7 @@ digest = 'sha256:6efba0cd21dc1d26cdc4a7e0862020ee61a0a6b603399f3079aa347c23625e0
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-pos-fg.svg'
-digest = 'sha256:1137b04a4270095f39a4fe3573b5862632a359c95154184105615dfb05b4baf6'
+digest = 'sha256:f43501ca885234c4386ac3358bb17f15b17b49c8bb75a815b62041442a4dfe58'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-website-bg.svg'
@@ -1198,67 +1264,67 @@ digest = 'sha256:92c13ecd5a5915b042779a71d76d449553a7a481bcf7107efb30736e43d9424
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-website-fg.svg'
-digest = 'sha256:743b5e1531c6b7e2848166ad7470128fae60dd4cf2abfb187eb7dc171d59d419'
+digest = 'sha256:327742a5a2b9cc66c80d255696fa3797de33411e1746f2d09d7a693adc48e69f'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/icons/adaptive-erp.svg'
-digest = 'sha256:e963f00816566b47a9be3c6b9ef44a489dc294b47c89bbdc48a2e942b8e2ab50'
+digest = 'sha256:f50c580c23cf8760104701fbe2b5c9c3fd83afe854e755554e4e932bd7d6c71f'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/icons/adaptive-hr.svg'
-digest = 'sha256:fcfc02ada74b8fe54fb028409595a0cc6bba5fa27859e6ca68332aba4d7bb500'
+digest = 'sha256:9fcf287168fad22498e879c3fabbda1f68ae9957ba7c5596ae9e578ab3bee4c9'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/icons/adaptive-ledger.svg'
-digest = 'sha256:05798d45fea601aae87e8d44a982affe5075daf315e044b125efdb5b1e7b9ff8'
+digest = 'sha256:17429af85a12eaad074449491e43ace251a90f1f64ae0000f0ead1e74cf50fb4'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/icons/adaptive-panel.svg'
-digest = 'sha256:8d2f5bf2c667f84f254e45b09cc7f2e0d5ef20119be0cca2c3b88e7b89f71f99'
+digest = 'sha256:27c4fba28fa201df187e17875144a849cab42dcc52d3d59e16a0fb648c2bb0fd'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/icons/adaptive-pos.svg'
-digest = 'sha256:de2988ec4580559c171d0de73c46106f4131043c52d1b24c4948ff44cececa71'
+digest = 'sha256:66962d7bf003c5ec0c787b5f31b6de55719f0b8b833a571e235eb36d079dc203'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/icons/adaptive-website.svg'
-digest = 'sha256:baca0495cd87cf35fb3d8dcb08bafc9af4278128adc106a85e656ae588a3a87c'
+digest = 'sha256:ab339a793632aa4bf7800c42154b952bd643f1baa2c8d376f57f1380417075e4'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/icons/icon-erp.svg'
-digest = 'sha256:8320f6276c2e4874e85ee7361e2ba83590c14cabb4ee7b817158b42d8c8bd9e2'
+digest = 'sha256:0dbbcf2591797b4592e8ad395e855cbfce630808cf405a0503379e74a53b2c84'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/icons/icon-hr.svg'
-digest = 'sha256:c6a6b72a7e37b98da347ba627b0c3e47c948601c7a33235057bc9976c2a449fb'
+digest = 'sha256:a3a5c95608473324b2090975a6343c80d53ed5dcadd59b42f25339df6139c8ad'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/icons/icon-ledger.svg'
-digest = 'sha256:7713f72961dedf03948f6e66db3694c92800d7b0c04b75d5022692f24e17c077'
+digest = 'sha256:54f7bd81e7070c1f38fd120170590078e9746bd989afa8ba03c75319b47f0baa'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/icons/icon-panel.svg'
-digest = 'sha256:6a224e5c56208c060a75c6914ad57dfaebf291064f5fe1d02cde2b9f2bf44934'
+digest = 'sha256:63d0686bf06e3f267d9aac5ed037dac56614d4a51d8a4997aaaf71997e97625d'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/icons/icon-pos.svg'
-digest = 'sha256:ff44917c9297c39d7644a07d94292fbea1b800d52e2f92b97850a081ebb8d9ea'
+digest = 'sha256:b6d1f784c3bfd4058702b84e39de4f2bd2d6c66ddad6026209ed05e8d26765a7'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/icons/icon-website.svg'
-digest = 'sha256:6db24385ed1e3ecf6b40b6e57f875fafc8b446b28c5bfb15dee8d87cffff7359'
+digest = 'sha256:7aa825d2e29078de8abed5f02cfcdc468c95d47c80b0bbadb62084f39033cc5d'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/logo/fastfree-brand-logo-dark.svg'
-digest = 'sha256:4c18625a0aacc7307fae7a408742625dfabe8f850bcdf8e6640a072183be9c65'
+digest = 'sha256:432348d44169b8feffd9e194a30658464b8aa4233ca2ab8c91ce5cfba2277ffc'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/logo/fastfree-brand-logo-light.svg'
-digest = 'sha256:508907fa07c5a6acb7b219eec495006843383eb208c5fac5e9ebb90a19dd8dbf'
+digest = 'sha256:eddf9042d1e5375017244fee99abe5f015a5193cff47e71152def0619148ee9f'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/logo/fastfree-infinity-mark.svg'
-digest = 'sha256:f12a71433a7b5ce0afe36e1d21841776acdee46caf0607084349d52d2f90effa'
+digest = 'sha256:64900d3ce54afffccf9afa2103906fff67a7800bc18c13f554a3ce16b290c360'
 
 [[output]]
 path = '.claude/skills/fastfree-brand/assets/splash/splash-erp-1080p.svg'
@@ -1377,6 +1443,10 @@ path = '.claude/skills/fastfree-guide/scripts/sync-mcp.sh'
 digest = 'sha256:55e5206d2435bbe3456e181f14ffb98d59463adda53065ccea793c57b4cebc90'
 
 [[output]]
+path = '.claude/skills/fastfree-poster/SKILL.md'
+digest = 'sha256:ea191db39f6f4f07620ad44352eeb98d11879902d6785c18175808881ad818fb'
+
+[[output]]
 path = '.claude/skills/fastfree-test/SKILL.md'
 digest = 'sha256:1e6c146343d7e12c56b62e563b189068135039f8a67b6d22ba822706842830aa'
 
@@ -1437,6 +1507,10 @@ path = '.claude/skills/web-backend-release/SKILL.md'
 digest = 'sha256:66001539f901aab42a949bfdf790fa5e90bb427b9e9811e8d5cb7832c6cdf3df'
 
 [[output]]
+path = '.opencode/commands/check-poster.md'
+digest = 'sha256:3c904b45e825883b269b6ec6ed51c8c90191ab56bc3b7372eee1101e0806c6aa'
+
+[[output]]
 path = '.opencode/commands/clan-check.md'
 digest = 'sha256:c01b81c691b60a2e589ba03ccc6c323503e91ee0ae7fc6ace443449eeed6ee67'
 
@@ -1458,7 +1532,7 @@ digest = 'sha256:823ce93afb554c4027cbd66193640b005f23e7589d164852a1b0902340c7287
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-erp-fg.svg'
-digest = 'sha256:e72d180a811946aae532425c6bdde05b45b590def6ad23879e01321a4f7c312b'
+digest = 'sha256:fe92ad980a53a9d1f7744a860a65c41ebc0764bfdd908b340d4653b169fcc660'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-bg.svg'
@@ -1466,7 +1540,7 @@ digest = 'sha256:51314bfee2547e2190e4f731b99d95aee7c3cdc44cc66bfeea7a817981c374c
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-fg.svg'
-digest = 'sha256:d0979f58064cb1ffe2830e5bd816e2226d55304e4999657e84eeb0c37074e3d2'
+digest = 'sha256:a2daf3779b25515e97b324f2b39e7110c8c7ece983aae51d513fa29cc1d4086e'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-ledger-bg.svg'
@@ -1474,7 +1548,7 @@ digest = 'sha256:da3801b94dd91bc26a92abe7d0883bdbdca10a84f84ccc5b6a07a0cbb82ddad
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-ledger-fg.svg'
-digest = 'sha256:90e4e54d8306c219bf85532fd3983fc4a43062c6fc3403f60efc937d207c91ca'
+digest = 'sha256:d17bfdecca2c2ec9ded06c6b482af494399fe2d2ba77b5708d29efeedbe07678'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-panel-bg.svg'
@@ -1482,7 +1556,7 @@ digest = 'sha256:7671096f18d875cb368125cf1e204a00e7a8847cfc21bd932885cfaa06258d2
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-panel-fg.svg'
-digest = 'sha256:7d0d4a93f3deece0755dbe0f8711bf2dea436b487a9dfaae44c2281b56e44462'
+digest = 'sha256:7e4548585f5b0a8a4c147a5891c6346bc7b219be40a6d67cd46db3c269786eb2'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-pos-bg.svg'
@@ -1490,7 +1564,7 @@ digest = 'sha256:827d19f79c44299f4810471a961b8c648bc47d37939b908775dd8aa6e8a3c3a
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-pos-fg.svg'
-digest = 'sha256:8e8a2e58db639dec72a7b8a37a994b836ed94d59bd221ebd4689fa300d3ebb0e'
+digest = 'sha256:15dfa56a78b96bac50123fe26ddc7bee6522f140838047689c16beade707e3ab'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-website-bg.svg'
@@ -1498,67 +1572,67 @@ digest = 'sha256:57ac35b2cd8e05e3705920efbfacfe4647282ab71ba972bdfcef9286fb77141
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/adaptive-icons/adaptive-website-fg.svg'
-digest = 'sha256:acceccb0886c876b72d94cf2bbbbc3f9c35af6f02d2e7f8991c54fc3d76b216d'
+digest = 'sha256:d3fdf105589cdc4c85dc2efdaffb1fad4dd556a5a0b302f42a5d12aa7aac7969'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/icons/adaptive-erp.svg'
-digest = 'sha256:7893373d4363b39a67e78e083d8bac892c297d353a5023007f56735e364ffa7b'
+digest = 'sha256:df1ba47cd176a53d6b24526b51ece0a8896dcf1ec8e9c874c0345fe6d4777046'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/icons/adaptive-hr.svg'
-digest = 'sha256:fd596c75e9047ab81dcff8bdba41813018140a730498ddf0a156a59e891488a7'
+digest = 'sha256:085066c06e3cad3ed7c621fd624997e4ee27b4e8a41c41cdb6940d6c75694bb0'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/icons/adaptive-ledger.svg'
-digest = 'sha256:e634543a20c57c3608f251c8022b9c9c1a6613015c59d5b50723bfba3e9688b7'
+digest = 'sha256:8701d580c0c7957be42b7ef6fed8e501f9ad3393430034a2f399eba8159442f5'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/icons/adaptive-panel.svg'
-digest = 'sha256:ecf7daec07fd2f511b88bcadcc3892565f5ef1378071c74c316233bcb874afaa'
+digest = 'sha256:f912cb5d73d0b0aa0ca912de052d3c9425fe229bd371b813ea1e765b34c02d6f'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/icons/adaptive-pos.svg'
-digest = 'sha256:a0ef28e89fd23a249a338d871e5ffa8c21d6802ff7637f0d6920dd8bdbac3f1d'
+digest = 'sha256:ded32ad0231f8eeaff64f87fe2037c4d9495281edb627505c0f3c53ef88b5879'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/icons/adaptive-website.svg'
-digest = 'sha256:a0e53579ea0597eedf306a51a27bb984cdbd157fe40cf50143ceccd5029d8677'
+digest = 'sha256:50d0f77133c736a8e738d11feb80a7365fd9b58be3754a088a5bc54ffe297a09'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/icons/icon-erp.svg'
-digest = 'sha256:1a93ce0404cb8e8d9514caf904fc7cb13e7b86ad6f23d77c0780767c5eb42632'
+digest = 'sha256:af6f4a94fc258c8bdca9bf3b064130c6c82f5b5c42e69ecc5bb5808803859bd0'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/icons/icon-hr.svg'
-digest = 'sha256:02e3e5da80266231f08609155d34c57c8d10dc6fc235793a8d4b145ee47d1b51'
+digest = 'sha256:68cb0cf1f98baaa8f8a447620487d80b46be38376a67353f993812be64b3bec3'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/icons/icon-ledger.svg'
-digest = 'sha256:113b7489ea991786154bfe3cc9a3a7a1ce091d2a63951f696de25cbf94b13f63'
+digest = 'sha256:c0ed9b52c66b5f7f9f6493c2f65a05c615ee04e0e1ac09acf9dcab4ec68b8e6b'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/icons/icon-panel.svg'
-digest = 'sha256:a41897bd925c67a81e139000937c45396a26ace04ada515c66b4b4d941311fc4'
+digest = 'sha256:29a1db72450a17da99b541c5fae10119e5d4ad15bad2aefbd3770a3c94aa1595'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/icons/icon-pos.svg'
-digest = 'sha256:badca8c244511627ec3ba8b4cf88352cd88eee3f0287b9ce93bc201a51100e41'
+digest = 'sha256:deaa1dc395433f01351d9c59cdaca77b6389a35188e76389cff8f0db5ec62484'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/icons/icon-website.svg'
-digest = 'sha256:238f68e3cfcf33a81161809a12e743422e779ccd511d15e0c5ae7d78f8dff674'
+digest = 'sha256:e1457897945af9445a7e73bf323d63bf42db764fdc9b0b9c6c8b5f55d5fe7896'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/logo/fastfree-brand-logo-dark.svg'
-digest = 'sha256:cde22dbf8659753343ccae9c778b3177e7b1329b2d121b46c0d34a36961d1d0e'
+digest = 'sha256:dca073376fbb575abf71e3a06570209015b8561eecde70e33cede7fd87d18113'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/logo/fastfree-brand-logo-light.svg'
-digest = 'sha256:9d6371997643fbdcbe34f9599c24da09c7fe3cadc718832b5c766b43da8c98d7'
+digest = 'sha256:15a7ddb84b92bbc540dcb5828606d5ee26f9d64157a332e0275190446d5adec5'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/logo/fastfree-infinity-mark.svg'
-digest = 'sha256:8a46782daab2e12a2e2fd782adc959fe1f0b2818cf71720071db31406bd1b9f6'
+digest = 'sha256:260af3a3fef9ca7d1df157ade9a320297608848b409c0c81cea44beb40e5adf6'
 
 [[output]]
 path = '.opencode/skills/fastfree-brand/assets/splash/splash-erp-1080p.svg'
@@ -1618,8 +1692,8 @@ digest = 'sha256:71bc73c292a2adb25eabe7c0e6f22776193bef75dab71b286cd8e4f63b44bf6
 
 [[output]]
 path = 'llms-full.txt'
-digest = 'sha256:6f2f41489b167680cd3eb781373b0b83477365e8379cc4b4c5c15f946a885ab0'
+digest = 'sha256:1bb692dcfff60cc16db88248d50b9713b1d9e4c4e135f148bc753e34ca9b7bbb'
 
 [[output]]
 path = 'llms.txt'
-digest = 'sha256:1ef591609705eb40b8fd84a47833782f0b2d451d71be45c1fea72aae0d78071e'
+digest = 'sha256:fdc483c0f9c52e53bdf59735d7e63c5066ed71f93e399d5dbf53cd536469c68a'
