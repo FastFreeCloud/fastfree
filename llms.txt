@@ -16,6 +16,7 @@
 
 - [Multi-Agent Operating Environment with Herdr](.ai-rulez/context/agents.md): المشروع يدار بواسطة وكلاء ذكاء اصطناعي متعددين يعملون بالتوازي داخل طرفيات **Herdr** (`herdr.dev` مع `HERDR_ENV=1`):
 - [FastFree Monorepo Architecture](.ai-rulez/context/architecture.md): FastFree is a sovereign, offline-first enterprise multi-agent monorepo and operating system ecosystem.
+- [FastFree Monorepo State & Session Memory](.ai-rulez/context/session-memory.md): FastFree is a sovereign, offline-first enterprise multi-agent monorepo and operating system ecosystem.
 
 ## Skills
 
