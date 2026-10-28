@@ -8,7 +8,7 @@ Use MCP server: npx -y ai-rulez@latest mcp --allow-any-dir --serve-skills
 Regenerate: ai-rulez generate
 
 Docs: https://github.com/Goldziher/ai-rulez
-Content-Hash: blake3:d2f11aa0249e1bc369f06324bfbc25b0bb192a617ba4428986a2b7e922729e24
+Content-Hash: blake3:6cfc86b36a1a7f5bba6560bb5ef5f7c19ffab458eeef4db9496a831b9ad0db6f
 -->
 
 # fastfree
@@ -268,7 +268,7 @@ FastFree is a sovereign, offline-first enterprise multi-agent monorepo and opera
 
 ### C. GitHub Actions Workflow Audit & Security Patch
 - Audited all 16 workflows in `.github/workflows/`.
-- **CRITICAL SECURITY FIX**: Discovered hardcoded keystore passwords (`KEYSTORE_PASSWORD: "FastFree@87171393"`) in all 4 Android workflows (`pos`, `hr`, `ledger`, `erp`).
+- **CRITICAL SECURITY FIX**: Discovered hardcoded keystore passwords in plaintext in all 4 Android workflows (`pos`, `hr`, `ledger`, `erp`).
 - Patched all 4 workflows to reference `${{ secrets.ANDROID_KEYSTORE_PASSWORD }}`.
 - Synchronized all `ai-rulez` verifiers (`7 passed, 0 failed`).
 

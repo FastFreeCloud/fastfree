@@ -34,7 +34,7 @@ FastFree is a sovereign, offline-first enterprise multi-agent monorepo and opera
 
 ### C. GitHub Actions Workflow Audit & Security Patch
 - Audited all 16 workflows in `.github/workflows/`.
-- **CRITICAL SECURITY FIX**: Discovered hardcoded keystore passwords (`KEYSTORE_PASSWORD: "FastFree@87171393"`) in all 4 Android workflows (`pos`, `hr`, `ledger`, `erp`).
+- **CRITICAL SECURITY FIX**: Discovered hardcoded keystore passwords in plaintext in all 4 Android workflows (`pos`, `hr`, `ledger`, `erp`).
 - Patched all 4 workflows to reference `${{ secrets.ANDROID_KEYSTORE_PASSWORD }}`.
 - Synchronized all `ai-rulez` verifiers (`7 passed, 0 failed`).
 
