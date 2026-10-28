@@ -170,7 +170,7 @@
           "domain": "frontend",
           "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
           "delivery": "static",
-          "bytes": 353042,
+          "bytes": 353038,
           "tokens": 310
         },
         {
@@ -264,7 +264,7 @@
       ],
       "totals": {
         "items": 28,
-        "bytes": 499679,
+        "bytes": 499675,
         "tokens": 22688,
         "by_kind": {
           "check": 2,
@@ -645,7 +645,7 @@
           "domain": "frontend",
           "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
           "delivery": "static",
-          "bytes": 353042,
+          "bytes": 353038,
           "tokens": 310
         },
         {
@@ -731,7 +731,7 @@
       ],
       "totals": {
         "items": 28,
-        "bytes": 500368,
+        "bytes": 500364,
         "tokens": 22869,
         "by_kind": {
           "check": 2,
@@ -901,7 +901,7 @@
           "domain": "frontend",
           "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
           "delivery": "static",
-          "bytes": 353042,
+          "bytes": 353038,
           "tokens": 310
         },
         {
@@ -987,7 +987,7 @@
       ],
       "totals": {
         "items": 26,
-        "bytes": 496948,
+        "bytes": 496944,
         "tokens": 22035,
         "by_kind": {
           "check": 2,
@@ -1190,7 +1190,7 @@
           "domain": "frontend",
           "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
           "delivery": "static",
-          "bytes": 353042,
+          "bytes": 353038,
           "tokens": 310
         },
         {
@@ -1308,7 +1308,7 @@
       ],
       "totals": {
         "items": 33,
-        "bytes": 506993,
+        "bytes": 506989,
         "tokens": 24652,
         "by_kind": {
           "check": 3,
