@@ -203,10 +203,6 @@
       "*id_ed25519*": "deny",
       "*id_rsa*": "deny",
       ".env*": "deny"
-    },
-    "webfetch": {
-      "https://github.com/*": "allow",
-      "https://npmjs.org/*": "allow"
     }
   },
   "agent": {
