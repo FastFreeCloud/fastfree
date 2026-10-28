@@ -71,7 +71,7 @@
         "firecrawl-mcp"
       ],
       "environment": {
-        "FIRECRAWL_API_KEY": "fc-a6393086cab440e48a0f9fc3311bb2c2"
+        "FIRECRAWL_API_KEY": ""
       },
       "timeout": 300000
     }

@@ -26,8 +26,8 @@
 | **File SHA-256** | `7C462200AA611C7C9BC3DC5857075F570036A3A20EC56AB72F2DF32B384FAF76` | البصمة الثنائية للملف |
 | **Keystore Type** | `PKCS12` | متوافق مع JDK 17+ و JDK 21 |
 | **Key Alias** | `fastfree` | اسم المستعار المعتمد |
-| **Store Password** | `FastFree@87171393` | كلمة مرور المخزن |
-| **Key Password** | `FastFree@87171393` | كلمة مرور المفتاح الخاص |
+| **Store Password** | `<see GitHub Actions secret ANDROID_KEYSTORE_PASSWORD>` | كلمة مرور المخزن |
+| **Key Password** | `<see GitHub Actions secret ANDROID_KEYSTORE_PASSWORD>` | كلمة مرور المفتاح الخاص |
 | **Key Algorithm** | `RSA 2048-bit` | خوارزمية التشفير |
 | **Signature Algorithm** | `SHA384withRSA` | خوارزمية التوقيع الرقمي |
 | **Distinguished Name (DN)** | `CN=FastFree, OU=IT, O=FastFree, L=Riyadh, ST=Riyadh, C=SA` | بيانات المنظمة والمطور |
@@ -91,9 +91,9 @@
 # FastFree Android Release Signing Configuration
 # Root project relative path to release.jks
 storeFile=release.jks
-storePassword=FastFree@87171393
+storePassword=<see GitHub Actions secret ANDROID_KEYSTORE_PASSWORD>
 keyAlias=fastfree
-keyPassword=FastFree@87171393
+keyPassword=<see GitHub Actions secret ANDROID_KEYSTORE_PASSWORD>
 ```
 
 تم توفير قوالب دائمة غير متجاهلة في Git داخل:
