@@ -110,7 +110,7 @@
         "-c",
         "command -v mcp-nixos >/dev/null 2>&1 && exec mcp-nixos || exec nix run github:utensils/mcp-nixos --"
       ],
-      "enabled": true,
+      "enabled": false,
       "timeout": 120000
     },
     "rea": {
