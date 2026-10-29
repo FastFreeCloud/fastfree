@@ -80,10 +80,13 @@ impl LicensingManager {
     pub fn get_machine_hwid() -> String {
         #[cfg(windows)]
         {
+            use std::os::windows::process::CommandExt;
             use std::process::Command;
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
 
             // 1. Query Cryptography MachineGuid from Registry (instantaneous & non-privileged)
             if let Ok(output) = Command::new("reg")
+                .creation_flags(CREATE_NO_WINDOW)
                 .args(["query", r"HKLM\SOFTWARE\Microsoft\Cryptography", "/v", "MachineGuid"])
                 .output()
             {
@@ -109,6 +112,7 @@ impl LicensingManager {
 
             // 2. Query BIOS / Motherboard UUID via CIM/WMI
             if let Ok(output) = Command::new("powershell")
+                .creation_flags(CREATE_NO_WINDOW)
                 .args([
                     "-NoProfile",
                     "-NonInteractive",
