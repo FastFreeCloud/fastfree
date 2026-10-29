@@ -295,3 +295,26 @@ export async function provisionNode(
     throw err;
   }
 }
+
+export interface WireGuardApplyResult {
+  success: boolean;
+  conf_path: string;
+  message: string;
+}
+
+export async function applyWireGuardConfig(clientId: string): Promise<WireGuardApplyResult> {
+  logInfo('WireGuard', `Applying WireGuard config for '${clientId}'...`);
+  try {
+    const result = await invoke<WireGuardApplyResult>('apply_wireguard_config', { clientId });
+    if (result.success) {
+      logSuccess('WireGuard', `Config written to: ${result.conf_path}`, result.message);
+    } else {
+      logError('WireGuard', `Failed to write config for '${clientId}'`, result.message);
+    }
+    return result;
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    logError('WireGuard', `apply_wireguard_config invocation error for '${clientId}'`, msg);
+    throw err;
+  }
+}
