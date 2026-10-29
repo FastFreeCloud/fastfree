@@ -4,6 +4,18 @@ use crate::licensing::LicensingManager;
 use crate::logger::InstallerLogger;
 use tauri::{AppHandle, Emitter, Manager};
 
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
+pub const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+pub fn hidden_command(program: &str) -> std::process::Command {
+    let mut cmd = std::process::Command::new(program);
+    #[cfg(windows)]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    cmd
+}
+
 #[tauri::command]
 pub async fn get_system_discovery_report() -> Result<SystemDiscoveryReport, String> {
     tokio::task::spawn_blocking(HostDiscoveryPipeline::collect_report)
@@ -131,8 +143,7 @@ try {{
 
     #[cfg(windows)]
     {
-        use std::process::Command;
-        let output = Command::new("powershell")
+        let output = hidden_command("powershell")
             .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", &ps_cmd])
             .output();
 
@@ -196,7 +207,6 @@ pub async fn get_vm_real_state(client_id: String) -> Result<VmRealState, String>
 
     #[cfg(windows)]
     {
-        use std::process::Command;
         let _ = ensure_hyperv_environment();
 
         let ps_cmd = format!(
@@ -251,7 +261,7 @@ try {{
             vm_name
         );
 
-        let output = Command::new("powershell")
+        let output = hidden_command("powershell")
             .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", &ps_cmd])
             .output();
 
@@ -302,7 +312,6 @@ try {{
 pub fn ensure_hyperv_environment() -> Result<(), String> {
     #[cfg(windows)]
     {
-        use std::process::Command;
         InstallerLogger::info(
             "HYPERV_ENV",
             "Verifying Hyper-V environment: VMMS service state and Hyper-V Administrators group...",
@@ -341,7 +350,7 @@ if ($members -match $user) {
 Write-Output "FASTFREE_ENV:vmms_installed=$($res.vmms_installed);vmms_running=$($res.vmms_running);in_group=$($res.in_group)"
 "#;
 
-        let output = Command::new("powershell")
+        let output = hidden_command("powershell")
             .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script])
             .output();
 
@@ -366,7 +375,6 @@ pub async fn check_vm_exists(client_id: String) -> Result<bool, String> {
 
     #[cfg(windows)]
     {
-        use std::process::Command;
         let _ = ensure_hyperv_environment();
 
         let script = format!(
@@ -386,7 +394,7 @@ try {{
             vm_name
         );
 
-        let output = Command::new("powershell")
+        let output = hidden_command("powershell")
             .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", &script])
             .output();
 
@@ -497,9 +505,7 @@ pub async fn install_hyperv_feature() -> Result<String, String> {
     InstallerLogger::info("HYPERV_INSTALL", "Enabling Microsoft-Hyper-V features via DISM...");
     #[cfg(windows)]
     {
-        use std::process::Command;
-
-        let output = Command::new("dism.exe")
+        let output = hidden_command("dism.exe")
             .args([
                 "/Online",
                 "/Enable-Feature",
@@ -518,7 +524,7 @@ pub async fn install_hyperv_feature() -> Result<String, String> {
                     &format!("DISM result: exit={:?}, out={}, err={}", out.status.code(), stdout, stderr),
                 );
 
-                let _ = Command::new("powershell")
+                let _ = hidden_command("powershell")
                     .args([
                         "-NoProfile",
                         "-ExecutionPolicy",
@@ -542,7 +548,7 @@ dism.exe /Online /Enable-Feature /All /FeatureName:Microsoft-Hyper-V /NoRestart
 Set-Service -Name vmms -StartupType Automatic -ErrorAction SilentlyContinue
 Start-Service -Name vmms -ErrorAction SilentlyContinue
 "#;
-                    let home_out = Command::new("powershell")
+                    let home_out = hidden_command("powershell")
                         .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", home_script])
                         .output();
 
@@ -596,7 +602,6 @@ pub async fn provision_node(
     #[cfg(windows)]
     {
         use std::fs;
-        use std::process::Command;
 
         // 0. Verify and configure Hyper-V prerequisites
         if let Err(e) = ensure_hyperv_environment() {
@@ -622,7 +627,7 @@ pub async fn provision_node(
         step_logs.push(step1);
 
         // 2. Ensure Hyper-V Service VMMS is running and user is in Hyper-V Administrators
-        let _ = Command::new("powershell")
+        let _ = hidden_command("powershell")
             .args([
                 "-NoProfile",
                 "-ExecutionPolicy",
@@ -654,7 +659,7 @@ if (-not $sw) {
 }
 Write-Output "FASTFREE_SWITCH_READY:$switchName"
 "#;
-        let sw_out = Command::new("powershell")
+        let sw_out = hidden_command("powershell")
             .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", vswitch_script])
             .output();
 
@@ -709,6 +714,10 @@ try {{
         Set-VMProcessor -VMName '{vm_name}' -Count {cores} | Out-Null
         Set-VMMemory -VMName '{vm_name}' -DynamicMemoryEnabled $false | Out-Null
         Set-VMFirmware -VMName '{vm_name}' -EnableSecureBoot On -SecureBootTemplate 'MicrosoftUEFICertificateAuthority' -ErrorAction SilentlyContinue | Out-Null
+        $hd = Get-VMHardDiskDrive -VMName '{vm_name}' -ErrorAction SilentlyContinue
+        if ($hd) {{
+            Set-VMFirmware -VMName '{vm_name}' -FirstBootDevice $hd[0] -ErrorAction SilentlyContinue | Out-Null
+        }}
         Set-VM -VMName '{vm_name}' -AutomaticStopAction ShutDown -ErrorAction SilentlyContinue | Out-Null
     }} else {{
         Set-VMProcessor -VMName '{vm_name}' -Count {cores} -ErrorAction SilentlyContinue | Out-Null
@@ -756,7 +765,7 @@ try {{
             switch_name = switch_name
         );
 
-        let vm_res = Command::new("powershell")
+        let vm_res = hidden_command("powershell")
             .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", &vm_script])
             .output();
 

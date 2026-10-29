@@ -116,8 +116,10 @@ pub fn run() {
                             InstallerLogger::info("TRAY", "Triggering Start-VM 'FastFree-client2' from tray");
                             #[cfg(windows)]
                             {
+                                use std::os::windows::process::CommandExt;
                                 use std::process::Command;
                                 let _ = Command::new("powershell")
+                                    .creation_flags(0x08000000)
                                     .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "Start-VM -Name 'FastFree-client2' -ErrorAction SilentlyContinue"])
                                     .spawn();
                             }
@@ -126,8 +128,10 @@ pub fn run() {
                             InstallerLogger::info("TRAY", "Triggering Restart-VM 'FastFree-client2' from tray");
                             #[cfg(windows)]
                             {
+                                use std::os::windows::process::CommandExt;
                                 use std::process::Command;
                                 let _ = Command::new("powershell")
+                                    .creation_flags(0x08000000)
                                     .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "Restart-VM -Name 'FastFree-client2' -Force -ErrorAction SilentlyContinue"])
                                     .spawn();
                             }
@@ -136,8 +140,10 @@ pub fn run() {
                             InstallerLogger::info("TRAY", "Triggering Stop-VM 'FastFree-client2' from tray");
                             #[cfg(windows)]
                             {
+                                use std::os::windows::process::CommandExt;
                                 use std::process::Command;
                                 let _ = Command::new("powershell")
+                                    .creation_flags(0x08000000)
                                     .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "Stop-VM -Name 'FastFree-client2' -Force -ErrorAction SilentlyContinue"])
                                     .spawn();
                             }
