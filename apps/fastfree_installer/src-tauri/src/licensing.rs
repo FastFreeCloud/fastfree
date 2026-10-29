@@ -41,6 +41,8 @@ pub struct GoogleSheetsLicenseData {
     pub expires_at: Option<String>,
     #[serde(alias = "issued_at")]
     pub issued_at: Option<String>,
+    #[serde(alias = "max_users", alias = "max_seats", alias = "maxSeats", alias = "maxUsers")]
+    pub max_users: Option<u32>,
     pub max_offline_days: Option<u64>,
 }
 
@@ -330,6 +332,7 @@ impl LicensingManager {
                             status: Some("ACTIVE".to_string()),
                             expires_at: None,
                             issued_at: None,
+                            max_users: None,
                             max_offline_days: Some(90),
                         });
 
@@ -364,6 +367,7 @@ impl LicensingManager {
                             .or_else(|| Some("2028-12-31T23:59:59Z".to_string()));
 
                         let token = api_resp.token.unwrap_or_default();
+                        let max_users = lic.max_users.unwrap_or(50);
 
                         let cached_record = CachedLicenseRecord {
                             key: clean_key.clone(),
@@ -372,7 +376,7 @@ impl LicensingManager {
                             tier_name: tier_name.clone(),
                             company_name: org_name.clone(),
                             expires_at: expires_at.clone(),
-                            max_users: 50,
+                            max_users,
                             max_nodes: 10,
                             node_id: node_id.clone(),
                             hwid: hwid.clone(),
@@ -383,12 +387,17 @@ impl LicensingManager {
                         InstallerLogger::info(
                             "LICENSING",
                             &format!(
-                                "License validated & HWID bound successfully. Node: {}, Org: '{}', Tier: '{}'",
-                                node_id, org_name, tier
+                                "License validated & HWID bound successfully. Node: {}, Org: '{}', Tier: '{}', Users: {}",
+                                node_id, org_name, tier, max_users
                             ),
                         );
 
-                        let eligible = (2..=11).map(|k| format!("client{}", k)).collect();
+                        let mut eligible: Vec<String> = (2..=11).map(|k| format!("client{}", k)).collect();
+                        if let Some(pos) = eligible.iter().position(|x| x == &node_id) {
+                            eligible.remove(pos);
+                        }
+                        eligible.insert(0, node_id.clone());
+
                         let token_preview = if !token.is_empty() {
                             format!(" (Token: {}...)", &token[..token.len().min(12)])
                         } else {
@@ -398,11 +407,12 @@ impl LicensingManager {
                         return Ok(LicenseVerificationResult {
                             is_valid: true,
                             key: clean_key,
+                            node_id: node_id.clone(),
                             tier,
                             tier_name,
                             company_name: org_name,
                             expires_at,
-                            max_users: 50,
+                            max_users,
                             max_nodes: 10,
                             eligible_clients: eligible,
                             unlocked_features: Self::get_standard_features(),
@@ -567,10 +577,16 @@ impl LicensingManager {
     }
 
     fn cached_to_result(cached: &CachedLicenseRecord, message: &str) -> LicenseVerificationResult {
-        let eligible = (2..=11).map(|k| format!("client{}", k)).collect();
+        let mut eligible: Vec<String> = (2..=11).map(|k| format!("client{}", k)).collect();
+        if let Some(pos) = eligible.iter().position(|x| x == &cached.node_id) {
+            eligible.remove(pos);
+        }
+        eligible.insert(0, cached.node_id.clone());
+
         LicenseVerificationResult {
             is_valid: true,
             key: cached.key.clone(),
+            node_id: cached.node_id.clone(),
             tier: cached.tier.clone(),
             tier_name: cached.tier_name.clone(),
             company_name: cached.company_name.clone(),
@@ -594,11 +610,16 @@ impl LicensingManager {
                 .collect();
             let n: u32 = node_num.parse().unwrap_or(2);
             let target_node = format!("client{}", n);
-            let eligible = (2..=11).map(|k| format!("client{}", k)).collect();
+            let mut eligible: Vec<String> = (2..=11).map(|k| format!("client{}", k)).collect();
+            if let Some(pos) = eligible.iter().position(|x| x == &target_node) {
+                eligible.remove(pos);
+            }
+            eligible.insert(0, target_node.clone());
 
             return Ok(LicenseVerificationResult {
                 is_valid: true,
                 key: clean_key.to_string(),
+                node_id: target_node.clone(),
                 tier: "enterprise".to_string(),
                 tier_name: format!("FastFree Node License ({})", target_node),
                 company_name: format!("Enterprise Client - {}", target_node),
@@ -621,6 +642,7 @@ impl LicensingManager {
             return Ok(LicenseVerificationResult {
                 is_valid: true,
                 key: clean_key.to_string(),
+                node_id: "client2".to_string(),
                 tier: "enterprise".to_string(),
                 tier_name: "FastFree Enterprise".to_string(),
                 company_name: "FastFree Enterprise Client".to_string(),
@@ -640,6 +662,7 @@ impl LicensingManager {
             return Ok(LicenseVerificationResult {
                 is_valid: true,
                 key: clean_key.to_string(),
+                node_id: "client2".to_string(),
                 tier: "standard".to_string(),
                 tier_name: "FastFree Commercial Standard".to_string(),
                 company_name: "FastFree Commercial Node".to_string(),
@@ -666,6 +689,7 @@ impl LicensingManager {
             return Ok(LicenseVerificationResult {
                 is_valid: true,
                 key: clean_key.to_string(),
+                node_id: "client2".to_string(),
                 tier: "trial".to_string(),
                 tier_name: "FastFree Evaluation 14-Day Trial".to_string(),
                 company_name: "Evaluation Sandbox".to_string(),
@@ -722,13 +746,15 @@ mod tests {
     fn test_validate_local_offline_client_keys() {
         let res = LicensingManager::verify_offline_pattern("FF-CL02-7K2M-9P4W-1X88").unwrap();
         assert!(res.is_valid);
+        assert_eq!(res.node_id, "client2");
         assert_eq!(res.tier, "enterprise");
         assert_eq!(res.eligible_clients.len(), 10);
-        assert!(res.eligible_clients.contains(&"client2".to_string()));
+        assert_eq!(res.eligible_clients[0], "client2");
 
         let res11 = LicensingManager::verify_offline_pattern("FF-CL11-6J1W-8Y3F-0G77").unwrap();
         assert!(res11.is_valid);
-        assert!(res11.eligible_clients.contains(&"client11".to_string()));
+        assert_eq!(res11.node_id, "client11");
+        assert_eq!(res11.eligible_clients[0], "client11");
     }
 
     #[test]
