@@ -1,0 +1,1 @@
+import{X as e,Z as t,d as n,s as r}from"./index-DJgdkx_9.js";var i=r(()=>{t.set(!1),e(`primary`,`#4F46E5`);let r=n();r.setMode(`light`),r.setAppSignature(`#4F46E5`)});export{i as default};

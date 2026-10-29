@@ -21,7 +21,7 @@ import { globalRoutes } from './routes/global.js';
 import { healthRoutes } from './routes/health.js';
 import { machinesRoutes } from './routes/machines.js';
 import { mcpRoutes } from './routes/mcp.js';
-import { herdrRoutes } from './routes/herdr.js';
+import { paseoRoutes } from './routes/paseo.js';
 const API_PREFIX = '/api/v1';
 export function createApp() {
     const app = new Hono();
@@ -44,8 +44,8 @@ export function createApp() {
     app.route('/api', machinesRoutes);
     app.route(API_PREFIX, globalRoutes);
     app.route('/api', globalRoutes);
-    app.route(API_PREFIX, herdrRoutes);
-    app.route('/api', herdrRoutes);
+    app.route(API_PREFIX, paseoRoutes);
+    app.route('/api', paseoRoutes);
     // Mount Web MCP server routes
     app.route('/mcp', mcpRoutes);
     app.route(`${API_PREFIX}/mcp`, mcpRoutes);
