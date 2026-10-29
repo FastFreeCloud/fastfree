@@ -143,7 +143,7 @@
           </div>
           <div class="detail-item">
             <span class="detail-label">{{ t('license.assignedNode') }}</span>
-            <span class="detail-val text-accent font-mono">{{ licenseState.eligible_clients[0] || 'client2' }}</span>
+            <span class="detail-val text-accent font-mono">{{ licenseState.node_id || licenseState.eligible_clients[0] || 'client2' }}</span>
           </div>
           <div class="detail-item">
             <span class="detail-label">{{ t('license.keyLabel') }}</span>

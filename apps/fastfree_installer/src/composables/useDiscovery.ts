@@ -43,6 +43,7 @@ export interface SystemDiscoveryReport {
 export interface LicenseVerificationResult {
   is_valid: boolean;
   key: string;
+  node_id?: string;
   tier: 'enterprise' | 'standard' | 'trial' | string;
   tier_name: string;
   company_name: string;
@@ -171,7 +172,9 @@ export async function verifyLicense(key: string, onlineCheck: boolean = true): P
       onlineCheck,
     });
     licenseState.value = result;
-    if (result.eligible_clients.length > 0 && !result.eligible_clients.includes(selectedClientId.value)) {
+    if (result.node_id) {
+      selectedClientId.value = result.node_id;
+    } else if (result.eligible_clients.length > 0) {
       selectedClientId.value = result.eligible_clients[0];
     }
     if (result.is_valid) {

@@ -46,6 +46,7 @@ pub struct SystemDiscoveryReport {
 pub struct LicenseVerificationResult {
     pub is_valid: bool,
     pub key: String,
+    pub node_id: String,
     pub tier: String,
     pub tier_name: String,
     pub company_name: String,
