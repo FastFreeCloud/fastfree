@@ -3,7 +3,7 @@ set -euo pipefail
 
 # FastFree MCP Synchronizer
 # Syncs MCP servers from opencode.json to Antigravity (~/.gemini/config/mcp_config.json)
-# Ensures all AI agents running in Herdr share the exact same MCP toolset.
+# Ensures all AI agents running under the Paseo daemon share the exact same MCP toolset.
 
 REPO_ROOT="/home/fastfree/Desktop/fastfree"
 OPENCODE_CONFIG="$REPO_ROOT/opencode.json"

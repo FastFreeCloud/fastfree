@@ -1,14 +1,14 @@
 <template>
-  <div class="clan-herdr-screen q-pa-md">
-    <!-- Header with Live Herdr MCP Status & Actions -->
+  <div class="clan-paseo-screen q-pa-md">
+    <!-- Header with Live Paseo MCP Status & Actions -->
     <div class="row items-center q-mb-md q-gutter-sm">
       <div>
         <div class="text-h6 text-weight-bold row items-center q-gutter-xs">
-          <span>Herdr Multi-Agent Ecosystem</span>
-          <span lang="ar" dir="rtl" class="q-ml-sm text-subtitle1 text-grey-5">منظومة وكلاء Herdr الذكية</span>
+          <span>Paseo Multi-Agent Ecosystem</span>
+          <span lang="ar" dir="rtl" class="q-ml-sm text-subtitle1 text-grey-5">منظومة وكلاء Paseo الذكية</span>
         </div>
         <div class="text-caption text-grey-6">
-          Live MCP Orchestration · Real-time agents, tabs, panes, and command dispatching
+          Live MCP Orchestration · Real-time agents, providers, and command dispatching
         </div>
       </div>
 
@@ -56,25 +56,25 @@
         round
         icon="mdi-refresh"
         :loading="loading"
-        aria-label="Refresh Herdr status"
-        @click="refreshHerdrStatus"
+        aria-label="Refresh Paseo status"
+        @click="refreshPaseoStatus"
       >
-        <q-tooltip>Refresh Herdr MCP Session · تحديث</q-tooltip>
+        <q-tooltip>Refresh Paseo MCP Session · تحديث</q-tooltip>
       </q-btn>
     </div>
 
     <!-- Overview Stat Cards -->
     <div class="row q-col-gutter-md q-mb-md">
-      <div class="col-12 col-sm-6 col-md-3">
+      <div class="col-12 col-sm-6 col-md-4">
         <q-card flat bordered class="q-pa-sm text-center">
-          <q-icon name="mdi-folder-network-outline" size="30px" color="primary" />
-          <div class="text-caption text-grey-5 q-mt-xs">Workspace Directory</div>
-          <div class="text-subtitle2 text-weight-bold text-ellipsis">{{ workspaceDirectory }}</div>
+          <q-icon name="mdi-lan-connect" size="30px" color="primary" />
+          <div class="text-caption text-grey-5 q-mt-xs">Paseo Daemon</div>
+          <div class="text-subtitle2 text-weight-bold text-ellipsis">{{ daemonUrl }}</div>
           <div class="text-caption text-positive">{{ liveAgents.length }} Registered Agents</div>
         </q-card>
       </div>
 
-      <div class="col-12 col-sm-6 col-md-3">
+      <div class="col-12 col-sm-6 col-md-4">
         <q-card flat bordered class="q-pa-sm text-center">
           <q-icon name="mdi-robot-excited-outline" size="30px" color="teal" />
           <div class="text-caption text-grey-5 q-mt-xs">Active Lead Agent</div>
@@ -83,31 +83,22 @@
         </q-card>
       </div>
 
-      <div class="col-12 col-sm-6 col-md-3">
-        <q-card flat bordered class="q-pa-sm text-center">
-          <q-icon name="mdi-console-network" size="30px" color="cyan" />
-          <div class="text-caption text-grey-5 q-mt-xs">Herdr Panes & Shells</div>
-          <div class="text-subtitle2 text-weight-bold text-cyan-3">{{ focusedPane }}</div>
-          <div class="text-caption text-grey-6">Active Session Monitored</div>
-        </q-card>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-3">
+      <div class="col-12 col-sm-6 col-md-4">
         <q-card flat bordered class="q-pa-sm text-center">
           <q-icon name="mdi-sync" size="30px" color="indigo" />
           <div class="text-caption text-grey-5 q-mt-xs">Live Status Breakdown</div>
           <div class="text-subtitle2 text-weight-bold text-indigo-3">{{ statusBreakdownText }}</div>
-          <div class="text-caption text-grey-6">{{ herdrData?.source === 'live' ? 'Live Socket Sync' : 'Session Telemetry Sync' }}</div>
+          <div class="text-caption text-grey-6">{{ paseoData?.source === 'live' ? 'Live Daemon Sync' : 'Fallback Roster' }}</div>
         </q-card>
       </div>
     </div>
 
-    <!-- Live Herdr Agents Lowcode Table with Pagination -->
+    <!-- Live Paseo Agents Lowcode Table with Pagination -->
     <q-card flat bordered class="q-mb-md">
       <q-table
         :rows="filteredAgents"
         :columns="agentColumns"
-        row-key="name"
+        row-key="id"
         flat
         dense
         v-model:pagination="pagination"
@@ -120,25 +111,25 @@
           <q-td :props="props">
             <div class="row items-center no-wrap">
               <q-avatar
-                :icon="props.row.agent === 'opencode' ? 'mdi-code-braces' : props.row.agent === 'claude' ? 'mdi-brain' : props.row.agent === 'nixos' ? 'mdi-nix' : 'mdi-robot-outline'"
-                :color="props.row.agent === 'opencode' ? 'purple-8' : props.row.agent === 'claude' ? 'amber-9' : props.row.agent === 'nixos' ? 'blue-8' : 'primary'"
+                :icon="props.row.provider === 'opencode' ? 'mdi-code-braces' : props.row.provider === 'claude' ? 'mdi-brain' : props.row.provider === 'nixos' ? 'mdi-nix' : 'mdi-robot-outline'"
+                :color="props.row.provider === 'opencode' ? 'purple-8' : props.row.provider === 'claude' ? 'amber-9' : props.row.provider === 'nixos' ? 'blue-8' : 'primary'"
                 text-color="white"
                 size="26px"
                 class="q-mr-sm"
               />
               <div>
                 <div class="text-weight-bold text-body2">{{ props.row.name }}</div>
-                <div class="text-caption text-grey-6">Workspace {{ props.row.workspace_id }} · Tab {{ props.row.tab_id }}</div>
+                <div class="text-caption text-grey-6">ID {{ props.row.id }}</div>
               </div>
             </div>
           </q-td>
         </template>
 
-        <!-- Agent Type / Binary Slot -->
-        <template #body-cell-agent="props">
+        <!-- Provider Type Slot -->
+        <template #body-cell-provider="props">
           <q-td :props="props">
             <q-chip dense square size="xs" color="grey-9" text-color="grey-3">
-              {{ String(props.row.agent).toUpperCase() }}
+              {{ String(props.row.provider).toUpperCase() }}
             </q-chip>
           </q-td>
         </template>
@@ -154,10 +145,10 @@
           </q-td>
         </template>
 
-        <!-- Location / Pane Slot -->
-        <template #body-cell-pane="props">
+        <!-- Working Directory Slot -->
+        <template #body-cell-cwd="props">
           <q-td :props="props">
-            <code class="text-caption text-cyan-3">{{ props.row.pane_id }}</code>
+            <code class="text-caption text-cyan-3">{{ props.row.cwd || '-' }}</code>
           </q-td>
         </template>
 
@@ -184,10 +175,10 @@
                 size="sm"
                 color="teal"
                 icon="mdi-card-search-outline"
-                aria-label="Inspect agent shell"
+                aria-label="Inspect agent details"
                 @click="openAgentInspect(props.row)"
               >
-                <q-tooltip>Inspect Agent Shell · تفاصيل الطرفية</q-tooltip>
+                <q-tooltip>Inspect Agent · تفاصيل الوكيل</q-tooltip>
               </q-btn>
             </div>
           </q-td>
@@ -209,14 +200,14 @@
 
         <q-card-section class="q-pt-md">
           <div class="text-caption text-grey-5 q-mb-sm">
-            Target Pane: <code>{{ selectedAgent?.pane_id }}</code> (Workspace {{ selectedAgent?.workspace_id }})
+            Target Agent: <code>{{ selectedAgent?.id }}</code> ({{ selectedAgent?.provider }})
           </div>
           <q-input
             v-model="promptText"
             type="textarea"
             rows="4"
             outlined
-            placeholder="Type instructions or command for this Herdr agent..."
+            placeholder="Type instructions or command for this Paseo agent..."
             dense
             autofocus
             @keydown.ctrl.enter="dispatchPrompt"
@@ -229,6 +220,7 @@
             color="primary"
             icon="mdi-send"
             label="Send to Agent · إرسال"
+            type="submit"
             :loading="sendingPrompt"
             :disable="!promptText.trim()"
             @click="dispatchPrompt"
@@ -241,9 +233,9 @@
     <q-dialog v-model="inspectDialogOpen">
       <q-card style="min-width: min(90vw, 600px)">
         <q-card-section class="row items-center q-gutter-sm bg-grey-9 text-white">
-          <q-icon name="mdi-console" size="24px" color="teal" />
+          <q-icon name="mdi-robot-outline" size="24px" color="teal" />
           <div class="text-subtitle1 text-weight-bold">
-            Agent Shell: {{ selectedAgent?.name }}
+            Agent Details: {{ selectedAgent?.name }}
           </div>
           <q-space />
           <q-btn flat dense round icon="mdi-close" v-close-popup aria-label="Close dialog" />
@@ -251,16 +243,16 @@
 
         <q-card-section class="q-pa-md q-gutter-y-sm">
           <div class="row">
-            <div class="col-4 text-grey-5">Agent Executable:</div>
-            <div class="col-8 text-weight-bold">{{ selectedAgent?.agent }}</div>
+            <div class="col-4 text-grey-5">Agent ID:</div>
+            <div class="col-8 text-weight-bold"><code>{{ selectedAgent?.id }}</code></div>
+          </div>
+          <div class="row">
+            <div class="col-4 text-grey-5">Provider:</div>
+            <div class="col-8 text-weight-bold">{{ selectedAgent?.provider }}</div>
           </div>
           <div class="row">
             <div class="col-4 text-grey-5">Working Directory:</div>
-            <div class="col-8"><code>{{ selectedAgent?.cwd || 'C:\\Users\\FastFree' }}</code></div>
-          </div>
-          <div class="row">
-            <div class="col-4 text-grey-5">Tab & Pane:</div>
-            <div class="col-8"><code>{{ selectedAgent?.tab_id }} &bull; {{ selectedAgent?.pane_id }}</code></div>
+            <div class="col-8"><code>{{ selectedAgent?.cwd || '-' }}</code></div>
           </div>
           <div class="row">
             <div class="col-4 text-grey-5">Execution Status:</div>
@@ -282,10 +274,10 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { useWebMcp } from '../composables/useWebMcp';
 import {
-  apiHerdrStatus,
-  apiHerdrPrompt,
-  type LiveHerdrAgent,
-  type HerdrStatusData,
+  apiPaseoStatus,
+  apiPaseoPrompt,
+  type LivePaseoAgent,
+  type PaseoStatusData,
 } from '../lib/api';
 
 const $q = useQuasar();
@@ -297,7 +289,7 @@ const loading = ref(false);
 
 const promptDialogOpen = ref(false);
 const inspectDialogOpen = ref(false);
-const selectedAgent = ref<LiveHerdrAgent | null>(null);
+const selectedAgent = ref<LivePaseoAgent | null>(null);
 const promptText = ref('');
 const sendingPrompt = ref(false);
 
@@ -310,40 +302,28 @@ const pagination = ref({
 
 const agentColumns = [
   { name: 'name', label: 'Agent Name · اسم الوكيل', field: 'name', align: 'left' as const, sortable: true },
-  { name: 'agent', label: 'Binary / Type', field: 'agent', align: 'center' as const, sortable: true },
+  { name: 'provider', label: 'Provider', field: 'provider', align: 'center' as const, sortable: true },
   { name: 'status', label: 'Status · الحالة', field: 'status', align: 'center' as const, sortable: true },
-  { name: 'pane', label: 'Pane Location', field: 'pane_id', align: 'left' as const },
+  { name: 'cwd', label: 'Working Directory', field: 'cwd', align: 'left' as const },
   { name: 'actions', label: 'Actions · الإجراءات', field: 'name', align: 'right' as const },
 ];
 
 /** Persisted telemetry metadata */
-const herdrData = ref<HerdrStatusData | null>(null);
+const paseoData = ref<PaseoStatusData | null>(null);
 
-/** Live agents array initialized with verified FastFree Herdr ecosystem defaults */
-const liveAgents = ref<LiveHerdrAgent[]>([
-  { name: 'agy-audit-all', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:t9', pane_id: 'w1:p9', cwd: 'C:\\Users\\FastFree' },
-  { name: 'agy-final-lint', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:tD', pane_id: 'w1:pD', cwd: 'C:\\Users\\FastFree' },
-  { name: 'agy-fix-ledger-paths', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:tC', pane_id: 'w1:pC', cwd: 'C:\\Users\\FastFree' },
-  { name: 'agy-fix-lowcode-types', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:tJ', pane_id: 'w1:pJ', cwd: 'C:\\Users\\FastFree' },
-  { name: 'agy-fix-panel-blank', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:tK', pane_id: 'w1:pK', cwd: 'C:\\Users\\FastFree' },
-  { name: 'agy-inventory-locales', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:t7', pane_id: 'w1:p7', cwd: 'C:\\Users\\FastFree', focused: true },
-  { name: 'agy-node-patch-ledger', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:tB', pane_id: 'w1:pB', cwd: 'C:\\Users\\FastFree' },
-  { name: 'agy-tc-inv-purchase', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:tF', pane_id: 'w1:pF', cwd: 'C:\\Users\\FastFree' },
-  { name: 'agy-tc-purchase', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:tE', pane_id: 'w1:pE', cwd: 'C:\\Users\\FastFree' },
-  { name: 'agy-tc-sales', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:tH', pane_id: 'w1:pH', cwd: 'C:\\Users\\FastFree' },
-  { name: 'agy-theme-contrast', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:tL', pane_id: 'w1:pL', cwd: 'C:\\Users\\FastFree' },
-  { name: 'agy-ts-cleanup-lowcode', agent: 'agy', status: 'blocked', workspace_id: 'w1', tab_id: 'w1:tI', pane_id: 'w1:pI', cwd: 'C:\\Users\\FastFree' },
-  { name: 'opencode-clan-deploy', agent: 'opencode', status: 'idle', workspace_id: 'w1', tab_id: 'w1:t2', pane_id: 'w1:p2', cwd: 'C:\\Users\\FastFree' },
-  { name: 'claude-architecture', agent: 'claude', status: 'idle', workspace_id: 'w1', tab_id: 'w1:t3', pane_id: 'w1:p3', cwd: 'C:\\Users\\FastFree' },
-  { name: 'agy-desktop-shell', agent: 'agy', status: 'idle', workspace_id: 'w1', tab_id: 'w1:t1', pane_id: 'w1:p1', cwd: 'C:\\Users\\FastFree' },
-  { name: 'nixos-eval-dryrun', agent: 'nixos', status: 'done', workspace_id: 'w1', tab_id: 'w1:t5', pane_id: 'w1:p5', cwd: 'C:\\Users\\FastFree' },
-  { name: 'ci-release-build', agent: 'github', status: 'done', workspace_id: 'w1', tab_id: 'w1:t6', pane_id: 'w1:p6', cwd: 'C:\\Users\\FastFree' },
+/** Live agents array initialized with verified FastFree Paseo ecosystem defaults */
+const liveAgents = ref<LivePaseoAgent[]>([
+  { id: 'agy-audit-all', name: 'agy-audit-all', provider: 'agy', status: 'blocked', cwd: 'C:\\Users\\FastFree' },
+  { id: 'opencode-clan-deploy', name: 'opencode-clan-deploy', provider: 'opencode', status: 'idle', cwd: 'C:\\Users\\FastFree' },
+  { id: 'claude-architecture', name: 'claude-architecture', provider: 'claude', status: 'idle', cwd: 'C:\\Users\\FastFree' },
+  { id: 'nixos-eval-dryrun', name: 'nixos-eval-dryrun', provider: 'nixos', status: 'done', cwd: 'C:\\Users\\FastFree' },
+  { id: 'ci-release-build', name: 'ci-release-build', provider: 'github', status: 'done', cwd: 'C:\\Users\\FastFree' },
 ]);
 
 /** Computed breakdown counts */
 const statusCounts = computed(() => {
-  if (herdrData.value?.counts) {
-    return herdrData.value.counts;
+  if (paseoData.value?.counts) {
+    return paseoData.value.counts;
   }
   let blocked = 0;
   let idle = 0;
@@ -374,38 +354,30 @@ const statusFilterOptions = computed(() => [
 
 /** Dynamic visual connection chip */
 const connectionChip = computed(() => {
-  if (herdrData.value?.running) {
+  if (paseoData.value?.running) {
     return {
       color: 'positive',
       icon: 'mdi-check-circle-outline',
-      label: 'HERDR MCP RUNTIME CONNECTED (LIVE)',
-    };
-  }
-  if (herdrData.value?.source === 'snapshot_cache') {
-    return {
-      color: 'teal-8',
-      icon: 'mdi-database-sync',
-      label: 'HERDR PERSISTED SNAPSHOT',
+      label: 'PASEO DAEMON CONNECTED (LIVE)',
     };
   }
   if (mcp.isConnected.value) {
     return {
       color: 'indigo-7',
       icon: 'mdi-lan-connect',
-      label: 'MCP READY · HERDR STANDALONE',
+      label: 'MCP READY · PASEO STANDALONE',
     };
   }
   return {
     color: 'grey-8',
     icon: 'mdi-cloud-off-outline',
-    label: 'HERDR STANDALONE FALLBACK',
+    label: 'PASEO STANDALONE FALLBACK',
   };
 });
 
 /** Stat Card labels */
-const workspaceDirectory = computed(() => herdrData.value?.workspace || 'Workspace w1 (Master)');
-const activeLeadAgent = computed(() => herdrData.value?.activeLeadAgent || 'Antigravity · agy');
-const focusedPane = computed(() => herdrData.value?.focusedPane || 'Pane w1:p7 (Focused)');
+const daemonUrl = computed(() => paseoData.value?.baseUrl || 'http://127.0.0.1:6767');
+const activeLeadAgent = computed(() => liveAgents.value[0] ? `${liveAgents.value[0].name} · ${liveAgents.value[0].provider}` : 'Antigravity · agy');
 const statusBreakdownText = computed(() => `${statusCounts.value.blocked} Blocked · ${statusCounts.value.idle} Idle · ${statusCounts.value.done} Done`);
 
 /** Filtered list of agents */
@@ -418,19 +390,19 @@ const filteredAgents = computed(() => {
     if (!query) return true;
     return (
       a.name.toLowerCase().includes(query) ||
-      a.agent.toLowerCase().includes(query) ||
-      a.pane_id.toLowerCase().includes(query)
+      a.provider.toLowerCase().includes(query) ||
+      a.id.toLowerCase().includes(query)
     );
   });
 });
 
-function openPromptModal(agent: LiveHerdrAgent): void {
+function openPromptModal(agent: LivePaseoAgent): void {
   selectedAgent.value = agent;
   promptText.value = '';
   promptDialogOpen.value = true;
 }
 
-function openAgentInspect(agent: LiveHerdrAgent): void {
+function openAgentInspect(agent: LivePaseoAgent): void {
   selectedAgent.value = agent;
   inspectDialogOpen.value = true;
 }
@@ -440,7 +412,7 @@ function openAgentInspect(agent: LiveHerdrAgent): void {
  */
 async function dispatchPrompt(): Promise<void> {
   if (!promptText.value.trim() || !selectedAgent.value) return;
-  const targetAgent = selectedAgent.value.name;
+  const targetAgent = selectedAgent.value.id;
   const text = promptText.value.trim();
 
   sendingPrompt.value = true;
@@ -450,7 +422,7 @@ async function dispatchPrompt(): Promise<void> {
 
     // 1. Try MCP tool dispatch
     try {
-      const mcpRes = await mcp.callMcpTool<{ success?: boolean; message?: string }>('herdr_agent_prompt', {
+      const mcpRes = await mcp.callMcpTool<{ success?: boolean; message?: string }>('paseo_agent_prompt', {
         target: targetAgent,
         text,
       });
@@ -464,7 +436,7 @@ async function dispatchPrompt(): Promise<void> {
 
     // 2. Fall back to REST API
     if (!handled) {
-      const apiRes = await apiHerdrPrompt(targetAgent, text);
+      const apiRes = await apiPaseoPrompt(targetAgent, text);
       resultMessage = apiRes.message;
       handled = true;
     }
@@ -489,19 +461,19 @@ async function dispatchPrompt(): Promise<void> {
 }
 
 /**
- * Triggers live Herdr telemetry refresh from MCP runtime or Backend API.
+ * Triggers live Paseo telemetry refresh from MCP runtime or Backend API.
  */
-async function refreshHerdrStatus(): Promise<void> {
+async function refreshPaseoStatus(): Promise<void> {
   loading.value = true;
   try {
-    let telemetry: HerdrStatusData | null = null;
+    let telemetry: PaseoStatusData | null = null;
 
     // 1. Try MCP tool call first
     try {
-      const mcpRes = await mcp.callMcpTool<HerdrStatusData | { agents?: LiveHerdrAgent[] }>('herdr_status', {});
+      const mcpRes = await mcp.callMcpTool<PaseoStatusData | { agents?: LivePaseoAgent[] }>('paseo_status', {});
       if (mcpRes && typeof mcpRes === 'object') {
         if ('agents' in mcpRes && Array.isArray(mcpRes.agents) && mcpRes.agents.length > 0) {
-          telemetry = mcpRes as HerdrStatusData;
+          telemetry = mcpRes as PaseoStatusData;
         }
       }
     } catch {
@@ -511,28 +483,28 @@ async function refreshHerdrStatus(): Promise<void> {
     // 2. Fall back to backend REST endpoint
     if (!telemetry || !telemetry.agents || telemetry.agents.length === 0) {
       try {
-        telemetry = await apiHerdrStatus(5000);
+        telemetry = await apiPaseoStatus(5000);
       } catch {
         // Handled below
       }
     }
 
     if (telemetry && Array.isArray(telemetry.agents) && telemetry.agents.length > 0) {
-      herdrData.value = telemetry;
+      paseoData.value = telemetry;
       liveAgents.value = telemetry.agents;
       $q.notify({
         type: 'positive',
         icon: 'mdi-refresh',
         message: telemetry.running
-          ? 'Herdr live MCP session updated successfully!'
-          : telemetry.message || 'Herdr telemetry loaded from persistent snapshot.',
+          ? 'Paseo live session updated successfully!'
+          : telemetry.message || 'Paseo telemetry loaded from fallback roster.',
         timeout: 2500,
       });
     } else {
       $q.notify({
         type: 'info',
         icon: 'mdi-information-outline',
-        message: 'Herdr server offline. Displaying verified agent ecosystem.',
+        message: 'Paseo daemon offline. Displaying verified agent ecosystem.',
         timeout: 2500,
       });
     }
@@ -540,22 +512,22 @@ async function refreshHerdrStatus(): Promise<void> {
     $q.notify({
       type: 'warning',
       icon: 'mdi-alert-circle-outline',
-      message: err instanceof Error ? err.message : 'Unable to refresh Herdr telemetry',
+      message: err instanceof Error ? err.message : 'Unable to refresh Paseo telemetry',
     });
   } finally {
     loading.value = false;
   }
 }
 
-let unsubscribeHerdr: (() => void) | null = null;
+let unsubscribePaseo: (() => void) | null = null;
 
 onMounted(() => {
-  void refreshHerdrStatus();
+  void refreshPaseoStatus();
 
-  // Listen for real-time Herdr stream events if broadcasted over SSE
-  unsubscribeHerdr = mcp.onEvent('herdr', (data) => {
+  // Listen for real-time Paseo stream events if broadcasted over SSE
+  unsubscribePaseo = mcp.onEvent('paseo', (data) => {
     if (data && typeof data === 'object') {
-      const maybe = data as Partial<HerdrStatusData>;
+      const maybe = data as Partial<PaseoStatusData>;
       if (Array.isArray(maybe.agents) && maybe.agents.length > 0) {
         liveAgents.value = maybe.agents;
       }
@@ -564,14 +536,14 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if (unsubscribeHerdr) {
-    unsubscribeHerdr();
+  if (unsubscribePaseo) {
+    unsubscribePaseo();
   }
 });
 </script>
 
 <style scoped lang="scss">
-.clan-herdr-screen {
+.clan-paseo-screen {
   height: 100%;
   overflow-y: auto;
 }

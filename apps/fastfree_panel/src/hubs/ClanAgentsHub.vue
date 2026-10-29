@@ -6,7 +6,7 @@
         <q-icon name="mdi-robot-outline" size="24px" color="cyan" />
         <div>
           <div class="text-subtitle1 text-weight-bold">
-            Herdr AI Agents Hub · منظومة الوكلاء والطرفيات
+            Paseo AI Agents Hub · منظومة الوكلاء والطرفيات
           </div>
           <div class="text-caption text-grey-5 gt-xs">
             17 Multi-Agent Terminals, MCP Orchestration & Prompt Command Dispatch
@@ -32,7 +32,7 @@
     <div class="col overflow-hidden">
       <q-tab-panels v-model="activeTab" animated keep-alive class="fit bg-transparent">
         <q-tab-panel name="ecosystem" class="q-pa-none fit">
-          <ClanHerdrScreen />
+          <ClanPaseoScreen />
         </q-tab-panel>
       </q-tab-panels>
     </div>
@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import ClanHerdrScreen from '../screens/ClanHerdrScreen.vue';
+import ClanPaseoScreen from '../screens/ClanPaseoScreen.vue';
 
 const activeTab = ref<'ecosystem'>('ecosystem');
 </script>

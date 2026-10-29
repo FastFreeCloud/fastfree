@@ -12,15 +12,12 @@
     programs.zsh.autosuggestions.enable = true;
     programs.zsh.syntaxHighlighting.enable = true;
 
-    # herdr completion (per https://herdr.dev/docs/cli-reference/#shell-completions)
-    programs.zsh.interactiveShellInit = ''
-      if command -v herdr >/dev/null 2>&1; then
-        fpath=(~/.zfunc $fpath)
-        mkdir -p ~/.zfunc
-        herdr completion zsh > ~/.zfunc/_herdr 2>/dev/null || true
-      fi
-      autoload -Uz compinit 2>/dev/null || true
-    '';
+    # Paseo (multi-agent orchestration layer replacing Herdr):
+    # paseo is NOT packaged in nixpkgs-26.05 and has no upstream flake, so it is
+    # not installed declaratively here to keep the flake buildable. Customer
+    # appliances (client2..11) install the paseo upstream binary natively
+    # (e.g. `npm i -g @getpaseo/cli` in an enrollment step) — do NOT reference a
+    # fake nixpkgs package name.
 
     # ── Search CLI tools ────────────────────────────────────
     environment.systemPackages = with pkgs; [

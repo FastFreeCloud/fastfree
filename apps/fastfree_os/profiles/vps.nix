@@ -15,8 +15,6 @@
   fastfree.apps = {
     base = true;
     shell = true;
-    herdr = true;
-    opencode = true;
     mariadb = true;
     caddy = true;
     fastfree_backend = true;

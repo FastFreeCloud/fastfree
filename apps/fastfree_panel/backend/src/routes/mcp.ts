@@ -125,25 +125,22 @@ mcpRoutes.post('/call', async (c) => {
               },
             },
             {
-              name: 'herdr_status',
-              description: 'Condensed snapshot of the whole Herdr session: focused ids, counts by status, and every live agent with its location.',
-              inputSchema: {
-                type: 'object',
-                properties: { workspace_id: { type: 'string', description: 'Optional workspace id' } },
-              },
-            },
-            {
-              name: 'herdr_agents',
-              description: 'List live agents recognised by Herdr.',
+              name: 'paseo_status',
+              description: 'Condensed snapshot of the whole Paseo session: counts by status and every live agent with its cwd.',
               inputSchema: { type: 'object', properties: {} },
             },
             {
-              name: 'herdr_agent_prompt',
+              name: 'paseo_agents',
+              description: 'List live agents recognised by Paseo.',
+              inputSchema: { type: 'object', properties: {} },
+            },
+            {
+              name: 'paseo_agent_prompt',
               description: 'Submit a prompt to a live agent. Returns once submitted.',
               inputSchema: {
                 type: 'object',
                 properties: {
-                  target: { type: 'string', description: 'Live agent name or pane id' },
+                  target: { type: 'string', description: 'Live agent id or name' },
                   text: { type: 'string', description: 'Prompt text' },
                   wait: { type: 'boolean', description: 'Wait for settled state' },
                   timeout_ms: { type: 'integer', description: 'Wait timeout in ms' },

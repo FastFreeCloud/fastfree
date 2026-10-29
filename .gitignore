@@ -112,9 +112,9 @@ package-manager-store/
 # global *.log rule, so a screenshot or report would have been swept in.
 midscene_run/
 
-# Herdr web-UI scratch (agent-written PLAN/CLAUDE files). Timestamped and
+# Paseo web-UI scratch (agent-written PLAN/CLAUDE files). Timestamped and
 # regenerated each session.
-.herdr-web-ui/
+.paseo-web-ui/
 
 # BEGIN ai-rulez (DO NOT EDIT - managed by ai-rulez)
 .ai-rulez/.config.local.*

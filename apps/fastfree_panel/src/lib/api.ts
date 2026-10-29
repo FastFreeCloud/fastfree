@@ -294,27 +294,21 @@ export function apiGlobalShow(timeoutMs?: number): Promise<GlobalSummary> {
   return apiRequest<GlobalSummary>('/global/show', timeoutMs === undefined ? {} : { timeoutMs });
 }
 
-export type HerdrAgentStatus = 'idle' | 'blocked' | 'done' | 'working' | 'unknown';
+export type PaseoAgentStatus = 'idle' | 'blocked' | 'done' | 'working' | 'unknown';
 
-export interface LiveHerdrAgent {
+export interface LivePaseoAgent {
+  id: string;
   name: string;
-  agent: string;
-  status: HerdrAgentStatus;
-  workspace_id: string;
-  tab_id: string;
-  pane_id: string;
+  provider: string;
+  status: PaseoAgentStatus;
   cwd?: string;
-  focused?: boolean;
 }
 
-export interface HerdrStatusData {
+export interface PaseoStatusData {
   running: boolean;
   connected: boolean;
-  source: 'live' | 'snapshot_cache' | 'fallback';
-  socketPath: string;
-  workspace: string;
-  activeLeadAgent: string;
-  focusedPane: string;
+  source: 'live' | 'fallback';
+  baseUrl: string;
   counts: {
     all: number;
     blocked: number;
@@ -322,24 +316,24 @@ export interface HerdrStatusData {
     done: number;
     working: number;
   };
-  agents: LiveHerdrAgent[];
+  agents: LivePaseoAgent[];
   message?: string;
 }
 
-export interface HerdrPromptResult {
+export interface PaseoPromptResult {
   success: boolean;
   message: string;
   code?: string;
 }
 
-/** `GET /api/v1/herdr/status` — live Herdr session and agent telemetry. */
-export function apiHerdrStatus(timeoutMs?: number): Promise<HerdrStatusData> {
-  return apiRequest<HerdrStatusData>('/herdr/status', timeoutMs === undefined ? {} : { timeoutMs });
+/** `GET /api/v1/paseo/status` — live Paseo daemon and agent telemetry. */
+export function apiPaseoStatus(timeoutMs?: number): Promise<PaseoStatusData> {
+  return apiRequest<PaseoStatusData>('/paseo/status', timeoutMs === undefined ? {} : { timeoutMs });
 }
 
-/** `POST /api/v1/herdr/prompt` — submit an instruction or command prompt to a target agent. */
-export function apiHerdrPrompt(target: string, text: string, timeoutMs?: number): Promise<HerdrPromptResult> {
-  return apiRequest<HerdrPromptResult>('/herdr/prompt', {
+/** `POST /api/v1/paseo/prompt` — submit an instruction or command prompt to a target agent. */
+export function apiPaseoPrompt(target: string, text: string, timeoutMs?: number): Promise<PaseoPromptResult> {
+  return apiRequest<PaseoPromptResult>('/paseo/prompt', {
     method: 'POST',
     body: { target, text },
     ...(timeoutMs !== undefined ? { timeoutMs } : {}),

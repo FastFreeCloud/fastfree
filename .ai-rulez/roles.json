@@ -62,8 +62,8 @@
           "id": "desktop-installer",
           "domain": "desktop-installer",
           "path": "domains/desktop-installer/rules/desktop-installer.md",
-          "bytes": 2450,
-          "tokens": 590
+          "bytes": 2453,
+          "tokens": 586
         },
         {
           "kind": "rule",
@@ -110,8 +110,8 @@
           "id": "fastfree-guide",
           "path": "skills/fastfree-guide/SKILL.md",
           "delivery": "static",
-          "bytes": 61764,
-          "tokens": 4094
+          "bytes": 61778,
+          "tokens": 4097
         },
         {
           "kind": "skill",
@@ -271,8 +271,8 @@
       ],
       "totals": {
         "items": 29,
-        "bytes": 497327,
-        "tokens": 23198,
+        "bytes": 497344,
+        "tokens": 23197,
         "by_kind": {
           "check": 2,
           "command": 4,
@@ -377,8 +377,8 @@
           "id": "fastfree-guide",
           "path": "skills/fastfree-guide/SKILL.md",
           "delivery": "static",
-          "bytes": 61764,
-          "tokens": 4094
+          "bytes": 61778,
+          "tokens": 4097
         },
         {
           "kind": "skill",
@@ -467,8 +467,8 @@
       ],
       "totals": {
         "items": 20,
-        "bytes": 111680,
-        "tokens": 14793,
+        "bytes": 111694,
+        "tokens": 14796,
         "by_kind": {
           "check": 1,
           "command": 1,
@@ -589,8 +589,8 @@
           "id": "fastfree-guide",
           "path": "skills/fastfree-guide/SKILL.md",
           "delivery": "static",
-          "bytes": 61764,
-          "tokens": 4094
+          "bytes": 61778,
+          "tokens": 4097
         },
         {
           "kind": "skill",
@@ -752,8 +752,8 @@
       ],
       "totals": {
         "items": 29,
-        "bytes": 498016,
-        "tokens": 23379,
+        "bytes": 498030,
+        "tokens": 23382,
         "by_kind": {
           "check": 2,
           "command": 3,
@@ -862,8 +862,8 @@
           "id": "fastfree-guide",
           "path": "skills/fastfree-guide/SKILL.md",
           "delivery": "static",
-          "bytes": 61764,
-          "tokens": 4094
+          "bytes": 61778,
+          "tokens": 4097
         },
         {
           "kind": "skill",
@@ -1015,8 +1015,8 @@
       ],
       "totals": {
         "items": 27,
-        "bytes": 494596,
-        "tokens": 22545,
+        "bytes": 494610,
+        "tokens": 22548,
         "by_kind": {
           "check": 2,
           "command": 3,
@@ -1147,8 +1147,8 @@
           "id": "fastfree-guide",
           "path": "skills/fastfree-guide/SKILL.md",
           "delivery": "static",
-          "bytes": 61764,
-          "tokens": 4094
+          "bytes": 61778,
+          "tokens": 4097
         },
         {
           "kind": "skill",
@@ -1343,8 +1343,8 @@
       ],
       "totals": {
         "items": 34,
-        "bytes": 504641,
-        "tokens": 25162,
+        "bytes": 504655,
+        "tokens": 25165,
         "by_kind": {
           "check": 3,
           "command": 4,

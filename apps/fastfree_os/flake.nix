@@ -12,8 +12,6 @@
       url = "https://git.clan.lol/clan/clan-core/archive/26.05.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # Herdr CLI (not in nixpkgs-26.05): system-wide binary for all machines.
-    herdr.url = "github:herdrdev/herdr";
     # Pinned unstable for opencode.
     nixpkgs-unstable = {
       url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -78,7 +76,6 @@
         ./modules/system.nix
         ./modules/integration.nix
         ./modules/shell.nix
-        ./modules/herdr.nix
         ./modules/mariadb.nix
         ./modules/caddy.nix
         ./modules/fastfree_backend.nix

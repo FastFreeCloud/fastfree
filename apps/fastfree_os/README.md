@@ -125,7 +125,7 @@ fastfree_os /
 │  ├── containers.nix                  # Podman rootful + subuid
 │  ├── integration.nix                 # fastfree CLI package + GHCR auth
 │  ├── shell.nix                       # zsh + rg/fd/ugrep/fzf + aliases
-│  ├── herdr.nix                       # Herdr CLI docs + completion + integration
+│  ├── (herdr.nix removed — orchestration now via Paseo, see docs/paseo-cli.md)
 │  ├── opencode.nix                    # OpenCode web UI autostart (client3)
 │  ├── shortcuts.nix                   # Desktop entries + aliases per enabled app
 │  ├── mariadb.nix                     # MariaDB + vars password + state
