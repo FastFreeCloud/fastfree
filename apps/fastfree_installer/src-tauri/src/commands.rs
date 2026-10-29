@@ -812,6 +812,69 @@ try {{
     Ok(step_logs)
 }
 
+/// Generate and write a WireGuard `.conf` file for the given client node.
+/// On Windows, the file is written to `%APPDATA%\FastFree\wireguard\<client_id>.conf`.
+/// Private key is derived from a per-client placeholder until Clan Vars are seeded at boot time.
+#[tauri::command]
+pub async fn apply_wireguard_config(client_id: String) -> Result<WireGuardApplyResult, String> {
+    InstallerLogger::info(
+        "WIREGUARD",
+        &format!("Generating WireGuard config for '{}'", client_id),
+    );
+
+    // Derive deterministic parameters from the numeric suffix (client2..11)
+    let num_str: String = client_id.chars().filter(|c| c.is_ascii_digit()).collect();
+    let n: u16 = num_str.parse().unwrap_or(2);
+    let listen_port = 51820 + n;
+    let client_ip = format!("10.24.0.{}/32", n);
+
+    // Placeholder private key — replaced by `clan vars generate <machine>` at provisioning time
+    let private_key = format!("PLACEHOLDER_PRIVATE_KEY_client{}==========================", n);
+
+    let conf_content = format!(
+        "[Interface]\nAddress = {client_ip}\nListenPort = {listen_port}\nPrivateKey = {private_key}\nMTU = 1420\n\n[Peer]\nPublicKey = ff+client1+controller+vps+primary+master===\nEndpoint = client1.fastfree.cloud:{listen_port}\nAllowedIPs = 10.24.0.0/16\nPersistentKeepalive = 25\n",
+    );
+
+    #[cfg(windows)]
+    {
+        use std::fs;
+
+        // Resolve %APPDATA%\FastFree\wireguard\
+        let appdata = std::env::var("APPDATA").unwrap_or_else(|_| "C:\\Users\\Default\\AppData\\Roaming".to_string());
+        let wg_dir = format!("{}\\FastFree\\wireguard", appdata);
+
+        if let Err(e) = fs::create_dir_all(&wg_dir) {
+            let msg = format!("Failed to create WireGuard config directory '{}': {}", wg_dir, e);
+            InstallerLogger::error("WIREGUARD", &msg);
+            return Ok(WireGuardApplyResult { success: false, conf_path: wg_dir, message: msg });
+        }
+
+        let conf_path = format!("{}\\{}.conf", wg_dir, client_id);
+        if let Err(e) = fs::write(&conf_path, &conf_content) {
+            let msg = format!("Failed to write WireGuard config to '{}': {}", conf_path, e);
+            InstallerLogger::error("WIREGUARD", &msg);
+            return Ok(WireGuardApplyResult { success: false, conf_path, message: msg });
+        }
+
+        InstallerLogger::info("WIREGUARD", &format!("Config written to '{}'", conf_path));
+        return Ok(WireGuardApplyResult {
+            success: true,
+            conf_path,
+            message: format!(
+                "WireGuard config for '{}' written successfully. Replace the placeholder private key with the value from `clan vars generate {}`.",
+                client_id, client_id
+            ),
+        });
+    }
+
+    #[cfg(not(windows))]
+    Ok(WireGuardApplyResult {
+        success: true,
+        conf_path: format!("/tmp/fastfree/wireguard/{}.conf", client_id),
+        message: format!("Non-Windows simulation: WireGuard config generated for '{}'.", client_id),
+    })
+}
+
 #[tauri::command]
 pub async fn minimize_to_tray(app: AppHandle) -> Result<(), String> {
     if let Some(main) = app.get_webview_window("main") {

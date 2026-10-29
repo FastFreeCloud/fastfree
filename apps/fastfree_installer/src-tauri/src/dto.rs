@@ -110,3 +110,10 @@ pub struct UpdateProgressPayload {
     pub total_bytes: Option<u64>,
     pub progress_pct: u32,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WireGuardApplyResult {
+    pub success: bool,
+    pub conf_path: String,
+    pub message: String,
+}

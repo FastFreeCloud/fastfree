@@ -105,9 +105,10 @@
       <button class="btn btn-secondary" @click="currentStep = 3">
         {{ t('wireguard.backToSizing') }}
       </button>
-      <button class="btn btn-primary btn-deploy" @click="currentStep = 5">
+      <button class="btn btn-primary btn-deploy" :disabled="isApplyingConfig" @click="handleDeploy">
         <span class="btn-flex">
-          <svg class="deploy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <span v-if="isApplyingConfig" class="spinner-tiny"></span>
+          <svg v-else class="deploy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
             <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
             <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
@@ -127,6 +128,7 @@ import {
   selectedClientId,
   wireGuardConfig,
   fetchWireGuardConfig,
+  applyWireGuardConfig,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
 
@@ -134,6 +136,7 @@ const { t, isRtl } = useI18n();
 
 const isLoadingConfig = ref(true);
 const isTestingPing = ref(false);
+const isApplyingConfig = ref(false);
 
 onMounted(async () => {
   try {
@@ -144,6 +147,18 @@ onMounted(async () => {
     isLoadingConfig.value = false;
   }
 });
+
+async function handleDeploy() {
+  isApplyingConfig.value = true;
+  try {
+    await applyWireGuardConfig(selectedClientId.value);
+  } catch (err) {
+    console.warn('WireGuard config apply warning:', err);
+  } finally {
+    isApplyingConfig.value = false;
+    currentStep.value = 5;
+  }
+}
 
 async function testHandshake() {
   isTestingPing.value = true;
