@@ -6,6 +6,7 @@
 
 - [Code Quality Standards](.ai-rulez/rules/code-quality.md): Follow these coding standards:
 - [Multi-Agent Orchestration with Herdr & OpenCode](.ai-rulez/rules/multi-agent-orchestration.md): FastFree is designed to run in a collaborative multi-agent ecosystem:
+- [Paseo Hub Governance (Augmentation Layer)](.ai-rulez/rules/paseo-hub-governance.md): Paseo is adopted as an **augmentation layer** on top of, never a replacement for, Herdr:
 - [Zero Plaintext Secrets Policy](.ai-rulez/rules/secure-secrets.md): 1. **Nix Expressions**: Never embed plaintext passwords, private keys, hashes, or API secrets inside `.nix` files.
 - [FastFree Desktop Installer & Hyper-V Companion Invariants](.ai-rulez/domains/desktop-installer/rules/desktop-installer.md): Domain desktop-installer. When working within `apps/fastfree_installer`:
 - [FastFree ERP Domain Invariants](.ai-rulez/domains/erp-modules/rules/erp-invariants.md): Domain erp-modules. When working within ERP domain packages:

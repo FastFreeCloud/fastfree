@@ -242,7 +242,7 @@ domains = ['frontend', 'erp-modules', 'nixos-clan']
 'herdr-review-loop' = 'static'
 
 [roles.match]
-groups = ['herdr:reviewer', 'agent:auditor']
+groups = ['herdr:reviewer', 'agent:auditor', 'paseo:reviewer']
 
 # 5. Desktop & Systems Architect
 [[roles]]
