@@ -25,6 +25,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Configure Git line endings
+        run: git config core.autocrlf false
+
       - name: Verify Generated Outputs Sync (Zero Drift)
         run: |
           npx -y ai-rulez@latest generate
