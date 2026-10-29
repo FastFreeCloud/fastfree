@@ -6,7 +6,7 @@ ai_rulez_version = '5.9.2'
 profile = 'full'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:1c62acac61fa81b3c247de0aeaca74ac96af324f8882e9e8abbfcdf73d04b61f'
+tree = 'sha256:e70952465faca5ae5d39f314da43eaef3d1aa1985af0e2769b35074169a5c8ed'
 
 [[served]]
 name = 'ai-rulez'
@@ -670,7 +670,7 @@ digest = 'sha256:67337e8afb054a7e75caf2a1bd043d05d30d4e027d4e19643cfaefe0fb7f75b
 kind = 'context'
 id = 'session-memory'
 path = 'context/session-memory.md'
-digest = 'sha256:df079a9b8afa6b552a54d52b2af804d8eae489439883ed715bc6f171d98c3242'
+digest = 'sha256:92b570d248c1ab1086097b794ba9056dfb4872b733420e03960da5cd6e7646e9'
 
 [[item]]
 kind = 'role'
@@ -1784,7 +1784,7 @@ digest = 'sha256:676ddffc944ea32cc2ef9069d75d2f6db14857f9884ea142231bea0ef95a16f
 
 [[output]]
 path = 'AGENTS.md'
-digest = 'sha256:c307be42017c3618db4261662676f71cb85eec169352bc73de100669e014ed79'
+digest = 'sha256:8ecfb31a78c3afe49bb4ff5dbbac72f50f5fe6eaa7311dc6c46ddd3d1827c759'
 
 [[output]]
 path = 'CLAUDE.md'
@@ -1792,7 +1792,7 @@ digest = 'sha256:71bc73c292a2adb25eabe7c0e6f22776193bef75dab71b286cd8e4f63b44bf6
 
 [[output]]
 path = 'llms-full.txt'
-digest = 'sha256:428360e3a9b1bc2d204dcff5ab759937c73f3d77883ed1b1f397cd081c577d01'
+digest = 'sha256:fe7f85cef66c6e6b1784f41d241fdba550fef8c2ccff3e01c781af451e2b8529'
 
 [[output]]
 path = 'llms.txt'

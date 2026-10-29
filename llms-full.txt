@@ -323,7 +323,7 @@ Total workflows: **16**.
 1. **Zero Raw Emojis**: Never use emoji symbols in official UI or terminal banners.
 2. **Zero TypeScript Errors**: Always run `npx vue-tsc --noEmit` on affected apps/packages.
 3. **Zero Plaintext Secrets**: Strictly use Clan Vars or GitHub Secrets.
-4. **Governance Synchronization**: Always verify `npx -y ai-rulez@latest verifiers run --strict` passes before declaring work complete.
+4. **Governance Synchronization**: Always verify `npx -y ai-rulez@5.9.2 verifiers run --strict` passes before declaring work complete.
 
 ## AI-Rulez
 
