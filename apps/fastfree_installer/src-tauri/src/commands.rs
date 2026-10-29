@@ -893,41 +893,92 @@ pub async fn show_main_window(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+fn is_newer_semver(remote: &str, current: &str) -> bool {
+    let parse_parts = |s: &str| -> Vec<u32> {
+        s.trim_start_matches('v')
+            .split('.')
+            .map(|p| p.parse::<u32>().unwrap_or(0))
+            .collect()
+    };
+    let r_parts = parse_parts(remote);
+    let c_parts = parse_parts(current);
+    for i in 0..r_parts.len().max(c_parts.len()) {
+        let r = r_parts.get(i).copied().unwrap_or(0);
+        let c = c_parts.get(i).copied().unwrap_or(0);
+        if r > c {
+            return true;
+        } else if r < c {
+            return false;
+        }
+    }
+    false
+}
+
 #[tauri::command]
 pub async fn check_app_update(app: AppHandle) -> Result<Option<UpdateInfo>, String> {
     use tauri_plugin_updater::UpdaterExt;
 
     InstallerLogger::info("UPDATER", "Checking for updates via native Tauri Rust updater...");
-    let updater = app.updater().map_err(|e| {
-        let msg = format!("Failed to initialize updater: {}", e);
-        InstallerLogger::error("UPDATER", &msg);
-        msg
-    })?;
 
-    match updater.check().await {
-        Ok(Some(update)) => {
+    // 1. Try native updater first
+    if let Ok(updater) = app.updater() {
+        if let Ok(Some(update)) = updater.check().await {
             InstallerLogger::info(
                 "UPDATER",
                 &format!("Native update detected: v{} (current: v{})", update.version, update.current_version),
             );
-            Ok(Some(UpdateInfo {
+            return Ok(Some(UpdateInfo {
                 available: true,
                 current_version: update.current_version.clone(),
                 version: update.version.clone(),
                 date: update.date.map(|d| d.to_string()),
                 body: update.body.clone(),
-            }))
-        }
-        Ok(None) => {
-            InstallerLogger::info("UPDATER", "Native updater reports application is up to date.");
-            Ok(None)
-        }
-        Err(e) => {
-            let msg = format!("Native updater check error: {}", e);
-            InstallerLogger::warn("UPDATER", &msg);
-            Err(msg)
+            }));
         }
     }
+
+    // 2. Direct HTTPS Fallback via reqwest (bypasses webview CORS & proxy limits)
+    InstallerLogger::info("UPDATER", "Querying latest.json directly via reqwest fallback...");
+    let client = match reqwest::Client::builder()
+        .user_agent("FastFree-Node-Installer")
+        .timeout(std::time::Duration::from_secs(8))
+        .build()
+    {
+        Ok(c) => c,
+        Err(e) => {
+            InstallerLogger::warn("UPDATER", &format!("HTTP client build error: {}", e));
+            return Ok(None);
+        }
+    };
+
+    let url = "https://github.com/FastFreeCloud/fastfree/releases/latest/download/latest.json";
+    if let Ok(resp) = client.get(url).send().await {
+        if resp.status().is_success() {
+            if let Ok(manifest) = resp.json::<serde_json::Value>().await {
+                if let Some(remote_ver) = manifest.get("version").and_then(|v| v.as_str()) {
+                    let current_ver = app.package_info().version.to_string();
+                    if is_newer_semver(remote_ver, &current_ver) {
+                        InstallerLogger::info(
+                            "UPDATER",
+                            &format!("New release detected via manifest: v{} (current: v{})", remote_ver, current_ver),
+                        );
+                        let notes = manifest.get("notes").and_then(|n| n.as_str()).map(|s| s.to_string());
+                        let pub_date = manifest.get("pub_date").and_then(|d| d.as_str()).map(|s| s.to_string());
+                        return Ok(Some(UpdateInfo {
+                            available: true,
+                            current_version: current_ver,
+                            version: remote_ver.to_string(),
+                            date: pub_date,
+                            body: notes,
+                        }));
+                    }
+                }
+            }
+        }
+    }
+
+    InstallerLogger::info("UPDATER", "Application is up to date.");
+    Ok(None)
 }
 
 #[tauri::command]
@@ -935,49 +986,140 @@ pub async fn install_app_update(app: AppHandle) -> Result<(), String> {
     use tauri_plugin_updater::UpdaterExt;
 
     InstallerLogger::info("UPDATER", "Initiating native Rust download and install pipeline...");
-    let updater = app.updater().map_err(|e| format!("Failed to initialize updater: {}", e))?;
-    let update = updater
-        .check()
-        .await
-        .map_err(|e| format!("Update check failed: {}", e))?
-        .ok_or_else(|| "No update available to install".to_string())?;
+    let mut native_success = false;
 
-    let app_handle = app.clone();
+    if let Ok(updater) = app.updater() {
+        if let Ok(Some(update)) = updater.check().await {
+            let app_handle = app.clone();
+            let mut downloaded: u64 = 0;
+            let res = update
+                .download_and_install(
+                    move |chunk_length, content_length| {
+                        downloaded += chunk_length as u64;
+                        let pct = if let Some(total) = content_length {
+                            if total > 0 {
+                                ((downloaded as f64 / total as f64) * 100.0).min(99.0) as u32
+                            } else {
+                                50
+                            }
+                        } else {
+                            50
+                        };
+
+                        let payload = UpdateProgressPayload {
+                            chunk_length,
+                            downloaded_bytes: downloaded,
+                            total_bytes: content_length,
+                            progress_pct: pct,
+                        };
+                        let _ = app_handle.emit("updater-progress", payload);
+                    },
+                    || {
+                        InstallerLogger::info("UPDATER", "Native download finished. Launching update...");
+                    },
+                )
+                .await;
+
+            if res.is_ok() {
+                native_success = true;
+            } else if let Err(e) = res {
+                InstallerLogger::warn("UPDATER", &format!("Native updater install failed ({}), attempting binary fallback stream...", e));
+            }
+        }
+    }
+
+    if native_success {
+        InstallerLogger::info("UPDATER", "Update installed via native plugin. System restarting...");
+        return Ok(());
+    }
+
+    // Direct binary download fallback via reqwest:
+    InstallerLogger::info("UPDATER", "Executing direct binary download fallback stream...");
+    let client = reqwest::Client::builder()
+        .user_agent("FastFree-Node-Installer")
+        .timeout(std::time::Duration::from_secs(180))
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let download_url = "https://github.com/FastFreeCloud/fastfree/releases/latest/download/FastFree-Node-Setup.exe";
+    let mut resp = client
+        .get(download_url)
+        .send()
+        .await
+        .map_err(|e| format!("Download connection failed: {}", e))?;
+
+    if !resp.status().is_success() {
+        return Err(format!("Download failed with status: {}", resp.status()));
+    }
+
+    let total_bytes = resp.content_length();
+    let temp_dir = std::env::temp_dir();
+    let target_exe = temp_dir.join("FastFree-Node-Setup-Update.exe");
+
+    use tokio::io::AsyncWriteExt;
+    let mut file = tokio::fs::File::create(&target_exe)
+        .await
+        .map_err(|e| format!("Failed to create temp installer file: {}", e))?;
+
     let mut downloaded: u64 = 0;
+    while let Some(chunk) = resp.chunk().await.map_err(|e| format!("Stream error: {}", e))? {
+        file.write_all(&chunk)
+            .await
+            .map_err(|e| format!("File write error: {}", e))?;
+        downloaded += chunk.len() as u64;
+        let pct = if let Some(total) = total_bytes {
+            if total > 0 {
+                ((downloaded as f64 / total as f64) * 100.0).min(99.0) as u32
+            } else {
+                50
+            }
+        } else {
+            50
+        };
 
-    update
-        .download_and_install(
-            move |chunk_length, content_length| {
-                downloaded += chunk_length as u64;
-                let pct = if let Some(total) = content_length {
-                    if total > 0 {
-                        ((downloaded as f64 / total as f64) * 100.0).min(99.0) as u32
-                    } else {
-                        50
-                    }
-                } else {
-                    50
-                };
-
-                let payload = UpdateProgressPayload {
-                    chunk_length,
-                    downloaded_bytes: downloaded,
-                    total_bytes: content_length,
-                    progress_pct: pct,
-                };
-                let _ = app_handle.emit("updater-progress", payload);
+        let _ = app.emit(
+            "updater-progress",
+            UpdateProgressPayload {
+                chunk_length: chunk.len(),
+                downloaded_bytes: downloaded,
+                total_bytes,
+                progress_pct: pct,
             },
-            || {
-                InstallerLogger::info("UPDATER", "Native download finished. Verifying signature and launching installer...");
-            },
-        )
+        );
+    }
+    file.flush()
         .await
-        .map_err(|e| {
-            let err_msg = format!("Failed to download and install update: {}", e);
-            InstallerLogger::error("UPDATER", &err_msg);
-            err_msg
-        })?;
+        .map_err(|e| format!("Flush error: {}", e))?;
+    drop(file);
 
-    InstallerLogger::info("UPDATER", "Update installed. System restarting...");
+    let _ = app.emit(
+        "updater-progress",
+        UpdateProgressPayload {
+            chunk_length: 0,
+            downloaded_bytes: downloaded,
+            total_bytes,
+            progress_pct: 100,
+        },
+    );
+
+    InstallerLogger::info(
+        "UPDATER",
+        &format!("Update binary downloaded to {:?}. Launching and exiting current process...", target_exe),
+    );
+
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        use std::process::Command;
+        const DETACHED_PROCESS: u32 = 0x00000008;
+
+        let _ = Command::new(&target_exe)
+            .creation_flags(DETACHED_PROCESS)
+            .spawn();
+
+        std::process::exit(0);
+    }
+
+    #[cfg(not(windows))]
     Ok(())
 }
