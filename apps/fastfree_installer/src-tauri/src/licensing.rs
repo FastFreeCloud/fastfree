@@ -205,9 +205,9 @@ impl LicensingManager {
         hwid: &str,
     ) -> Result<GoogleSheetsResponse, String> {
         InstallerLogger::info(
-            "GOOGLE_SHEETS_HTTP",
+            "CLOUD_LICENSE_API",
             &format!(
-                "Initiating HTTPS POST verification to Google Sheets Control Plane at {} (Key: {}, HWID: {})",
+                "Initiating HTTPS verification to FastFree Cloud Registry at {} (Key: {}, HWID: {})",
                 GOOGLE_SHEETS_ENDPOINT, clean_key, hwid
             ),
         );
@@ -218,7 +218,7 @@ impl LicensingManager {
             .build()
             .map_err(|e| {
                 let err_msg = format!("HTTP Client initialization failed: {}", e);
-                InstallerLogger::error("GOOGLE_SHEETS_HTTP", &err_msg);
+                InstallerLogger::error("CLOUD_LICENSE_API", &err_msg);
                 err_msg
             })?;
 
@@ -245,7 +245,7 @@ impl LicensingManager {
             Ok(resp) => resp,
             Err(e) => {
                 let err_msg = format!("Network request failed: {}", e);
-                InstallerLogger::error("GOOGLE_SHEETS_HTTP", &err_msg);
+                InstallerLogger::error("CLOUD_LICENSE_API", &err_msg);
                 return Err(err_msg);
             }
         };
@@ -256,14 +256,14 @@ impl LicensingManager {
             .await
             .map_err(|e| {
                 let err_msg = format!("Failed to read response body: {}", e);
-                InstallerLogger::error("GOOGLE_SHEETS_HTTP", &err_msg);
+                InstallerLogger::error("CLOUD_LICENSE_API", &err_msg);
                 err_msg
             })?;
 
         InstallerLogger::info(
-            "GOOGLE_SHEETS_HTTP",
+            "CLOUD_LICENSE_API",
             &format!(
-                "Google Sheets HTTP status: {} ({}) | Body length: {} bytes",
+                "FastFree Cloud Registry HTTP status: {} ({}) | Body length: {} bytes",
                 status.as_u16(),
                 status,
                 body_text.len()
@@ -276,17 +276,17 @@ impl LicensingManager {
             && status.as_u16() != 403
             && status.as_u16() != 404
         {
-            let err_msg = format!("Google Sheets API returned HTTP {}: {}", status, body_text);
-            InstallerLogger::error("GOOGLE_SHEETS_HTTP", &err_msg);
+            let err_msg = format!("Cloud Licensing Plane returned HTTP {}: {}", status, body_text);
+            InstallerLogger::error("CLOUD_LICENSE_API", &err_msg);
             return Err(err_msg);
         }
 
         match serde_json::from_str::<GoogleSheetsResponse>(&body_text) {
             Ok(parsed) => {
                 InstallerLogger::info(
-                    "GOOGLE_SHEETS_HTTP",
+                    "CLOUD_LICENSE_API",
                     &format!(
-                        "Parsed Google Sheets response: success={}, error={:?}, message={:?}",
+                        "Parsed Cloud Registry response: success={}, error={:?}, message={:?}",
                         parsed.success, parsed.error, parsed.message
                     ),
                 );
@@ -294,10 +294,10 @@ impl LicensingManager {
             }
             Err(e) => {
                 let err_msg = format!(
-                    "Failed to parse Google Sheets response: {} (Raw: {})",
+                    "Failed to parse Cloud Registry response: {} (Raw: {})",
                     e, body_text
                 );
-                InstallerLogger::error("GOOGLE_SHEETS_HTTP", &err_msg);
+                InstallerLogger::error("CLOUD_LICENSE_API", &err_msg);
                 Err(err_msg)
             }
         }
@@ -417,7 +417,7 @@ impl LicensingManager {
                             eligible_clients: eligible,
                             unlocked_features: Self::get_standard_features(),
                             message: format!(
-                                "Google Sheets Control Plane: Node {} bound and validated{}.",
+                                "FastFree Cloud Registry: Node {} bound and validated{}.",
                                 node_id,
                                 token_preview
                             ),
@@ -428,7 +428,7 @@ impl LicensingManager {
                         InstallerLogger::warn(
                             "LICENSING",
                             &format!(
-                                "Google Sheets Cloud Registry rejected key '{}': error='{}', msg='{}'",
+                                "FastFree Cloud Registry rejected key '{}': error='{}', msg='{}'",
                                 clean_key, err_code, err_msg
                             ),
                         );
@@ -438,12 +438,12 @@ impl LicensingManager {
                             "LICENSE_NOT_FOUND" => {
                                 let desc = if !err_msg.is_empty() {
                                     format!(
-                                        "License key '{}' was not found in the Google Sheets Cloud Registry: {}. (لم يتم العثور على مفتاح الترخيص في سجل التراخيص السحابي)",
+                                        "License key '{}' was not found in the FastFree Cloud Registry: {}. (لم يتم العثور على مفتاح الترخيص في سجل التراخيص السحابي)",
                                         clean_key, err_msg
                                     )
                                 } else {
                                     format!(
-                                        "License key '{}' was not found in the Google Sheets Cloud Registry. (لم يتم العثور على مفتاح الترخيص في سجل التراخيص السحابي)",
+                                        "License key '{}' was not found in the FastFree Cloud Registry. (لم يتم العثور على مفتاح الترخيص في سجل التراخيص السحابي)",
                                         clean_key
                                     )
                                 };
@@ -477,7 +477,7 @@ impl LicensingManager {
                             }
                             _ => {
                                 let desc = format!(
-                                    "Google Sheets Cloud Registry rejected license key '{}': {} [{}]. (رفض خادم التراخيص السحابي مفتاح الترخيص)",
+                                    "FastFree Cloud Registry rejected license key '{}': {} [{}]. (رفض خادم التراخيص السحابي مفتاح الترخيص)",
                                     clean_key,
                                     if !err_msg.is_empty() { err_msg } else { err_code },
                                     err_code
@@ -491,7 +491,7 @@ impl LicensingManager {
                 Err(net_err) => {
                     InstallerLogger::warn(
                         "LICENSING",
-                        &format!("Network connection to Google Sheets failed: {}. Checking offline cache/fallback...", net_err),
+                        &format!("Network connection to FastFree Cloud Registry failed: {}. Checking offline cache/fallback...", net_err),
                     );
 
                     // Network timeout or unreachable: check local cache first
@@ -629,7 +629,7 @@ impl LicensingManager {
                 eligible_clients: eligible,
                 unlocked_features: Self::get_standard_features(),
                 message: format!(
-                    "Google Sheets Control Plane: Node {} offline fallback validated.",
+                    "FastFree Cloud Licensing Plane: Node {} offline fallback validated.",
                     target_node
                 ),
             });
