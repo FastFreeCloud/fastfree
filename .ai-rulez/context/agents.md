@@ -3,9 +3,9 @@ title: FastFree Multi-Agent Operating Environment
 priority: high
 ---
 
-# Multi-Agent Operating Environment with Herdr
+# Multi-Agent Operating Environment with Paseo
 
-المشروع يدار بواسطة وكلاء ذكاء اصطناعي متعددين يعملون بالتوازي داخل طرفيات **Herdr** (`herdr.dev` مع `HERDR_ENV=1`):
+المشروع يدار بواسطة وكلاء ذكاء اصطناعي متعددين يعملون بالتوازي عبر **Paseo** (الديمون المحلي `127.0.0.1:6767` مع حقن أدوات MCP تلقائياً `injectIntoAgents`):
 - **الوكلاء النشطون**: Antigravity (`agy`), OpenCode (`opencode`), Claude Code (`claude`).
 - **المهارة المشتركة المعتمدة**: [FastFree Guide Skill](file:///.agents/skills/fastfree-guide/SKILL.md).
 - **أدوات MCP المتوفرة للوكلاء**:

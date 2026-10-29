@@ -6,7 +6,7 @@ ai_rulez_version = '5.9.2'
 profile = 'full'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:13748071d1cd6b561e4872031f5d686eb8fa0a150c3c747a059040b61e7f80f9'
+tree = 'sha256:39455f1b22aa5b28c079131106d584481d7c911bdf4f2215838b2cd1dfe4bbfd'
 
 [[served]]
 name = 'ai-rulez'
@@ -247,40 +247,40 @@ view = 'role:reviewer'
 name = 'fastfree-change-policy'
 source = '.ai-rulez/skills/fastfree-change-policy/SKILL.md'
 commit = ''
-digest = 'sha256:6f9b8bf6f8689a87672389cf6ebdd67b4e5de50ef2b8674d2e23a78b3a297e60'
+digest = 'sha256:f48164d9d81df3032d585c53235e58f993d37a40ac493d66f3ad81c5dfb710aa'
 
 [[served]]
 name = 'fastfree-change-policy'
 source = '.ai-rulez/skills/fastfree-change-policy/SKILL.md'
 commit = ''
-digest = 'sha256:6f9b8bf6f8689a87672389cf6ebdd67b4e5de50ef2b8674d2e23a78b3a297e60'
+digest = 'sha256:f48164d9d81df3032d585c53235e58f993d37a40ac493d66f3ad81c5dfb710aa'
 view = 'profile:full'
 
 [[served]]
 name = 'fastfree-change-policy'
 source = '.ai-rulez/skills/fastfree-change-policy/SKILL.md'
 commit = ''
-digest = 'sha256:6f9b8bf6f8689a87672389cf6ebdd67b4e5de50ef2b8674d2e23a78b3a297e60'
+digest = 'sha256:f48164d9d81df3032d585c53235e58f993d37a40ac493d66f3ad81c5dfb710aa'
 view = 'role:reviewer'
 
 [[served]]
 name = 'fastfree-guide'
 source = '.ai-rulez/skills/fastfree-guide/SKILL.md'
 commit = ''
-digest = 'sha256:4039f0493fea62b158ae9b281ce5875da731300893727670cea2b706ee7b357b'
+digest = 'sha256:df6fe9bd9ab974fc538861fd1ed806043017c1270b6e6056725c2e21bdee3be7'
 
 [[served]]
 name = 'fastfree-guide'
 source = '.ai-rulez/skills/fastfree-guide/SKILL.md'
 commit = ''
-digest = 'sha256:4039f0493fea62b158ae9b281ce5875da731300893727670cea2b706ee7b357b'
+digest = 'sha256:df6fe9bd9ab974fc538861fd1ed806043017c1270b6e6056725c2e21bdee3be7'
 view = 'profile:full'
 
 [[served]]
 name = 'fastfree-guide'
 source = '.ai-rulez/skills/fastfree-guide/SKILL.md'
 commit = ''
-digest = 'sha256:4039f0493fea62b158ae9b281ce5875da731300893727670cea2b706ee7b357b'
+digest = 'sha256:df6fe9bd9ab974fc538861fd1ed806043017c1270b6e6056725c2e21bdee3be7'
 view = 'role:reviewer'
 
 [[served]]
@@ -324,66 +324,6 @@ digest = 'sha256:c1be30315dbc8bd15177c1f85f063bc01a9ec4bccfb011dae0d6d346c724878
 view = 'role:reviewer'
 
 [[served]]
-name = 'herdr-conductor'
-source = '.ai-rulez/skills/herdr-conductor/SKILL.md'
-commit = ''
-digest = 'sha256:418ee018d6ddff7c9ba4c5c5f80ce6e9cd59043daf5a1b525cc34f4b82b7324f'
-
-[[served]]
-name = 'herdr-conductor'
-source = '.ai-rulez/skills/herdr-conductor/SKILL.md'
-commit = ''
-digest = 'sha256:418ee018d6ddff7c9ba4c5c5f80ce6e9cd59043daf5a1b525cc34f4b82b7324f'
-view = 'profile:full'
-
-[[served]]
-name = 'herdr-conductor'
-source = '.ai-rulez/skills/herdr-conductor/SKILL.md'
-commit = ''
-digest = 'sha256:418ee018d6ddff7c9ba4c5c5f80ce6e9cd59043daf5a1b525cc34f4b82b7324f'
-view = 'role:reviewer'
-
-[[served]]
-name = 'herdr-fanout'
-source = '.ai-rulez/skills/herdr-fanout/SKILL.md'
-commit = ''
-digest = 'sha256:6ee10428a206c814bcde8431ef70136aa9e0402e11737bc1429f707107c2cb76'
-
-[[served]]
-name = 'herdr-fanout'
-source = '.ai-rulez/skills/herdr-fanout/SKILL.md'
-commit = ''
-digest = 'sha256:6ee10428a206c814bcde8431ef70136aa9e0402e11737bc1429f707107c2cb76'
-view = 'profile:full'
-
-[[served]]
-name = 'herdr-fanout'
-source = '.ai-rulez/skills/herdr-fanout/SKILL.md'
-commit = ''
-digest = 'sha256:6ee10428a206c814bcde8431ef70136aa9e0402e11737bc1429f707107c2cb76'
-view = 'role:reviewer'
-
-[[served]]
-name = 'herdr-review-loop'
-source = '.ai-rulez/skills/herdr-review-loop/SKILL.md'
-commit = ''
-digest = 'sha256:933086b97b36efa9f38c5cdab7b473b7378683b001dd7a4cc7e168e45a77a9ca'
-
-[[served]]
-name = 'herdr-review-loop'
-source = '.ai-rulez/skills/herdr-review-loop/SKILL.md'
-commit = ''
-digest = 'sha256:933086b97b36efa9f38c5cdab7b473b7378683b001dd7a4cc7e168e45a77a9ca'
-view = 'profile:full'
-
-[[served]]
-name = 'herdr-review-loop'
-source = '.ai-rulez/skills/herdr-review-loop/SKILL.md'
-commit = ''
-digest = 'sha256:933086b97b36efa9f38c5cdab7b473b7378683b001dd7a4cc7e168e45a77a9ca'
-view = 'role:reviewer'
-
-[[served]]
 name = 'lint-all'
 source = ''
 commit = ''
@@ -421,6 +361,66 @@ name = 'nixos-host-deploy'
 source = '.ai-rulez/domains/nixos-clan/skills/nixos-host-deploy/SKILL.md'
 commit = ''
 digest = 'sha256:e9d81880bc4e64b0415626529cfdce681249f2c3b98c925f6d9903a8bf3e0ed2'
+view = 'role:reviewer'
+
+[[served]]
+name = 'paseo-conductor'
+source = '.ai-rulez/skills/paseo-conductor/SKILL.md'
+commit = ''
+digest = 'sha256:f1af1a6c13d06e1996005989647cedccdb080bb544ecb24e778806830d1c6766'
+
+[[served]]
+name = 'paseo-conductor'
+source = '.ai-rulez/skills/paseo-conductor/SKILL.md'
+commit = ''
+digest = 'sha256:f1af1a6c13d06e1996005989647cedccdb080bb544ecb24e778806830d1c6766'
+view = 'profile:full'
+
+[[served]]
+name = 'paseo-conductor'
+source = '.ai-rulez/skills/paseo-conductor/SKILL.md'
+commit = ''
+digest = 'sha256:f1af1a6c13d06e1996005989647cedccdb080bb544ecb24e778806830d1c6766'
+view = 'role:reviewer'
+
+[[served]]
+name = 'paseo-fanout'
+source = '.ai-rulez/skills/paseo-fanout/SKILL.md'
+commit = ''
+digest = 'sha256:283035be7e511d201f5c16eb7231a6b5a5bb83af4a1311a768b36e4d0509aab2'
+
+[[served]]
+name = 'paseo-fanout'
+source = '.ai-rulez/skills/paseo-fanout/SKILL.md'
+commit = ''
+digest = 'sha256:283035be7e511d201f5c16eb7231a6b5a5bb83af4a1311a768b36e4d0509aab2'
+view = 'profile:full'
+
+[[served]]
+name = 'paseo-fanout'
+source = '.ai-rulez/skills/paseo-fanout/SKILL.md'
+commit = ''
+digest = 'sha256:283035be7e511d201f5c16eb7231a6b5a5bb83af4a1311a768b36e4d0509aab2'
+view = 'role:reviewer'
+
+[[served]]
+name = 'paseo-review-loop'
+source = '.ai-rulez/skills/paseo-review-loop/SKILL.md'
+commit = ''
+digest = 'sha256:fad8cb4deee368f8b295e5a74f57f56a0c9f6b6a7b3a3559a681c07100a16f73'
+
+[[served]]
+name = 'paseo-review-loop'
+source = '.ai-rulez/skills/paseo-review-loop/SKILL.md'
+commit = ''
+digest = 'sha256:fad8cb4deee368f8b295e5a74f57f56a0c9f6b6a7b3a3559a681c07100a16f73'
+view = 'profile:full'
+
+[[served]]
+name = 'paseo-review-loop'
+source = '.ai-rulez/skills/paseo-review-loop/SKILL.md'
+commit = ''
+digest = 'sha256:fad8cb4deee368f8b295e5a74f57f56a0c9f6b6a7b3a3559a681c07100a16f73'
 view = 'role:reviewer'
 
 [[served]]
@@ -658,7 +658,7 @@ digest = 'sha256:a999e275666a16632d0c996dd03b171b3fc04c1960da90c6970b6a0594d5308
 kind = 'context'
 id = 'agents'
 path = 'context/agents.md'
-digest = 'sha256:028fb83ec0f14ad7296182af47ccf15104a210513c30123d007e13084235e72c'
+digest = 'sha256:3d8e0e5f13fbdbec294ed5794d64362245cb5c96da7eb097244fb1e7e2a2fa05'
 
 [[item]]
 kind = 'context'
@@ -670,32 +670,32 @@ digest = 'sha256:67337e8afb054a7e75caf2a1bd043d05d30d4e027d4e19643cfaefe0fb7f75b
 kind = 'context'
 id = 'session-memory'
 path = 'context/session-memory.md'
-digest = 'sha256:3ed3ff7e1c56f335b8b4a4b01332b5eef39b279b7a90bcf6144bd50cc51e8c93'
+digest = 'sha256:df079a9b8afa6b552a54d52b2af804d8eae489439883ed715bc6f171d98c3242'
 
 [[item]]
 kind = 'role'
 id = 'desktop-architect'
-digest = 'sha256:d852ec2a3fac9fc0f87d1efed66d6a668b8cb73fc822be08c48dc517aee2134f'
+digest = 'sha256:9c35abda7678ece4527aed4537c5a9cba4422200f9d8b5c39a66c19099a24f59'
 
 [[item]]
 kind = 'role'
 id = 'devops-clan'
-digest = 'sha256:af1ede88be4130612b96cddcbc3e3f6f284e707c4300472bde0d93b45a925501'
+digest = 'sha256:21686f0b262f6ad419a567ea6c606dc84de9d51f8d33ca03c6565bd5f9daed7a'
 
 [[item]]
 kind = 'role'
 id = 'erp-architect'
-digest = 'sha256:74be7142c59886550afe7eaa8fae8a6010999b2129b64b87e0d01158e145f929'
+digest = 'sha256:455cb2c1c3314c9965e1481cca2fcd3e9cc9d2af4cabc2ea9afe59f4c9adc4da'
 
 [[item]]
 kind = 'role'
 id = 'frontend-engineer'
-digest = 'sha256:a8ed500fc244a684b2afe49aac1a91ade6e89ba9b6b72cd933809fc6ee5f91ad'
+digest = 'sha256:46ca214e667fff4b444e26531357d8ca40627c1bc9f2aa6bbfa649261f2f7ffe'
 
 [[item]]
 kind = 'role'
 id = 'reviewer'
-digest = 'sha256:51e5af8ee980b1fe1c322671b1231585bd669b3746247f6cb863cf1ec3ded159'
+digest = 'sha256:8da57640f6b28c67ca0327a7b509fa9e5c886309142da845d50e8cf0865208dc'
 
 [[item]]
 kind = 'rule'
@@ -707,13 +707,13 @@ digest = 'sha256:f4771f0ec354b7587cf42027ed45ac4f823c0c88732e9293b1648094dbafef3
 kind = 'rule'
 id = 'multi-agent-orchestration'
 path = 'rules/multi-agent-orchestration.md'
-digest = 'sha256:6b1ad70e71cebda298ce3ce0aff18821501cd3913c1b03584240110f985b28c3'
+digest = 'sha256:d24dd93e029dc9948fa2220dd77bd9bbc78b792044fb44de14a688b173f74b6b'
 
 [[item]]
 kind = 'rule'
 id = 'paseo-hub-governance'
 path = 'rules/paseo-hub-governance.md'
-digest = 'sha256:e648d1d369cc10af6348111ccf5071e3b197755c6b4b024b1f03cf3589375f8e'
+digest = 'sha256:3c8f1612ebf57d809e31ae231342e175e60566999d3d27afe8bb15b0523a2264'
 
 [[item]]
 kind = 'rule'
@@ -776,13 +776,13 @@ digest = 'sha256:67cd967cfb947dfbc7231952856ec4a5e0a4b5961c2df9d988bb45976a44b92
 kind = 'skill'
 id = 'fastfree-change-policy'
 path = 'skills/fastfree-change-policy'
-digest = 'sha256:1ddb8e628addb57737d2618ba19ea989f970b5cab1b8091d94adbfb90a88da79'
+digest = 'sha256:c43524eb12ee03e6e80be4b073875393509abaf0b82cc146e614af83db37b358'
 
 [[item]]
 kind = 'skill'
 id = 'fastfree-guide'
 path = 'skills/fastfree-guide'
-digest = 'sha256:8d488aafc5dbd5057236cf91788f886922135c4a9c067aaf723fb32c86d36002'
+digest = 'sha256:6e9591de3a1d49e1aec7350ce3fa69f187044299dc0f4d0e90842ccc9ab1d279'
 
 [[item]]
 kind = 'skill'
@@ -792,21 +792,21 @@ digest = 'sha256:549b4ff78b10b8eae006a2f0de5e1fc1a26bbac0e74461157c46825c438a077
 
 [[item]]
 kind = 'skill'
-id = 'herdr-conductor'
-path = 'skills/herdr-conductor'
-digest = 'sha256:3f8502e528765d000cfcbf261944b1ebe3c1ab68ffe5f75736db284448f26150'
+id = 'paseo-conductor'
+path = 'skills/paseo-conductor'
+digest = 'sha256:285f519698581aae6765f299b582d5015d74aa9a374d9585ba2d084fc383ae3b'
 
 [[item]]
 kind = 'skill'
-id = 'herdr-fanout'
-path = 'skills/herdr-fanout'
-digest = 'sha256:1c90201edc8bbd096263bad9b6e2e48903ca004c8664717fad394e3bcbb1d190'
+id = 'paseo-fanout'
+path = 'skills/paseo-fanout'
+digest = 'sha256:ab36eb9e48ee8a7dabb4ffbacc566a86383f73eee44ecde9e435d49517b25014'
 
 [[item]]
 kind = 'skill'
-id = 'herdr-review-loop'
-path = 'skills/herdr-review-loop'
-digest = 'sha256:ee3bdbbeda481c0ba512b58c357c80c5cd3aff3ecabff24e8173defa4e6f0c08'
+id = 'paseo-review-loop'
+path = 'skills/paseo-review-loop'
+digest = 'sha256:2d7f60f8e4d5cfe91b3e483dd108a871a22fa87dd2a0fb38e811c2313ceb44c4'
 
 [[item]]
 kind = 'skill'
@@ -1132,11 +1132,11 @@ digest = 'sha256:93315c4f382d1b6a284af4fbb8a16b47413340badcefc52eca56eb0abf71271
 
 [[output]]
 path = '.agents/skills/fastfree-change-policy/SKILL.md'
-digest = 'sha256:4a8cac0d8fe1c7648403b9d1deaef55c2ac72f60976eee77f0dd4e17d70c8863'
+digest = 'sha256:fe0fc6f191695afe00facd1c9eec918bd8d57cac2ccaf52738649114b6844d28'
 
 [[output]]
 path = '.agents/skills/fastfree-guide/SKILL.md'
-digest = 'sha256:7c4b2408c84309e4cfc32a95edfea5f766943d3d08103fdae6ab3a2cb59b5de6'
+digest = 'sha256:cc1300525057db35ee6cddbd571bc0eee8dfff5efa36cd312e92231a0e632595'
 
 [[output]]
 path = '.agents/skills/fastfree-guide/references/android-play-guide.md'
@@ -1175,12 +1175,12 @@ path = '.agents/skills/fastfree-guide/references/flox-nix-clan-guide.md'
 digest = 'sha256:f9023c04bb1f1e878f30af5c6046aa0683b62cdb75f0f4da19b12053bc5ebfc8'
 
 [[output]]
-path = '.agents/skills/fastfree-guide/references/herdr-agent-coordination.md'
-digest = 'sha256:a7f2affff2797cc73d1bdea0a3a4b2ccda368f6dd7126319da349c8993b7d019'
-
-[[output]]
 path = '.agents/skills/fastfree-guide/references/lowcode-screen.vue'
 digest = 'sha256:42af35ffcb9a85d0075b7ba0caf136cdac55bde076a9793b09018d442234e2d1'
+
+[[output]]
+path = '.agents/skills/fastfree-guide/references/paseo-agent-coordination.md'
+digest = 'sha256:e16fb410a2e43ceb5a2a136260dc294823e68195ff48d56444aecee7b311ca26'
 
 [[output]]
 path = '.agents/skills/fastfree-guide/scripts/check-quality.sh'
@@ -1189,10 +1189,6 @@ digest = 'sha256:9a1cd5823bbb3c871d16b616f3f85fe0d6ae0ea51759b86bc53e95c4a46d7f5
 [[output]]
 path = '.agents/skills/fastfree-guide/scripts/clan-ops.sh'
 digest = 'sha256:2bd002c1beea081cbaea9b717404a030a87019132103d7f6fc0ec01f3e757f77'
-
-[[output]]
-path = '.agents/skills/fastfree-guide/scripts/herdr-task.sh'
-digest = 'sha256:e576dbb2bdba024e5db34d55882f03eb541cc24939832f616cdd41923cdd7b79'
 
 [[output]]
 path = '.agents/skills/fastfree-guide/scripts/sync-mcp.sh'
@@ -1207,32 +1203,32 @@ path = '.agents/skills/fastfree-test/SKILL.md'
 digest = 'sha256:73fa2a07dcd7f2f7da89e3b62b25a5dbfc073453e1c2c177455864d890fd98fe'
 
 [[output]]
-path = '.agents/skills/herdr-conductor/SKILL.md'
-digest = 'sha256:f9d5fc09d66558ab53c08eed4aa758ea45239fb747857e7ac2fdbe2880f138f4'
-
-[[output]]
-path = '.agents/skills/herdr-conductor/references/TOOLS.md'
-digest = 'sha256:6f9fcbaaec480b189c1917518eca17e2f235c166e37a0ef01a7f19022e8e967c'
-
-[[output]]
-path = '.agents/skills/herdr-conductor/references/approvals.md'
-digest = 'sha256:b2a9da06c64eb5a3658305e5df3fb9b25ca80cb5a9a45ccba6a4c911a03e0c81'
-
-[[output]]
-path = '.agents/skills/herdr-fanout/SKILL.md'
-digest = 'sha256:ade564294f3cc5c0a2f8bad5e874637c8d6b2ac46b7153aa370b80807c3cfd1b'
-
-[[output]]
-path = '.agents/skills/herdr-review-loop/SKILL.md'
-digest = 'sha256:5b88e4e850e91707b904ab21373dad58002e2814e692b6ac50664cdcede1e430'
-
-[[output]]
 path = '.agents/skills/lint-all/SKILL.md'
 digest = 'sha256:a1d0079aec1a25d01ea94159a4fc44c93218fc9e11efd78014bfd1c6f451ed61'
 
 [[output]]
 path = '.agents/skills/nixos-host-deploy/SKILL.md'
 digest = 'sha256:c90ae02df9b1509825b6427287cbfe6196d579b342f3c0bcb4eccc17808a77ec'
+
+[[output]]
+path = '.agents/skills/paseo-conductor/SKILL.md'
+digest = 'sha256:33f04c487b3d9fdbd4ffc25678fafae2cda087b4ab54bc8adc6a06fe2c0a0351'
+
+[[output]]
+path = '.agents/skills/paseo-conductor/references/TOOLS.md'
+digest = 'sha256:46d1040d68f17193f4f4deffedbab076d9a66f79f07e3f95760479e53fd42f97'
+
+[[output]]
+path = '.agents/skills/paseo-conductor/references/approvals.md'
+digest = 'sha256:02d10660424647abb6ba59beaad1c42e389b4390991c5ee4d5de8400812c6847'
+
+[[output]]
+path = '.agents/skills/paseo-fanout/SKILL.md'
+digest = 'sha256:c6531d2001e87b8141d28dedcd251dfcc4c25cbce541a135759e9247c28b624c'
+
+[[output]]
+path = '.agents/skills/paseo-review-loop/SKILL.md'
+digest = 'sha256:ddb6c1b9a1607f6953b744808a29e5ddfbdb9ca6755cfea7be2e1f6cca48f7a3'
 
 [[output]]
 path = '.agents/skills/play-console-setup/SKILL.md'
@@ -1264,7 +1260,7 @@ digest = 'sha256:867a55ddf7d7d6cfb6b99dc9905fb67a5043aefd6e8f572db2643966cb7ec79
 
 [[output]]
 path = '.ai-rulez/roles.json'
-digest = 'sha256:da4c6a0e4799fe061b1bf392e0529da8e6ea5dbfe2a8911a9b9f58c78e43b01b'
+digest = 'sha256:7c554dbc231590857bf8bc66a9b8d7fdb4b10ccea5e8996a0d78b3f537825f0a'
 
 [[output]]
 path = '.claude/rules/desktop-installer.md'
@@ -1480,11 +1476,11 @@ digest = 'sha256:49e72d67e3eca2140557a0d622f850b30bebfe314569a9327f70e6d29bb2fda
 
 [[output]]
 path = '.claude/skills/fastfree-change-policy/SKILL.md'
-digest = 'sha256:13f1a955e862e3d39f20d843dc73127bfd74e371192ca3a8cad785bf4c048fb2'
+digest = 'sha256:f0495ac10ae85ef28b092869534297e6f1e3512668e1923182c0bbe5544d7a1b'
 
 [[output]]
 path = '.claude/skills/fastfree-guide/SKILL.md'
-digest = 'sha256:da17c6b618cf6343f3986301163602ce741627074989c56b387ce855f68bbd62'
+digest = 'sha256:73496a24d9e1e8b49c9265f391a6cf96d866a705e441c4ef2fb3b624bfb93629'
 
 [[output]]
 path = '.claude/skills/fastfree-guide/references/android-play-guide.md'
@@ -1523,12 +1519,12 @@ path = '.claude/skills/fastfree-guide/references/flox-nix-clan-guide.md'
 digest = 'sha256:87de5e05facd503e47ccf3adb076e5f6c2e2b367b9cbf5bfe8f97411ea6af35f'
 
 [[output]]
-path = '.claude/skills/fastfree-guide/references/herdr-agent-coordination.md'
-digest = 'sha256:9639c81bd7c9ea1447c5cfc6103cf9bf8ee9222edd8317e9b3773a3c1b1acca8'
-
-[[output]]
 path = '.claude/skills/fastfree-guide/references/lowcode-screen.vue'
 digest = 'sha256:e62d813d6a3f7dac8c4af44f8ead18bfccfc0417901de3d8b33996bbe9808b33'
+
+[[output]]
+path = '.claude/skills/fastfree-guide/references/paseo-agent-coordination.md'
+digest = 'sha256:07b07ea1fc33b4a7742c7bfb0ab1598b47b1b7a83c1d08a76f84c4529b962a5e'
 
 [[output]]
 path = '.claude/skills/fastfree-guide/scripts/check-quality.sh'
@@ -1537,10 +1533,6 @@ digest = 'sha256:d825df97654c606870d0b9ef0e97c7144f6492c52982e4df351a1e0815f706b
 [[output]]
 path = '.claude/skills/fastfree-guide/scripts/clan-ops.sh'
 digest = 'sha256:96c960a2999abd37225abf5525e1041859e6dee3cd731b4cc00adf471c8819f7'
-
-[[output]]
-path = '.claude/skills/fastfree-guide/scripts/herdr-task.sh'
-digest = 'sha256:aba14e4884072f95358b4f2804e65a0c28390e45a640529d80a23ddf9ca95c36'
 
 [[output]]
 path = '.claude/skills/fastfree-guide/scripts/sync-mcp.sh'
@@ -1555,32 +1547,32 @@ path = '.claude/skills/fastfree-test/SKILL.md'
 digest = 'sha256:1e6c146343d7e12c56b62e563b189068135039f8a67b6d22ba822706842830aa'
 
 [[output]]
-path = '.claude/skills/herdr-conductor/SKILL.md'
-digest = 'sha256:d5f1289980169daad9fa9bf56b307a02166b6d82f1dc664065ce3b9d7101d9f4'
-
-[[output]]
-path = '.claude/skills/herdr-conductor/references/TOOLS.md'
-digest = 'sha256:0f3c89b4e5f616afa4847c4c74d240a6703fe07d487c58dc1c7591e190317ace'
-
-[[output]]
-path = '.claude/skills/herdr-conductor/references/approvals.md'
-digest = 'sha256:8c415daca4ed4a13fa376a1270841ddc2eec1969d9680154f32a1d8a4e62fa0c'
-
-[[output]]
-path = '.claude/skills/herdr-fanout/SKILL.md'
-digest = 'sha256:c4a623d5df2115c261ae5bf1306cae5ee00683290d00f97dac19dcfc691fa801'
-
-[[output]]
-path = '.claude/skills/herdr-review-loop/SKILL.md'
-digest = 'sha256:9ba1e94e8474b478f475a662becbd420d2eb621ba07af4e0ddbc96aacbc83647'
-
-[[output]]
 path = '.claude/skills/lint-all/SKILL.md'
 digest = 'sha256:88310aa19bf449797b2e9361dc7bd42d8568d3204b27b04b82cb71e2b38c66d7'
 
 [[output]]
 path = '.claude/skills/nixos-host-deploy/SKILL.md'
 digest = 'sha256:2d44a6afdbd498c7c068275303fee8920208641ab5bcb216417292a9a16ef90f'
+
+[[output]]
+path = '.claude/skills/paseo-conductor/SKILL.md'
+digest = 'sha256:4d2740b33ee99f550a75d9b93ced4f2f3ecb3d62d0af3462fab257b3cb86d930'
+
+[[output]]
+path = '.claude/skills/paseo-conductor/references/TOOLS.md'
+digest = 'sha256:154e4899dbf1df339b7db6bd66da5455a6f93839adae2ee0c4c9ac8d126e863b'
+
+[[output]]
+path = '.claude/skills/paseo-conductor/references/approvals.md'
+digest = 'sha256:b8c3931dd61578fcb91ec5dc6ae86896b788dc8d27c8b19a5fca70a4a96f626d'
+
+[[output]]
+path = '.claude/skills/paseo-fanout/SKILL.md'
+digest = 'sha256:0e1d0519cbd42e5e32b352478280caf263a0e921c18fba01746330adcf3d65eb'
+
+[[output]]
+path = '.claude/skills/paseo-review-loop/SKILL.md'
+digest = 'sha256:de64186bcacb22fa5cc5708a297804e0a01c52074d9681a092fecabe70db5769'
 
 [[output]]
 path = '.claude/skills/play-console-setup/SKILL.md'
@@ -1792,7 +1784,7 @@ digest = 'sha256:676ddffc944ea32cc2ef9069d75d2f6db14857f9884ea142231bea0ef95a16f
 
 [[output]]
 path = 'AGENTS.md'
-digest = 'sha256:46e66af900780e62714fbd6c64629fe37ec50d5c86dd62f9d39f8afc59675136'
+digest = 'sha256:4e877ebc55cc77428616b8c8d8aed43dcfe4c9c62df69e685a157bc97ba31dfd'
 
 [[output]]
 path = 'CLAUDE.md'
@@ -1800,8 +1792,8 @@ digest = 'sha256:71bc73c292a2adb25eabe7c0e6f22776193bef75dab71b286cd8e4f63b44bf6
 
 [[output]]
 path = 'llms-full.txt'
-digest = 'sha256:c09f8445e214fd18b422d3140b0d77e80cf107939c0313b1ea750fc7d3b1632d'
+digest = 'sha256:4a60dd8097f84b3282425d1bdac624f067e260ad5b23954fd21b2c041ec9dada'
 
 [[output]]
 path = 'llms.txt'
-digest = 'sha256:83601af1f0bd2efbeaf5e3fd2f9808d966870e169706a681641fabb1fea5e4fe'
+digest = 'sha256:d39c698c26545a04a08e9f56064648d31619732f06a4fcbff63c300ed48a3c2e'

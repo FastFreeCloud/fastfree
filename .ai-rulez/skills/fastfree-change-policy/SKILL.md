@@ -65,7 +65,7 @@ All commits in FastFree must strictly follow the Conventional Commits standard:
 ### Standard Scopes:
 - **Packages**: `lowcode`, `auth`, `accounting`, `inventory`, `sales`, `purchase`, `hr`, `crm`, `update`, `vpn`.
 - **Applications**: `panel`, `ledger`, `erp`, `pos`, `website`, `os`, `backend`.
-- **Infrastructure & Tools**: `mcp`, `herdr`, `flox`, `clan`, `ci`, `skills`.
+- **Infrastructure & Tools**: `mcp`, `paseo`, `flox`, `clan`, `ci`, `skills`.
 
 ### Commit Message Rules:
 1. Use the imperative, present tense ("add" not "added", "fix" not "fixes").

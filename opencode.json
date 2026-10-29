@@ -134,20 +134,6 @@
       "enabled": true,
       "timeout": 120000
     },
-    "herdr": {
-      "type": "local",
-      "command": [
-        "python",
-        "C:/Users/FastFree/AppData/Roaming/herdr/plugins/github-installations/herdr.mcp-227709cb4c00/6428-0/checkout/bin/herdr-mcp",
-        "--stdio"
-      ],
-      "environment": {
-        "HERDR_MCP_DEFAULT_KIND": "opencode"
-      },
-      "enabled": true,
-      "timeout": 300000,
-      "cwd": "."
-    },
     "jcodemunch": {
       "type": "local",
       "command": [

@@ -29,7 +29,7 @@ FastFree is a sovereign, offline-first enterprise multi-agent monorepo and opera
 - **Quality Gates**: Zero TypeScript errors (`vue-tsc`), clean `vite build`, and `cargo check` passing with 0 warnings.
 
 ### B. Multi-Agent Governance Mandate (`.ai-rulez`)
-- Added critical invariant: No installer, architectural, or core deployment completion is accepted without independent verification from **OpenCode** running via **Herdr**.
+- Added critical invariant: No installer, architectural, or core deployment completion is accepted without independent verification from **OpenCode** running via the **Paseo review-loop**.
 - Enforced dual-role setup: Implementer (`Antigravity`) vs Independent Reviewer (`OpenCode`).
 
 ### C. GitHub Actions Workflow Audit & Security Patch

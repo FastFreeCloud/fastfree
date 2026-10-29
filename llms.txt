@@ -5,8 +5,8 @@
 ## Rules
 
 - [Code Quality Standards](.ai-rulez/rules/code-quality.md): Follow these coding standards:
-- [Multi-Agent Orchestration with Herdr & OpenCode](.ai-rulez/rules/multi-agent-orchestration.md): FastFree is designed to run in a collaborative multi-agent ecosystem:
-- [Paseo Hub Governance (Augmentation Layer)](.ai-rulez/rules/paseo-hub-governance.md): Paseo is adopted as an **augmentation layer** on top of, never a replacement for, Herdr:
+- [Multi-Agent Orchestration with Paseo](.ai-rulez/rules/multi-agent-orchestration.md): FastFree is designed to run in a collaborative multi-agent ecosystem:
+- [Paseo Governance — the Only Orchestrator](.ai-rulez/rules/paseo-hub-governance.md): Paseo is the **sole** agent orchestrator for FastFree; Herdr is fully retired
 - [Zero Plaintext Secrets Policy](.ai-rulez/rules/secure-secrets.md): 1. **Nix Expressions**: Never embed plaintext passwords, private keys, hashes, or API secrets inside `.nix` files.
 - [FastFree Desktop Installer & Hyper-V Companion Invariants](.ai-rulez/domains/desktop-installer/rules/desktop-installer.md): Domain desktop-installer. When working within `apps/fastfree_installer`:
 - [FastFree ERP Domain Invariants](.ai-rulez/domains/erp-modules/rules/erp-invariants.md): Domain erp-modules. When working within ERP domain packages:
@@ -15,7 +15,7 @@
 
 ## Context
 
-- [Multi-Agent Operating Environment with Herdr](.ai-rulez/context/agents.md): المشروع يدار بواسطة وكلاء ذكاء اصطناعي متعددين يعملون بالتوازي داخل طرفيات **Herdr** (`herdr.dev` مع `HERDR_ENV=1`):
+- [Multi-Agent Operating Environment with Paseo](.ai-rulez/context/agents.md): المشروع يدار بواسطة وكلاء ذكاء اصطناعي متعددين يعملون بالتوازي عبر **Paseo** (الديمون المحلي `127.0.0.1:6767` مع حقن أدوات MCP تلقائياً `injectIntoAgents`):
 - [FastFree Monorepo Architecture](.ai-rulez/context/architecture.md): FastFree is a sovereign, offline-first enterprise multi-agent monorepo and operating system ecosystem.
 - [FastFree Monorepo State & Session Memory](.ai-rulez/context/session-memory.md): FastFree is a sovereign, offline-first enterprise multi-agent monorepo and operating system ecosystem.
 
@@ -27,9 +27,9 @@
 - [FastFree Change Policy & Commit Conventions](.ai-rulez/skills/fastfree-change-policy/SKILL.md): Mandatory code modification rules, scope boundary enforcement, secret prevention, and commit conventions for all human developers and AI agents operating within the FastFree Monorepo.
 - [FastFree Monorepo — الدليل المعماري والتشغيلي الشامل](.ai-rulez/skills/fastfree-guide/SKILL.md): Comprehensive architectural, development, and operational guide for the FastFree Monorepo ecosystem. Use when inspecting, developing, testing, building, or deploying any package (lowcode, auth, acc...
 - [FastFree Test & Quality Verification Skill](.ai-rulez/skills/fastfree-test/SKILL.md): Mandatory verification, typechecking, and testing procedures for the FastFree Monorepo. Use before declaring any task complete or pushing changes to Git. Ensures zero TypeScript errors, clean linti...
-- [Conducting Herdr](.ai-rulez/skills/herdr-conductor/SKILL.md): Operate a live Herdr terminal session through the herdr-mcp server. Use when the user asks what their Herdr agents are doing, or wants to start, prompt, read, wait for, or stop a coding agent, or t...
-- [Fan-out in Herdr](.ai-rulez/skills/herdr-fanout/SKILL.md): Fan a task out across several coding agents in Herdr, each in its own git worktree, then collect and reconcile the results. Use when the user wants parallel exploration, several independent attempt...
-- [Writer / reviewer loop in Herdr](.ai-rulez/skills/herdr-review-loop/SKILL.md): Run a writer/reviewer loop in Herdr — one agent produces work, a second critiques it in its own pane, and findings are relayed back until it is clean. Use when the user wants a second pair of eyes,...
+- [Conducting Paseo](.ai-rulez/skills/paseo-conductor/SKILL.md): Operate the Paseo daemon and its agents via the Paseo MCP tools (injected into agents by the daemon when injectIntoAgents is on). Use when the user asks what their Paseo agents are doing, or wants...
+- [Fan-out in Paseo](.ai-rulez/skills/paseo-fanout/SKILL.md): Fan a task out across several coding agents with Paseo, each in its own worktree-isolated workspace, then collect and reconcile the results. Use when the user wants parallel exploration, several in...
+- [Writer / reviewer loop in Paseo](.ai-rulez/skills/paseo-review-loop/SKILL.md): Run a writer/reviewer loop with Paseo — one agent produces work, a second critiques it independently, and findings are relayed back until it is clean. Use when the user wants a second pair of eyes,...
 - [Ponytail](.ai-rulez/skills/ponytail/SKILL.md): Anti-overengineering and lazy senior dev mode: find the smallest change that fully solves the task, preventing premature abstraction, bloat, and unnecessary code churn. Use when writing, fixing, re...
 - [Skill Evolution Loop](.ai-rulez/skills/skill-evolution/SKILL.md): Keep opencode skills accurate by harvesting failure lessons into skill rules after every fix. Use after any bug fix, failed run, or UI surprise.
 - [ERP Domain Development](.ai-rulez/domains/erp-modules/skills/erp-domain-development/SKILL.md): Domain erp-modules. Add or fix a screen, service, store, or locale in any fastfree_* domain package following architecture invariants and shared utilities. Use for ERP feature work and code review.

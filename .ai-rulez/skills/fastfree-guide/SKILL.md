@@ -25,7 +25,7 @@ graph TD
     subgraph Envs["1. Environment & Infrastructure"]
         Flox[".flox/ (Flox 1.17 Hermetic Env)"]
         Nix["flake.nix & apps/fastfree_os/ (NixOS 26.05 + Clan)"]
-        HerdrPlugin[".herdr/plugin/ (FastFree Herdr Plugin)"]
+        PaseoApp["Paseo Daemon (~/.paseo, MCP injection)"]
         Workflows[".github/workflows/ (9 CI/CD Pipelines)"]
     end
 
@@ -49,7 +49,7 @@ graph TD
 
     subgraph Scripts["4. Automation & Tooling (scripts/)"]
         AndroidScripts["scripts/fastfree-android (uv / Google Play WIF)"]
-        SkillScripts[".gemini/skills/fastfree-guide/scripts/ (Quality / Clan / Herdr)"]
+        SkillScripts[".gemini/skills/fastfree-guide/scripts/ (Quality / Clan / Paseo)"]
     end
 
     Root --> Envs & Pkgs & Apps & Scripts
@@ -61,7 +61,7 @@ graph TD
 - [`.flox/env/manifest.toml`](file:///home/fastfree/Desktop/fastfree/.flox/env/manifest.toml): بيئة التطوير الموحدة والمعزولة.
 - [`flake.nix`](file:///home/fastfree/Desktop/fastfree/flake.nix): مدخل الـ Clan الموجه لنظام FastFree OS.
 - [`apps/fastfree_os/clan.nix`](file:///home/fastfree/Desktop/fastfree/apps/fastfree_os/clan.nix): سجل أجهزة الأسطول والخدمات الرسمية.
-- [`.herdr/plugin/herdr-plugin.toml`](file:///home/fastfree/Desktop/fastfree/.herdr/plugin/herdr-plugin.toml): مانيفست إضافة Herdr لتشغيل الخوادم والفحوصات في نوافذ منفصلة.
+- [`~/.paseo/config.json`](file:///%USERPROFILE%/.paseo/config.json): ديمون Paseo — الأوركسترايتر الموحّد للوكلاء مع حقن أدوات MCP.
 
 ---
 
@@ -112,18 +112,21 @@ bash .gemini/skills/fastfree-guide/scripts/check-quality.sh apps/fastfree_ledger
 
 ---
 
-## 5. تنسيق وكلاء الذكاء الاصطناعي عبر Herdr (Multi-Agent Orchestration)
+## 5. تنسيق وكلاء الذكاء الاصطناعي عبر Paseo (Multi-Agent Orchestration)
 
-عند تشغيل الوكلاء داخل Herdr (`HERDR_ENV=1`):
-- يمكنك تفويض المهام لوكيل شقيق (مثل `helper` في النافذة `w3:p3`).
-- تشغيل المهام الثقيلة (بناء صور NixOS، أو فحص الأنواع) في نوافذ خلفية منبثقة دون حظر المحادثة.
+عند إدارة الوكلاء عبر ديمون Paseo (المحلي `127.0.0.1:6767`):
+- تفويض المهام بـ `create_agent` (مع `create_workspace` بمعزل worktree عند الحاجة)، والمتابعة بـ `send_agent_prompt`.
+- تشغيل المهام الثقيلة (بناء صور NixOS، أو فحص الأنواع) كوكلاء خلفيين دون حظر المحادثة.
 
 ```bash
-# استعراض الوكلاء الشقيقين
-bash scripts/herdr-task.sh list
+# استعراض الوكلاء النشطين
+paseo ls
 
-# تقسيم نافذة وتشغيل سيرفر التطوير
-bash scripts/herdr-task.sh split-run "flox activate -- pnpm --filter fastfree_ledger dev"
+# تشغيل وكيل جديد على مهمة
+paseo run "فحص الأنواع لحزمة fastfree_ledger وأصلح كل الخطأ"
+
+# متابعة وكيل محدد
+paseo logs <id>
 ```
 > طالع الدليل التفصيلي: [`references/herdr-agent-coordination.md`](./references/herdr-agent-coordination.md)
 
@@ -152,8 +155,7 @@ bash scripts/herdr-task.sh split-run "flox activate -- pnpm --filter fastfree_le
 توفر هذه المهارة سكربتات تشغيلية جاهزة داخل مجلد `scripts/`:
 1. [`scripts/check-quality.sh`](./scripts/check-quality.sh): يشغل `vue-tsc` و `eslint` داخل Flox.
 2. [`scripts/clan-ops.sh`](./scripts/clan-ops.sh): يفحص بناء ومخزون Clan 26.05 ويدير الأسرار والتحديثات.
-3. [`scripts/herdr-task.sh`](./scripts/herdr-task.sh): يدير تقسيم النوافذ والتنسيق مع الوكلاء الشقيقين داخل Herdr.
-4. [`scripts/sync-mcp.sh`](./scripts/sync-mcp.sh): مزامنة وتوحيد خوادم MCP العشرة بين `opencode.json` وكافة الوكلاء.
+3. [`scripts/sync-mcp.sh`](./scripts/sync-mcp.sh): مزامنة وتوحيد خوادم MCP بين `opencode.json` وكافة الوكلاء.
 
 ---
 
@@ -169,6 +171,6 @@ bash scripts/herdr-task.sh split-run "flox activate -- pnpm --filter fastfree_le
 
 1. [**دليل المعمارية التفصيلي**](./references/architecture-deep-dive.md): شرح الطبقات الأربع وإعدادات Vite والـ TS.
 2. [**دليل Flox و NixOS و Clan 26.05**](./references/flox-nix-clan-guide.md): شرح شبكات Clan المتعددة والخدمات الرسمية.
-3. [**دليل تنسيق الوكلاء عبر Herdr**](./references/herdr-agent-coordination.md): كيفية التحكم بالنوافذ والوكلاء الشقيقين والـ Plugins.
+3. [**دليل تنسيق الوكلاء عبر Paseo**](./references/paseo-agent-coordination.md): كيفية إدارة وكلاء Paseo عبر الديمون وأدوات MCP وCLI.
 4. [**دليل أندرويد و Google Play**](./references/android-play-guide.md): بناء ونشر تطبيقات المحمول عبر WIF و uv.
 5. [**دليل خادم Frappe الخلفي**](./references/backend-frappe-guide.md): شبكة الحاويات MariaDB و Frappe API.

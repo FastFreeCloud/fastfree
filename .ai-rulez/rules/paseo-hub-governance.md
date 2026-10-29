@@ -1,6 +1,6 @@
 ---
 type: Decision
-title: Paseo Hub Governance (Augmentation Layer)
+title: Paseo Hub Governance
 x-ai-rulez:
   kind: rule
   id: paseo-hub-governance
@@ -8,14 +8,15 @@ x-ai-rulez:
     priority: critical
 ---
 
-# Paseo Hub Governance (Augmentation Layer)
+# Paseo Governance — the Only Orchestrator
 
-Paseo is adopted as an **augmentation layer** on top of, never a replacement for, Herdr:
+Paseo is the **sole** agent orchestrator for FastFree; Herdr is fully retired
+from the repository and fleet.
 
 1. **Role Boundaries**:
-   - Herdr remains the canonical terminal-core orchestrator and the mandated independent reviewer channel (`herdr-review-loop`).
-   - Paseo covers what Herdr does not: programmatic permission approvals (`list_pending_permissions` / `respond_to_permission`), cron schedules and heartbeats, mobile/web review via the E2E-encrypted relay, and Hub-level org automation.
-   - Agents unsupported by Paseo providers (e.g. Antigravity) MUST stay Herdr-orchestrated.
+   - Agent orchestration (workspaces, worktrees, prompts, reviews, fan-out) runs exclusively through Paseo MCP tools and the `paseo-conductor` / `paseo-fanout` / `paseo-review-loop` skills.
+   - Value beyond raw orchestration: programmatic permission approvals (`list_pending_permissions` / `respond_to_permission`), cron schedules and heartbeats, mobile/web review via the E2E-encrypted relay, and Hub-level org automation.
+   - Providers without first-class Paseo support (e.g. Antigravity) MUST be validated via a custom provider / ACP adapter before being used in unattended (scheduled or Hub-triggered) runs.
 
 2. **Sovereignty — Self-Hosted Hub Only**:
    - The Paseo Hub MUST be self-hosted on the sovereign controller (`client1`), NOT the hosted `hub.paseo.sh` origin, for any fleet automation touching customer appliances (`client2..11`).
