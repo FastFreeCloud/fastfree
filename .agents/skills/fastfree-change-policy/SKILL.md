@@ -1,7 +1,7 @@
 ---
 name: fastfree-change-policy
 description: "Mandatory code modification rules, scope boundary enforcement, secret prevention, and commit conventions for all human developers and AI agents operating within the FastFree Monorepo."
-# Content-Hash: blake3:59f62edda2fd7d1070ce8d663310384779e5900be80d46bad4f7401fbe8790c6
+# Content-Hash: blake3:8c95b8104591f42ce409d1bf5454649cf62753075363ca7a156e3274ce2b0fa2
 ---
 
 # FastFree Change Policy & Commit Conventions
@@ -64,7 +64,7 @@ All commits in FastFree must strictly follow the Conventional Commits standard:
 ### Standard Scopes:
 - **Packages**: `lowcode`, `auth`, `accounting`, `inventory`, `sales`, `purchase`, `hr`, `crm`, `update`, `vpn`.
 - **Applications**: `panel`, `ledger`, `erp`, `pos`, `website`, `os`, `backend`.
-- **Infrastructure & Tools**: `mcp`, `herdr`, `flox`, `clan`, `ci`, `skills`.
+- **Infrastructure & Tools**: `mcp`, `paseo`, `flox`, `clan`, `ci`, `skills`.
 
 ### Commit Message Rules:
 1. Use the imperative, present tense ("add" not "added", "fix" not "fixes").

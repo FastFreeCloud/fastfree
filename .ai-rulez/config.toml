@@ -187,7 +187,7 @@ domains = ['frontend']
 'frontend/android-build-release' = 'served'
 
 [roles.match]
-groups = ['herdr:frontend', 'agent:frontend']
+groups = ['paseo:frontend', 'agent:frontend']
 
 # 2. ERP Architect
 [[roles]]
@@ -203,7 +203,7 @@ domains = ['erp-modules']
 'erp-modules/erp-domain-development' = 'static'
 
 [roles.match]
-groups = ['herdr:erp', 'agent:erp']
+groups = ['paseo:erp', 'agent:erp']
 
 # 3. DevOps Clan Engineer
 [[roles]]
@@ -220,7 +220,7 @@ domains = ['nixos-clan']
 'nixos-clan/web-backend-release' = 'both'
 
 [roles.match]
-groups = ['herdr:devops', 'agent:nixos']
+groups = ['paseo:devops', 'agent:nixos']
 
 # 4. Code Reviewer / Auditor
 [[roles]]
@@ -231,7 +231,7 @@ domains = ['frontend', 'erp-modules', 'nixos-clan']
 [roles.skill_mode]
 'code-reviewer' = 'on'
 'fastfree-change-policy' = 'on'
-'herdr-review-loop' = 'on'
+'paseo-review-loop' = 'on'
 'skill-evolution' = 'on'
 'frontend/play-*' = 'off'
 'frontend/android-build-release' = 'off'
@@ -239,10 +239,10 @@ domains = ['frontend', 'erp-modules', 'nixos-clan']
 [roles.delivery]
 'code-reviewer' = 'static'
 'fastfree-change-policy' = 'static'
-'herdr-review-loop' = 'static'
+'paseo-review-loop' = 'static'
 
 [roles.match]
-groups = ['herdr:reviewer', 'agent:auditor', 'paseo:reviewer']
+groups = ['paseo:reviewer', 'agent:auditor']
 
 # 5. Desktop & Systems Architect
 [[roles]]
@@ -252,7 +252,7 @@ description = 'Desktop systems architect building Tauri v2 Windows installers an
 domains = ['desktop-installer']
 
 [roles.match]
-groups = ['herdr:desktop', 'agent:tauri']
+groups = ['paseo:desktop', 'agent:tauri']
 
 # ---------------------------------------------------------
 # DETERMINISTIC VERIFIERS (CI & Git Gates)
