@@ -1,6 +1,6 @@
 /**
  * Stdio Transport entrypoint for FastFree Clan MCP Server.
- * Enables direct local integration with Antigravity, OpenCode, Claude Code, and Herdr.
+ * Enables direct local integration with Antigravity, OpenCode, Claude Code, and Paseo.
  */
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { createFastfreeMcpServer } from './server.js';

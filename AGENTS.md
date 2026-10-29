@@ -8,7 +8,7 @@ Use MCP server: npx -y ai-rulez@latest mcp --allow-any-dir --serve-skills
 Regenerate: ai-rulez generate
 
 Docs: https://github.com/Goldziher/ai-rulez
-Content-Hash: blake3:a81770859294dae69ced0038643515b670267381ce0f1c6c078a970484aad127
+Content-Hash: blake3:66475ac3a843986a0c7fc0f582e191ef7988d83f4b91ea3727d71756823a226e
 -->
 
 # fastfree
@@ -48,11 +48,11 @@ When working within `apps/fastfree_installer`:
    - Mandatory update gate locks wizard progress when a required version is pending.
    - Real VM status is queried live via Hyper-V PowerShell commands.
 
-6. **Multi-Agent Verification Mandate (Herdr + OpenCode)**:
-   - For all architectural, security, or release validations of `apps/fastfree_installer`, the active AI agent MUST orchestrate an independent verification loop via Herdr MCP and OpenCode (`herdr-review-loop`).
-   - The primary agent spins up Herdr (`herdr server` / `herdr_status`) and opens an OpenCode reviewer session via `herdr_open_agent(name="opencode-reviewer", ...)`.
+6. **Multi-Agent Verification Mandate (Paseo + OpenCode)**:
+   - For all architectural, security, or release validations of `apps/fastfree_installer`, the active AI agent MUST orchestrate an independent verification loop via Paseo MCP and OpenCode (`paseo-review-loop`).
+   - The primary agent creates a worktree-isolated workspace (`create_workspace`) and opens an OpenCode reviewer agent via `create_agent` with an initial review prompt.
    - OpenCode independently inspects code changes, runs build checks (`vue-tsc`, `vite build`, `cargo check`), audits Windows 11 Fluent 2 compliance, and provides an objective sign-off (`VERDICT: APPROVE`).
-   - No release or installer finalization is accepted without this dual-agent Herdr + OpenCode audit.
+   - No release or installer finalization is accepted without this dual-agent Paseo + OpenCode audit.
 
 ### multi-agent-orchestration
 

@@ -36,8 +36,6 @@
     apps = {
       base         = lib.mkEnableOption "Base NixOS system";
       shell        = lib.mkEnableOption "zsh + deep-search CLI tools (rg/fd/ugrep/fzf)";
-      herdr        = lib.mkEnableOption "Herdr Multi-Agent AI Runtime (Herdr, OpenCode, Hermes/hermas)";
-      opencode     = lib.mkEnableOption "Legacy alias for Herdr OpenCode";
       mariadb      = lib.mkEnableOption "MariaDB database server";
       caddy        = lib.mkEnableOption "Caddy reverse proxy";
       fastfree_backend = lib.mkEnableOption "FastFree Backend (Frappe/ERPNext)";

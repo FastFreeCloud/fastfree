@@ -46,8 +46,8 @@
     <template #window-clan-services>
       <ClanServicesScreen />
     </template>
-    <template #window-clan-herdr>
-      <ClanHerdrScreen />
+    <template #window-clan-paseo>
+      <ClanPaseoScreen />
     </template>
   </DesktopShell>
 </template>
@@ -72,7 +72,7 @@ import ClanBackupsScreen from '../screens/ClanBackupsScreen.vue';
 import ClanSecretsScreen from '../screens/ClanSecretsScreen.vue';
 import ClanVarsScreen from '../screens/ClanVarsScreen.vue';
 import ClanServicesScreen from '../screens/ClanServicesScreen.vue';
-import ClanHerdrScreen from '../screens/ClanHerdrScreen.vue';
+import ClanPaseoScreen from '../screens/ClanPaseoScreen.vue';
 
 const desktopStore = useDesktopStore();
 

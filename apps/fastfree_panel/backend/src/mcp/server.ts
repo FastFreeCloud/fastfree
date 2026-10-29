@@ -13,10 +13,10 @@ import { z } from 'zod';
 
 import { clanService } from '../core/clan.service.js';
 import { nixosService } from '../core/nixos.service.js';
-import { herdrService } from '../core/herdr.service.js';
+import { paseoService } from '../core/paseo.service.js';
 import { clanMachineUpdateSchema } from '../schemas/clan.schema.js';
 import { nixosRollbackSchema } from '../schemas/nixos.schema.js';
-import { herdrAgentPromptSchema } from '../schemas/herdr.schema.js';
+import { paseoAgentPromptSchema } from '../schemas/paseo.schema.js';
 import { ApiError } from '../http/errors.js';
 
 export interface McpSession {
@@ -144,16 +144,13 @@ export function createFastfreeMcpServer(): McpServer {
     },
   );
 
-  // Tool 5: herdr_status
+  // Tool 5: paseo_status
   server.tool(
-    'herdr_status',
-    'Condensed snapshot of the whole Herdr session: focused ids, counts by status, and every live agent with its location.',
-    {
-      workspace_id: z.string().optional().describe('Optional workspace id to restrict agents to'),
-    },
+    'paseo_status',
+    'Condensed snapshot of the whole Paseo session: counts by status and every live agent with its cwd.',
     async () => {
       try {
-        const status = await herdrService.getHerdrStatus();
+        const status = await paseoService.getStatus();
         return {
           content: [
             {
@@ -163,22 +160,22 @@ export function createFastfreeMcpServer(): McpServer {
           ],
         };
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Failed to collect Herdr status';
+        const message = error instanceof Error ? error.message : 'Failed to collect Paseo status';
         return {
-          content: [{ type: 'text', text: `Error collecting Herdr status: ${message}` }],
+          content: [{ type: 'text', text: `Error collecting Paseo status: ${message}` }],
           isError: true,
         };
       }
     },
   );
 
-  // Tool 6: herdr_agents
+  // Tool 6: paseo_agents
   server.tool(
-    'herdr_agents',
-    'List live agents recognised by Herdr.',
+    'paseo_agents',
+    'List live agents recognised by Paseo.',
     async () => {
       try {
-        const status = await herdrService.getHerdrStatus();
+        const status = await paseoService.getStatus();
         return {
           content: [
             {
@@ -197,19 +194,19 @@ export function createFastfreeMcpServer(): McpServer {
     },
   );
 
-  // Tool 7: herdr_agent_prompt
+  // Tool 7: paseo_agent_prompt
   server.tool(
-    'herdr_agent_prompt',
+    'paseo_agent_prompt',
     'Submit a prompt to a live agent. Returns once submitted.',
     {
-      target: z.string().describe('Live agent name or pane id'),
+      target: z.string().describe('Live agent id or name'),
       text: z.string().describe('Prompt text'),
       wait: z.boolean().optional().describe('Wait for a settled state before returning'),
       timeout_ms: z.number().optional().describe('Wait timeout in milliseconds'),
     },
     async (args) => {
       try {
-        const result = await herdrService.dispatchPrompt({
+        const result = await paseoService.dispatchPrompt({
           target: args.target,
           text: args.text,
           wait: args.wait,
@@ -315,22 +312,22 @@ export async function executeDirectToolCall(
       return await nixosService.rollback(parsed);
     }
 
-    case 'herdr_status': {
-      return await herdrService.getHerdrStatus();
+    case 'paseo_status': {
+      return await paseoService.getStatus();
     }
 
-    case 'herdr_agents': {
-      const status = await herdrService.getHerdrStatus();
+    case 'paseo_agents': {
+      const status = await paseoService.getStatus();
       return status.agents;
     }
 
-    case 'herdr_agent_prompt': {
-      const parsed = herdrAgentPromptSchema.parse(rawArgs);
-      return await herdrService.dispatchPrompt(parsed);
+    case 'paseo_agent_prompt': {
+      const parsed = paseoAgentPromptSchema.parse(rawArgs);
+      return await paseoService.dispatchPrompt(parsed);
     }
 
     default:
-      throw ApiError.validation(`Unknown MCP tool: "${toolName}". Supported tools: clan_machines_list, clan_machines_update, nixos_health, nixos_rollback, herdr_status, herdr_agents, herdr_agent_prompt.`, {
+      throw ApiError.validation(`Unknown MCP tool: "${toolName}". Supported tools: clan_machines_list, clan_machines_update, nixos_health, nixos_rollback, paseo_status, paseo_agents, paseo_agent_prompt.`, {
         field: 'tool',
       });
   }

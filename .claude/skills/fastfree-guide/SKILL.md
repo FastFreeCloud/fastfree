@@ -1,7 +1,7 @@
 ---
-description: Comprehensive architectural, development, and operational guide for the FastFree Monorepo ecosystem. Use when inspecting, developing, testing, building, or deploying any package (lowcode, auth, accounting, inventory, sales, purchase, hr, crm, update, vpn), frontend app (ledger, erp, pos, hr, website), backend (Frappe), Flox hermetic environment, NixOS Clan 26.05 infrastructure (internet, wireguard, zerotier, garage, borgbackup), Herdr multi-agent orchestration, or CI/CD workflow in FastFree.
+description: Comprehensive architectural, development, and operational guide for the FastFree Monorepo ecosystem. Use when inspecting, developing, testing, building, or deploying any package (lowcode, auth, accounting, inventory, sales, purchase, hr, crm, update, vpn), frontend app (ledger, erp, pos, hr, website), backend (Frappe), Flox hermetic environment, NixOS Clan 26.05 infrastructure (internet, wireguard, zerotier, garage, borgbackup), Paseo multi-agent orchestration, or CI/CD workflow in FastFree.
 name: fastfree-guide
-# Content-Hash: blake3:1925f1e8663cb0d3b3b89512934b528203c426c86027b39f46f86fa45fe58930
+# Content-Hash: blake3:aaec65b57bdc89d5801822b8eb9931c757b9a0d7e4ce2a161fbf9761b1449d34
 ---
 
 # FastFree Monorepo — الدليل المعماري والتشغيلي الشامل
@@ -124,7 +124,7 @@ paseo run "فحص الأنواع لحزمة fastfree_ledger وأصلح كل ال
 # متابعة وكيل محدد
 paseo logs <id>
 ```
-> طالع الدليل التفصيلي: [`references/herdr-agent-coordination.md`](./references/herdr-agent-coordination.md)
+> طالع الدليل التفصيلي: [`references/paseo-agent-coordination.md`](./references/paseo-agent-coordination.md)
 
 ---
 

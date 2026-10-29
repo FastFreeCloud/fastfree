@@ -6,7 +6,7 @@ ai_rulez_version = '5.9.2'
 profile = 'full'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:39455f1b22aa5b28c079131106d584481d7c911bdf4f2215838b2cd1dfe4bbfd'
+tree = 'sha256:5cd0b7ba84ce27ca0af95b6f852eb218414d8a635ca31f022822abc13f50be86'
 
 [[served]]
 name = 'ai-rulez'
@@ -267,20 +267,20 @@ view = 'role:reviewer'
 name = 'fastfree-guide'
 source = '.ai-rulez/skills/fastfree-guide/SKILL.md'
 commit = ''
-digest = 'sha256:df6fe9bd9ab974fc538861fd1ed806043017c1270b6e6056725c2e21bdee3be7'
+digest = 'sha256:9c06ebaa1cb0d6cc9c440d47ba1bdaf0bb67de28b5c7c2a0b1e43a4343ab551d'
 
 [[served]]
 name = 'fastfree-guide'
 source = '.ai-rulez/skills/fastfree-guide/SKILL.md'
 commit = ''
-digest = 'sha256:df6fe9bd9ab974fc538861fd1ed806043017c1270b6e6056725c2e21bdee3be7'
+digest = 'sha256:9c06ebaa1cb0d6cc9c440d47ba1bdaf0bb67de28b5c7c2a0b1e43a4343ab551d'
 view = 'profile:full'
 
 [[served]]
 name = 'fastfree-guide'
 source = '.ai-rulez/skills/fastfree-guide/SKILL.md'
 commit = ''
-digest = 'sha256:df6fe9bd9ab974fc538861fd1ed806043017c1270b6e6056725c2e21bdee3be7'
+digest = 'sha256:9c06ebaa1cb0d6cc9c440d47ba1bdaf0bb67de28b5c7c2a0b1e43a4343ab551d'
 view = 'role:reviewer'
 
 [[served]]
@@ -726,7 +726,7 @@ kind = 'rule'
 id = 'desktop-installer'
 domain = 'desktop-installer'
 path = 'domains/desktop-installer/rules/desktop-installer.md'
-digest = 'sha256:434ea90006d06ff4d44961bc14dc2c973d0bbc1653319d4330647227f5ea5eb5'
+digest = 'sha256:0b39b33e5c4890f2bea9c1bd66ee052e59a0d703817bfdf84c698fde18c7a7c1'
 
 [[item]]
 kind = 'rule'
@@ -782,7 +782,7 @@ digest = 'sha256:c43524eb12ee03e6e80be4b073875393509abaf0b82cc146e614af83db37b35
 kind = 'skill'
 id = 'fastfree-guide'
 path = 'skills/fastfree-guide'
-digest = 'sha256:6e9591de3a1d49e1aec7350ce3fa69f187044299dc0f4d0e90842ccc9ab1d279'
+digest = 'sha256:47813bdba783f5aec1ae34bdb674273bbbfb4189f6c9ed2793c7570eb8fbdb56'
 
 [[item]]
 kind = 'skill'
@@ -920,7 +920,7 @@ digest = 'sha256:9f9bb5dfeb8a7ee19daa3b1cc7c86e4de1b67551dae969c89f66bbf608dca4c
 
 [[output]]
 path = '.agents/rules/desktop-installer.md'
-digest = 'sha256:1263352bd6c25343d7c90ac6926c069ccffed910f620639342a18e5edac67f58'
+digest = 'sha256:c4b36b199c69feffce36f479197406df3eb3fc77f8a665129b9a9743e1308615'
 
 [[output]]
 path = '.agents/rules/erp-invariants.md'
@@ -1136,7 +1136,7 @@ digest = 'sha256:fe0fc6f191695afe00facd1c9eec918bd8d57cac2ccaf52738649114b6844d2
 
 [[output]]
 path = '.agents/skills/fastfree-guide/SKILL.md'
-digest = 'sha256:cc1300525057db35ee6cddbd571bc0eee8dfff5efa36cd312e92231a0e632595'
+digest = 'sha256:ee2de92d9fa6145f546d814e5268995dc46f999822b6165d41e8ee158f4073bd'
 
 [[output]]
 path = '.agents/skills/fastfree-guide/references/android-play-guide.md'
@@ -1192,7 +1192,7 @@ digest = 'sha256:2bd002c1beea081cbaea9b717404a030a87019132103d7f6fc0ec01f3e757f7
 
 [[output]]
 path = '.agents/skills/fastfree-guide/scripts/sync-mcp.sh'
-digest = 'sha256:1b32fb49082a7de6d764ec90f8a46275652a2e3859c22fb9f7b0ecd89c6f5493'
+digest = 'sha256:8186db97fa1b550336b27a787ac0194349d2612549fa472138a8af79e22aff28'
 
 [[output]]
 path = '.agents/skills/fastfree-poster/SKILL.md'
@@ -1260,11 +1260,11 @@ digest = 'sha256:867a55ddf7d7d6cfb6b99dc9905fb67a5043aefd6e8f572db2643966cb7ec79
 
 [[output]]
 path = '.ai-rulez/roles.json'
-digest = 'sha256:7c554dbc231590857bf8bc66a9b8d7fdb4b10ccea5e8996a0d78b3f537825f0a'
+digest = 'sha256:2ffbf0b4a3b4e37b76f9620f014b2362ff0cd793ce5b014d96a887649b00f970'
 
 [[output]]
 path = '.claude/rules/desktop-installer.md'
-digest = 'sha256:323d7c31a7c6167bb5c4c1cdf80f3404542b5615e631f53696067c2c3cb6f11f'
+digest = 'sha256:715729fe9738c2fcaf2b8473cbe40839a6f0636078cfa8a14af83b6bab6b6a66'
 
 [[output]]
 path = '.claude/rules/erp-invariants.md'
@@ -1480,7 +1480,7 @@ digest = 'sha256:f0495ac10ae85ef28b092869534297e6f1e3512668e1923182c0bbe5544d7a1
 
 [[output]]
 path = '.claude/skills/fastfree-guide/SKILL.md'
-digest = 'sha256:73496a24d9e1e8b49c9265f391a6cf96d866a705e441c4ef2fb3b624bfb93629'
+digest = 'sha256:90b3069ebfc4d263585888d14b3d90f35cec93a917008ad65d968a517680ec3b'
 
 [[output]]
 path = '.claude/skills/fastfree-guide/references/android-play-guide.md'
@@ -1536,7 +1536,7 @@ digest = 'sha256:96c960a2999abd37225abf5525e1041859e6dee3cd731b4cc00adf471c8819f
 
 [[output]]
 path = '.claude/skills/fastfree-guide/scripts/sync-mcp.sh'
-digest = 'sha256:55e5206d2435bbe3456e181f14ffb98d59463adda53065ccea793c57b4cebc90'
+digest = 'sha256:2f3e6296185e9999ca7e19a12ee0f172b81fb97e84c7a8542b53d4005d681854'
 
 [[output]]
 path = '.claude/skills/fastfree-poster/SKILL.md'
@@ -1784,7 +1784,7 @@ digest = 'sha256:676ddffc944ea32cc2ef9069d75d2f6db14857f9884ea142231bea0ef95a16f
 
 [[output]]
 path = 'AGENTS.md'
-digest = 'sha256:4e877ebc55cc77428616b8c8d8aed43dcfe4c9c62df69e685a157bc97ba31dfd'
+digest = 'sha256:c307be42017c3618db4261662676f71cb85eec169352bc73de100669e014ed79'
 
 [[output]]
 path = 'CLAUDE.md'
@@ -1792,7 +1792,7 @@ digest = 'sha256:71bc73c292a2adb25eabe7c0e6f22776193bef75dab71b286cd8e4f63b44bf6
 
 [[output]]
 path = 'llms-full.txt'
-digest = 'sha256:4a60dd8097f84b3282425d1bdac624f067e260ad5b23954fd21b2c041ec9dada'
+digest = 'sha256:428360e3a9b1bc2d204dcff5ab759937c73f3d77883ed1b1f397cd081c577d01'
 
 [[output]]
 path = 'llms.txt'

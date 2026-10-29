@@ -10,7 +10,6 @@
     ../modules/system.nix
     ../modules/integration.nix
     ../modules/shell.nix
-    ../modules/herdr.nix
     ../modules/mariadb.nix
     ../modules/caddy.nix
     ../modules/fastfree_backend.nix
