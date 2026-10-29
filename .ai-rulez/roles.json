@@ -45,6 +45,13 @@
         },
         {
           "kind": "rule",
+          "id": "paseo-hub-governance",
+          "path": "rules/paseo-hub-governance.md",
+          "bytes": 2157,
+          "tokens": 534
+        },
+        {
+          "kind": "rule",
           "id": "secure-secrets",
           "path": "rules/secure-secrets.md",
           "bytes": 623,
@@ -170,7 +177,7 @@
           "domain": "frontend",
           "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
           "delivery": "static",
-          "bytes": 353038,
+          "bytes": 353042,
           "tokens": 310
         },
         {
@@ -263,13 +270,13 @@
         }
       ],
       "totals": {
-        "items": 28,
-        "bytes": 499675,
-        "tokens": 22688,
+        "items": 29,
+        "bytes": 501836,
+        "tokens": 23222,
         "by_kind": {
           "check": 2,
           "command": 4,
-          "rule": 5,
+          "rule": 6,
           "skill": 17
         },
         "served_skills": 3,
@@ -310,6 +317,13 @@
           "path": "rules/multi-agent-orchestration.md",
           "bytes": 1186,
           "tokens": 283
+        },
+        {
+          "kind": "rule",
+          "id": "paseo-hub-governance",
+          "path": "rules/paseo-hub-governance.md",
+          "bytes": 2157,
+          "tokens": 534
         },
         {
           "kind": "rule",
@@ -452,13 +466,13 @@
         }
       ],
       "totals": {
-        "items": 19,
-        "bytes": 114032,
-        "tokens": 14283,
+        "items": 20,
+        "bytes": 116189,
+        "tokens": 14817,
         "by_kind": {
           "check": 1,
           "command": 1,
-          "rule": 4,
+          "rule": 5,
           "skill": 13
         },
         "served_skills": 0,
@@ -507,6 +521,13 @@
           "path": "rules/multi-agent-orchestration.md",
           "bytes": 1186,
           "tokens": 283
+        },
+        {
+          "kind": "rule",
+          "id": "paseo-hub-governance",
+          "path": "rules/paseo-hub-governance.md",
+          "bytes": 2157,
+          "tokens": 534
         },
         {
           "kind": "rule",
@@ -645,7 +666,7 @@
           "domain": "frontend",
           "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
           "delivery": "static",
-          "bytes": 353038,
+          "bytes": 353042,
           "tokens": 310
         },
         {
@@ -730,13 +751,13 @@
         }
       ],
       "totals": {
-        "items": 28,
-        "bytes": 500364,
-        "tokens": 22869,
+        "items": 29,
+        "bytes": 502525,
+        "tokens": 23403,
         "by_kind": {
           "check": 2,
           "command": 3,
-          "rule": 5,
+          "rule": 6,
           "skill": 18
         },
         "served_skills": 3,
@@ -781,6 +802,13 @@
           "path": "rules/multi-agent-orchestration.md",
           "bytes": 1186,
           "tokens": 283
+        },
+        {
+          "kind": "rule",
+          "id": "paseo-hub-governance",
+          "path": "rules/paseo-hub-governance.md",
+          "bytes": 2157,
+          "tokens": 534
         },
         {
           "kind": "rule",
@@ -901,7 +929,7 @@
           "domain": "frontend",
           "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
           "delivery": "static",
-          "bytes": 353038,
+          "bytes": 353042,
           "tokens": 310
         },
         {
@@ -986,13 +1014,13 @@
         }
       ],
       "totals": {
-        "items": 26,
-        "bytes": 496944,
-        "tokens": 22035,
+        "items": 27,
+        "bytes": 499105,
+        "tokens": 22569,
         "by_kind": {
           "check": 2,
           "command": 3,
-          "rule": 4,
+          "rule": 5,
           "skill": 17
         },
         "served_skills": 3,
@@ -1005,7 +1033,8 @@
       "match": {
         "groups": [
           "herdr:reviewer",
-          "agent:auditor"
+          "agent:auditor",
+          "paseo:reviewer"
         ]
       },
       "domains": [
@@ -1041,6 +1070,13 @@
           "path": "rules/multi-agent-orchestration.md",
           "bytes": 1186,
           "tokens": 283
+        },
+        {
+          "kind": "rule",
+          "id": "paseo-hub-governance",
+          "path": "rules/paseo-hub-governance.md",
+          "bytes": 2157,
+          "tokens": 534
         },
         {
           "kind": "rule",
@@ -1190,7 +1226,7 @@
           "domain": "frontend",
           "path": "domains/frontend/skills/fastfree-brand/SKILL.md",
           "delivery": "static",
-          "bytes": 353038,
+          "bytes": 353042,
           "tokens": 310
         },
         {
@@ -1307,13 +1343,13 @@
         }
       ],
       "totals": {
-        "items": 33,
-        "bytes": 506989,
-        "tokens": 24652,
+        "items": 34,
+        "bytes": 509150,
+        "tokens": 25186,
         "by_kind": {
           "check": 3,
           "command": 4,
-          "rule": 6,
+          "rule": 7,
           "skill": 20
         },
         "served_skills": 0,
