@@ -91,9 +91,9 @@
 # FastFree Android Release Signing Configuration
 # Root project relative path to release.jks
 storeFile=release.jks
-storePassword=<see GitHub Actions secret ANDROID_KEYSTORE_PASSWORD>
+storePassword=`<see GitHub Actions secret ANDROID_KEYSTORE_PASSWORD>`
 keyAlias=fastfree
-keyPassword=<see GitHub Actions secret ANDROID_KEYSTORE_PASSWORD>
+keyPassword=`<see GitHub Actions secret ANDROID_KEYSTORE_PASSWORD>`
 ```
 
 تم توفير قوالب دائمة غير متجاهلة في Git داخل:

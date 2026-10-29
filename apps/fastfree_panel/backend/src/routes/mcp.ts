@@ -221,7 +221,15 @@ mcpRoutes.get('/status', (c) => {
     ok({
       status: 'ready',
       activeSessions: getActiveSessionCount(),
-      tools: ['clan_machines_list', 'clan_machines_update', 'nixos_health', 'nixos_rollback'],
+      tools: [
+        'clan_machines_list',
+        'clan_machines_update',
+        'nixos_health',
+        'nixos_rollback',
+        'paseo_status',
+        'paseo_agents',
+        'paseo_agent_prompt',
+      ],
     }),
   );
 });

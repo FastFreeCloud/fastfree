@@ -39,14 +39,15 @@ function getDaemonBaseUrl(): string {
 
 /**
  * Resolve the daemon bearer credential at runtime.
- * Order: PASEO_TOKEN env → %USERPROFILE%\.paseo\local-credential file.
+ * Order: PASEO_TOKEN env → $PASEO_HOME/local-credential → %USERPROFILE%\.paseo\local-credential file.
  */
 function getCredentialToken(): string | null {
   const envToken = process.env['PASEO_TOKEN'];
   if (envToken) return envToken;
 
   try {
-    const credentialPath = join(homedir(), '.paseo', 'local-credential');
+    const paseoHome = process.env['PASEO_HOME'] ?? join(homedir(), '.paseo');
+    const credentialPath = join(paseoHome, 'local-credential');
     if (existsSync(credentialPath)) {
       const content = readFileSync(credentialPath, 'utf8').trim();
       // The credential file may be raw token JSON; unwrap `{"token": ...}` if present.
@@ -125,7 +126,11 @@ async function daemonFetch<T>(path: string, init: RequestInit = {}): Promise<Dae
   if (contentTypeHeader) headers['content-type'] = contentTypeHeader;
 
   const token = getCredentialToken();
-  if (token) headers.authorization = `Bearer ${token}`;
+  if (token) {
+    headers.authorization = `Bearer ${token}`;
+  } else {
+    console.warn('[paseo] no daemon credential resolved (set PASEO_TOKEN or create .paseo/local-credential); sending unauthenticated request');
+  }
 
   try {
     const res = await fetch(`${base}${path}`, {
