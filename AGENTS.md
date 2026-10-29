@@ -8,7 +8,7 @@ Use MCP server: npx -y ai-rulez@latest mcp --allow-any-dir --serve-skills
 Regenerate: ai-rulez generate
 
 Docs: https://github.com/Goldziher/ai-rulez
-Content-Hash: blake3:66475ac3a843986a0c7fc0f582e191ef7988d83f4b91ea3727d71756823a226e
+Content-Hash: blake3:246ce2a9a15a0deea0d9be4b410e0118431a3e0854dbe81293812d01b1f0265b
 -->
 
 # fastfree
@@ -322,7 +322,7 @@ Total workflows: **16**.
 1. **Zero Raw Emojis**: Never use emoji symbols in official UI or terminal banners.
 2. **Zero TypeScript Errors**: Always run `npx vue-tsc --noEmit` on affected apps/packages.
 3. **Zero Plaintext Secrets**: Strictly use Clan Vars or GitHub Secrets.
-4. **Governance Synchronization**: Always verify `npx -y ai-rulez@latest verifiers run --strict` passes before declaring work complete.
+4. **Governance Synchronization**: Always verify `npx -y ai-rulez@5.9.2 verifiers run --strict` passes before declaring work complete.
 
 ## Unlisted skills
 
