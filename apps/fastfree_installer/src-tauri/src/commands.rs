@@ -823,26 +823,36 @@ try {{
 
 /// Generate and write a WireGuard `.conf` file for the given client node.
 /// On Windows, the file is written to `%APPDATA%\FastFree\wireguard\<client_id>.conf`.
-/// Private key is derived from a per-client placeholder until Clan Vars are seeded at boot time.
+/// Supports deterministic automatic generation as well as explicit manual customization.
 #[tauri::command]
-pub async fn apply_wireguard_config(client_id: String) -> Result<WireGuardApplyResult, String> {
+pub async fn apply_wireguard_config(
+    client_id: String,
+    custom_port: Option<u16>,
+    custom_ip: Option<String>,
+    custom_endpoint: Option<String>,
+    custom_conf: Option<String>,
+) -> Result<WireGuardApplyResult, String> {
     InstallerLogger::info(
         "WIREGUARD",
-        &format!("Generating WireGuard config for '{}'", client_id),
+        &format!("Generating WireGuard config for '{}' (Manual customization: {})", client_id, custom_conf.is_some() || custom_port.is_some()),
     );
 
-    // Derive deterministic parameters from the numeric suffix (client2..11)
+    // Derive deterministic parameters from the numeric suffix (client2..11) or use manual overrides
     let num_str: String = client_id.chars().filter(|c| c.is_ascii_digit()).collect();
     let n: u16 = num_str.parse().unwrap_or(2);
-    let listen_port = 51820 + n;
-    let client_ip = format!("10.24.0.{}/32", n);
+    let listen_port = custom_port.unwrap_or(51820 + n);
+    let client_ip = custom_ip.unwrap_or_else(|| format!("10.24.0.{}/32", n));
+    let endpoint = custom_endpoint.unwrap_or_else(|| format!("client1.fastfree.cloud:{}", listen_port));
 
-    // Placeholder private key — replaced by `clan vars generate <machine>` at provisioning time
-    let private_key = format!("PLACEHOLDER_PRIVATE_KEY_client{}==========================", n);
-
-    let conf_content = format!(
-        "[Interface]\nAddress = {client_ip}\nListenPort = {listen_port}\nPrivateKey = {private_key}\nMTU = 1420\n\n[Peer]\nPublicKey = ff+client1+controller+vps+primary+master===\nEndpoint = client1.fastfree.cloud:{listen_port}\nAllowedIPs = 10.24.0.0/16\nPersistentKeepalive = 25\n",
-    );
+    let conf_content = if let Some(raw) = custom_conf.filter(|s| !s.trim().is_empty()) {
+        raw
+    } else {
+        // Placeholder private key — replaced by `clan vars generate <machine>` at provisioning time
+        let private_key = format!("PLACEHOLDER_PRIVATE_KEY_client{}==========================", n);
+        format!(
+            "[Interface]\nAddress = {client_ip}\nListenPort = {listen_port}\nPrivateKey = {private_key}\nMTU = 1420\n\n[Peer]\nPublicKey = ff+client1+controller+vps+primary+master===\nEndpoint = {endpoint}\nAllowedIPs = 10.24.0.0/16\nPersistentKeepalive = 25\n",
+        )
+    };
 
     #[cfg(windows)]
     {
