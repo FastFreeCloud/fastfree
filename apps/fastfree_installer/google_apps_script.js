@@ -1,14 +1,18 @@
 /**
- * FastFree Cloud Licensing Plane (Google Apps Script)
+ * FastFree Cloud Licensing & Fleet Control Plane (Google Apps Script)
  * Sheet ID: 1WM3vVved271m8ZrTbivM5s38xSZF5NzxjpsWNb2SfH8
- * Tab Name: Licenses
+ * 
+ * Two-Tab Architecture:
+ * - Tab 1: Licenses (Commercial & Enterprise Client Licensing)
+ * - Tab 2: WireGuard (Clan 26.05 Mesh Network Telemetry & Peer Configs)
  */
 
 const SECRET_API_KEY = "FASTFREE-API-SECRET-KEY-998822";
-const SHEET_NAME = "Licenses";
+const TAB_LICENSES = "Licenses";
+const TAB_WIREGUARD = "WireGuard";
 
-// قائمة الأعمدة المعتمدة
-const DEFAULT_HEADERS = [
+// قائمة الأعمدة المعتمدة لورقة التراخيص (Licenses)
+const HEADERS_LICENSES = [
   "node_id",
   "organization_name",
   "license_key",
@@ -24,39 +28,340 @@ const DEFAULT_HEADERS = [
   "notes"
 ];
 
+// قائمة الأعمدة المعتمدة لورقة شبكة واير جارد (WireGuard)
+const HEADERS_WIREGUARD = [
+  "node_id",
+  "tunnel_ip",
+  "listen_port",
+  "client_public_key",
+  "server_endpoint",
+  "full_config",
+  "clan_status",
+  "updated_at"
+];
+
 /**
  * إضافة قائمة مخصصة في واجهة Google Sheets تلقائياً عند فتح الجدول
  */
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu("FastFree Node")
+    .addItem("تهيئة الورقتين (Setup Tabs: Licenses & WireGuard)", "setupHeaders")
     .addItem("إنشاء ترخيص عميل جديد (Create License)", "createNewLicensePrompt")
-    .addSeparator()
-    .addItem("تهيئة أعمدة الجدول (Setup Headers)", "setupHeaders")
+    .addItem("مزامنة أسطول Clan يدوياً (Manual Fleet Sync)", "manualFleetSyncPrompt")
     .addToUi();
 }
 
 /**
- * تهيئة وترتيب رؤوس الأعمدة إذا كان الجدول جديداً
+ * تهيئة وترتيب رؤوس الأعمدة في كلا الورقتين وتنسيق المظهر وتحديد عرض الأعمدة
  */
-function setupHeaders() {
+function setupHeaders(silent) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
+
+  // 1. ورقة التراخيص (Licenses)
+  let sheetLic = ss.getSheetByName(TAB_LICENSES);
+  if (!sheetLic) {
+    sheetLic = ss.insertSheet(TAB_LICENSES);
   }
-  
-  sheet.getRange(1, 1, 1, DEFAULT_HEADERS.length).setValues([DEFAULT_HEADERS]);
-  sheet.getRange(1, 1, 1, DEFAULT_HEADERS.length)
+  sheetLic.getRange(1, 1, 1, HEADERS_LICENSES.length).setValues([HEADERS_LICENSES]);
+  sheetLic.getRange(1, 1, 1, HEADERS_LICENSES.length)
     .setBackground("#1e293b")
     .setFontColor("#ffffff")
-    .setFontWeight("bold");
-    
-  SpreadsheetApp.getUi().alert("تم ضبط رؤوس الأعمدة بنجاح!");
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center");
+  sheetLic.setFrozenRows(1);
+
+  const licWidths = [100, 220, 220, 110, 100, 110, 130, 150, 130, 200, 280, 170, 200];
+  licWidths.forEach((w, i) => {
+    sheetLic.setColumnWidth(i + 1, w);
+  });
+
+  // 2. ورقة شبكة واير جارد (WireGuard)
+  let sheetWg = ss.getSheetByName(TAB_WIREGUARD);
+  if (!sheetWg) {
+    sheetWg = ss.insertSheet(TAB_WIREGUARD);
+  }
+  sheetWg.getRange(1, 1, 1, HEADERS_WIREGUARD.length).setValues([HEADERS_WIREGUARD]);
+  sheetWg.getRange(1, 1, 1, HEADERS_WIREGUARD.length)
+    .setBackground("#1e293b")
+    .setFontColor("#ffffff")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center");
+  sheetWg.setFrozenRows(1);
+
+  const wgWidths = [100, 140, 110, 280, 230, 340, 120, 170];
+  wgWidths.forEach((w, i) => {
+    sheetWg.setColumnWidth(i + 1, w);
+  });
+
+  if (!silent) {
+    SpreadsheetApp.getUi().alert("تم تهيئة الورقتين (Licenses & WireGuard) وتنسيق الرؤوس بنجاح!");
+  }
 }
 
 /**
- * نافذة تفاعلية تطلب اسم العميل وتقوم بتوليد كود رسمي وإضافته فوراً للجدول
+ * توليد كود ترخيص رسمي بنمط: FF-CL02-XXXX-XXXX
+ */
+function generateLicenseKey(nodeId) {
+  const match = String(nodeId || "").match(/\d+/);
+  const nodeNum = match ? parseInt(match[0], 10) : 2;
+  const numPad = String(nodeNum).padStart(2, "0");
+  const randPart1 = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const randPart2 = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return "FF-CL" + numPad + "-" + randPart1 + "-" + randPart2;
+}
+
+function getNodeNumber(nodeId) {
+  const match = String(nodeId || "").match(/\d+/);
+  return match ? parseInt(match[0], 10) : 2;
+}
+
+function getDefaultTunnelIp(nodeId) {
+  return "10.24.0." + getNodeNumber(nodeId) + "/32";
+}
+
+function getDefaultListenPort(nodeId) {
+  return 51820 + getNodeNumber(nodeId);
+}
+
+function getDefaultServerEndpoint(nodeId) {
+  return "client1.fastfree.cloud:" + getDefaultListenPort(nodeId);
+}
+
+function getDefaultClientPublicKey(nodeId) {
+  return "ff+" + nodeId + "+pubkey+mesh+clan2605+node===";
+}
+
+function generateDefaultWgConfig(nodeId, tunnelIp, listenPort, clientPubKey) {
+  const ep = getDefaultServerEndpoint(nodeId);
+  return [
+    "[Interface]",
+    "Address = " + (tunnelIp || getDefaultTunnelIp(nodeId)),
+    "ListenPort = " + (listenPort || getDefaultListenPort(nodeId)),
+    "PrivateKey = <INJECTED_VIA_CLAN_VARS>",
+    "",
+    "[Peer]",
+    "PublicKey = ff+client1+controller+vps+primary+master===",
+    "Endpoint = " + ep,
+    "AllowedIPs = 10.24.0.0/16",
+    "PersistentKeepalive = 25"
+  ].join("\n");
+}
+
+/**
+ * استخراج بيانات ورقة العمل وفهرسة الأعمدة
+ */
+function getSheetMap(sheet) {
+  const data = sheet.getDataRange().getValues();
+  if (data.length === 0) {
+    return { headers: [], colIndexMap: {}, rows: [], numRows: 0 };
+  }
+  const headers = data[0].map(h => String(h || "").trim().toLowerCase());
+  const colIndexMap = {};
+  headers.forEach((h, idx) => {
+    colIndexMap[h] = idx;
+  });
+  return {
+    headers: headers,
+    colIndexMap: colIndexMap,
+    rows: data,
+    numRows: data.length
+  };
+}
+
+/**
+ * منطق الـ Idempotent Upsert للأسطول عبر ورقتي Licenses و WireGuard
+ * لا يقوم بحذف أو مسح أي بيانات سابقة إطلاقاً
+ */
+function upsertFleetData(fleetList, ss) {
+  if (!ss) {
+    ss = SpreadsheetApp.getActiveSpreadsheet();
+  }
+
+  let sheetLic = ss.getSheetByName(TAB_LICENSES);
+  let sheetWg = ss.getSheetByName(TAB_WIREGUARD);
+  if (!sheetLic || !sheetWg) {
+    setupHeaders(true);
+    sheetLic = ss.getSheetByName(TAB_LICENSES);
+    sheetWg = ss.getSheetByName(TAB_WIREGUARD);
+  }
+
+  const licMap = getSheetMap(sheetLic);
+  const wgMap = getSheetMap(sheetWg);
+
+  const colLicNode = licMap.colIndexMap["node_id"];
+  const colLicOrg = licMap.colIndexMap["organization_name"];
+  const colLicKey = licMap.colIndexMap["license_key"];
+  const colLicTier = licMap.colIndexMap["tier"];
+  const colLicSeats = licMap.colIndexMap["max_seats"];
+  const colLicStatus = licMap.colIndexMap["status"];
+  const colLicExp = licMap.colIndexMap["expiration_date"];
+  const colLicNotes = licMap.colIndexMap["notes"];
+
+  const colWgNode = wgMap.colIndexMap["node_id"];
+  const colWgTunnel = wgMap.colIndexMap["tunnel_ip"];
+  const colWgPort = wgMap.colIndexMap["listen_port"];
+  const colWgPub = wgMap.colIndexMap["client_public_key"];
+  const colWgEndpoint = wgMap.colIndexMap["server_endpoint"];
+  const colWgConfig = wgMap.colIndexMap["full_config"];
+  const colWgStatus = wgMap.colIndexMap["clan_status"];
+  const colWgUpdated = wgMap.colIndexMap["updated_at"];
+
+  let syncedCount = 0;
+
+  for (let i = 0; i < fleetList.length; i++) {
+    const item = fleetList[i] || {};
+    const rawNodeId = item.node_id || item.nodeId || item.client_id || item.clientId || "";
+    const nodeId = String(rawNodeId).trim().toLowerCase();
+    if (!nodeId) continue;
+
+    // 1. معالجة ورقة Licenses
+    let licRowIndex = -1;
+    for (let r = 1; r < licMap.rows.length; r++) {
+      const cellNode = String(licMap.rows[r][colLicNode] || "").trim().toLowerCase();
+      if (cellNode === nodeId) {
+        licRowIndex = r + 1; // 1-based row index in sheet
+        break;
+      }
+    }
+
+    if (licRowIndex !== -1) {
+      // السجل موجود بالفعل -> تطبيق شروط عدم التكرار وعدم المساس بالبيانات الحساسة
+      const existingRow = licMap.rows[licRowIndex - 1];
+      const existingOrg = String(existingRow[colLicOrg] || "").trim();
+      const existingStatus = String(existingRow[colLicStatus] || "").trim().toUpperCase();
+
+      // DO NOT touch license_key
+      // DO NOT overwrite organization_name if user set one (keep non-default)
+      const inputOrg = String(item.organization_name || item.organization || item.company_name || "").trim();
+      if ((!existingOrg || existingOrg === "عميل جديد") && inputOrg && inputOrg !== "عميل جديد") {
+        sheetLic.getRange(licRowIndex, colLicOrg + 1).setValue(inputOrg);
+      }
+
+      // DO NOT reset status if "ACTIVE"
+      if (existingStatus !== "ACTIVE") {
+        const inputStatus = (item.status || "AVAILABLE").toUpperCase();
+        sheetLic.getRange(licRowIndex, colLicStatus + 1).setValue(inputStatus);
+      }
+
+      // DO NOT clear hwid or activated_at (نحن لا نلمس أعمدة HWID أو activated_at هنا مطلقاً)
+
+      // تحديث المقاعد إذا لم تكن محددة
+      const existingSeats = existingRow[colLicSeats];
+      if ((!existingSeats || existingSeats === "") && item.max_seats) {
+        sheetLic.getRange(licRowIndex, colLicSeats + 1).setValue(item.max_seats);
+      }
+    } else {
+      // السجل غير موجود -> إضافة صف جديد بترخيص افتراضي متاح
+      const newKey = item.license_key || item.licenseKey || generateLicenseKey(nodeId);
+      const orgName = item.organization_name || item.organization || item.company_name || "عميل جديد";
+      const tier = item.tier || "enterprise";
+      const maxSeats = item.max_seats || item.maxSeats || 10;
+      const status = "AVAILABLE";
+
+      const expDate = new Date();
+      expDate.setFullYear(expDate.getFullYear() + 2);
+      const expDateStr = item.expiration_date || item.expires_at || expDate.toISOString().split("T")[0];
+
+      const newLicRow = new Array(HEADERS_LICENSES.length).fill("");
+      newLicRow[colLicNode] = nodeId;
+      newLicRow[colLicOrg] = orgName;
+      newLicRow[colLicKey] = newKey;
+      newLicRow[colLicTier] = tier;
+      newLicRow[colLicSeats] = maxSeats;
+      newLicRow[colLicStatus] = status;
+      newLicRow[colLicExp] = expDateStr;
+      newLicRow[colLicNotes] = item.notes || "Synced via Clan Fleet";
+
+      sheetLic.appendRow(newLicRow);
+      licMap.rows.push(newLicRow);
+    }
+
+    // 2. معالجة ورقة WireGuard
+    let wgRowIndex = -1;
+    for (let r = 1; r < wgMap.rows.length; r++) {
+      const cellNode = String(wgMap.rows[r][colWgNode] || "").trim().toLowerCase();
+      if (cellNode === nodeId) {
+        wgRowIndex = r + 1; // 1-based row index in sheet
+        break;
+      }
+    }
+
+    const tunnelIp = item.tunnel_ip || item.client_tunnel_ip || getDefaultTunnelIp(nodeId);
+    const listenPort = item.listen_port || item.port || getDefaultListenPort(nodeId);
+    const clientPubKey = item.client_public_key || item.public_key || getDefaultClientPublicKey(nodeId);
+    const serverEndpoint = item.server_endpoint || item.controller_endpoint || getDefaultServerEndpoint(nodeId);
+    const fullConfig = item.full_config || item.config || generateDefaultWgConfig(nodeId, tunnelIp, listenPort, clientPubKey);
+    const clanStatus = "Synced";
+    const updatedAt = new Date().toISOString();
+
+    if (wgRowIndex !== -1) {
+      // تحديث الأعمدة الفنية للشبكة
+      sheetWg.getRange(wgRowIndex, colWgTunnel + 1).setValue(tunnelIp);
+      sheetWg.getRange(wgRowIndex, colWgPort + 1).setValue(listenPort);
+      sheetWg.getRange(wgRowIndex, colWgPub + 1).setValue(clientPubKey);
+      sheetWg.getRange(wgRowIndex, colWgEndpoint + 1).setValue(serverEndpoint);
+      sheetWg.getRange(wgRowIndex, colWgConfig + 1).setValue(fullConfig);
+      sheetWg.getRange(wgRowIndex, colWgStatus + 1).setValue(clanStatus);
+      sheetWg.getRange(wgRowIndex, colWgUpdated + 1).setValue(updatedAt);
+    } else {
+      // إضافة صف جديد في ورقة WireGuard
+      const newWgRow = new Array(HEADERS_WIREGUARD.length).fill("");
+      newWgRow[colWgNode] = nodeId;
+      newWgRow[colWgTunnel] = tunnelIp;
+      newWgRow[colWgPort] = listenPort;
+      newWgRow[colWgPub] = clientPubKey;
+      newWgRow[colWgEndpoint] = serverEndpoint;
+      newWgRow[colWgConfig] = fullConfig;
+      newWgRow[colWgStatus] = clanStatus;
+      newWgRow[colWgUpdated] = updatedAt;
+
+      sheetWg.appendRow(newWgRow);
+      wgMap.rows.push(newWgRow);
+    }
+
+    syncedCount++;
+  }
+
+  return syncedCount;
+}
+
+/**
+ * مزامنة أسطول Clan يدوياً (client2 إلى client11) مع الحفاظ على البيانات القائمة
+ */
+function manualFleetSyncPrompt() {
+  const ui = SpreadsheetApp.getUi();
+  const resp = ui.alert(
+    "مزامنة أسطول Clan",
+    "هل ترغب في مزامنة وتجهيز أسطول العقد (client2 حتى client11) في ورقتي Licenses و WireGuard؟\n\nلن يتم مسح أو استبدال أي تراخيص أو أسماء عملاء أو بصمات أجهزة مفعلة مسبقاً.",
+    ui.ButtonSet.YES_NO
+  );
+
+  if (resp !== ui.Button.YES) {
+    return;
+  }
+
+  const fleet = [];
+  for (let n = 2; n <= 11; n++) {
+    const nodeId = "client" + n;
+    fleet.push({
+      node_id: nodeId,
+      organization_name: "عميل جديد",
+      max_seats: 10,
+      tunnel_ip: "10.24.0." + n + "/32",
+      listen_port: 51820 + n,
+      client_public_key: "ff+client" + n + "+pubkey+mesh+clan2605+node===",
+      server_endpoint: "client1.fastfree.cloud:" + (51820 + n),
+      clan_status: "Synced"
+    });
+  }
+
+  const count = upsertFleetData(fleet);
+  ui.alert("نجاح المزامنة", "تمت مزامنة " + count + " عقدة في أسطول Clan بنجاح مع الحفاظ على كافة البيانات السابقة!", ui.ButtonSet.OK);
+}
+
+/**
+ * نافذة تفاعلية تطلب اسم العميل وتقوم بتوليد كود رسمي وإضافته فوراً للجدول وتجهيز شبكة WireGuard الخاصة به
  */
 function createNewLicensePrompt() {
   const ui = SpreadsheetApp.getUi();
@@ -77,58 +382,96 @@ function createNewLicensePrompt() {
   }
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    setupHeaders();
-    sheet = ss.getSheetByName(SHEET_NAME);
+  let sheetLic = ss.getSheetByName(TAB_LICENSES);
+  if (!sheetLic) {
+    setupHeaders(true);
+    sheetLic = ss.getSheetByName(TAB_LICENSES);
   }
 
-  const data = sheet.getDataRange().getValues();
-  const nextNodeNum = Math.min(Math.max(data.length, 2), 11);
-  const nodeId = "client" + nextNodeNum;
+  const licMap = getSheetMap(sheetLic);
+  const colNode = licMap.colIndexMap["node_id"];
+  const colKey = licMap.colIndexMap["license_key"];
+  const colOrg = licMap.colIndexMap["organization_name"];
+  const colStatus = licMap.colIndexMap["status"];
 
-  // توليد كود ترخيص فريد بنمط: FF-CL02-XXXX-XXXX
-  const randPart1 = Math.random().toString(36).substring(2, 6).toUpperCase();
-  const randPart2 = Math.random().toString(36).substring(2, 6).toUpperCase();
-  const licenseKey = "FF-CL" + String(nextNodeNum).padStart(2, "0") + "-" + randPart1 + "-" + randPart2;
+  // البحث عن أول عقدة متاحة (AVAILABLE) أو أول رقم عقدة غير مستخدم بين client2 و client11
+  const existingNodes = {};
+  let targetRowIndex = -1;
+  let targetNodeId = "";
 
-  // تاريخ انتهاء بعد سنة كاملة
+  for (let r = 1; r < licMap.rows.length; r++) {
+    const nId = String(licMap.rows[r][colNode] || "").trim().toLowerCase();
+    const st = String(licMap.rows[r][colStatus] || "").trim().toUpperCase();
+    if (nId) {
+      existingNodes[nId] = true;
+      if (st === "AVAILABLE" && targetRowIndex === -1) {
+        targetRowIndex = r + 1;
+        targetNodeId = nId;
+      }
+    }
+  }
+
+  // إذا لم نجد صفاً متاحاً شاغراً، نبحث عن رقم عقدة شاغر client2..client11
+  if (!targetNodeId) {
+    for (let i = 2; i <= 11; i++) {
+      const cand = "client" + i;
+      if (!existingNodes[cand]) {
+        targetNodeId = cand;
+        break;
+      }
+    }
+    if (!targetNodeId) {
+      targetNodeId = "client" + (licMap.rows.length + 1);
+    }
+  }
+
+  const licenseKey = generateLicenseKey(targetNodeId);
+
   const expDate = new Date();
   expDate.setFullYear(expDate.getFullYear() + 1);
   const expDateStr = expDate.toISOString().split("T")[0];
 
-  // خريطة الأعمدة
-  const headers = data[0].map(h => String(h || "").trim().toLowerCase());
-  const newRow = new Array(headers.length).fill("");
-
-  function setVal(colName, val) {
-    const idx = headers.indexOf(colName.toLowerCase());
-    if (idx !== -1) newRow[idx] = val;
+  if (targetRowIndex !== -1) {
+    // تحديث الصف المتاح بالاسم الجديد وتاريخ الصلاحية
+    sheetLic.getRange(targetRowIndex, colOrg + 1).setValue(orgName);
+    sheetLic.getRange(targetRowIndex, colKey + 1).setValue(licenseKey);
+    const colExp = licMap.colIndexMap["expiration_date"];
+    if (colExp !== undefined) {
+      sheetLic.getRange(targetRowIndex, colExp + 1).setValue(expDateStr);
+    }
+  } else {
+    // إضافة صف جديد
+    const newRow = new Array(HEADERS_LICENSES.length).fill("");
+    newRow[licMap.colIndexMap["node_id"]] = targetNodeId;
+    newRow[licMap.colIndexMap["organization_name"]] = orgName;
+    newRow[licMap.colIndexMap["license_key"]] = licenseKey;
+    newRow[licMap.colIndexMap["tier"]] = "enterprise";
+    newRow[licMap.colIndexMap["max_seats"]] = 50;
+    newRow[licMap.colIndexMap["status"]] = "ACTIVE";
+    newRow[licMap.colIndexMap["expiration_date"]] = expDateStr;
+    newRow[licMap.colIndexMap["notes"]] = "Created via FastFree Node Menu";
+    sheetLic.appendRow(newRow);
   }
 
-  setVal("node_id", nodeId);
-  setVal("organization_name", orgName);
-  setVal("license_key", licenseKey);
-  setVal("tier", "enterprise");
-  setVal("max_seats", 50);
-  setVal("status", "ACTIVE");
-  setVal("expiration_date", expDateStr);
-  setVal("notes", "Generated via FastFree Node Menu");
-
-  sheet.appendRow(newRow);
+  // التأكد من وجود وتحديث سجل WireGuard لهذه العقدة
+  upsertFleetData([{
+    node_id: targetNodeId,
+    organization_name: orgName,
+    max_seats: 10
+  }], ss);
 
   ui.alert(
     "تم إنشاء الترخيص بنجاح!\n\n" +
     "اسم العميل: " + orgName + "\n" +
-    "رقم العقدة: " + nodeId + "\n" +
+    "رقم العقدة: " + targetNodeId + "\n" +
     "كود الترخيص: " + licenseKey + "\n" +
     "تاريخ الانتهاء: " + expDateStr + "\n\n" +
-    "تم حفظ الكود في الجدول. انسخ الكود وأرسله للعميل الآن."
+    "تم حفظ الكود وإعداد شبكة واير جارد بنجاح. يمكنك إرسال الكود للعميل الآن."
   );
 }
 
 /**
- * نقطة النهاية (API Endpoint) لاستقبال طلبات التفعيل من برنامج التثبيت (Tauri Installer)
+ * نقطة النهاية (API Endpoint) لاستقبال طلبات التفعيل والمزامنة من FastFree Installer و Clan Mesh
  */
 function doPost(e) {
   try {
@@ -139,10 +482,30 @@ function doPost(e) {
     const payload = JSON.parse(e.postData.contents);
 
     // 1. التحقق من مفتاح الحماية API Key
-    if (payload.apiKey !== SECRET_API_KEY && payload.api_key !== SECRET_API_KEY) {
-      return jsonResponse({ success: false, error: "UNAUTHORIZED_ACCESS" });
+    const reqApiKey = payload.apiKey || payload.api_key;
+    if (reqApiKey !== SECRET_API_KEY) {
+      return jsonResponse({ success: false, error: "UNAUTHORIZED" });
     }
 
+    const action = String(payload.action || "").trim().toLowerCase();
+
+    // 2. معالجة طلبات المزامنة الشاملة للأسطول (batch_sync / upsert_fleet)
+    if (action === "batch_sync" || action === "upsert_fleet") {
+      const fleet = payload.fleet || payload.clients || payload.nodes || [];
+      if (!Array.isArray(fleet)) {
+        return jsonResponse({ success: false, error: "INVALID_FLEET_DATA", message: "Fleet must be an array." });
+      }
+
+      const count = upsertFleetData(fleet);
+      return jsonResponse({
+        success: true,
+        action: action,
+        synced_count: count,
+        message: "Fleet synced successfully into Licenses and WireGuard tabs."
+      });
+    }
+
+    // 3. معالجة طلبات التحقق من التراخيص (verify أو افتراضي عند إرسال licenseKey)
     const reqKey = (payload.licenseKey || payload.license_key || "").trim().toUpperCase();
     const reqHwid = (payload.hwid || "").trim();
     const computerName = payload.computerName || payload.computer_name || "";
@@ -150,44 +513,38 @@ function doPost(e) {
     const hardwareSpecs = payload.hardwareSpecs || payload.hardware_specs || "";
 
     if (!reqKey) {
-      return jsonResponse({ success: false, error: "EMPTY_LICENSE_KEY" });
+      return jsonResponse({ success: false, error: "MISSING_PARAMETERS", message: "License key is required." });
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName(SHEET_NAME);
-    if (!sheet) {
-      return jsonResponse({ success: false, error: "SHEET_NOT_FOUND" });
+    let sheetLic = ss.getSheetByName(TAB_LICENSES);
+    if (!sheetLic) {
+      setupHeaders(true);
+      sheetLic = ss.getSheetByName(TAB_LICENSES);
     }
 
-    const data = sheet.getDataRange().getValues();
-    if (data.length <= 1) {
-      return jsonResponse({ success: false, error: "NO_LICENSES_IN_REGISTRY" });
+    const licMap = getSheetMap(sheetLic);
+    const colKey = licMap.colIndexMap["license_key"];
+    const colStatus = licMap.colIndexMap["status"];
+    const colHwid = licMap.colIndexMap["hwid"];
+    const colExp = licMap.colIndexMap["expiration_date"];
+    const colNode = licMap.colIndexMap["node_id"];
+    const colOrg = licMap.colIndexMap["organization_name"];
+    const colTier = licMap.colIndexMap["tier"];
+    const colSeats = licMap.colIndexMap["max_seats"];
+    const colCompName = licMap.colIndexMap["computer_name"];
+    const colWinUser = licMap.colIndexMap["windows_user"];
+    const colSpecs = licMap.colIndexMap["hardware_specs"];
+    const colActivatedAt = licMap.colIndexMap["activated_at"];
+
+    if (colKey === undefined) {
+      return jsonResponse({ success: false, error: "MISSING_LICENSE_KEY_COLUMN", headers: licMap.headers });
     }
 
-    // قراءة رؤوس الأعمدة ديناميكياً
-    const headers = data[0].map(h => String(h || "").trim().toLowerCase());
-    const getColIndex = (name) => headers.indexOf(name.toLowerCase());
-
-    const colKey = getColIndex("license_key");
-    const colStatus = getColIndex("status");
-    const colHwid = getColIndex("hwid");
-    const colExp = getColIndex("expiration_date");
-    const colNode = getColIndex("node_id");
-    const colOrg = getColIndex("organization_name");
-    const colTier = getColIndex("tier");
-    const colCompName = getColIndex("computer_name");
-    const colWinUser = getColIndex("windows_user");
-    const colSpecs = getColIndex("hardware_specs");
-    const colActivatedAt = getColIndex("activated_at");
-
-    if (colKey === -1) {
-      return jsonResponse({ success: false, error: "MISSING_LICENSE_KEY_COLUMN", headers: headers });
-    }
-
-    // 2. البحث عن كود الترخيص
+    // البحث عن كود الترخيص
     let targetRowIndex = -1;
-    for (let i = 1; i < data.length; i++) {
-      const cellVal = String(data[i][colKey] || "").trim().toUpperCase();
+    for (let i = 1; i < licMap.rows.length; i++) {
+      const cellVal = String(licMap.rows[i][colKey] || "").trim().toUpperCase();
       if (cellVal === reqKey) {
         targetRowIndex = i + 1; // 1-based index
         break;
@@ -198,59 +555,96 @@ function doPost(e) {
       return jsonResponse({
         success: false,
         error: "LICENSE_NOT_FOUND",
-        searched: reqKey
+        searched: reqKey,
+        message: "License key was not found in the registry."
       });
     }
 
-    const rowData = data[targetRowIndex - 1];
+    const rowData = licMap.rows[targetRowIndex - 1];
     const status = String(rowData[colStatus] || "ACTIVE").toUpperCase().trim();
     const boundHwid = String(rowData[colHwid] || "").trim();
     const expDateVal = rowData[colExp];
 
-    // 3. التحقق من حالة الترخيص
-    if (status === "REVOKED" || status === "SUSPENDED" || status === "INACTIVE") {
-      return jsonResponse({ success: false, error: "LICENSE_REVOKED" });
+    // التحقق من حالة الترخيص
+    if (status === "REVOKED") {
+      return jsonResponse({ success: false, error: "LICENSE_REVOKED", message: "This license has been permanently revoked." });
+    }
+    if (status === "SUSPENDED" || status === "INACTIVE") {
+      return jsonResponse({ success: false, error: "LICENSE_SUSPENDED", message: "This license is suspended." });
     }
 
-    // 4. التحقق من تاريخ الصلاحية
+    // التحقق من تاريخ الصلاحية
+    let expDateFormatted = null;
     if (expDateVal) {
       const expDate = new Date(expDateVal);
-      if (!isNaN(expDate.getTime()) && expDate < new Date()) {
-        return jsonResponse({ success: false, error: "LICENSE_EXPIRED" });
+      if (!isNaN(expDate.getTime())) {
+        if (expDate < new Date()) {
+          return jsonResponse({ success: false, error: "LICENSE_EXPIRED", message: "This license has expired." });
+        }
+        expDateFormatted = expDate.toISOString();
+      } else {
+        expDateFormatted = String(expDateVal);
       }
     }
 
-    // 5. ربط بصمة الجهاز HWID وتسجيل مواصفات الجهاز تلقائياً
+    // ربط بصمة الجهاز HWID وتسجيل مواصفات الجهاز تلقائياً عند أول تفعيل
     if (!boundHwid) {
-      // أول تفعيل للجهاز -> قفل الكود على هذا الجهاز وتسجيل بيانات العميل
-      if (reqHwid && colHwid !== -1) {
-        sheet.getRange(targetRowIndex, colHwid + 1).setValue(reqHwid);
+      if (reqHwid && colHwid !== undefined) {
+        sheetLic.getRange(targetRowIndex, colHwid + 1).setValue(reqHwid);
       }
-      if (computerName && colCompName !== -1) {
-        sheet.getRange(targetRowIndex, colCompName + 1).setValue(computerName);
+      if (status === "AVAILABLE" && colStatus !== undefined) {
+        sheetLic.getRange(targetRowIndex, colStatus + 1).setValue("ACTIVE");
       }
-      if (windowsUser && colWinUser !== -1) {
-        sheet.getRange(targetRowIndex, colWinUser + 1).setValue(windowsUser);
+      if (computerName && colCompName !== undefined) {
+        sheetLic.getRange(targetRowIndex, colCompName + 1).setValue(computerName);
       }
-      if (hardwareSpecs && colSpecs !== -1) {
-        sheet.getRange(targetRowIndex, colSpecs + 1).setValue(hardwareSpecs);
+      if (windowsUser && colWinUser !== undefined) {
+        sheetLic.getRange(targetRowIndex, colWinUser + 1).setValue(windowsUser);
       }
-      if (colActivatedAt !== -1) {
-        sheet.getRange(targetRowIndex, colActivatedAt + 1).setValue(new Date().toISOString());
+      if (hardwareSpecs && colSpecs !== undefined) {
+        sheetLic.getRange(targetRowIndex, colSpecs + 1).setValue(hardwareSpecs);
+      }
+      if (colActivatedAt !== undefined) {
+        sheetLic.getRange(targetRowIndex, colActivatedAt + 1).setValue(new Date().toISOString());
       }
     } else if (boundHwid.toLowerCase() !== reqHwid.toLowerCase()) {
-      // الجهاز يختلف عن الجهاز المسجل سابقاً -> رفض التفعيل
       return jsonResponse({
         success: false,
-        error: "HARDWARE_MISMATCH",
+        error: "HWID_MISMATCH",
         message: "This license is bound to another hardware node."
       });
     }
 
-    // 6. نجاح التفعيل وإرجاع البيانات للعقدة
-    const nodeId = colNode !== -1 ? String(rowData[colNode] || "client2") : "client2";
-    const orgName = colOrg !== -1 ? String(rowData[colOrg] || "Enterprise Client") : "Enterprise Client";
-    const tier = colTier !== -1 ? String(rowData[colTier] || "enterprise") : "enterprise";
+    // استخراج بيانات العقدة والترخيص
+    const nodeId = colNode !== undefined ? String(rowData[colNode] || "client2") : "client2";
+    const orgName = colOrg !== undefined ? String(rowData[colOrg] || "Enterprise Client") : "Enterprise Client";
+    const tier = colTier !== undefined ? String(rowData[colTier] || "enterprise") : "enterprise";
+    const maxSeats = colSeats !== undefined && rowData[colSeats] ? parseInt(rowData[colSeats], 10) : 50;
+
+    // استخراج تفاصيل WireGuard الخاصة بهذه العقدة إن وجدت
+    let wgData = null;
+    const sheetWg = ss.getSheetByName(TAB_WIREGUARD);
+    if (sheetWg) {
+      const wgMap = getSheetMap(sheetWg);
+      const colWgNode = wgMap.colIndexMap["node_id"];
+      for (let r = 1; r < wgMap.rows.length; r++) {
+        const cellNode = String(wgMap.rows[r][colWgNode] || "").trim().toLowerCase();
+        if (cellNode === nodeId.toLowerCase()) {
+          const wgRow = wgMap.rows[r];
+          wgData = {
+            nodeId: nodeId,
+            tunnelIp: String(wgRow[wgMap.colIndexMap["tunnel_ip"]] || ""),
+            listenPort: wgRow[wgMap.colIndexMap["listen_port"]] || (51820 + getNodeNumber(nodeId)),
+            clientPublicKey: String(wgRow[wgMap.colIndexMap["client_public_key"]] || ""),
+            serverEndpoint: String(wgRow[wgMap.colIndexMap["server_endpoint"]] || ""),
+            fullConfig: String(wgRow[wgMap.colIndexMap["full_config"]] || ""),
+            clanStatus: String(wgRow[wgMap.colIndexMap["clan_status"]] || "Synced"),
+            updatedAt: String(wgRow[wgMap.colIndexMap["updated_at"]] || "")
+          };
+          break;
+        }
+      }
+    }
 
     return jsonResponse({
       success: true,
@@ -260,9 +654,14 @@ function doPost(e) {
         nodeId: nodeId,
         organization: orgName,
         tier: tier,
+        tierName: "FastFree Node License (" + nodeId + ")",
         status: "ACTIVE",
+        maxUsers: maxSeats,
+        maxSeats: maxSeats,
         hwid: reqHwid,
-        maxOfflineDays: 90
+        expiresAt: expDateFormatted,
+        maxOfflineDays: 90,
+        wireguard: wgData
       }
     });
 
@@ -276,7 +675,7 @@ function doPost(e) {
 }
 
 function doGet(e) {
-  return ContentService.createTextOutput("FastFree Licensing Plane is LIVE");
+  return ContentService.createTextOutput("FastFree Cloud Licensing & Fleet Control Plane is LIVE");
 }
 
 function jsonResponse(obj) {
