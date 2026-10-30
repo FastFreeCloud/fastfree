@@ -305,10 +305,26 @@ export interface WireGuardApplyResult {
   message: string;
 }
 
-export async function applyWireGuardConfig(clientId: string): Promise<WireGuardApplyResult> {
+export interface WireGuardApplyOptions {
+  customPort?: number;
+  customIp?: string;
+  customEndpoint?: string;
+  customConf?: string;
+}
+
+export async function applyWireGuardConfig(
+  clientId: string,
+  options?: WireGuardApplyOptions
+): Promise<WireGuardApplyResult> {
   logInfo('WireGuard', `Applying WireGuard config for '${clientId}'...`);
   try {
-    const result = await invoke<WireGuardApplyResult>('apply_wireguard_config', { clientId });
+    const result = await invoke<WireGuardApplyResult>('apply_wireguard_config', {
+      clientId,
+      customPort: options?.customPort ?? null,
+      customIp: options?.customIp ?? null,
+      customEndpoint: options?.customEndpoint ?? null,
+      customConf: options?.customConf ?? null,
+    });
     if (result.success) {
       logSuccess('WireGuard', `Config written to: ${result.conf_path}`, result.message);
     } else {

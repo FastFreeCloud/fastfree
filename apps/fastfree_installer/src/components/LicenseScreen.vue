@@ -143,7 +143,13 @@
           </div>
           <div class="detail-item">
             <span class="detail-label">{{ t('license.assignedNode') }}</span>
-            <span class="detail-val text-accent font-mono">{{ licenseState.node_id || licenseState.eligible_clients[0] || 'client2' }}</span>
+            <div class="node-inline-picker">
+              <select v-model="selectedClientId" class="inline-node-select" :title="isRtl ? 'تحديد العقدة المستهدفة يدوياً' : 'Manually Select Target Node'">
+                <option v-for="c in availableNodes" :key="c" :value="c">
+                  {{ c }} {{ c === licenseState.node_id ? (isRtl ? '★ (المرخص)' : '★ (Licensed)') : '' }}
+                </option>
+              </select>
+            </div>
           </div>
           <div class="detail-item">
             <span class="detail-label">{{ t('license.keyLabel') }}</span>
@@ -193,11 +199,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import {
   currentStep,
   licenseState,
+  selectedClientId,
   verifyLicense,
   fetchMachineHwid,
 } from '../composables/useDiscovery';
@@ -210,6 +217,13 @@ const machineHwid = ref('');
 const isVerifying = ref(false);
 const errorMessage = ref('');
 const hwidCopied = ref(false);
+
+const availableNodes = computed(() => {
+  if (licenseState.value && licenseState.value.eligible_clients && licenseState.value.eligible_clients.length > 0) {
+    return licenseState.value.eligible_clients;
+  }
+  return Array.from({ length: 10 }, (_, i) => `client${i + 2}`);
+});
 
 onMounted(async () => {
   // Fetch machine HWID for user display and support reference
@@ -741,6 +755,37 @@ function formatFeatureName(feature: string): string {
 
 .text-accent {
   color: var(--accent-sky, #38BDF8);
+}
+
+.node-inline-picker {
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.inline-node-select {
+  background: var(--bg-sub, #09090B);
+  color: var(--accent-sky, #38BDF8);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Consolas', 'Courier New', monospace;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.inline-node-select:hover,
+.inline-node-select:focus {
+  border-color: var(--accent-sky, #38BDF8);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+.inline-node-select option {
+  background: #18181B;
+  color: #F8FAFC;
 }
 
 .font-mono {

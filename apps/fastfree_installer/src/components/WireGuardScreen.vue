@@ -6,6 +6,27 @@
       <p class="subtitle">{{ t('wireguard.subtitle') }}</p>
     </div>
 
+    <!-- Interactive Node Appliance Selector (Manual Override) -->
+    <div class="node-selector-bar">
+      <div class="selector-meta">
+        <span class="selector-dot"></span>
+        <span class="selector-label">{{ t('wireguard.selectNode') }}</span>
+        <span class="current-node-badge">{{ selectedClientId }}</span>
+      </div>
+      <div class="node-pill-buttons">
+        <button
+          v-for="c in allNodes"
+          :key="c"
+          type="button"
+          class="node-select-btn"
+          :class="{ active: selectedClientId === c }"
+          @click="selectTargetNode(c)"
+        >
+          {{ c }}
+        </button>
+      </div>
+    </div>
+
     <!-- Loading State -->
     <div v-if="isLoadingConfig" class="loading-state">
       <div class="spinner"></div>
@@ -23,12 +44,12 @@
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
-              <span>{{ t('wireguard.tunnelArrow', { port: wireGuardConfig.listen_port }) }}</span>
+              <span>{{ t('wireguard.tunnelArrow', { port: isManualMode ? manualPort : wireGuardConfig.listen_port }) }}</span>
               <svg class="tunnel-dir-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline :points="isRtl ? '15 18 9 12 15 6' : '9 18 15 12 9 6'"></polyline>
               </svg>
             </span>
-            <span class="node-pill pill-controller">{{ t('wireguard.controllerNode') }}</span>
+            <span class="node-pill pill-controller">{{ isManualMode ? manualEndpoint : t('wireguard.controllerNode') }}</span>
           </div>
           <div class="handshake-status">
             <span class="dot-green"></span>
@@ -36,19 +57,106 @@
             <span class="latency-badge">{{ t('wireguard.latencyMs', { ms: wireGuardConfig.latency_ms }) }}</span>
           </div>
         </div>
-        <button class="btn-ping" :disabled="isTestingPing" @click="testHandshake">
-          <span v-if="isTestingPing" class="spinner-tiny"></span>
-          <span v-else class="btn-flex">
-            <svg class="ping-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        <div class="banner-actions">
+          <button
+            type="button"
+            class="btn-manual-toggle"
+            :class="{ active: isManualMode }"
+            @click="toggleManualMode"
+          >
+            <svg class="gear-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
-            <span>{{ t('wireguard.testHandshake') }}</span>
-          </span>
-        </button>
+            <span>{{ isManualMode ? t('wireguard.manualOverride') : t('wireguard.manualOverride') }}</span>
+          </button>
+          <button class="btn-ping" :disabled="isTestingPing" @click="testHandshake">
+            <span v-if="isTestingPing" class="spinner-tiny"></span>
+            <span v-else class="btn-flex">
+              <svg class="ping-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              <span>{{ t('wireguard.testHandshake') }}</span>
+            </span>
+          </button>
+        </div>
       </div>
 
-      <!-- Peer Configuration Parameters Grid -->
-      <div class="params-grid">
+      <!-- Advanced Manual Customization Panel -->
+      <div v-if="isManualMode" class="manual-panel">
+        <div class="manual-panel-head">
+          <span class="manual-badge">{{ isRtl ? 'وضع التخصيص اليدوي مفعّل' : 'Manual Override Active' }}</span>
+          <span class="manual-hint">{{ t('wireguard.manualOverrideHint') }}</span>
+        </div>
+
+        <div class="manual-inputs-grid">
+          <div class="input-card">
+            <label class="input-label" for="wg-port">{{ t('wireguard.customPort') }}</label>
+            <input
+              id="wg-port"
+              v-model.number="manualPort"
+              type="number"
+              class="fluent-input font-mono"
+              @input="syncManualConf"
+            />
+            <span class="input-desc">{{ isRtl ? 'منفذ UDP لنظير العقدة' : 'Peer UDP Port' }}</span>
+          </div>
+
+          <div class="input-card">
+            <label class="input-label" for="wg-ip">{{ t('wireguard.customTunnelIp') }}</label>
+            <input
+              id="wg-ip"
+              v-model="manualTunnelIp"
+              type="text"
+              class="fluent-input font-mono text-emerald"
+              @input="syncManualConf"
+            />
+            <span class="input-desc">{{ isRtl ? 'عنوان النفق الداخلي المعزول' : 'Internal Overlay Address' }}</span>
+          </div>
+
+          <div class="input-card">
+            <label class="input-label" for="wg-ep">{{ t('wireguard.customEndpoint') }}</label>
+            <input
+              id="wg-ep"
+              v-model="manualEndpoint"
+              type="text"
+              class="fluent-input font-mono text-accent"
+              @input="syncManualConf"
+            />
+            <span class="input-desc">{{ isRtl ? 'خادم المتحكم (Host:Port)' : 'Controller Remote Host:Port' }}</span>
+          </div>
+        </div>
+
+        <!-- Interactive Raw .conf Editor -->
+        <div class="raw-conf-box">
+          <div class="raw-conf-head">
+            <span class="raw-conf-title">
+              <svg class="file-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              <span>{{ t('wireguard.customConf') }} ({{ selectedClientId }}.conf)</span>
+            </span>
+            <div class="raw-conf-actions">
+              <button type="button" class="btn-tool" @click="resetToDefaults">
+                {{ t('wireguard.resetDefaults') }}
+              </button>
+              <button type="button" class="btn-tool btn-copy" @click="copyConf">
+                {{ confCopied ? t('wireguard.copied') : t('wireguard.copyConf') }}
+              </button>
+            </div>
+          </div>
+          <textarea
+            v-model="manualConf"
+            class="conf-editor font-mono"
+            rows="7"
+            spellcheck="false"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Standard Parameter Cards (Shown in Automatic Mode) -->
+      <div v-else class="params-grid">
         <div class="param-card">
           <span class="param-name">{{ t('wireguard.paramInterface') }}</span>
           <span class="param-val"><code>{{ wireGuardConfig.interface_name }}</code></span>
@@ -134,24 +242,102 @@ import { useI18n } from '../composables/useI18n';
 
 const { t, isRtl } = useI18n();
 
+const allNodes = Array.from({ length: 10 }, (_, i) => `client${i + 2}`);
+
 const isLoadingConfig = ref(true);
 const isTestingPing = ref(false);
 const isApplyingConfig = ref(false);
 
+// Manual Customization State
+const isManualMode = ref(false);
+const manualPort = ref<number>(51822);
+const manualTunnelIp = ref<string>('10.24.0.2/32');
+const manualEndpoint = ref<string>('client1.fastfree.cloud:51822');
+const manualConf = ref<string>('');
+const confCopied = ref(false);
+
 onMounted(async () => {
+  await loadConfigForNode(selectedClientId.value);
+});
+
+async function selectTargetNode(nodeId: string) {
+  selectedClientId.value = nodeId;
+  await loadConfigForNode(nodeId);
+}
+
+async function loadConfigForNode(nodeId: string) {
+  isLoadingConfig.value = true;
   try {
-    await fetchWireGuardConfig(selectedClientId.value);
+    const config = await fetchWireGuardConfig(nodeId);
+    manualPort.value = config.listen_port;
+    manualTunnelIp.value = config.client_tunnel_ip;
+    manualEndpoint.value = `${config.controller_endpoint}:${config.listen_port}`;
+    syncManualConf();
   } catch (err) {
     console.error('Failed to load wireguard config:', err);
   } finally {
     isLoadingConfig.value = false;
   }
-});
+}
+
+function syncManualConf() {
+  const numStr = selectedClientId.value.replace('client', '');
+  const n = parseInt(numStr, 10) || 2;
+  manualConf.value = `[Interface]
+Address = ${manualTunnelIp.value}
+ListenPort = ${manualPort.value}
+PrivateKey = PLACEHOLDER_PRIVATE_KEY_client${n}==========================
+MTU = 1420
+
+[Peer]
+PublicKey = ff+client1+controller+vps+primary+master===
+Endpoint = ${manualEndpoint.value}
+AllowedIPs = 10.24.0.0/16
+PersistentKeepalive = 25
+`;
+}
+
+function resetToDefaults() {
+  const numStr = selectedClientId.value.replace('client', '');
+  const n = parseInt(numStr, 10) || 2;
+  manualPort.value = 51820 + n;
+  manualTunnelIp.value = `10.24.0.${n}/32`;
+  manualEndpoint.value = `client1.fastfree.cloud:${manualPort.value}`;
+  syncManualConf();
+}
+
+function toggleManualMode() {
+  isManualMode.value = !isManualMode.value;
+  if (isManualMode.value) {
+    syncManualConf();
+  }
+}
+
+async function copyConf() {
+  try {
+    await navigator.clipboard.writeText(manualConf.value);
+    confCopied.value = true;
+    setTimeout(() => {
+      confCopied.value = false;
+    }, 2000);
+  } catch (err) {
+    console.warn('Clipboard write failed:', err);
+  }
+}
 
 async function handleDeploy() {
   isApplyingConfig.value = true;
   try {
-    await applyWireGuardConfig(selectedClientId.value);
+    if (isManualMode.value) {
+      await applyWireGuardConfig(selectedClientId.value, {
+        customPort: manualPort.value,
+        customIp: manualTunnelIp.value,
+        customEndpoint: manualEndpoint.value,
+        customConf: manualConf.value,
+      });
+    } else {
+      await applyWireGuardConfig(selectedClientId.value);
+    }
   } catch (err) {
     console.warn('WireGuard config apply warning:', err);
   } finally {
@@ -179,7 +365,7 @@ async function testHandshake() {
 }
 
 .header-box {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .step-tag {
@@ -203,6 +389,85 @@ async function testHandshake() {
   font-size: 12px;
   margin-top: 4px;
   margin-bottom: 0;
+}
+
+/* Node Selector Ribbon */
+.node-selector-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card, #18181B);
+  border: 1px solid var(--border-color, #27272A);
+  border-radius: 10px;
+  padding: 6px 12px;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+
+.selector-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.selector-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-sky, #38BDF8);
+  box-shadow: 0 0 8px var(--accent-sky, #38BDF8);
+}
+
+.selector-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-main, #F8FAFC);
+}
+
+.current-node-badge {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent-sky, #38BDF8);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.node-pill-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.node-select-btn {
+  background: var(--bg-sub, #27272A);
+  color: var(--text-muted, #94A3B8);
+  border: 1px solid var(--border-color, #3F3F46);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Consolas', 'Courier New', monospace;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.node-select-btn:hover {
+  background: var(--bg-hover, #3F3F46);
+  color: #FFFFFF;
+}
+
+.node-select-btn.active {
+  background: var(--accent-sky, #38BDF8);
+  color: #0F172A;
+  border-color: var(--accent-sky, #38BDF8);
+  font-weight: 700;
 }
 
 .loading-state {
@@ -237,7 +502,7 @@ async function testHandshake() {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   overflow-y: auto;
   padding-right: 2px;
 }
@@ -246,7 +511,7 @@ async function testHandshake() {
   background: var(--card-glass-bg, var(--bg-card, #18181B));
   border: 1px solid var(--border-color, #27272A);
   border-radius: var(--radius-card, 14px);
-  padding: 12px 16px;
+  padding: 10px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -257,7 +522,45 @@ async function testHandshake() {
 .banner-left {
   display: flex;
   flex-direction: column;
+  gap: 5px;
+}
+
+.banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-manual-toggle {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
+  background: var(--bg-sub, #27272A);
+  border: 1px solid var(--border-color, #3F3F46);
+  color: var(--text-secondary, #E4E4E7);
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-manual-toggle:hover {
+  background: var(--bg-hover, #3F3F46);
+  border-color: var(--accent-sky, #38BDF8);
+}
+
+.btn-manual-toggle.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--accent-sky, #38BDF8);
+  color: var(--accent-sky, #38BDF8);
+}
+
+.gear-svg {
+  width: 13px;
+  height: 13px;
 }
 
 .tunnel-indicator {
@@ -328,8 +631,8 @@ async function testHandshake() {
   background: var(--bg-sub, #27272A);
   border: 1px solid var(--border-color, #3F3F46);
   color: var(--text-main, #E4E4E7);
-  padding: 6px 12px;
-  border-radius: var(--radius-inner, 10px);
+  padding: 5px 12px;
+  border-radius: 8px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -342,6 +645,150 @@ async function testHandshake() {
   border-color: var(--accent-sky, #38BDF8);
 }
 
+/* Manual Panel Styling */
+.manual-panel {
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.manual-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.manual-badge {
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--accent-sky, #38BDF8);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.manual-hint {
+  font-size: 11px;
+  color: var(--text-muted, #94A3B8);
+}
+
+.manual-inputs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.input-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-muted, #A1A1AA);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.fluent-input {
+  background: var(--bg-sub, #09090B);
+  border: 1px solid var(--border-color, #3F3F46);
+  color: var(--text-main, #F8FAFC);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.fluent-input:focus {
+  border-color: var(--accent-sky, #38BDF8);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+}
+
+.input-desc {
+  font-size: 9.5px;
+  color: var(--text-muted, #71717A);
+}
+
+.raw-conf-box {
+  background: #09090B;
+  border: 1px solid var(--border-color, #27272A);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.raw-conf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--border-color, #27272A);
+}
+
+.raw-conf-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-main, #F8FAFC);
+}
+
+.file-svg {
+  width: 12px;
+  height: 12px;
+  stroke: var(--accent-sky, #38BDF8);
+}
+
+.raw-conf-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-tool {
+  background: var(--bg-sub, #27272A);
+  border: 1px solid var(--border-color, #3F3F46);
+  color: var(--text-muted, #A1A1AA);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 10.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-tool:hover {
+  color: #FFFFFF;
+  border-color: var(--accent-sky, #38BDF8);
+}
+
+.btn-copy {
+  color: var(--accent-sky, #38BDF8);
+}
+
+.conf-editor {
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
+  color: #38BDF8;
+  border: none;
+  outline: none;
+  padding: 8px 10px;
+  font-size: 11px;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+/* Standard Params Grid */
 .params-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -349,7 +796,8 @@ async function testHandshake() {
 }
 
 @media (max-width: 900px) {
-  .params-grid {
+  .params-grid,
+  .manual-inputs-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -358,7 +806,7 @@ async function testHandshake() {
   background: var(--card-glass-bg, var(--bg-card, #18181B));
   border: 1px solid var(--border-color, #27272A);
   border-radius: var(--radius-inner, 10px);
-  padding: 10px 12px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -407,7 +855,7 @@ async function testHandshake() {
   background: var(--card-glass-bg, rgba(25, 118, 210, 0.05));
   border: 1px solid rgba(25, 118, 210, 0.2);
   border-radius: var(--radius-card, 14px);
-  padding: 10px 14px;
+  padding: 8px 12px;
   box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
   backdrop-filter: blur(8px);
 }
@@ -423,7 +871,7 @@ async function testHandshake() {
 }
 
 .sec-body {
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--text-muted, #94A3B8);
   margin: 0;
   line-height: 1.4;
@@ -438,7 +886,7 @@ async function testHandshake() {
 
 .action-bar {
   margin-top: auto;
-  padding-top: 14px;
+  padding-top: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -451,55 +899,52 @@ async function testHandshake() {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  border: none;
   transition: all 0.2s ease;
   font-family: inherit;
 }
 
-.btn-primary {
-  background: var(--accent-primary, #1976D2);
-  color: #FFFFFF;
-}
-
-.btn-primary:hover {
-  background: var(--accent-hover, #1565C0);
-  box-shadow: 0 2px 10px rgba(25, 118, 210, 0.4);
-}
-
-.btn-deploy {
-  background: linear-gradient(135deg, #1976D2, #0284C7);
-}
-
 .btn-secondary {
-  background: var(--bg-sub, #27272A);
+  background: var(--bg-card, #27272A);
   color: var(--text-main, #E4E4E7);
+  border: 1px solid var(--border-color, #3F3F46);
 }
 
 .btn-secondary:hover {
-  background: var(--border-color, #3F3F46);
+  background: var(--bg-hover, #3F3F46);
 }
 
-.sec-svg {
-  width: 14px;
-  height: 14px;
-  stroke: var(--accent-sky, #38BDF8);
+.btn-primary {
+  background: #1976D2;
+  color: #FFFFFF;
+  border: none;
 }
 
-.ping-svg {
-  width: 12px;
-  height: 12px;
-  stroke: var(--text-main, #E4E4E7);
+.btn-primary:hover:not(:disabled) {
+  background: #1565C0;
 }
 
-.deploy-svg {
-  width: 13px;
-  height: 13px;
-  stroke: #FFFFFF;
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-flex {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.deploy-svg {
+  width: 14px;
+  height: 14px;
+}
+
+.spinner-tiny {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin 0.8s infinite linear;
 }
 </style>
