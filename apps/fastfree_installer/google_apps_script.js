@@ -53,7 +53,7 @@ function onOpen() {
 }
 
 /**
- * تهيئة وترتيب رؤوس الأعمدة في كلا الورقتين وتنسيق المظهر وتحديد عرض الأعمدة
+ * تهيئة وترتيب رؤوس الأعمدة في كلا الورقتين وتنسيق المظهر والقوائم المنسدلة (Comboboxes)
  */
 function setupHeaders(silent) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -68,13 +68,66 @@ function setupHeaders(silent) {
     .setBackground("#1e293b")
     .setFontColor("#ffffff")
     .setFontWeight("bold")
-    .setHorizontalAlignment("center");
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle");
   sheetLic.setFrozenRows(1);
+  sheetLic.setRowHeight(1, 38);
 
-  const licWidths = [100, 220, 220, 110, 100, 110, 130, 150, 130, 200, 280, 170, 200];
+  const licWidths = [100, 220, 220, 110, 100, 120, 130, 150, 130, 200, 280, 170, 200];
   licWidths.forEach((w, i) => {
     sheetLic.setColumnWidth(i + 1, w);
   });
+
+  // إضافة قوائم منسدلة (Comboboxes / Data Validation) لورقة Licenses (حتى الصف 100)
+  const nodeOptions = ["client2", "client3", "client4", "client5", "client6", "client7", "client8", "client9", "client10", "client11"];
+  const nodeRule = SpreadsheetApp.newDataValidation().requireValueInList(nodeOptions, true).build();
+  sheetLic.getRange("A2:A100").setDataValidation(nodeRule).setHorizontalAlignment("center");
+
+  const tierOptions = ["enterprise", "pro", "cluster", "starter"];
+  const tierRule = SpreadsheetApp.newDataValidation().requireValueInList(tierOptions, true).build();
+  sheetLic.getRange("D2:D100").setDataValidation(tierRule).setHorizontalAlignment("center");
+
+  const statusOptions = ["AVAILABLE", "ACTIVE", "SUSPENDED", "REVOKED"];
+  const statusRule = SpreadsheetApp.newDataValidation().requireValueInList(statusOptions, true).build();
+  sheetLic.getRange("F2:F100").setDataValidation(statusRule).setHorizontalAlignment("center");
+
+  // محاذاة وتنسيق أعمدة Licenses
+  sheetLic.getRange("C2:C100").setHorizontalAlignment("center"); // license_key
+  sheetLic.getRange("E2:E100").setHorizontalAlignment("center").setNumberFormat("0"); // max_seats
+  sheetLic.getRange("G2:G100").setHorizontalAlignment("center"); // expiration_date
+  sheetLic.getRange("H2:M100").setVerticalAlignment("middle");
+
+  // التنسيق الشرطي لحالات الترخيص (Conditional Formatting Colors)
+  const statusRange = sheetLic.getRange("F2:F100");
+  const ruleActive = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo("ACTIVE")
+    .setBackground("#dcfce7")
+    .setFontColor("#15803d")
+    .setRanges([statusRange])
+    .build();
+
+  const ruleAvailable = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo("AVAILABLE")
+    .setBackground("#dbeafe")
+    .setFontColor("#1d4ed8")
+    .setRanges([statusRange])
+    .build();
+
+  const ruleSuspended = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo("SUSPENDED")
+    .setBackground("#fef3c7")
+    .setFontColor("#b45309")
+    .setRanges([statusRange])
+    .build();
+
+  const ruleRevoked = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo("REVOKED")
+    .setBackground("#fee2e2")
+    .setFontColor("#b91c1c")
+    .setRanges([statusRange])
+    .build();
+
+  sheetLic.setConditionalFormatRules([ruleActive, ruleAvailable, ruleSuspended, ruleRevoked]);
 
   // 2. ورقة شبكة واير جارد (WireGuard)
   let sheetWg = ss.getSheetByName(TAB_WIREGUARD);
@@ -86,16 +139,38 @@ function setupHeaders(silent) {
     .setBackground("#1e293b")
     .setFontColor("#ffffff")
     .setFontWeight("bold")
-    .setHorizontalAlignment("center");
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle");
   sheetWg.setFrozenRows(1);
+  sheetWg.setRowHeight(1, 38);
 
-  const wgWidths = [100, 140, 110, 280, 230, 340, 120, 170];
+  const wgWidths = [100, 140, 110, 280, 230, 360, 120, 170];
   wgWidths.forEach((w, i) => {
     sheetWg.setColumnWidth(i + 1, w);
   });
 
+  // قوائم منسدلة ومحاذاة لورقة WireGuard
+  sheetWg.getRange("A2:A100").setDataValidation(nodeRule).setHorizontalAlignment("center");
+  sheetWg.getRange("B2:B100").setHorizontalAlignment("center"); // tunnel_ip
+  sheetWg.getRange("C2:C100").setHorizontalAlignment("center").setNumberFormat("0"); // listen_port
+  sheetWg.getRange("G2:G100").setHorizontalAlignment("center"); // clan_status
+
+  const clanStatusOptions = ["Synced", "Pending", "Offline"];
+  const clanRule = SpreadsheetApp.newDataValidation().requireValueInList(clanStatusOptions, true).build();
+  sheetWg.getRange("G2:G100").setDataValidation(clanRule);
+
+  // تنسيق شرطي لحالة Clan في ورقة WireGuard
+  const wgStatusRange = sheetWg.getRange("G2:G100");
+  const ruleSynced = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo("Synced")
+    .setBackground("#dcfce7")
+    .setFontColor("#15803d")
+    .setRanges([wgStatusRange])
+    .build();
+  sheetWg.setConditionalFormatRules([ruleSynced]);
+
   if (!silent) {
-    SpreadsheetApp.getUi().alert("تم تهيئة الورقتين (Licenses & WireGuard) وتنسيق الرؤوس بنجاح!");
+    SpreadsheetApp.getUi().alert("تم تهيئة الورقتين (Licenses & WireGuard) بالقوائم المنسدلة والتنسيق والألوان بنجاح!");
   }
 }
 
