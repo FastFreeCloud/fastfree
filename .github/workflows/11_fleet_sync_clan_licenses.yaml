@@ -15,10 +15,13 @@ on:
 permissions:
   contents: write
 
+env:
+  ACTIONS_RUNNER_FORCE_NODE24: "true"
+
 jobs:
   sync_fleet:
     name: Sync Clan Fleet & Licenses
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout monorepo
         uses: actions/checkout@v4
