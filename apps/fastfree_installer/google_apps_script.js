@@ -47,8 +47,8 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu("FastFree Node")
     .addItem("تهيئة الورقتين (Setup Tabs: Licenses & WireGuard)", "setupHeaders")
-    .addItem("إنشاء ترخيص عميل جديد (Create License)", "createNewLicensePrompt")
-    .addItem("مزامنة أسطول Clan يدوياً (Manual Fleet Sync)", "manualFleetSyncPrompt")
+    .addSeparator()
+    .addItem("إنشاء ترخيص عميل جديد (Create Single License)", "createNewLicensePrompt")
     .addToUi();
 }
 
@@ -399,40 +399,6 @@ function upsertFleetData(fleetList, ss) {
   }
 
   return syncedCount;
-}
-
-/**
- * مزامنة أسطول Clan يدوياً (client2 إلى client11) مع الحفاظ على البيانات القائمة
- */
-function manualFleetSyncPrompt() {
-  const ui = SpreadsheetApp.getUi();
-  const resp = ui.alert(
-    "مزامنة أسطول Clan",
-    "هل ترغب في مزامنة وتجهيز أسطول العقد (client2 حتى client11) في ورقتي Licenses و WireGuard؟\n\nلن يتم مسح أو استبدال أي تراخيص أو أسماء عملاء أو بصمات أجهزة مفعلة مسبقاً.",
-    ui.ButtonSet.YES_NO
-  );
-
-  if (resp !== ui.Button.YES) {
-    return;
-  }
-
-  const fleet = [];
-  for (let n = 2; n <= 11; n++) {
-    const nodeId = "client" + n;
-    fleet.push({
-      node_id: nodeId,
-      organization_name: "عميل جديد",
-      max_seats: 10,
-      tunnel_ip: "10.24.0." + n + "/32",
-      listen_port: 51820 + n,
-      client_public_key: "ff+client" + n + "+pubkey+mesh+clan2605+node===",
-      server_endpoint: "client1.fastfree.cloud:" + (51820 + n),
-      clan_status: "Synced"
-    });
-  }
-
-  const count = upsertFleetData(fleet);
-  ui.alert("نجاح المزامنة", "تمت مزامنة " + count + " عقدة في أسطول Clan بنجاح مع الحفاظ على كافة البيانات السابقة!", ui.ButtonSet.OK);
 }
 
 /**
