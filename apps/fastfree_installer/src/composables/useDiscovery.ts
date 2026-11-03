@@ -87,6 +87,16 @@ export interface VmRealState {
   memory_mb: number;
   cpu_cores: number;
   ip_addresses: string[];
+  heartbeat: string;
+  secure_boot_enabled: boolean;
+  nested_virt_enabled: boolean;
+  switch_name: string;
+  checkpoint_type: string;
+  vhdx_path: string;
+  vhdx_size_bytes: number;
+  is_empty_disk: boolean;
+  guest_status: string;
+  guest_status_message: string;
 }
 
 export interface ProvisioningStepLog {
@@ -268,7 +278,40 @@ export async function getVmRealState(clientId: string): Promise<VmRealState> {
       memory_mb: 0,
       cpu_cores: 0,
       ip_addresses: [],
+      heartbeat: 'No Contact',
+      secure_boot_enabled: false,
+      nested_virt_enabled: false,
+      switch_name: 'None',
+      checkpoint_type: 'None',
+      vhdx_path: '',
+      vhdx_size_bytes: 0,
+      is_empty_disk: false,
+      guest_status: 'NotFound',
+      guest_status_message: 'Virtual machine is not registered in Hyper-V.',
     };
+  }
+}
+
+export async function reconfigureHyperVVm(
+  clientId: string,
+  targetDrive: string,
+  cores?: number,
+  ramMb?: number
+): Promise<VmRealState> {
+  logInfo('Hyper-V', `Reconfiguring Hyper-V settings for FastFree-${clientId} to optimal preset...`);
+  try {
+    const res = await invoke<VmRealState>('reconfigure_hyperv_vm', {
+      clientId,
+      targetDrive,
+      cores: cores || 4,
+      ramMb: ramMb || 8192,
+    });
+    logSuccess('Hyper-V', `FastFree-${clientId} Hyper-V settings updated to optimal FastFree NixOS preset.`);
+    return res;
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    logError('Hyper-V', `Failed to reconfigure Hyper-V settings for ${clientId}`, msg);
+    throw err;
   }
 }
 
