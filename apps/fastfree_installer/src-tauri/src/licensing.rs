@@ -116,6 +116,8 @@ impl LicensingManager {
                 .args([
                     "-NoProfile",
                     "-NonInteractive",
+                    "-WindowStyle",
+                    "Hidden",
                     "-Command",
                     "(Get-CimInstance Win32_ComputerSystemProduct).UUID",
                 ])

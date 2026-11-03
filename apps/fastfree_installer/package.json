@@ -1,6 +1,6 @@
 {
   "name": "@fastfree/installer",
-  "version": "26.05.0",
+  "version": "26.5.31",
   "private": true,
   "type": "module",
   "scripts": {
