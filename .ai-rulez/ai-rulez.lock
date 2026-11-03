@@ -2,11 +2,11 @@
 # Refresh it with `ai-rulez lock`; `ai-rulez generate --locked` fails when it is stale.
 
 version = 1
-ai_rulez_version = '5.9.2'
+ai_rulez_version = '5.10.0'
 profile = 'full'
 scope = 'all'
 outputs_pinned = true
-tree = 'sha256:e70952465faca5ae5d39f314da43eaef3d1aa1985af0e2769b35074169a5c8ed'
+tree = 'sha256:1a08841bae8fa702990b39122a9317c46675fa9626114d0b8a6d0bf4ca13955d'
 
 [[served]]
 name = 'ai-rulez'
@@ -664,13 +664,13 @@ digest = 'sha256:3d8e0e5f13fbdbec294ed5794d64362245cb5c96da7eb097244fb1e7e2a2fa0
 kind = 'context'
 id = 'architecture'
 path = 'context/architecture.md'
-digest = 'sha256:67337e8afb054a7e75caf2a1bd043d05d30d4e027d4e19643cfaefe0fb7f75bb'
+digest = 'sha256:fae0ae430add7cf282ddd33e9ad14e48c60e2438e43ba1dd86e861ac2251d3bd'
 
 [[item]]
 kind = 'context'
 id = 'session-memory'
 path = 'context/session-memory.md'
-digest = 'sha256:92b570d248c1ab1086097b794ba9056dfb4872b733420e03960da5cd6e7646e9'
+digest = 'sha256:d5116c38fe7a29d1e5f38cf886f65f6f9ae51f874d5ffc858a6ac6d1e2d0f146'
 
 [[item]]
 kind = 'role'
@@ -707,13 +707,13 @@ digest = 'sha256:f4771f0ec354b7587cf42027ed45ac4f823c0c88732e9293b1648094dbafef3
 kind = 'rule'
 id = 'multi-agent-orchestration'
 path = 'rules/multi-agent-orchestration.md'
-digest = 'sha256:d24dd93e029dc9948fa2220dd77bd9bbc78b792044fb44de14a688b173f74b6b'
+digest = 'sha256:b859121472763c49bd2a89521c3c7b7c921e82a2c1c35285b60ff40d581d4d4b'
 
 [[item]]
 kind = 'rule'
 id = 'paseo-hub-governance'
 path = 'rules/paseo-hub-governance.md'
-digest = 'sha256:3c8f1612ebf57d809e31ae231342e175e60566999d3d27afe8bb15b0523a2264'
+digest = 'sha256:f77fb660d9cde2ca3cf86e7e1ae76375920a2ebf842e32257f90851ee33cc94e'
 
 [[item]]
 kind = 'rule'
@@ -747,7 +747,7 @@ kind = 'rule'
 id = 'nixos-clan'
 domain = 'nixos-clan'
 path = 'domains/nixos-clan/rules/nixos-clan.md'
-digest = 'sha256:bbf08b7dae1656049db922da7b045aff580aedee43b53af7eaff789d44b8a4d9'
+digest = 'sha256:efd68a3545cccecf68c69c9e9f00f33c7b9fa1a6923578dcab27d2a87a4becc2'
 
 [[item]]
 kind = 'settings'
@@ -886,7 +886,7 @@ digest = 'sha256:0811a67e52fa91a9dd1efacbfb2c24a967a6c1a8a3a37c90f9266d89d1bac14
 [[item]]
 kind = 'verifier'
 id = 'clan-core-structure'
-digest = 'sha256:7ea645159ddd9c6bfabfc662ef1aeede3e7fcbd1ea95361cd4b9944e81383a52'
+digest = 'sha256:cf5bf01b6bf0ffb744d6871845d3af144292b06c10744ef31b5a9a945b2d8f31'
 
 [[item]]
 kind = 'verifier'
@@ -918,6 +918,16 @@ kind = 'verifier'
 id = 'nixos-no-plaintext-secrets'
 digest = 'sha256:9f9bb5dfeb8a7ee19daa3b1cc7c86e4de1b67551dae969c89f66bbf608dca4ca'
 
+[[item]]
+kind = 'verifier'
+id = 'omnigent-guardrails-policy'
+digest = 'sha256:9b50ddeea11bf4008886dfad7d75d9e3bd41f1cd61c1682583f68233de2fa490'
+
+[[item]]
+kind = 'verifier'
+id = 'omnigent-supervisor-spec'
+digest = 'sha256:4d1101621704f25a02013e02f846e922c00347add87e38694560670bbbb832e5'
+
 [[output]]
 path = '.agents/rules/desktop-installer.md'
 digest = 'sha256:c4b36b199c69feffce36f479197406df3eb3fc77f8a665129b9a9743e1308615'
@@ -932,7 +942,7 @@ digest = 'sha256:a77060414656d3492bddaa4caee3a40d004cba7a9e1a50310a0dc3c18bc81dc
 
 [[output]]
 path = '.agents/rules/nixos-clan.md'
-digest = 'sha256:13c09404078ef7548e4df6aacff946f6dc3c5461bf84d3579272aa2888ed3631'
+digest = 'sha256:3b19aaaa091f705e85e7e0dd220a7549cd65ad0bc9516005eb94faae8fb46df8'
 
 [[output]]
 path = '.agents/rules/secure-secrets.md'
@@ -1260,7 +1270,7 @@ digest = 'sha256:867a55ddf7d7d6cfb6b99dc9905fb67a5043aefd6e8f572db2643966cb7ec79
 
 [[output]]
 path = '.ai-rulez/roles.json'
-digest = 'sha256:4b85e35a83fc57506a8f5d9ebf754847a8e0d4fbad006621e2612b55e2f81430'
+digest = 'sha256:6c84092d545cb3610d3e02f76fe17f042263f5fbad1773284ea1a0ef71ca3e3d'
 
 [[output]]
 path = '.claude/rules/desktop-installer.md'
@@ -1276,7 +1286,7 @@ digest = 'sha256:3f8aba98b597273ce64ce5e93a0b4b0d2039414e7071caa0439fac8678982df
 
 [[output]]
 path = '.claude/rules/nixos-clan.md'
-digest = 'sha256:606f703ff9928ff8b604dd142796b3ba531ca61675409affe7986a327166a096'
+digest = 'sha256:9a780bd0b75305049f7e24fc6b55c0e464f2f9cc6e482a4be23dcb31b364e78f'
 
 [[output]]
 path = '.claude/rules/secure-secrets.md'
@@ -1784,7 +1794,7 @@ digest = 'sha256:676ddffc944ea32cc2ef9069d75d2f6db14857f9884ea142231bea0ef95a16f
 
 [[output]]
 path = 'AGENTS.md'
-digest = 'sha256:8ecfb31a78c3afe49bb4ff5dbbac72f50f5fe6eaa7311dc6c46ddd3d1827c759'
+digest = 'sha256:741b1fcfb5d5ce6eae01b727620a8c3e99188d9d1caead99f2e50f4cc0ce4698'
 
 [[output]]
 path = 'CLAUDE.md'
@@ -1792,8 +1802,8 @@ digest = 'sha256:71bc73c292a2adb25eabe7c0e6f22776193bef75dab71b286cd8e4f63b44bf6
 
 [[output]]
 path = 'llms-full.txt'
-digest = 'sha256:fe7f85cef66c6e6b1784f41d241fdba550fef8c2ccff3e01c781af451e2b8529'
+digest = 'sha256:3eb875c9671f493eaa1cf6435c9ec137e1745fba26308f2343f0ee7c369c71d6'
 
 [[output]]
 path = 'llms.txt'
-digest = 'sha256:d39c698c26545a04a08e9f56064648d31619732f06a4fcbff63c300ed48a3c2e'
+digest = 'sha256:61240c5bd9a62e5ed9ba348e33b2a13d78c12535d1f416cbef6ef1881082b76a'

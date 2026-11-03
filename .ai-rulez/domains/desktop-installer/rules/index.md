@@ -1,3 +1,3 @@
 # Concepts
 
-* [Desktop Installer](desktop-installer.md)
+- [Desktop Installer](desktop-installer.md)
