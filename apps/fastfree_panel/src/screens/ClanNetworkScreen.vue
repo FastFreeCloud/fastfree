@@ -256,10 +256,10 @@ const pingingPeer = ref<string | null>(null);
 
 const peers = ref<WireguardPeer[]>([
   {
-    name: 'client2 (Production VPS)',
+    name: 'client1 (Controller Hub)',
     isServer: true,
     publicKey: 'a9Kx87fQ12MvLmZpTy44NqWz1AbCdEfGhIjKlMnOpQr=',
-    endpoint: '195.35.48.12:51820',
+    endpoint: 'client1.fastfree.local:51820',
     meshIp: '10.241.0.2',
     allowedIps: '10.241.0.0/24',
     status: 'connected',

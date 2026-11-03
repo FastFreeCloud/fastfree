@@ -15,9 +15,9 @@
     };
 
     deployType = lib.mkOption {
-      type = lib.types.enum [ "vps" "hyperv" "local" ];
+      type = lib.types.enum [ "hyperv" "local" ];
       default = "hyperv";
-      description = "Deployment type: vps (fresh server via disko + nixos-anywhere), hyperv (VHDX image), or local (existing physical machine, preserves disk + desktop).";
+      description = "Deployment type: hyperv (VHDX image) or local (existing physical machine, preserves disk + desktop).";
     };
 
     flakeConfigName = lib.mkOption {
@@ -92,8 +92,8 @@
     networking = {
       interface = lib.mkOption {
         type = lib.types.str;
-        default = "ens18";
-        description = "Primary network interface name (e.g. ens18 on KVM/Hostinger, eth0 on Hyper-V/AWS). Combined with 'en* eth*' wildcard in systemd-networkd for universal ethernet fallback.";
+        default = "eth0";
+        description = "Primary network interface name (eth0 on Hyper-V). Combined with 'en* eth*' wildcard in systemd-networkd for universal ethernet fallback.";
       };
       ipv4Address = lib.mkOption {
         type = lib.types.str;

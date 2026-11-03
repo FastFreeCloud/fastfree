@@ -25,6 +25,8 @@ import { healthRoutes } from './routes/health.js';
 import { machinesRoutes } from './routes/machines.js';
 import { mcpRoutes } from './routes/mcp.js';
 import { paseoRoutes } from './routes/paseo.js';
+import { omnigentRoutes } from './routes/omnigent.js';
+import { governanceRoutes } from './routes/governance.js';
 
 const API_PREFIX = '/api/v1';
 
@@ -57,6 +59,16 @@ export function createApp(): Hono<{ Bindings: HttpBindings }> {
   app.route('/api', globalRoutes);
   app.route(API_PREFIX, paseoRoutes);
   app.route('/api', paseoRoutes);
+
+  // Mount Omnigent Meta-Harness & AI Engineering routes
+  app.route(API_PREFIX, omnigentRoutes);
+  app.route('/api', omnigentRoutes);
+
+  // Mount Human-in-the-Loop Governance & Audit routes
+  app.route(`${API_PREFIX}/governance`, governanceRoutes);
+  app.route('/api/governance', governanceRoutes);
+  app.route(API_PREFIX, governanceRoutes);
+  app.route('/api', governanceRoutes);
 
   // Mount Web MCP server routes
   app.route('/mcp', mcpRoutes);

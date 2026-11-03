@@ -40,15 +40,15 @@
           "kind": "rule",
           "id": "multi-agent-orchestration",
           "path": "rules/multi-agent-orchestration.md",
-          "bytes": 1551,
-          "tokens": 383
+          "bytes": 2200,
+          "tokens": 538
         },
         {
           "kind": "rule",
           "id": "paseo-hub-governance",
           "path": "rules/paseo-hub-governance.md",
-          "bytes": 2313,
-          "tokens": 579
+          "bytes": 1669,
+          "tokens": 407
         },
         {
           "kind": "rule",
@@ -271,8 +271,8 @@
       ],
       "totals": {
         "items": 29,
-        "bytes": 497340,
-        "tokens": 23197,
+        "bytes": 497345,
+        "tokens": 23180,
         "by_kind": {
           "check": 2,
           "command": 4,
@@ -315,15 +315,15 @@
           "kind": "rule",
           "id": "multi-agent-orchestration",
           "path": "rules/multi-agent-orchestration.md",
-          "bytes": 1551,
-          "tokens": 383
+          "bytes": 2200,
+          "tokens": 538
         },
         {
           "kind": "rule",
           "id": "paseo-hub-governance",
           "path": "rules/paseo-hub-governance.md",
-          "bytes": 2313,
-          "tokens": 579
+          "bytes": 1669,
+          "tokens": 407
         },
         {
           "kind": "rule",
@@ -337,8 +337,8 @@
           "id": "nixos-clan",
           "domain": "nixos-clan",
           "path": "domains/nixos-clan/rules/nixos-clan.md",
-          "bytes": 1128,
-          "tokens": 296
+          "bytes": 1216,
+          "tokens": 314
         },
         {
           "kind": "skill",
@@ -467,8 +467,8 @@
       ],
       "totals": {
         "items": 20,
-        "bytes": 111694,
-        "tokens": 14796,
+        "bytes": 111787,
+        "tokens": 14797,
         "by_kind": {
           "check": 1,
           "command": 1,
@@ -519,15 +519,15 @@
           "kind": "rule",
           "id": "multi-agent-orchestration",
           "path": "rules/multi-agent-orchestration.md",
-          "bytes": 1551,
-          "tokens": 383
+          "bytes": 2200,
+          "tokens": 538
         },
         {
           "kind": "rule",
           "id": "paseo-hub-governance",
           "path": "rules/paseo-hub-governance.md",
-          "bytes": 2313,
-          "tokens": 579
+          "bytes": 1669,
+          "tokens": 407
         },
         {
           "kind": "rule",
@@ -752,8 +752,8 @@
       ],
       "totals": {
         "items": 29,
-        "bytes": 498026,
-        "tokens": 23382,
+        "bytes": 498031,
+        "tokens": 23365,
         "by_kind": {
           "check": 2,
           "command": 3,
@@ -800,15 +800,15 @@
           "kind": "rule",
           "id": "multi-agent-orchestration",
           "path": "rules/multi-agent-orchestration.md",
-          "bytes": 1551,
-          "tokens": 383
+          "bytes": 2200,
+          "tokens": 538
         },
         {
           "kind": "rule",
           "id": "paseo-hub-governance",
           "path": "rules/paseo-hub-governance.md",
-          "bytes": 2313,
-          "tokens": 579
+          "bytes": 1669,
+          "tokens": 407
         },
         {
           "kind": "rule",
@@ -1015,8 +1015,8 @@
       ],
       "totals": {
         "items": 27,
-        "bytes": 494606,
-        "tokens": 22548,
+        "bytes": 494611,
+        "tokens": 22531,
         "by_kind": {
           "check": 2,
           "command": 3,
@@ -1067,15 +1067,15 @@
           "kind": "rule",
           "id": "multi-agent-orchestration",
           "path": "rules/multi-agent-orchestration.md",
-          "bytes": 1551,
-          "tokens": 383
+          "bytes": 2200,
+          "tokens": 538
         },
         {
           "kind": "rule",
           "id": "paseo-hub-governance",
           "path": "rules/paseo-hub-governance.md",
-          "bytes": 2313,
-          "tokens": 579
+          "bytes": 1669,
+          "tokens": 407
         },
         {
           "kind": "rule",
@@ -1105,8 +1105,8 @@
           "id": "nixos-clan",
           "domain": "nixos-clan",
           "path": "domains/nixos-clan/rules/nixos-clan.md",
-          "bytes": 1128,
-          "tokens": 296
+          "bytes": 1216,
+          "tokens": 314
         },
         {
           "kind": "skill",
@@ -1343,8 +1343,8 @@
       ],
       "totals": {
         "items": 34,
-        "bytes": 504651,
-        "tokens": 25165,
+        "bytes": 504744,
+        "tokens": 25166,
         "by_kind": {
           "check": 3,
           "command": 4,

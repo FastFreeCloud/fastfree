@@ -99,7 +99,7 @@
       <q-card-section class="q-pb-xs">
         <div class="text-subtitle1 text-weight-bold">
           <q-icon name="mdi-check-decagram" color="positive" class="q-mr-xs" />
-          Production Core Services (client2 VPS)
+          Production Core Services (Hyper-V Fleet)
         </div>
       </q-card-section>
       <q-separator />

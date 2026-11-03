@@ -1,6 +1,6 @@
 ---
 type: Decision
-title: Paseo Hub Governance
+title: Omnigent Meta-Harness Governance & Paseo Retirement
 x-ai-rulez:
   kind: rule
   id: paseo-hub-governance
@@ -8,27 +8,21 @@ x-ai-rulez:
     priority: critical
 ---
 
-# Paseo Governance — the Only Orchestrator
+# Omnigent Meta-Harness Governance (Paseo Retired)
 
-Paseo is the **sole** agent orchestrator for FastFree; Herdr is fully retired
-from the repository and fleet.
+Omnigent is the **canonical** agent orchestrator for FastFree; Paseo and Herdr are retired from canonical fleet orchestration and replaced by Omnigent on port `8090`.
 
-1. **Role Boundaries**:
-   - Agent orchestration (workspaces, worktrees, prompts, reviews, fan-out) runs exclusively through Paseo MCP tools and the `paseo-conductor` / `paseo-fanout` / `paseo-review-loop` skills.
-   - Value beyond raw orchestration: programmatic permission approvals (`list_pending_permissions` / `respond_to_permission`), cron schedules and heartbeats, mobile/web review via the E2E-encrypted relay, and Hub-level org automation.
-   - Providers without first-class Paseo support (e.g. Antigravity) MUST be validated via a custom provider / ACP adapter before being used in unattended (scheduled or Hub-triggered) runs.
+1. **Role Boundaries & Multi-Harness Integration**:
+   - Agent orchestration (workspaces, worktrees, subagents, reviews, fan-out) runs through Omnigent server/runner architecture and Hindsight memory banks.
+   - Omnigent enforces OS-level sandboxing (bubblewrap/seccomp), L7 egress proxying for sensitive credentials, and centralized MCP connection pooling (`ServerMcpPool`).
+   - Programmatic permission approvals (`apiPendingApprovals` / `apiDecideApproval`) operate via the FastFree Panel Hono backend (`/api/v1/governance/*`).
 
-2. **Sovereignty — Self-Hosted Hub Only**:
-   - The Paseo Hub MUST be self-hosted on the sovereign controller (`client1`), NOT the hosted `hub.paseo.sh` origin, for any fleet automation touching customer appliances (`client2..11`).
-   - Appliance daemons enroll over the WireGuard mesh using single-use, 10-minute enrollment tokens (`POST /api/v1/daemons/enrollment-tokens`, scope `daemons:enroll`).
+2. **Sovereignty & Isolated Runner**:
+   - The Omnigent runner executes locally on host or sovereign VPS (`client1`).
+   - Customer appliances (`client2..11`) are protected by network isolation; runners are strictly blocked from probing the `10.0.0.0/8` WireGuard subnet.
 
-3. **Secrets Classification (secure-secrets applies)**:
-   - Every Paseo hub API key (`paseo_pk_...`) is a regulated secret: GitHub Secrets or out-of-repo secret storage ONLY. Zero plaintext keys in the repo, Nix expressions, or generated context files.
-   - Issued keys use least-privilege scopes; the `fastfree_panel` Hono backend may hold only `runs:dispatch` + `projects:read`.
+3. **Secrets Classification & DLP (secure-secrets applies)**:
+   - Sensitive credentials (keystore passwords, Clan Vars, private keys) are brokered at the L7 proxy layer and never passed as raw environment variables to agent prompts.
+   - The DLP inspection engine terminates any egress connection containing WireGuard or Clan Var secret patterns.
 
-4. **Trigger Security**:
-   - Every trigger MUST declare a non-empty `from_users` allowlist; dispatch actors outside it are rejected (403).
-   - Unattended agent steps default to the least-capable mode; `full-access` mode and widened GitHub authority (`contents: write`) require explicit scope justification in the workflow file.
-   - Hub has no queue/retry: any consumer (e.g. the panel backend) MUST implement its own retry with a stable `deliveryKey` for dedup.
-
-5. **Lint Gate**: `ai-rulez verifiers run --strict` MUST pass after any change to this rule or to Paseo-related configuration.
+4. **Lint Gate**: `ai-rulez verifiers run --strict` MUST pass after any change to orchestration or governance configuration.

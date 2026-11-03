@@ -1,0 +1,154 @@
+{
+  "meta": {
+    "name": "fastfree",
+    "domain": "fastfree.local"
+  },
+  "machines": {
+    "client1": { "tags": [ "hyperv", "server", "fastfree" ] },
+    "client2": { "tags": [ "hyperv", "server", "fastfree" ] },
+    "client3": { "tags": [ "hyperv", "server", "fastfree" ] },
+    "client4": { "tags": [ "hyperv", "server", "fastfree" ] },
+    "client5": { "tags": [ "hyperv", "server", "fastfree" ] },
+    "client6": { "tags": [ "hyperv", "server", "fastfree" ] },
+    "client7": { "tags": [ "hyperv", "server", "fastfree" ] },
+    "client8": { "tags": [ "hyperv", "server", "fastfree" ] },
+    "client9": { "tags": [ "hyperv", "server", "fastfree" ] },
+    "client10": { "tags": [ "hyperv", "server", "fastfree" ] },
+    "client11": { "tags": [ "hyperv", "server", "fastfree" ] }
+  },
+  "instances": {
+    "wireguard": {
+      "module": {
+        "name": "wireguard",
+        "input": "clan-core"
+      },
+      "roles": {
+        "controller": {
+          "machines": {
+            "client1": {}
+          },
+          "settings": {
+            "endpoint": "client1.fastfree.local",
+            "port": 51820
+          }
+        },
+        "peer": {
+          "machines": {
+            "client2": {},
+            "client3": {},
+            "client4": {},
+            "client5": {},
+            "client6": {},
+            "client7": {},
+            "client8": {},
+            "client9": {},
+            "client10": {},
+            "client11": {}
+          }
+        }
+      }
+    },
+    "sshd": {
+      "module": {
+        "name": "sshd",
+        "input": "clan-core"
+      },
+      "roles": {
+        "server": {
+          "machines": {
+            "client1": {
+              "settings": {
+                "authorizedKeys": {
+                  "client2-deploy": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILA5GRXOSiMnQEib+pXSH9CU10ujSc4qX8/GjblJKgM7 client2-deploy",
+                  "client3-admin": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGszztIACEpNLDgPR0IH7HdNCU6hEbIP8WG7ssMXKPwg fastfree@client3",
+                  "windows-operator": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILvq/DkqsJNIuBkcxc5ttL7N893RU2+xb+ynBTSYYcDR fastfree-panel-windows",
+                  "fastfree-ci-deploy": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDVLRiAODxPOXtmU4fVllww02sx6hI21IrLTCAUp+gOk fastfree-ci-deploy"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "user-fastfree": {
+      "module": {
+        "name": "users",
+        "input": "clan-core"
+      },
+      "roles": {
+        "default": {
+          "machines": {
+            "client1": {}
+          },
+          "settings": {
+            "user": "fastfree",
+            "prompt": false,
+            "groups": [
+              "networkmanager",
+              "wheel"
+            ]
+          }
+        }
+      }
+    },
+    "clan-cache": {
+      "module": {
+        "name": "trusted-nix-caches",
+        "input": "clan-core"
+      },
+      "roles": {
+        "default": {
+          "machines": {
+            "client1": {},
+            "client2": {},
+            "client3": {},
+            "client4": {},
+            "client5": {},
+            "client6": {},
+            "client7": {},
+            "client8": {},
+            "client9": {},
+            "client10": {},
+            "client11": {}
+          }
+        }
+      }
+    },
+    "emergency-access": {
+      "module": {
+        "name": "emergency-access",
+        "input": "clan-core"
+      },
+      "roles": {
+        "default": {
+          "machines": {
+            "client1": {}
+          }
+        }
+      }
+    },
+    "fastfree-erp": {
+      "module": {
+        "name": "fastfree-erp",
+        "input": "self"
+      },
+      "roles": {
+        "default": {
+          "machines": {
+            "client1": {},
+            "client2": {},
+            "client3": {},
+            "client4": {},
+            "client5": {},
+            "client6": {},
+            "client7": {},
+            "client8": {},
+            "client9": {},
+            "client10": {},
+            "client11": {}
+          }
+        }
+      }
+    }
+  }
+}
