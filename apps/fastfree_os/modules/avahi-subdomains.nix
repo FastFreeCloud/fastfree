@@ -11,12 +11,11 @@ in {
       hostName = config.fastfree.identity.name;
       domainName = "local";
 
-      # WireGuard support — point-to-point interfaces
-      allowPointToPoint = true;
+      # Physical LAN discovery (mDNS does not traverse Layer 3 WireGuard)
+      allowPointToPoint = false;
       openFirewall = true;
 
-      # Reflection between LAN <-> WireGuard
-      reflector = avahiCfg.reflector;
+      reflector = false;
       allowInterfaces = if avahiCfg.interfaces != [] then avahiCfg.interfaces else null;
 
       # Publishing
