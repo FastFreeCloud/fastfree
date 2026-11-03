@@ -1,0 +1,97 @@
+name: fastfree-lead-supervisor
+version: "1.1.0"
+description: "Master supervisor coordinating 4 specialized subagents with Hindsight persistent memory and zero-cost free model fallbacks"
+prompt: |
+  You are the FastFree Lead Architect Supervisor.
+  You coordinate complex tasks across modular domain packages, Quasar apps, and NixOS configurations.
+  Decompose high-level engineering goals and delegate to your 4 specialized subagents.
+  Always consult Hindsight memory for prior architecture decisions and conventions.
+
+executor:
+  harness: claude-sdk
+  model: claude-3-7-sonnet
+  reasoning_effort: high
+  fallback_model: openrouter/google/gemini-2.0-flash-exp:free
+
+tools:
+  # 1. Hindsight Long-Term Memory Tools (Sanitized)
+  hindsight_recall:
+    type: builtin
+    bank_id: fastfree-core-memory
+    budget: mid
+  hindsight_retain:
+    type: builtin
+    bank_id: fastfree-core-memory
+  hindsight_reflect:
+    type: builtin
+    bank_id: fastfree-core-memory
+
+  # ---------------------------------------------------------
+  # 2. Coordinated Subagents Fleet (4 Specialized Agents)
+  # ---------------------------------------------------------
+
+  # Subagent 1: Architecture & Codebase Researcher
+  subagent_researcher:
+    type: agent
+    prompt: |
+      You are a read-only research agent. Explore codebases, verify dependencies,
+      and index architectural references. Never perform destructive changes.
+    executor:
+      harness: claude-sdk
+      model: claude-3-5-haiku
+      fallback_model: openrouter/google/gemini-2.0-flash-exp:free
+    tools:
+      hindsight_recall: inherit
+      grep: inherit
+      context7: inherit
+
+  # Subagent 2: Full-Stack Implementer (TypeScript & LowCode)
+  subagent_implementer:
+    type: agent
+    prompt: |
+      You are an expert full-stack TypeScript and Vue 3 developer.
+      Implement features strictly adhering to LowCode composables and 0 TS errors.
+      Execute in isolated worktrees (.worktrees/omnigent-*).
+    executor:
+      harness: claude-sdk
+      model: claude-3-7-sonnet
+      fallback_model: openrouter/qwen/qwen-2.5-coder-32b-instruct:free
+    tools:
+      os_env: true
+      github_connect: inherit
+
+  # Subagent 3: Automated Quality & Testing Agent (Cypress & Typecheck)
+  subagent_tester:
+    type: agent
+    prompt: |
+      You are an automated testing and validation engineer.
+      Execute vue-tsc, Cypress specs, and strict verifiers. Never report false positives.
+    executor:
+      harness: claude-sdk
+      model: claude-3-5-haiku
+      fallback_model: openrouter/meta-llama/llama-3.3-70b-instruct:free
+    tools:
+      os_env: true
+
+  # Subagent 4: Independent Adversarial Reviewer (OpenCode Profile)
+  subagent_reviewer:
+    type: agent
+    prompt: |
+      You are an independent adversarial code reviewer running in the OpenCode harness.
+      Inspect diffs, run vue-tsc, verify AI-Rulez policies, and issue VERDICT: APPROVE or REJECT.
+      Operate with 100% neutrality and strict read-only permissions.
+    executor:
+      harness: opencode
+      model: deepseek-r1
+      fallback_model: openrouter/deepseek/deepseek-r1:free
+    tools:
+      os_env: true
+      github_connect: inherit
+
+policies:
+  - name: fastfree-change-policy
+    rule: "require human approval before modifying .ai-rulez/ or committing to main"
+  - name: budget-ceiling
+    rule: "pause and alert if session spend exceeds $10.00"
+  - name: free-tier-routing
+    rule: "route non-critical research and lint checks to free open models when budget < $2.00"

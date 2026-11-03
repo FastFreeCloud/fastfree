@@ -339,3 +339,126 @@ export function apiPaseoPrompt(target: string, text: string, timeoutMs?: number)
     ...(timeoutMs !== undefined ? { timeoutMs } : {}),
   });
 }
+
+// ---------------------------------------------------------------------------
+// Omnigent, Hindsight & AI Governance Client APIs
+// ---------------------------------------------------------------------------
+
+export interface OmnigentSubagentNode {
+  id: string;
+  name: string;
+  role: string;
+  harness: string;
+  model: string;
+  status: 'IDLE' | 'RUNNING' | 'COMPLETED' | 'FAILED';
+  currentTask?: string;
+  tokensUsed: number;
+  costUsd: number;
+}
+
+export interface OmnigentSession {
+  id: string;
+  name: string;
+  supervisor: string;
+  status: 'PENDING' | 'RUNNING' | 'PAUSED_FOR_APPROVAL' | 'COMPLETED' | 'FAILED';
+  prompt: string;
+  worktreePath?: string;
+  createdAt: string;
+  updatedAt: string;
+  totalTokens: number;
+  totalCostUsd: number;
+  budgetCapUsd: number;
+  subagents: OmnigentSubagentNode[];
+}
+
+export interface OmnigentStatusData {
+  serverUrl: string;
+  connected: boolean;
+  activeRunners: number;
+  totalSessions: number;
+  activeSessions: number;
+  totalCostUsd: number;
+  totalTokens: number;
+  hindsightBank: string;
+}
+
+export interface PendingApproval {
+  id: string;
+  sessionId: string;
+  agentId: string;
+  actionType: string;
+  tier: string;
+  status: string;
+  title: string;
+  description: string;
+  command?: string[];
+  filePath?: string;
+  diff?: string;
+  estimatedTokens?: number;
+  estimatedCostUsd?: number;
+  requestedAt: string;
+}
+
+export interface CostSummaryData {
+  totalPromptTokens: number;
+  totalCompletionTokens: number;
+  totalTokens: number;
+  totalCostUsd: number;
+  sessionCount: number;
+  modelBreakdown: Record<string, { tokens: number; costUsd: number }>;
+}
+
+export interface HindsightQueryResult {
+  bankId: string;
+  query: string;
+  redacted: boolean;
+  results: Array<{
+    id: string;
+    stratum: string;
+    content: string;
+    confidence: number;
+    timestamp: string;
+  }>;
+}
+
+export function apiOmnigentStatus(): Promise<OmnigentStatusData> {
+  return apiRequest<OmnigentStatusData>('/omnigent/status');
+}
+
+export function apiOmnigentSessions(): Promise<{ sessions: OmnigentSession[] }> {
+  return apiRequest<{ sessions: OmnigentSession[] }>('/omnigent/sessions');
+}
+
+export function apiOmnigentDispatch(prompt: string, budgetCapUsd = 10.0): Promise<OmnigentSession> {
+  return apiRequest<OmnigentSession>('/omnigent/dispatch', {
+    method: 'POST',
+    body: { prompt, budgetCapUsd, isolatedWorktree: true },
+  });
+}
+
+export function apiPendingApprovals(): Promise<{ approvals: PendingApproval[] }> {
+  return apiRequest<{ approvals: PendingApproval[] }>('/governance/approvals/pending');
+}
+
+export function apiDecideApproval(
+  requestId: string,
+  decision: 'APPROVE' | 'REJECT',
+  actor = 'FastFree Operator',
+  reason?: string,
+): Promise<PendingApproval> {
+  return apiRequest<PendingApproval>('/governance/approvals/decision', {
+    method: 'POST',
+    body: { requestId, decision, actor, reason },
+  });
+}
+
+export function apiCostSummary(): Promise<CostSummaryData> {
+  return apiRequest<CostSummaryData>('/governance/audit/cost-summary');
+}
+
+export function apiHindsightQuery(query: string, bankId = 'fastfree-core-memory'): Promise<HindsightQueryResult> {
+  return apiRequest<HindsightQueryResult>('/omnigent/memory/query', {
+    method: 'POST',
+    body: { query, bankId },
+  });
+}

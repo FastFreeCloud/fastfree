@@ -17,6 +17,7 @@
         mariadb = lib.mkDefault true;
         caddy = lib.mkDefault true;
         fastfree_backend = lib.mkDefault true;
+        fastfree_panel = lib.mkDefault true;
         fastfree_ledger = lib.mkDefault true;
         fastfree_erp = lib.mkDefault true;
         fastfree_hr = lib.mkDefault true;

@@ -46,6 +46,9 @@
     <template #window-clan-services>
       <ClanServicesScreen />
     </template>
+    <template #window-clan-omnigent>
+      <ClanOmnigentScreen />
+    </template>
     <template #window-clan-paseo>
       <ClanPaseoScreen />
     </template>
@@ -72,6 +75,7 @@ import ClanBackupsScreen from '../screens/ClanBackupsScreen.vue';
 import ClanSecretsScreen from '../screens/ClanSecretsScreen.vue';
 import ClanVarsScreen from '../screens/ClanVarsScreen.vue';
 import ClanServicesScreen from '../screens/ClanServicesScreen.vue';
+import ClanOmnigentScreen from '../screens/ClanOmnigentScreen.vue';
 import ClanPaseoScreen from '../screens/ClanPaseoScreen.vue';
 
 const desktopStore = useDesktopStore();

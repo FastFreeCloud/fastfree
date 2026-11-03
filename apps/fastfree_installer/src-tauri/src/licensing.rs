@@ -396,7 +396,7 @@ impl LicensingManager {
                             ),
                         );
 
-                        let mut eligible: Vec<String> = (2..=11).map(|k| format!("client{}", k)).collect();
+                        let mut eligible: Vec<String> = (1..=11).map(|k| format!("client{}", k)).collect();
                         if let Some(pos) = eligible.iter().position(|x| x == &node_id) {
                             eligible.remove(pos);
                         }
@@ -581,7 +581,7 @@ impl LicensingManager {
     }
 
     fn cached_to_result(cached: &CachedLicenseRecord, message: &str) -> LicenseVerificationResult {
-        let mut eligible: Vec<String> = (2..=11).map(|k| format!("client{}", k)).collect();
+        let mut eligible: Vec<String> = (1..=11).map(|k| format!("client{}", k)).collect();
         if let Some(pos) = eligible.iter().position(|x| x == &cached.node_id) {
             eligible.remove(pos);
         }
@@ -614,7 +614,7 @@ impl LicensingManager {
                 .collect();
             let n: u32 = node_num.parse().unwrap_or(2);
             let target_node = format!("client{}", n);
-            let mut eligible: Vec<String> = (2..=11).map(|k| format!("client{}", k)).collect();
+            let mut eligible: Vec<String> = (1..=11).map(|k| format!("client{}", k)).collect();
             if let Some(pos) = eligible.iter().position(|x| x == &target_node) {
                 eligible.remove(pos);
             }
@@ -629,7 +629,7 @@ impl LicensingManager {
                 company_name: format!("Enterprise Client - {}", target_node),
                 expires_at: Some("2028-12-31T23:59:59Z".to_string()),
                 max_users: 50,
-                max_nodes: 10,
+                max_nodes: 11,
                 eligible_clients: eligible,
                 unlocked_features: Self::get_standard_features(),
                 message: format!(
@@ -642,7 +642,7 @@ impl LicensingManager {
         if clean_key.starts_with("FF-ENT")
             || clean_key.contains("ENTERPRISE")
         {
-            let eligible = (2..=11).map(|n| format!("client{}", n)).collect();
+            let eligible = (1..=11).map(|n| format!("client{}", n)).collect();
             return Ok(LicenseVerificationResult {
                 is_valid: true,
                 key: clean_key.to_string(),
@@ -652,7 +652,7 @@ impl LicensingManager {
                 company_name: "FastFree Enterprise Client".to_string(),
                 expires_at: Some("2028-12-31T23:59:59Z".to_string()),
                 max_users: 10000,
-                max_nodes: 10,
+                max_nodes: 11,
                 eligible_clients: eligible,
                 unlocked_features: Self::get_standard_features(),
                 message: "Enterprise License verified successfully (Offline Validation).".to_string(),
@@ -752,7 +752,7 @@ mod tests {
         assert!(res.is_valid);
         assert_eq!(res.node_id, "client2");
         assert_eq!(res.tier, "enterprise");
-        assert_eq!(res.eligible_clients.len(), 10);
+        assert_eq!(res.eligible_clients.len(), 11);
         assert_eq!(res.eligible_clients[0], "client2");
 
         let res11 = LicensingManager::verify_offline_pattern("FF-CL11-6J1W-8Y3F-0G77").unwrap();

@@ -144,7 +144,7 @@ export class DatabaseService {
         'mem-001',
         'fastfree-core-memory',
         'World Facts',
-        'NixOS Clan 26.05 topology: client1 VPS (Controller), client2..client11 Hyper-V appliances.',
+        'NixOS Clan 26.05 topology: client1 Hyper-V (Controller), client2..client11 Hyper-V appliances.',
         0.99,
         new Date().toISOString()
       );

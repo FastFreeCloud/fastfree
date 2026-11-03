@@ -54,24 +54,33 @@ pub async fn get_machine_hwid() -> Result<String, String> {
 pub async fn get_wireguard_status(client_id: String) -> Result<WireGuardPeerConfig, String> {
     let num_str: String = client_id.chars().filter(|c| c.is_ascii_digit()).collect();
     let n: u16 = num_str.parse().unwrap_or(2);
-    let port = 51820 + n;
-    let client_ip = format!("10.24.0.{}/32", n);
+    let port = if n == 1 { 51820 } else { 51820 + n };
+    let client_ip = if n == 1 {
+        "10.24.0.1/16".to_string()
+    } else {
+        format!("10.24.0.{}/32", n)
+    };
+    let endpoint = if n == 1 {
+        "127.0.0.1:51820".to_string()
+    } else {
+        "client1.fastfree.cloud".to_string()
+    };
 
     Ok(WireGuardPeerConfig {
         client_id,
-        controller_endpoint: "client1.fastfree.cloud".to_string(),
+        controller_endpoint: endpoint,
         listen_port: port,
         controller_port: port,
         interface_name: "wg-fastfree".to_string(),
         client_tunnel_ip: client_ip,
-        controller_tunnel_ip: "10.24.0.1/32".to_string(),
+        controller_tunnel_ip: "10.24.0.1/16".to_string(),
         mesh_subnet: "10.24.0.0/16".to_string(),
         keepalive_seconds: 25,
         public_key: format!("ff+client{}+pubkey+mesh+clan2605+node===", n),
-        controller_public_key: "ff+client1+controller+vps+primary+master===".to_string(),
+        controller_public_key: "Tk+A5Rv0ETng+fjsLjpmEmGYK6NR28R+l+Wz3RbbVlI=".to_string(),
         cipher: "ChaCha20-Poly1305 (Curve25519 ECDH)".to_string(),
         mtu: 1420,
-        status: "Tunnel Ready / Pre-shared Key Sealed in Clan Vars".to_string(),
+        status: "Tunnel Ready / Hyper-V Sovereign Mesh".to_string(),
         latency_ms: 16,
     })
 }
@@ -837,20 +846,33 @@ pub async fn apply_wireguard_config(
         &format!("Generating WireGuard config for '{}' (Manual customization: {})", client_id, custom_conf.is_some() || custom_port.is_some()),
     );
 
-    // Derive deterministic parameters from the numeric suffix (client2..11) or use manual overrides
+    // Derive deterministic parameters from the numeric suffix (client1..11) or use manual overrides
     let num_str: String = client_id.chars().filter(|c| c.is_ascii_digit()).collect();
     let n: u16 = num_str.parse().unwrap_or(2);
-    let listen_port = custom_port.unwrap_or(51820 + n);
-    let client_ip = custom_ip.unwrap_or_else(|| format!("10.24.0.{}/32", n));
-    let endpoint = custom_endpoint.unwrap_or_else(|| format!("client1.fastfree.cloud:{}", listen_port));
+    let listen_port = custom_port.unwrap_or(if n == 1 { 51820 } else { 51820 + n });
+    let client_ip = custom_ip.unwrap_or_else(|| {
+        if n == 1 {
+            "10.24.0.1/16".to_string()
+        } else {
+            format!("10.24.0.{}/32", n)
+        }
+    });
+    let endpoint = custom_endpoint.unwrap_or_else(|| {
+        if n == 1 {
+            "127.0.0.1:51820".to_string()
+        } else {
+            format!("client1.fastfree.cloud:{}", listen_port)
+        }
+    });
 
     let conf_content = if let Some(raw) = custom_conf.filter(|s| !s.trim().is_empty()) {
         raw
     } else {
         // Placeholder private key — replaced by `clan vars generate <machine>` at provisioning time
         let private_key = format!("PLACEHOLDER_PRIVATE_KEY_client{}==========================", n);
+        let peer_pubkey = "Tk+A5Rv0ETng+fjsLjpmEmGYK6NR28R+l+Wz3RbbVlI=";
         format!(
-            "[Interface]\nAddress = {client_ip}\nListenPort = {listen_port}\nPrivateKey = {private_key}\nMTU = 1420\n\n[Peer]\nPublicKey = ff+client1+controller+vps+primary+master===\nEndpoint = {endpoint}\nAllowedIPs = 10.24.0.0/16\nPersistentKeepalive = 25\n",
+            "[Interface]\nAddress = {client_ip}\nListenPort = {listen_port}\nPrivateKey = {private_key}\nMTU = 1420\n\n[Peer]\nPublicKey = {peer_pubkey}\nEndpoint = {endpoint}\nAllowedIPs = 10.24.0.0/16\nPersistentKeepalive = 25\n",
         )
     };
 
@@ -1141,4 +1163,149 @@ pub async fn install_app_update(app: AppHandle) -> Result<(), String> {
 
     #[cfg(not(windows))]
     Ok(())
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct FirewallRuleStatus {
+    pub rule_exists: bool,
+    pub enabled: bool,
+    pub name: String,
+    pub local_ports: String,
+    pub protocol: String,
+    pub action: String,
+    pub is_admin: bool,
+    pub message: String,
+}
+
+#[tauri::command]
+pub async fn check_wireguard_firewall_rule() -> Result<FirewallRuleStatus, String> {
+    #[cfg(windows)]
+    {
+        extern "system" {
+            fn IsUserAnAdmin() -> i32;
+        }
+        let is_admin = unsafe { IsUserAnAdmin() != 0 };
+
+        let output = hidden_command("powershell")
+            .args([
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                r#"
+                $rule = Get-NetFirewallRule -Name 'FastFree-WireGuard-Mesh' -ErrorAction SilentlyContinue
+                if ($rule) {
+                    $portFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule -ErrorAction SilentlyContinue
+                    $ports = if ($portFilter) { $portFilter.LocalPort } else { '51820-51835' }
+                    $protocol = if ($portFilter) { $portFilter.Protocol } else { 'UDP' }
+                    Write-Output "EXISTS:$($rule.Enabled):$($rule.Action):$ports:$protocol"
+                } else {
+                    Write-Output "NOT_FOUND"
+                }
+                "#,
+            ])
+            .output();
+
+        if let Ok(out) = output {
+            let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            if stdout.starts_with("EXISTS:") {
+                let parts: Vec<&str> = stdout.split(':').collect();
+                let enabled = parts.get(1).map(|&s| s.eq_ignore_ascii_case("True")).unwrap_or(true);
+                let action = parts.get(2).unwrap_or(&"Allow").to_string();
+                let ports = parts.get(3).unwrap_or(&"51820-51835").to_string();
+                let proto = parts.get(4).unwrap_or(&"UDP").to_string();
+
+                return Ok(FirewallRuleStatus {
+                    rule_exists: true,
+                    enabled,
+                    name: "FastFree-WireGuard-Mesh".to_string(),
+                    local_ports: ports,
+                    protocol: proto,
+                    action,
+                    is_admin,
+                    message: "Windows Defender Firewall inbound rule is active and allowing WireGuard UDP traffic.".to_string(),
+                });
+            }
+        }
+
+        Ok(FirewallRuleStatus {
+            rule_exists: false,
+            enabled: false,
+            name: "FastFree-WireGuard-Mesh".to_string(),
+            local_ports: "51820-51835".to_string(),
+            protocol: "UDP".to_string(),
+            action: "None".to_string(),
+            is_admin,
+            message: "Inbound firewall rule not detected. Action required to permit inbound traffic.".to_string(),
+        })
+    }
+
+    #[cfg(not(windows))]
+    Ok(FirewallRuleStatus {
+        rule_exists: true,
+        enabled: true,
+        name: "FastFree-WireGuard-Mesh".to_string(),
+        local_ports: "51820-51835".to_string(),
+        protocol: "UDP".to_string(),
+        action: "Allow".to_string(),
+        is_admin: true,
+        message: "Non-Windows host simulation.".to_string(),
+    })
+}
+
+#[tauri::command]
+pub async fn enable_wireguard_firewall_rule() -> Result<FirewallRuleStatus, String> {
+    #[cfg(windows)]
+    {
+        extern "system" {
+            fn IsUserAnAdmin() -> i32;
+        }
+        let is_admin = unsafe { IsUserAnAdmin() != 0 };
+
+        InstallerLogger::info(
+            "FIREWALL",
+            &format!("Configuring Windows Defender Firewall inbound rule (is_admin={})", is_admin),
+        );
+
+        let ps_script = r#"
+            $ruleName = 'FastFree-WireGuard-Mesh'
+            $dispName = 'FastFree Sovereign WireGuard Mesh'
+            $existing = Get-NetFirewallRule -Name $ruleName -ErrorAction SilentlyContinue
+            if ($existing) {
+                Set-NetFirewallRule -Name $ruleName -Enabled True -Action Allow -ErrorAction SilentlyContinue
+            } else {
+                New-NetFirewallRule -DisplayName $dispName -Name $ruleName -Direction Inbound -Protocol UDP -LocalPort 51820-51835 -Action Allow -Profile Any -Description 'Allows FastFree Sovereign WireGuard Mesh UDP traffic to reach local Hyper-V appliances' -ErrorAction Stop
+            }
+        "#;
+
+        if is_admin {
+            let _ = hidden_command("powershell")
+                .args(["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", ps_script])
+                .output();
+        } else {
+            // Elevate via standard UAC dialog
+            let one_line = ps_script.replace('\r', " ").replace('\n', " ");
+            let escaped = one_line.replace('"', "\\\"");
+            let elevate_cmd = format!(
+                "Start-Process powershell -Verb RunAs -WindowStyle Hidden -Wait -ArgumentList \"-NoProfile -ExecutionPolicy Bypass -Command \\\"{}\\\"\"",
+                escaped
+            );
+            let _ = hidden_command("powershell")
+                .args(["-NoProfile", "-NonInteractive", "-Command", &elevate_cmd])
+                .output();
+        }
+
+        check_wireguard_firewall_rule().await
+    }
+
+    #[cfg(not(windows))]
+    Ok(FirewallRuleStatus {
+        rule_exists: true,
+        enabled: true,
+        name: "FastFree-WireGuard-Mesh".to_string(),
+        local_ports: "51820-51835".to_string(),
+        protocol: "UDP".to_string(),
+        action: "Allow".to_string(),
+        is_admin: true,
+        message: "Configured firewall rule successfully (non-windows simulated).".to_string(),
+    })
 }

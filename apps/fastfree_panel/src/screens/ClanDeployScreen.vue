@@ -113,7 +113,7 @@
             </q-item-section>
             <q-item-section>
               <q-item-label class="text-weight-bold">Generation 1 (Initial Provision)</q-item-label>
-              <q-item-label caption>Built: 1970-04-29 · Base Hostinger KVM image</q-item-label>
+              <q-item-label caption>Built: Initial Provision · Base Hyper-V Appliance image</q-item-label>
             </q-item-section>
             <q-item-section side>
               <q-chip dense color="grey-7" text-color="white" size="sm">ROLLBACK TARGET</q-chip>

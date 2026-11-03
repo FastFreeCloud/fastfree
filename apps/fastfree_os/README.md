@@ -9,9 +9,9 @@
 
 # FastFree OS
 
-**NixOS Multi-Client Deployment System**
+**NixOS Multi-Client Sovereign Appliance Fleet**
 
-Production-ready NixOS with multi-client architecture, **3 deployment types** (vps + Hyper-V + local), COSMIC desktop everywhere, WireGuard VPN, Podman containers, GitHub Actions CI/CD, and auto-release.
+Production-ready NixOS with sovereign multi-node architecture, 100% Hyper-V Generation 2 appliances (client1–client11), COSMIC desktop everywhere, WireGuard VPN, Podman containers, GitHub Actions CI/CD, and auto-release.
 
 [Architecture](#architecture) | [Scripts](#scripts) | [CI/CD](#cicd-pipeline) | [Services](#services) | [Quick Start](#quick-start)
 

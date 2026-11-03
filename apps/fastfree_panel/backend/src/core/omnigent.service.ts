@@ -227,7 +227,7 @@ export class OmnigentService {
         {
           id: 'mem-001',
           stratum: 'World Facts',
-          content: 'NixOS Clan 26.05 topology: client1 VPS (Controller), client2..client11 Hyper-V appliances.',
+          content: 'NixOS Clan 26.05 topology: client1 Hyper-V (Controller), client2..client11 Hyper-V appliances.',
           confidence: 0.99,
           timestamp: '2026-10-25T12:00:00Z',
         },
