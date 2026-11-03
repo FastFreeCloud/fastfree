@@ -1,3 +1,3 @@
 # Subdirectories
 
-* [erp-domain-development](erp-domain-development/index.md)
+- [erp-domain-development](erp-domain-development/index.md)

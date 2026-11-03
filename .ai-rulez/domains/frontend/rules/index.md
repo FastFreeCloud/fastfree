@@ -1,3 +1,3 @@
 # Concepts
 
-* [Quasar Vue 3 & LowCode Standards](frontend-quasar.md)
+- [Quasar Vue 3 & LowCode Standards](frontend-quasar.md)

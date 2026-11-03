@@ -1,3 +1,3 @@
 # Concepts
 
-* [Clan Check](clan-check.md) - Validate Clan and Nix Flake configuration
+- [Clan Check](clan-check.md) - Validate Clan and Nix Flake configuration
