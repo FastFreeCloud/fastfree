@@ -742,7 +742,7 @@ const baselineFleet: MachineItem[] = [
   {
     name: 'client2',
     host: 'root@76.13.51.10',
-    description: 'Main Remote Production VPS Host (NixOS 26.05 Clan Master)',
+    description: 'Customer Sovereign Hyper-V Appliance #1',
     roles: ['Host', 'Server', 'Production'],
     icon: 'mdi-cloud-outline',
   },
@@ -763,9 +763,9 @@ const machines = computed<MachineItem[]>(() => {
       if (m.name.includes('client1') || m.name.includes('hyperv')) {
         icon = 'mdi-microsoft-windows';
         description = m.description || 'Windows Hyper-V Client & Desktop VM node';
-      } else if (m.name.includes('client2') || m.name.includes('vps')) {
+      } else if (m.name.includes('client2')) {
         icon = 'mdi-cloud-outline';
-        description = m.description || 'Main Remote Production VPS Host (NixOS 26.05 Clan Master)';
+        description = m.description || 'Customer Sovereign Hyper-V Appliance #1';
       } else if (m.name.includes('client3') || m.name.includes('workstation')) {
         icon = 'mdi-desktop-mac';
         description = m.description || 'Distributed Developer Workstation & Backup Node';

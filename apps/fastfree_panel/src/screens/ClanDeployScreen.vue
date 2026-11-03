@@ -43,11 +43,11 @@
             <q-avatar icon="mdi-cloud-upload" color="primary" text-color="white" size="36px" />
             <div class="q-ml-sm">
               <div class="text-subtitle1 text-weight-bold">Stream Deployment</div>
-              <div class="text-caption text-grey-6">Deploy FastFree OS flake changes to client2</div>
+              <div class="text-caption text-grey-6">Deploy FastFree OS flake changes across Hyper-V nodes</div>
             </div>
           </div>
           <p class="text-body2 text-grey-4">
-            Compiles the 60KB NixOS stream configuration directly onto the VPS without intermediate Docker builds.
+            Compiles the 60KB NixOS stream configuration directly onto target appliances without intermediate Docker builds.
           </p>
           <q-btn
             color="primary"
@@ -69,7 +69,7 @@
             </div>
           </div>
           <p class="text-body2 text-grey-4">
-            Instantly rolls back the VPS system state to Generation #1 if any runtime regression is detected.
+            Instantly rolls back the appliance system state to Generation #1 if any runtime regression is detected.
           </p>
           <q-btn
             color="negative"

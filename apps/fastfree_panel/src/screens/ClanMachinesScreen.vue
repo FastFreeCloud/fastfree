@@ -448,7 +448,7 @@
         <q-card-section class="q-pt-md q-gutter-y-md">
           <q-input
             v-model="newMachine.name"
-            label="Machine Name · اسم الجهاز (e.g. client4, vps-cairo)"
+            label="Machine Name · اسم الجهاز (e.g. client4, node-cairo)"
             outlined
             dense
           />
@@ -460,7 +460,7 @@
           />
           <q-select
             v-model="newMachine.machineClass"
-            :options="['vps', 'server', 'workstation', 'hyperv']"
+            :options="['hyperv', 'server', 'workstation']"
             label="Machine Class / Role · التصنيف والدور"
             outlined
             dense
@@ -696,8 +696,8 @@ const editTagsString = ref('');
 const newMachine = ref({
   name: '',
   targetHost: '',
-  machineClass: 'vps',
-  tagsString: 'vps, fleet',
+  machineClass: 'hyperv',
+  tagsString: 'hyperv, fleet',
 });
 
 // Table Pagination state
@@ -741,10 +741,10 @@ const baselineMachines: MachineSummary[] = [
     name: 'client2',
     hostname: '76.13.51.10',
     host: 'root@76.13.51.10',
-    description: 'Main VPS Production Host (NixOS 26.05 Clan Master)',
+    description: 'Customer Sovereign Hyper-V Appliance #1',
     isOnline: true,
     reachable: true,
-    tags: ['vps', 'production', 'server', 'nixos-master'],
+    tags: ['hyperv', 'appliance', 'server', 'fastfree'],
     roles: ['Host', 'Server', 'Production'],
   },
   {
@@ -793,13 +793,13 @@ const detailRows = computed(() => {
     { key: 'host', property: 'Target Host / IP', value: m.host || m.hostname || '127.0.0.1' },
     { key: 'description', property: 'Description', value: m.description || getMachineDefaultDesc(m.name) },
     { key: 'tags', property: 'Assigned Tags & Roles', value: getMachineTags(m).join(', ') },
-    { key: 'reachable', property: 'Network Status', value: m.name === 'client2' ? 'ONLINE (Current Production Host)' : 'Configured Fleet Member' },
+    { key: 'reachable', property: 'Network Status', value: m.name === 'client2' ? 'ONLINE (Hyper-V Appliance)' : 'Configured Fleet Member' },
   ];
 });
 
 function getMachineDefaultDesc(name: string): string {
   if (name === 'client1') return 'Hyper-V Client & Desktop Node (Local VM)';
-  if (name === 'client2') return 'Main VPS Production Host (NixOS 26.05 Clan Master)';
+  if (name === 'client2') return 'Customer Sovereign Hyper-V Appliance #1';
   if (name === 'client3') return 'Distributed Developer Workstation & Backup Node';
   return 'Clan managed NixOS node';
 }
@@ -808,7 +808,7 @@ function getMachineTags(m: MachineSummary): string[] {
   if (m.tags && m.tags.length > 0) return m.tags;
   if (m.roles && m.roles.length > 0) return m.roles;
   if (m.name === 'client1') return ['hyperv', 'desktop', 'client'];
-  if (m.name === 'client2') return ['vps', 'production', 'server'];
+  if (m.name === 'client2') return ['hyperv', 'appliance', 'server'];
   if (m.name === 'client3') return ['workstation', 'backup', 'node'];
   return ['clan', 'nixos'];
 }
@@ -832,7 +832,7 @@ function getMachineStatusIcon(m: MachineSummary): string {
 }
 
 function getMachineIcon(m: MachineSummary): string {
-  if (m.name.includes('vps') || m.name.includes('client2')) return 'mdi-cloud-outline';
+  if (m.name.includes('client2')) return 'mdi-cloud-outline';
   if (m.name.includes('client1')) return 'mdi-laptop';
   return 'mdi-server';
 }
@@ -951,7 +951,7 @@ function saveNewMachine(): void {
   });
 
   addDialogOpen.value = false;
-  newMachine.value = { name: '', targetHost: '', machineClass: 'vps', tagsString: 'vps, fleet' };
+  newMachine.value = { name: '', targetHost: '', machineClass: 'hyperv', tagsString: 'hyperv, fleet' };
 }
 
 async function handleUpdate(machineName: string): Promise<void> {

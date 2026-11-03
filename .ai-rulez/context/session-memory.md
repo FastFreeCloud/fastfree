@@ -12,7 +12,7 @@ FastFree is a sovereign, offline-first enterprise multi-agent monorepo and opera
 
 ### Key Targets:
 - **`apps/fastfree_installer`**: Tauri v2 + Vue 3 desktop node installer for Windows 11 Fluent 2.
-- **`apps/fastfree_os`**: Sovereign NixOS Clan 26.05 infrastructure (`client1` VPS, `client2..11` Hyper-V appliances).
+- **`apps/fastfree_os`**: Sovereign NixOS Clan 26.05 infrastructure (11 sovereign Hyper-V appliance nodes `client1..11`).
 - **`apps/fastfree_panel`**: Central Clan management panel (Quasar 2 SPA + Hono backend).
 - **`apps/fastfree_ledger` / `pos` / `erp` / `hr`**: Quasar 2 enterprise client apps with Capacitor Android builds.
 - **`packages/*`**: Modular domain engines (`accounting`, `inventory`, `sales`, `purchase`, `hr`, `crm`, `lowcode`, `auth`).
@@ -37,6 +37,13 @@ FastFree is a sovereign, offline-first enterprise multi-agent monorepo and opera
 - **CRITICAL SECURITY FIX**: Discovered hardcoded keystore passwords in plaintext in all 4 Android workflows (`pos`, `hr`, `ledger`, `erp`).
 - Patched all 4 workflows to reference `${{ secrets.ANDROID_KEYSTORE_PASSWORD }}`.
 - Synchronized all `ai-rulez` verifiers (`7 passed, 0 failed`).
+
+### D. Omnigent & Hindsight Integration (Paseo Retired)
+- **Omnigent Meta-Harness**: Integrated on port `8090` with declarative YAML specs (`.omnigent/agents/fastfree_supervisor.yaml`) coordinating subagent researcher, implementer, and reviewer.
+- **Hindsight Long-Term Memory**: Structured cross-session memory across World Facts, Agent Experiences, Entity Summaries, and Evolving Beliefs.
+- **Secret Sanitizer Engine**: Strict regex + entropy filter (`MemorySanitizer`) preventing WireGuard keys, Clan Vars, and keystore passwords from memory retention.
+- **Quasar AI Engineering Studio**: Mounted `ClanOmnigentScreen.vue` and upgraded `ClanAgentsHub.vue` with Session Trees, Approvals Gate, Cost/Token Telemetry, and Hindsight Memory Explorer.
+- **Paseo Retirement**: Paseo gracefully retired in favor of Omnigent's unified meta-harness architecture.
 
 ---
 

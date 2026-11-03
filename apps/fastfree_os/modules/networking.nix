@@ -4,21 +4,15 @@ let
   domain = config.fastfree.identity.domain;
   sd = config.fastfree.subdomains;
   hosts = {
-    "10.100.0.1" = [ "fastfree.local" ];
-    "10.100.0.3" = [ "server.fastfree.local" ];
-    "10.100.0.6" = [ "client1.fastfree.local" ];
-    "10.100.0.7" = [ "client2.fastfree.local" ];
-    "10.100.0.8" = [ "nixos.fastfree.local" ];
-    # Loopback app names (same on every machine). MUST NOT duplicate
-    # legacy lines above; website root keeps its direct :9004 shortcut.
+    "10.24.0.1" = [ "client1.fastfree.local" ];
+    # Loopback app names (same on every machine for local resolution)
     "127.0.0.1" = [
-      "erp.${domain}"
+      "backend.${domain}"
+      "panel.${domain}"
       "ledger.${domain}"
+      "erp.${domain}"
       "hr.${domain}"
       "pos.${domain}"
-      "${sd.db}.${domain}"
-      "${sd.panel}.${domain}"
-      "${sd.cockpit}.${domain}"
     ];
   };
   isLocal = config.fastfree.deployType == "local";
@@ -33,7 +27,7 @@ in {
       hostName                     = config.fastfree.identity.name;
       hosts                        = hosts;
     } // lib.optionalAttrs (!isLocal) {
-      firewall.enable              = false;
+      firewall.enable              = true;
       useDHCP                      = false;
       useNetworkd                  = true;
     };
@@ -41,7 +35,7 @@ in {
     # Duplicate `files` token is harmless (first match wins, miss continues).
     system.nssDatabases.hosts = lib.mkOrder 400 [ "files" ];
 
-    # VPS/systemd-networkd for servers only (local uses NetworkManager)
+    # Hyper-V appliances / systemd-networkd (local uses NetworkManager)
     systemd.network = lib.mkIf (!isLocal) {
       enable = true;
 

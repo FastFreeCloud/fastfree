@@ -1,4 +1,4 @@
-{ modulesPath, ... }:
+{ config, lib, modulesPath, ... }:
 
 {
   imports = [
@@ -13,6 +13,11 @@
   fastfree.apps = {
     base = true;
   };
+
+  # Identity defaults (dynamically resolved per node)
+  fastfree.identity.name = lib.mkDefault "fastfree";
+  fastfree.identity.domain = lib.mkDefault "${config.fastfree.identity.name}.fastfree.local";
+  fastfree.flakeConfigName = lib.mkDefault config.fastfree.identity.name;
 
   virtualisation.hypervGuest.enable = true;
   fileSystems."/" = {

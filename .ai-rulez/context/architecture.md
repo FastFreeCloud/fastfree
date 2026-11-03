@@ -15,7 +15,7 @@ FastFree is a sovereign, offline-first enterprise multi-agent monorepo and opera
   - `fastfree_erp`, `fastfree_pos`, `fastfree_hr`: Standalone Quasar apps with Capacitor mobile builds (`src-capacitor`).
   - `fastfree_website`: FastFree public portal.
   - `fastfree_backend`: Custom Frappe v15 app (Python / MariaDB).
-  - `apps/fastfree_os`: Sovereign NixOS Clan 26.05 infrastructure (VPS `client1`, Hyper-V appliances `client2..11`, WireGuard).
+  - `apps/fastfree_os`: Sovereign NixOS Clan 26.05 infrastructure (All 11 nodes `client1..11` are Hyper-V appliances, WireGuard mesh).
 - **packages/**: Core shared modular domain packages (0 TypeScript errors required):
   - `fastfree_lowcode`: UI engine, dynamic forms, datatables, 38 components, 27 composables, RTL/i18n engine.
   - `fastfree_auth`: Identity, licenses, role-based access control (Has Role child tables), API client.

@@ -48,19 +48,19 @@ function tryExtractJson(text: string): unknown | null {
 /**
  * The canonical fleet of certified FastFree Clan machines (client1..client11).
  * Topology:
- *   - client1: Single central public Cloud VPS Controller & WireGuard Hub.
+ *   - client1: Central Sovereign Hyper-V Controller & WireGuard Mesh Hub.
  *   - client2..client11: Customer Hyper-V Gen 2 Appliances.
  */
 export const CERTIFIED_FLEET: ClanMachineInfo[] = [
   {
     name: 'client1',
-    hostname: 'fastfree.cloud',
+    hostname: 'client1.fastfree.local',
     isOnline: true,
-    roles: ['vps', 'controller', 'wireguard', 'fastfree'],
-    description: 'Central Sovereign Cloud VPS & WireGuard Mesh Hub',
-    targetHost: 'root@fastfree.cloud',
+    roles: ['hyperv', 'controller', 'wireguard', 'fastfree'],
+    description: 'Central Sovereign Hyper-V Appliance & WireGuard Mesh Hub',
+    targetHost: 'root@client1.fastfree.local',
     buildHost: 'localhost',
-    machineClass: 'vps',
+    machineClass: 'hyperv',
     installedAt: '2026-10-18',
   },
   ...Array.from({ length: 10 }, (_, i) => {

@@ -284,7 +284,7 @@ severity = 'error'
 [[verifiers]]
 name = 'clan-core-structure'
 type = 'file_exists'
-path = 'apps/fastfree_os/machines/client1/configuration.nix'
+path = 'apps/fastfree_os/inventory.json'
 severity = 'error'
 
 [[verifiers]]
@@ -292,6 +292,18 @@ name = 'nixos-no-plaintext-secrets'
 type = 'forbid'
 glob = 'apps/fastfree_os/**/*.nix'
 pattern = '(?i)(initialPassword\s*=\s*"[^"]+"|password\s*=\s*"[a-zA-Z0-9_\-]{6,}")'
+severity = 'error'
+
+[[verifiers]]
+name = 'omnigent-supervisor-spec'
+type = 'file_exists'
+path = '.omnigent/agents/fastfree_supervisor.yaml'
+severity = 'error'
+
+[[verifiers]]
+name = 'omnigent-guardrails-policy'
+type = 'file_exists'
+path = '.omnigent/policies/airulez_guardrails.yaml'
 severity = 'error'
 
 [[verifiers]]
