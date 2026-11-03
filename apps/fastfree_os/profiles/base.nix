@@ -22,6 +22,7 @@
     ../modules/dbgate.nix
     ../modules/cockpit.nix
     ../modules/avahi-subdomains.nix
+    ../modules/mesh-dns.nix
   ];
 
   nixpkgs.hostPlatform = "x86_64-linux";
