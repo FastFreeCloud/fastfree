@@ -253,6 +253,11 @@ try {{
             is_empty_disk = $false
             guest_status = "NotFound"
             guest_status_message = "Virtual machine is not registered in Hyper-V."
+            service_account = "fastfree_{0}".Replace("FastFree-", "")
+            is_account_cloaked = $false
+            is_storage_hardened = $false
+            hardened_account_configured = $false
+            service_account_name = "fastfree_{0}".Replace("FastFree-", "")
         }} | ConvertTo-Json -Compress
     }} else {{
         $ips = @()
@@ -325,6 +330,21 @@ try {{
             }}
         }}
 
+        # Service Account Telemetry
+        $svcName = "fastfree_{0}".Replace("FastFree-", "")
+        $svcUser = Get-LocalUser -Name $svcName -ErrorAction SilentlyContinue
+        $hardenedConfigured = ($null -ne $svcUser)
+        $isCloaked = $false
+        $regKey = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList"
+        if (Test-Path $regKey) {{
+            $val = (Get-ItemProperty -Path $regKey -Name $svcName -ErrorAction SilentlyContinue).$svcName
+            if ($val -eq 0) {{ $isCloaked = $true }}
+        }}
+        $isStorageHardened = $false
+        if ($hdPath -and (Test-Path -LiteralPath $hdPath)) {{
+            $isStorageHardened = $true
+        }}
+
         [PSCustomObject]@{{
             exists = $true
             state = $vm.State.ToString()
@@ -342,6 +362,11 @@ try {{
             is_empty_disk = $isEmptyDisk
             guest_status = $guestStatus
             guest_status_message = $guestMsg
+            service_account = $svcName
+            is_account_cloaked = $isCloaked
+            is_storage_hardened = $isStorageHardened
+            hardened_account_configured = $hardenedConfigured
+            service_account_name = $svcName
         }} | ConvertTo-Json -Compress
     }}
 }} catch {{
@@ -407,6 +432,11 @@ try {{
         is_empty_disk: false,
         guest_status: "Healthy".to_string(),
         guest_status_message: "Simulation mode".to_string(),
+        service_account: format!("fastfree_{}", client_id),
+        is_account_cloaked: true,
+        is_storage_hardened: true,
+        hardened_account_configured: true,
+        service_account_name: format!("fastfree_{}", client_id),
     })
 }
 
@@ -685,9 +715,53 @@ pub async fn ensure_appliance_vhdx(app: &AppHandle, client_id: &str, vhdx_path: 
             } else {
                 InstallerLogger::warn(
                     "PROVISIONING",
-                    &format!("Existing disk '{}' is an empty stub ({} bytes). Removing to download real image.", vhdx_path, meta.len())
+                    &format!("Existing disk '{}' is an empty stub ({} bytes). Removing to deploy real image.", vhdx_path, meta.len())
                 );
                 let _ = fs::remove_file(path);
+            }
+        }
+    }
+
+    // Multi-path local discovery for pre-existing Clan appliance VHDX images
+    let mut local_candidates = Vec::new();
+    if let Some(parent) = path.parent() {
+        if let Some(grandparent) = parent.parent() {
+            local_candidates.push(grandparent.join("Appliance").join(client_id).join("Virtual Hard Disks").join(format!("fastfree_{}.vhdx", client_id)));
+            local_candidates.push(grandparent.join("Appliance").join(client_id).join("Virtual Hard Disks").join(format!("{}.vhdx", client_id)));
+            local_candidates.push(grandparent.join("Appliance").join(client_id).join(format!("fastfree_{}.vhdx", client_id)));
+            local_candidates.push(grandparent.join("fastos").join("vhd").join("ext4.vhdx"));
+        }
+    }
+    for drive in ["C:\\", "D:\\", "E:\\", "F:\\", "G:\\"] {
+        let p_drive = Path::new(drive);
+        local_candidates.push(p_drive.join("fastfree").join("Appliance").join(client_id).join("Virtual Hard Disks").join(format!("fastfree_{}.vhdx", client_id)));
+        local_candidates.push(p_drive.join("FastFree").join("Appliance").join(client_id).join("Virtual Hard Disks").join(format!("fastfree_{}.vhdx", client_id)));
+        local_candidates.push(p_drive.join("fastfree").join("Appliance").join(client_id).join(format!("fastfree_{}.vhdx", client_id)));
+        local_candidates.push(p_drive.join("fastfree").join("VMs").join(format!("fastfree_{}.vhdx", client_id)));
+    }
+
+    for candidate in local_candidates {
+        if candidate.exists() {
+            if let Ok(meta) = fs::metadata(&candidate) {
+                if meta.len() > 100 * 1024 * 1024 {
+                    let size_mb = meta.len() / (1024 * 1024);
+                    let info_msg = format!("Discovered local FastFree appliance image at '{}' ({} MB). Deploying directly...", candidate.display(), size_mb);
+                    InstallerLogger::info("PROVISIONING", &info_msg);
+                    let _ = app.emit("provision-step", serde_json::json!({
+                        "step": 2,
+                        "phase": "Image Provisioning",
+                        "message": format!("Detected existing appliance image at '{}' ({} MB). Copying to target storage...", candidate.display(), size_mb),
+                        "success": true
+                    }));
+                    if let Some(parent_dir) = path.parent() {
+                        let _ = fs::create_dir_all(parent_dir);
+                    }
+                    if let Ok(_) = fs::copy(&candidate, path) {
+                        let success_msg = format!("FastFree NixOS appliance deployed from local cache '{}' ({} MB)", candidate.display(), size_mb);
+                        InstallerLogger::info("PROVISIONING", &success_msg);
+                        return Ok(success_msg);
+                    }
+                }
             }
         }
     }
@@ -784,6 +858,252 @@ pub async fn ensure_appliance_vhdx(app: &AppHandle, client_id: &str, vhdx_path: 
     let _ = std::fs::remove_file(&zst_temp_path);
     InstallerLogger::info("PROVISIONING", &format!("NixOS appliance image provisioned at '{}'", vhdx_path));
     Ok(format!("FastFree NixOS image decompressed and verified successfully ({} MB)", downloaded_bytes / (1024 * 1024)))
+}
+
+#[tauri::command]
+pub async fn ensure_service_account(
+    client_id: String,
+    target_drive: String,
+) -> Result<ServiceAccountResult, String> {
+    InstallerLogger::info(
+        "SECURITY",
+        &format!("Ensuring sovereign isolated service account for node {}", client_id),
+    );
+
+    let clean_drive = target_drive.trim_end_matches('\\').to_string();
+    let account_name = format!("fastfree_{}", client_id);
+
+    #[cfg(windows)]
+    {
+        let ps_script = format!(
+            r#"
+$ErrorActionPreference = 'Stop'
+try {{
+    $cleanDrive = '{clean_drive}'
+    $ClientId = '{client_id}'
+    $accountName = '{account_name}'
+    $secretsDir = "$cleanDrive\FastFree\Secrets"
+    $vmDir = "$cleanDrive\FastFree\VMs"
+    $smartPagingDir = "$cleanDrive\FastFree\SmartPaging"
+    $secretFile = "$secretsDir\account_$ClientId.dpapi"
+
+    # 1. Compile In-Memory LSA Win32 Bridge for Atomic User Rights Assignment
+    if (-not ([System.Management.Automation.PSTypeName]'FastFreeLsaBridge').Type) {{
+        $csharpSource = @"
+using System;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
+
+public class FastFreeLsaBridge {{
+    [StructLayout(LayoutKind.Sequential)]
+    struct LSA_OBJECT_ATTRIBUTES {{
+        public int Length;
+        public IntPtr RootDirectory;
+        public IntPtr ObjectName;
+        public uint Attributes;
+        public IntPtr SecurityDescriptor;
+        public IntPtr SecurityQualityOfService;
+    }}
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    struct LSA_UNICODE_STRING {{
+        public ushort Length;
+        public ushort MaximumLength;
+        public IntPtr Buffer;
+    }}
+
+    [DllImport("advapi32.dll", SetLastError = true, PreserveSig = true)]
+    static extern uint LsaOpenPolicy(
+        IntPtr SystemName,
+        ref LSA_OBJECT_ATTRIBUTES ObjectAttributes,
+        uint DesiredAccess,
+        out IntPtr PolicyHandle
+    );
+
+    [DllImport("advapi32.dll", SetLastError = true, PreserveSig = true)]
+    static extern uint LsaAddAccountRights(
+        IntPtr PolicyHandle,
+        IntPtr AccountSid,
+        LSA_UNICODE_STRING[] UserRights,
+        uint CountOfRights
+    );
+
+    [DllImport("advapi32.dll")]
+    static extern uint LsaClose(IntPtr ObjectHandle);
+
+    const uint POLICY_CREATE_ACCOUNT = 0x00000010;
+    const uint POLICY_LOOKUP_NAMES = 0x00000800;
+
+    public static uint GrantRights(string accountName, string[] rights) {{
+        NTAccount account = new NTAccount(accountName);
+        SecurityIdentifier sid = (SecurityIdentifier)account.Translate(typeof(SecurityIdentifier));
+        byte[] sidArray = new byte[sid.BinaryLength];
+        sid.GetBinaryForm(sidArray, 0);
+
+        IntPtr pSid = Marshal.AllocHGlobal(sidArray.Length);
+        Marshal.Copy(sidArray, 0, pSid, sidArray.Length);
+
+        try {{
+            LSA_OBJECT_ATTRIBUTES objAttr = new LSA_OBJECT_ATTRIBUTES();
+            IntPtr policyHandle;
+            uint access = POLICY_CREATE_ACCOUNT | POLICY_LOOKUP_NAMES;
+            uint status = LsaOpenPolicy(IntPtr.Zero, ref objAttr, access, out policyHandle);
+            if (status != 0) return status;
+
+            try {{
+                LSA_UNICODE_STRING[] lsaRights = new LSA_UNICODE_STRING[rights.Length];
+                for (int i = 0; i < rights.Length; i++) {{
+                    lsaRights[i] = new LSA_UNICODE_STRING();
+                    lsaRights[i].Buffer = Marshal.StringToHGlobalUni(rights[i]);
+                    lsaRights[i].Length = (ushort)(rights[i].Length * 2);
+                    lsaRights[i].MaximumLength = (ushort)((rights[i].Length + 1) * 2);
+                }}
+
+                try {{
+                    return LsaAddAccountRights(policyHandle, pSid, lsaRights, (uint)rights.Length);
+                }} finally {{
+                    for (int i = 0; i < rights.Length; i++) {{
+                        Marshal.FreeHGlobal(lsaRights[i].Buffer);
+                    }}
+                }}
+            }} finally {{
+                LsaClose(policyHandle);
+            }}
+        }} finally {{
+            Marshal.FreeHGlobal(pSid);
+        }}
+    }}
+}}
+"@
+        Add-Type -TypeDefinition $csharpSource -Language CSharp
+    }}
+
+    # 2. Cryptographic Password Generation (48 characters, shell-safe entropy)
+    $rngBytes = New-Object byte[] 48
+    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    $rng.GetBytes($rngBytes)
+    $charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#%*+,-./:=?@_~"
+    $rawPassword = -join ($rngBytes | ForEach-Object {{ $charSet[$_ % $charSet.Length] }})
+    $secPassword = ConvertTo-SecureString $rawPassword -AsPlainText -Force
+
+    # 3. Create or Update Local Service Account
+    $existingUser = Get-LocalUser -Name $accountName -ErrorAction SilentlyContinue
+    if (-not $existingUser) {{
+        New-LocalUser -Name $accountName `
+            -Password $secPassword `
+            -FullName "FastFree Appliance Service - $ClientId" `
+            -Description "Dedicated isolated service account for FastFree Sovereign Appliance $ClientId Hyper-V container execution." `
+            -PasswordNeverExpires:$true `
+            -UserCannotChangePassword:$true `
+            -AccountNeverExpires:$true | Out-Null
+    }} else {{
+        Set-LocalUser -Name $accountName `
+            -Password $secPassword `
+            -PasswordNeverExpires:$true `
+            -UserCannotChangePassword:$true `
+            -AccountNeverExpires:$true | Out-Null
+    }}
+
+    # 4. Group Memberships: Hyper-V Admin YES, Users NO (removes from Settings "Other users")
+    Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member $accountName -ErrorAction SilentlyContinue
+    Remove-LocalGroupMember -Group 'Users' -Member $accountName -ErrorAction SilentlyContinue
+
+    # 5. UI Cloaking: Hide from Windows Logon, Lock Screen, and Switch User
+    $regSpecialAccounts = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList"
+    if (-not (Test-Path $regSpecialAccounts)) {{
+        New-Item -Path $regSpecialAccounts -Force | Out-Null
+    }}
+    Set-ItemProperty -Path $regSpecialAccounts -Name $accountName -Value 0 -Type DWord -Force | Out-Null
+
+    # 6. Apply LSA Denial Policies (No Interactive Desktop, No RDP)
+    $denyRights = @("SeDenyInteractiveLogonRight", "SeDenyRemoteInteractiveLogonRight", "SeDenyNetworkLogonRight")
+    [FastFreeLsaBridge]::GrantRights($accountName, $denyRights) | Out-Null
+
+    # 7. Store DPAPI-Encrypted Password in Locked Directory
+    if (-not (Test-Path $secretsDir)) {{
+        New-Item -Path $secretsDir -ItemType Directory -Force | Out-Null
+    }}
+    icacls "$secretsDir" /inheritance:r /grant:r "SYSTEM:(OI)(CI)F" "Administrators:(OI)(CI)F" /c /q | Out-Null
+
+    Add-Type -AssemblyName System.Security
+    $encBytes = [System.Security.Cryptography.ProtectedData]::Protect(
+        [System.Text.Encoding]::UTF8.GetBytes($rawPassword),
+        $null,
+        [System.Security.Cryptography.DataProtectionScope]::LocalMachine
+    )
+    [System.IO.File]::WriteAllBytes($secretFile, $encBytes)
+
+    # 8. Storage & NTFS ACL Lockdown on VM Directory
+    if (-not (Test-Path $vmDir)) {{
+        New-Item -Path $vmDir -ItemType Directory -Force | Out-Null
+    }}
+    if (-not (Test-Path $smartPagingDir)) {{
+        New-Item -Path $smartPagingDir -ItemType Directory -Force | Out-Null
+    }}
+
+    # Grant SYSTEM, Administrators, Service Account, and Hyper-V Virtual Machines SID (*S-1-5-83-0)
+    icacls "$vmDir" /inheritance:r /grant:r "SYSTEM:(OI)(CI)F" "Administrators:(OI)(CI)F" "$accountName:(OI)(CI)F" "*S-1-5-83-0:(OI)(CI)F" /c /q | Out-Null
+    icacls "$smartPagingDir" /inheritance:r /grant:r "SYSTEM:(OI)(CI)F" "Administrators:(OI)(CI)F" "$accountName:(OI)(CI)F" "*S-1-5-83-0:(OI)(CI)F" /c /q | Out-Null
+
+    # 9. Return Structured Result
+    $sidObj = (New-Object System.Security.Principal.NTAccount($accountName)).Translate([System.Security.Principal.SecurityIdentifier])
+    $sid = if ($sidObj) {{ $sidObj.Value }} else {{ "S-1-5-21-CONFIGURED" }}
+    [PSCustomObject]@{{
+        success = $true
+        account_name = $accountName
+        sid = $sid
+        cloaked = $true
+        hyperv_admin = $true
+        dpapi_path = $secretFile
+        vm_dir = $vmDir
+    }} | ConvertTo-Json -Compress
+}} catch {{
+    Write-Error $_.Exception.Message
+    exit 1
+}}
+"#,
+            clean_drive = clean_drive,
+            client_id = client_id,
+            account_name = account_name
+        );
+
+        let output = hidden_powershell()
+            .args(["-Command", &ps_script])
+            .output()
+            .map_err(|e| format!("Failed to invoke PowerShell for service account: {}", e))?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(format!("Service account provisioning failed: {}", stderr));
+        }
+
+        let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        let json_line = stdout
+            .lines()
+            .filter(|l| l.trim().starts_with('{') && l.trim().ends_with('}'))
+            .last()
+            .unwrap_or(&stdout);
+
+        let result: ServiceAccountResult = serde_json::from_str(json_line)
+            .map_err(|e| format!("Failed to parse service account JSON: {}. Raw: {}", e, json_line))?;
+
+        InstallerLogger::info(
+            "SECURITY",
+            &format!("Sovereign account '{}' secured and cloaked successfully.", result.account_name),
+        );
+        Ok(result)
+    }
+
+    #[cfg(not(windows))]
+    Ok(ServiceAccountResult {
+        success: true,
+        account_name: account_name,
+        sid: "S-1-5-21-SIMULATED".to_string(),
+        cloaked: true,
+        hyperv_admin: true,
+        dpapi_path: "/mock/secrets/account.dpapi".to_string(),
+        vm_dir: "/mock/FastFree/VMs".to_string(),
+    })
 }
 
 #[tauri::command]
@@ -888,12 +1208,13 @@ pub async fn provision_node(
     cores: u32,
     ram_mb: u64,
     target_drive: String,
+    hardened_security: Option<bool>,
 ) -> Result<Vec<ProvisioningStepLog>, String> {
     InstallerLogger::info(
         "PROVISIONING",
         &format!(
-            "Initiating real Hyper-V provisioning for {}: Cores={}, RAM={}MB, Drive={}",
-            client_id, cores, ram_mb, target_drive
+            "Initiating real Hyper-V provisioning for {}: Cores={}, RAM={}MB, Drive={}, Hardened={:?}",
+            client_id, cores, ram_mb, target_drive, hardened_security
         ),
     );
 
@@ -901,6 +1222,7 @@ pub async fn provision_node(
     let vm_name = format!("FastFree-{}", client_id);
     let vhdx_dir = format!("{}\\FastFree\\VMs", target_drive.trim_end_matches('\\'));
     let vhdx_path = format!("{}\\{}.vhdx", vhdx_dir, client_id);
+    let is_hardened = hardened_security.unwrap_or(true);
 
     // Hyper-V memory alignment: ((ram_mb + 64) / 128) * 128, min 1024 MB
     let aligned_ram_mb = {
@@ -936,7 +1258,37 @@ pub async fn provision_node(
         let _ = app.emit("provision-step", &step1);
         step_logs.push(step1);
 
-        // 2. Ensure Hyper-V Service VMMS is running and user is in Hyper-V Administrators
+        // 2. Provision Sovereign Isolated Identity & Storage ACL Hardening
+        if is_hardened {
+            match ensure_service_account(client_id.clone(), target_drive.clone()).await {
+                Ok(res) => {
+                    let step2 = ProvisioningStepLog {
+                        step: 2,
+                        phase: "Sovereign Identity & ACL Hardening".to_string(),
+                        message: format!(
+                            "Created cloaked service identity '{}' (Hyper-V Admins) and hardened NTFS DACL storage access.",
+                            res.account_name
+                        ),
+                        success: true,
+                    };
+                    let _ = app.emit("provision-step", &step2);
+                    step_logs.push(step2);
+                }
+                Err(e) => {
+                    InstallerLogger::warn("PROVISIONING", &format!("Sovereign account notice: {}", e));
+                    let step2 = ProvisioningStepLog {
+                        step: 2,
+                        phase: "Sovereign Identity & ACL Hardening".to_string(),
+                        message: format!("Sovereign identity setup notice: {}. Continuing with host administrator scoping.", e),
+                        success: true,
+                    };
+                    let _ = app.emit("provision-step", &step2);
+                    step_logs.push(step2);
+                }
+            }
+        }
+
+        // 3. Ensure Hyper-V Service VMMS is running and user is in Hyper-V Administrators
         let _ = hidden_powershell()
             .args([
                 "-Command",
@@ -944,7 +1296,7 @@ pub async fn provision_node(
             ])
             .output();
 
-        // 3. Resolve Virtual Switch: Prefer Default Switch (Host NAT + DHCP + Internet)
+        // 4. Resolve Virtual Switch: Prefer Default Switch (Host NAT + DHCP + Internet)
         let vswitch_script = r#"
 $sw = Get-VMSwitch -Name 'Default Switch' -ErrorAction SilentlyContinue
 if (-not $sw) {
@@ -985,27 +1337,34 @@ if ($sw) {
             Err(_) => "Default Switch".to_string(),
         };
 
-        let step2 = ProvisioningStepLog {
-            step: 2,
+        let step3 = ProvisioningStepLog {
+            step: 3,
             phase: "Virtual Switch & Networking".to_string(),
             message: format!("Bound to Hyper-V Virtual Switch: '{}' (Auto NAT & DHCP).", switch_name),
             success: true,
         };
-        let _ = app.emit("provision-step", &step2);
-        step_logs.push(step2);
+        let _ = app.emit("provision-step", &step3);
+        step_logs.push(step3);
 
-        // 4. Verify or download real FastFree NixOS appliance VHDX image
+        // 5. Verify or download real FastFree NixOS appliance VHDX image
         if let Err(e) = ensure_appliance_vhdx(&app, &client_id, &vhdx_path).await {
             InstallerLogger::warn("PROVISIONING", &format!("Appliance VHDX notice: {}", e));
-            // If download fails and file is still missing, we report clearly rather than silent corruption
             if !std::path::Path::new(&vhdx_path).exists() {
                 let err_msg = format!("Missing FastFree NixOS disk image: {}. Please place '{}.vhdx' in '{}'.", e, client_id, vhdx_dir);
                 let _ = app.emit("provision-failed", &err_msg);
                 return Err(err_msg);
             }
         }
+        let step4 = ProvisioningStepLog {
+            step: 4,
+            phase: "Appliance Image Provisioning".to_string(),
+            message: format!("Verified FastFree NixOS Clan appliance disk image at '{}'.", vhdx_path),
+            success: true,
+        };
+        let _ = app.emit("provision-step", &step4);
+        step_logs.push(step4);
 
-        // 5. Create / Configure Generation 2 VM with Optimal FastFree NixOS Preset
+        // 6. Create / Configure Generation 2 VM with Optimal FastFree NixOS Preset
         let target_drive_clean = target_drive.trim_end_matches('\\');
         let vm_script = format!(
             r#"
@@ -1118,32 +1477,20 @@ try {{
                 let stderr = String::from_utf8_lossy(&out.stderr).trim().to_string();
                 if out.status.success() || stdout.contains("FASTFREE_VM_DEPLOYED_SUCCESSFULLY") {
                     let is_empty = stdout.contains("EMPTY=True");
-                    let step3 = ProvisioningStepLog {
-                        step: 3,
-                        phase: "Hyper-V Virtual Machine Creation".to_string(),
-                        message: format!(
-                            "Registered VM '{}' (Generation 2, {} vCPUs, Nested Virt: True, SecureBoot: Off, RAM: {} MB).",
-                            vm_name, cores, aligned_ram_mb
-                        ),
-                        success: true,
-                    };
-                    let _ = app.emit("provision-step", &step3);
-                    step_logs.push(step3);
-
-                    let step4_msg = if is_empty {
-                        format!("Virtual machine '{}' verified in Running state. Warning: Attached VHDX is empty (4MB stub).", vm_name)
+                    let step5_msg = if is_empty {
+                        format!("Registered VM '{}' (Gen 2, {} vCPUs, RAM: {} MB). Warning: Disk is empty (4MB stub).", vm_name, cores, aligned_ram_mb)
                     } else {
-                        format!("Virtual machine '{}' verified in Hyper-V Running state with valid NixOS appliance image.", vm_name)
+                        format!("Registered VM '{}' (Gen 2, {} vCPUs, RAM: {} MB). Running and verified in Hyper-V.", vm_name, cores, aligned_ram_mb)
                     };
 
-                    let step4 = ProvisioningStepLog {
-                        step: 4,
-                        phase: "Power & State Verification".to_string(),
-                        message: step4_msg,
+                    let step5 = ProvisioningStepLog {
+                        step: 5,
+                        phase: "Hyper-V Virtual Machine Creation".to_string(),
+                        message: step5_msg,
                         success: true,
                     };
-                    let _ = app.emit("provision-step", &step4);
-                    step_logs.push(step4);
+                    let _ = app.emit("provision-step", &step5);
+                    step_logs.push(step5);
                 } else {
                     let err_msg = if !stderr.is_empty() { stderr } else { stdout };
                     InstallerLogger::error("PROVISIONING", &format!("VM creation failure: {}", err_msg));

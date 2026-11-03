@@ -1026,7 +1026,7 @@ dependencies = [
 
 [[package]]
 name = "fastfree-installer"
-version = "26.5.32"
+version = "26.5.33"
 dependencies = [
  "reqwest 0.12.28",
  "serde",

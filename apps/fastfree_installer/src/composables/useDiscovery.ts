@@ -97,6 +97,21 @@ export interface VmRealState {
   is_empty_disk: boolean;
   guest_status: string;
   guest_status_message: string;
+  service_account: string;
+  is_account_cloaked: boolean;
+  is_storage_hardened: boolean;
+  hardened_account_configured: boolean;
+  service_account_name: string;
+}
+
+export interface ServiceAccountResult {
+  success: boolean;
+  account_name: string;
+  sid: string;
+  cloaked: boolean;
+  hyperv_admin: boolean;
+  dpapi_path: string;
+  vm_dir: string;
 }
 
 export interface ProvisioningStepLog {
@@ -123,6 +138,7 @@ export const wireGuardConfig = ref<WireGuardPeerConfig | null>(null);
 
 // Provisioning state
 export const provisioningProgress = ref<number>(0);
+export const hardenedSecurityEnabled = ref<boolean>(true);
 export const provisioningPhase = ref<string>('Ready');
 export const provisioningLogs = ref<string[]>([]);
 export const isProvisioningDone = ref<boolean>(false);
@@ -288,6 +304,11 @@ export async function getVmRealState(clientId: string): Promise<VmRealState> {
       is_empty_disk: false,
       guest_status: 'NotFound',
       guest_status_message: 'Virtual machine is not registered in Hyper-V.',
+      service_account: `fastfree_${clientId}`,
+      is_account_cloaked: false,
+      is_storage_hardened: false,
+      hardened_account_configured: false,
+      service_account_name: `fastfree_${clientId}`,
     };
   }
 }
@@ -319,10 +340,11 @@ export async function provisionNode(
   clientId: string,
   cores: number,
   ramMb: number,
-  targetDrive: string
+  targetDrive: string,
+  hardenedSecurity: boolean = true
 ): Promise<Array<{ step: number; phase: string; message: string; success: boolean }>> {
   const safeAlignedRam = Math.max(1024, Math.floor((ramMb + 64) / 128) * 128);
-  logInfo('Hyper-V', `Provisioning VM FastFree-${clientId} (Cores: ${cores}, Aligned RAM: ${safeAlignedRam}MB, Drive: ${targetDrive})...`);
+  logInfo('Hyper-V', `Provisioning VM FastFree-${clientId} (Cores: ${cores}, Aligned RAM: ${safeAlignedRam}MB, Hardened: ${hardenedSecurity})...`);
   try {
     const logs = await invoke<Array<{ step: number; phase: string; message: string; success: boolean }>>(
       'provision_node',
@@ -331,6 +353,7 @@ export async function provisionNode(
         cores,
         ramMb: safeAlignedRam,
         targetDrive,
+        hardenedSecurity,
       }
     );
     logSuccess('Hyper-V', `Appliance FastFree-${clientId} provisioned successfully in Hyper-V.`);
@@ -338,6 +361,25 @@ export async function provisionNode(
   } catch (err: any) {
     const msg = String(err?.message || err);
     logError('Hyper-V', `Provisioning failed for ${clientId}`, msg);
+    throw err;
+  }
+}
+
+export async function ensureServiceAccount(
+  clientId: string,
+  targetDrive: string
+): Promise<ServiceAccountResult> {
+  logInfo('Security', `Configuring sovereign isolated account for ${clientId}...`);
+  try {
+    const res = await invoke<ServiceAccountResult>('ensure_service_account', {
+      clientId,
+      targetDrive,
+    });
+    logSuccess('Security', `Service account ${res.account_name} configured and cloaked.`);
+    return res;
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    logError('Security', `Failed to configure service account for ${clientId}`, msg);
     throw err;
   }
 }

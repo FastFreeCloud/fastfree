@@ -1,6 +1,6 @@
 [package]
 name = "fastfree-installer"
-version = "26.5.32"
+version = "26.5.33"
 description = "FastFree Node - Smart Universal Desktop Installer"
 authors = ["FastFree Cloud Ecosystem"]
 edition = "2021"

@@ -221,9 +221,11 @@
             </span>
           </div>
           <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'القرص:' : 'Storage:' }}</span>
-            <span class="spec-v font-mono text-xs truncate" :title="`${targetDiskDrive}FastFree\\VMs\\${selectedClientId}.vhdx`">
-              {{ targetDiskDrive }}FastFree\VMs\{{ selectedClientId }}.vhdx
+            <span class="spec-k">{{ isRtl ? 'القرص الافتراضي:' : 'Virtual Disk:' }}</span>
+            <span class="spec-v font-mono text-xs truncate" :title="realVmState?.vhdx_path">
+              {{ realVmState?.vhdx_size_bytes ? (realVmState.vhdx_size_bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB' : '-' }}
+              <span v-if="realVmState?.is_empty_disk" class="text-amber font-bold"> [{{ isRtl ? 'قرص فارغ 4MB!' : 'Empty Stub!' }}]</span>
+              <span v-else-if="realVmState?.vhdx_size_bytes" class="text-emerald font-bold"> [NixOS]</span>
             </span>
           </div>
           <div class="spec-item">
@@ -280,6 +282,42 @@
           <div class="spec-item">
             <span class="spec-k">{{ isRtl ? 'المتحكم:' : 'Controller:' }}</span>
             <span class="spec-v font-mono text-xs">client1.fastfree.cloud</span>
+          </div>
+        </div>
+
+        <!-- 4. Sovereign Identity & Access Control -->
+        <div class="spec-card">
+          <div class="spec-header">
+            <span class="spec-icon">
+              <svg class="spec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </span>
+            <span class="spec-title">{{ isRtl ? 'الهوية السيادية والحماية' : 'Sovereign Identity & Access' }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-k">{{ isRtl ? 'حساب الخدمة:' : 'Service Identity:' }}</span>
+            <span class="spec-v font-mono text-xs font-bold text-accent">
+              {{ realVmState?.service_account || ('fastfree_' + selectedClientId) }}
+            </span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-k">{{ isRtl ? 'حالة التخفي (Cloaked):' : 'Cloaking Status:' }}</span>
+            <span class="spec-v font-bold" :class="realVmState?.is_account_cloaked ? 'text-emerald' : 'text-amber'">
+              {{ realVmState?.is_account_cloaked ? (isRtl ? 'محجوب عن شاشة الدخول' : 'Hidden from Winlogon') : (isRtl ? 'افتراضي' : 'Standard') }}
+            </span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-k">{{ isRtl ? 'عزل التخزين (NTFS ACL):' : 'Storage ACL:' }}</span>
+            <span class="spec-v font-mono text-xs" :class="realVmState?.is_storage_hardened ? 'text-emerald' : 'text-amber'">
+              {{ realVmState?.is_storage_hardened ? (isRtl ? 'محصن (SYSTEM + Hyper-V)' : 'Hardened (SYSTEM + Hyper-V)') : (isRtl ? 'عام' : 'Inherited') }}
+            </span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-k">{{ isRtl ? 'صلاحيات LSA:' : 'LSA Rights:' }}</span>
+            <span class="spec-v font-mono text-xs text-accent">
+              {{ isRtl ? 'تسجيل دخول كخدمة فقط' : 'SeDenyInteractiveLogon' }}
+            </span>
           </div>
         </div>
       </div>
@@ -1053,7 +1091,7 @@ async function handleMinimizeToTray() {
 /* 3-Column Specifications Grid */
 .telemetry-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
 }
 

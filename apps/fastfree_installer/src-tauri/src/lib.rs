@@ -215,7 +215,8 @@ pub fn run() {
             commands::apply_wireguard_config,
             commands::check_wireguard_firewall_rule,
             commands::enable_wireguard_firewall_rule,
-            commands::reconfigure_hyperv_vm
+            commands::reconfigure_hyperv_vm,
+            commands::ensure_service_account
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
