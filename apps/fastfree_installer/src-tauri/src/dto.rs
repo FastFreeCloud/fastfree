@@ -93,6 +93,16 @@ pub struct VmRealState {
     pub memory_mb: u64,
     pub cpu_cores: u32,
     pub ip_addresses: Vec<String>,
+    pub heartbeat: String,
+    pub secure_boot_enabled: bool,
+    pub nested_virt_enabled: bool,
+    pub switch_name: String,
+    pub checkpoint_type: String,
+    pub vhdx_path: String,
+    pub vhdx_size_bytes: u64,
+    pub is_empty_disk: bool,
+    pub guest_status: String,
+    pub guest_status_message: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

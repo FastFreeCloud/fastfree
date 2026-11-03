@@ -58,6 +58,53 @@
         </div>
       </div>
 
+      <!-- Critical Alert if VHDX is empty or Guest OS failed to boot -->
+      <div v-else-if="realVmState?.is_empty_disk || realVmState?.guest_status === 'UEFI_NoOS'" class="hero-unprovisioned-card" style="border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.06);">
+        <div class="unprovisioned-icon-badge" style="background: rgba(239, 68, 68, 0.15); color: #EF4444;">
+          <svg class="badge-svg-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <div class="unprovisioned-content">
+          <div class="unprovisioned-title-row">
+            <h3 style="color: #EF4444;">{{ isRtl ? 'تنبيه إقلاع UEFI: لم يتم العثور على نظام التشغيل!' : 'UEFI Boot Alert: No Operating System Loaded!' }}</h3>
+            <span class="unprovisioned-status-pill" style="border-color: rgba(239, 68, 68, 0.3); color: #EF4444;">
+              <span class="dot-red-pulse"></span>
+              <span>{{ isRtl ? 'قرص فارغ (4 MB)' : 'Empty 4MB Stub Disk' }}</span>
+            </span>
+          </div>
+          <p class="unprovisioned-sub-text">
+            {{ isRtl
+              ? 'الآلة الافتراضية قيد التشغيل ولكن القرص الحالي عبارة عن ملف هيكلي فارغ بحجم 4 ميجابايت ولا يحتوي على ملفات إقلاع NixOS. اضغط على الزر لتحميل صورة نظام FastFree NixOS وضبط إعدادات Hyper-V فوراً:'
+              : 'Virtual machine is running but the disk is an empty 4MB stub without NixOS boot files. Click below to download the real FastFree NixOS image and tune Hyper-V settings now:'
+            }}
+          </p>
+          <div class="unprovisioned-actions-row">
+            <button
+              class="btn-instant-provision"
+              :disabled="isProvisioning"
+              @click="handleInstantProvisioning"
+            >
+              <span v-if="isProvisioning" class="spinner-tiny"></span>
+              <span v-else>{{ isRtl ? 'تحميل وتثبيت صورة النظام الحقيقية' : 'Download & Provision Real NixOS Image' }}</span>
+            </button>
+            <button
+              class="btn-revisit-setup"
+              :disabled="isProvisioning"
+              @click="handleReconfigureHyperV"
+            >
+              {{ isRtl ? 'إصلاح وضبط إعدادات Hyper-V' : 'Auto-Tune Hyper-V Settings' }}
+            </button>
+          </div>
+          <div v-if="provisioningMessage" class="provisioning-live-text">
+            <span class="spinner-tiny"></span>
+            <span>{{ provisioningMessage }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Master Live Status Hero -->
       <div class="hero-success-card" :class="{ 'is-warning': vmExists === false, 'is-stopped': realVmState && realVmState.state !== 'Running' && realVmState.exists }">
         <div class="success-icon-badge" :class="{ 'badge-amber': vmExists === false, 'badge-gray': realVmState && realVmState.state === 'Off' }">
@@ -177,6 +224,30 @@
             <span class="spec-k">{{ isRtl ? 'القرص:' : 'Storage:' }}</span>
             <span class="spec-v font-mono text-xs truncate" :title="`${targetDiskDrive}FastFree\\VMs\\${selectedClientId}.vhdx`">
               {{ targetDiskDrive }}FastFree\VMs\{{ selectedClientId }}.vhdx
+            </span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-k">{{ isRtl ? 'محرك KVM الافتراضي:' : 'KVM Engine:' }}</span>
+            <span class="spec-v font-bold" :class="realVmState?.nested_virt_enabled ? 'text-emerald' : 'text-amber'">
+              {{ realVmState?.nested_virt_enabled ? (isRtl ? 'نشط (Nested KVM)' : 'Active (Nested KVM)') : (isRtl ? 'معطل' : 'Disabled') }}
+            </span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-k">{{ isRtl ? 'الإقلاع الآمن (SecureBoot):' : 'Secure Boot:' }}</span>
+            <span class="spec-v font-mono text-xs" :class="realVmState?.secure_boot_enabled ? 'text-amber' : 'text-emerald'">
+              {{ realVmState?.secure_boot_enabled ? (isRtl ? 'مفعل (قد يعيق GRUB)' : 'Enabled') : (isRtl ? 'معطل (NixOS GRUB جاهز)' : 'Disabled (NixOS GRUB Ready)') }}
+            </span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-k">{{ isRtl ? 'محول شبكة Hyper-V:' : 'Virtual Switch:' }}</span>
+            <span class="spec-v font-mono text-xs text-accent truncate">
+              {{ realVmState?.switch_name || 'Default Switch' }} (NAT & DHCP)
+            </span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-k">{{ isRtl ? 'نبض النظام (Heartbeat):' : 'Guest Heartbeat:' }}</span>
+            <span class="spec-v font-bold" :class="realVmState?.heartbeat === 'OK' ? 'text-emerald' : 'text-amber'">
+              {{ realVmState?.heartbeat || 'No Contact' }}
             </span>
           </div>
         </div>
@@ -395,6 +466,7 @@ import {
   minimizeToTray,
   getVmRealState,
   provisionNode,
+  reconfigureHyperVVm,
   type VmRealState,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
@@ -498,6 +570,43 @@ async function handleInstantProvisioning() {
       ? `تعذر إنشاء الآلة في Hyper-V: ${msg}`
       : `Failed to create VM in Hyper-V: ${msg}`;
     logError('Launchpad', 'Instant provisioning error', msg);
+  } finally {
+    isProvisioning.value = false;
+    provisioningMessage.value = '';
+    setTimeout(() => {
+      actionNotice.value = '';
+    }, 6000);
+  }
+}
+
+async function handleReconfigureHyperV() {
+  if (isProvisioning.value) return;
+  isProvisioning.value = true;
+  provisioningMessage.value = isRtl.value
+    ? 'جارٍ تطبيق إعدادات FastFree المثالية على Hyper-V (تعطيل SecureBoot، تفعيل KVM، تعيين محول الشبكة)...'
+    : 'Applying optimal FastFree preset to Hyper-V (SecureBoot Off, KVM On, Default Switch)...';
+  logInfo('Launchpad', `Auto-tune Hyper-V settings requested for ${selectedClientId.value}`);
+
+  try {
+    const safeRam = Math.max(1024, Math.floor(((assignedRamMb.value || 8192) + 64) / 128) * 128);
+    const updated = await reconfigureHyperVVm(
+      selectedClientId.value,
+      targetDiskDrive.value || 'C:\\',
+      assignedCpuCores.value || 4,
+      safeRam
+    );
+    realVmState.value = updated;
+    actionNotice.value = isRtl.value
+      ? 'تم ضبط كافة إعدادات Hyper-V بنجاح للنمط المثالي لـ FastFree!'
+      : 'All Hyper-V settings tuned to optimal FastFree NixOS preset!';
+    logSuccess('Launchpad', `Hyper-V auto-tune completed for ${selectedClientId.value}`);
+    await checkVmStatus();
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    actionNotice.value = isRtl.value
+      ? `تعذر ضبط إعدادات Hyper-V: ${msg}`
+      : `Failed to configure Hyper-V: ${msg}`;
+    logError('Launchpad', 'Auto-tune error', msg);
   } finally {
     isProvisioning.value = false;
     provisioningMessage.value = '';

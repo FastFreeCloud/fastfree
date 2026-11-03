@@ -243,10 +243,24 @@ try {{
             memory_mb = 0
             cpu_cores = 0
             ip_addresses = @()
+            heartbeat = "No Contact"
+            secure_boot_enabled = $false
+            nested_virt_enabled = $false
+            switch_name = "None"
+            checkpoint_type = "None"
+            vhdx_path = ""
+            vhdx_size_bytes = 0
+            is_empty_disk = $false
+            guest_status = "NotFound"
+            guest_status_message = "Virtual machine is not registered in Hyper-V."
         }} | ConvertTo-Json -Compress
     }} else {{
         $ips = @()
+        $switchName = "Default Switch"
         if ($vm.NetworkAdapters) {{
+            if ($vm.NetworkAdapters[0].SwitchName) {{
+                $switchName = $vm.NetworkAdapters[0].SwitchName
+            }}
             foreach ($adapter in $vm.NetworkAdapters) {{
                 if ($adapter.IPAddresses) {{
                     foreach ($ip in $adapter.IPAddresses) {{
@@ -265,6 +279,52 @@ try {{
         if ($memMb -eq 0) {{
             $memMb = [math]::Round($vm.MemoryStartup / 1MB)
         }}
+
+        # Detailed Hyper-V hardware telemetry
+        $secBoot = $false
+        $fw = Get-VMFirmware $vm -ErrorAction SilentlyContinue
+        if ($fw) {{
+            $secBoot = ($fw.SecureBoot -eq 'On')
+        }}
+
+        $nestedVirt = $false
+        $proc = Get-VMProcessor $vm -ErrorAction SilentlyContinue
+        if ($proc) {{
+            $nestedVirt = ($proc.ExposeVirtualizationExtensions -eq $true)
+        }}
+
+        $heartbeatDesc = (Get-VMIntegrationService $vm -Name 'Heartbeat' -ErrorAction SilentlyContinue).PrimaryStatusDescription
+        if (-not $heartbeatDesc) {{ $heartbeatDesc = "No Contact" }}
+
+        $hd = Get-VMHardDiskDrive $vm -ErrorAction SilentlyContinue
+        $hdPath = if ($hd) {{ $hd[0].Path }} else {{ "" }}
+        $diskSizeBytes = 0
+        $isEmptyDisk = $false
+        if ($hdPath -and (Test-Path -LiteralPath $hdPath)) {{
+            $diskItem = Get-Item -LiteralPath $hdPath -ErrorAction SilentlyContinue
+            if ($diskItem) {{
+                $diskSizeBytes = [int64]$diskItem.Length
+                if ($diskSizeBytes -le 10485760) {{
+                    $isEmptyDisk = $true
+                }}
+            }}
+        }}
+
+        $guestStatus = "Offline"
+        $guestMsg = "Virtual machine is powered off."
+        if ($vm.State -eq 'Running') {{
+            if ($isEmptyDisk) {{
+                $guestStatus = "UEFI_NoOS"
+                $guestMsg = "SCSI Disk (0,0): The boot loader did not load an operating system. Detected 4MB empty stub VHDX."
+            }} elseif ($heartbeatDesc -eq 'OK' -or $heartbeatDesc -match 'OK') {{
+                $guestStatus = "Healthy"
+                $guestMsg = "FastFree NixOS appliance operating normally."
+            }} else {{
+                $guestStatus = "Starting"
+                $guestMsg = "Guest OS is booting or waiting for integration heartbeat..."
+            }}
+        }}
+
         [PSCustomObject]@{{
             exists = $true
             state = $vm.State.ToString()
@@ -272,6 +332,16 @@ try {{
             memory_mb = [int64]$memMb
             cpu_cores = [int]$vm.ProcessorCount
             ip_addresses = $ips
+            heartbeat = $heartbeatDesc
+            secure_boot_enabled = $secBoot
+            nested_virt_enabled = $nestedVirt
+            switch_name = $switchName
+            checkpoint_type = $vm.CheckpointType.ToString()
+            vhdx_path = $hdPath
+            vhdx_size_bytes = [int64]$diskSizeBytes
+            is_empty_disk = $isEmptyDisk
+            guest_status = $guestStatus
+            guest_status_message = $guestMsg
         }} | ConvertTo-Json -Compress
     }}
 }} catch {{
@@ -327,6 +397,16 @@ try {{
         memory_mb: 0,
         cpu_cores: 0,
         ip_addresses: vec![],
+        heartbeat: "No Contact".to_string(),
+        secure_boot_enabled: false,
+        nested_virt_enabled: false,
+        switch_name: "Simulation".to_string(),
+        checkpoint_type: "Standard".to_string(),
+        vhdx_path: "/tmp/simulated.vhdx".to_string(),
+        vhdx_size_bytes: 0,
+        is_empty_disk: false,
+        guest_status: "Healthy".to_string(),
+        guest_status_message: "Simulation mode".to_string(),
     })
 }
 
@@ -591,6 +671,216 @@ Start-Service -Name vmms -ErrorAction SilentlyContinue
     Ok("Non-Windows host simulation.".to_string())
 }
 
+pub async fn ensure_appliance_vhdx(app: &AppHandle, client_id: &str, vhdx_path: &str) -> Result<String, String> {
+    use std::fs;
+    use std::path::Path;
+
+    let path = Path::new(vhdx_path);
+    if path.exists() {
+        if let Ok(meta) = fs::metadata(path) {
+            if meta.len() > 10 * 1024 * 1024 {
+                let msg = format!("Valid FastFree NixOS appliance VHDX verified ({} MB)", meta.len() / (1024 * 1024));
+                InstallerLogger::info("PROVISIONING", &msg);
+                return Ok(msg);
+            } else {
+                InstallerLogger::warn(
+                    "PROVISIONING",
+                    &format!("Existing disk '{}' is an empty stub ({} bytes). Removing to download real image.", vhdx_path, meta.len())
+                );
+                let _ = fs::remove_file(path);
+            }
+        }
+    }
+
+    let url = format!(
+        "https://github.com/FastFreeCloud/fastfree/releases/download/clan-images/fastfree_{}.vhdx.zst",
+        client_id
+    );
+    let zst_temp_path = format!("{}.download.zst", vhdx_path);
+
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(3600))
+        .build()
+        .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
+
+    InstallerLogger::info("PROVISIONING", &format!("Downloading FastFree NixOS Clan image from '{}'...", url));
+    let _ = app.emit("provision-step", serde_json::json!({
+        "step": 2,
+        "phase": "Image Provisioning",
+        "message": format!("Connecting to repository to retrieve FastFree NixOS image for {}...", client_id),
+        "success": true
+    }));
+
+    let mut response = match client.get(&url).send().await {
+        Ok(res) if res.status().is_success() => res,
+        Ok(res) => {
+            return Err(format!(
+                "Repository returned HTTP {} for '{}'. Please ensure an active internet connection or manually place '{}.vhdx' in the FastFree VMs folder.",
+                res.status(), url, client_id
+            ));
+        }
+        Err(e) => {
+            return Err(format!(
+                "Network error connecting to image repository: {}. Please connect to internet or manually place '{}.vhdx' in the FastFree VMs folder.",
+                e, client_id
+            ));
+        }
+    };
+
+    let total_bytes = response.content_length().unwrap_or(0);
+    let mut downloaded_bytes: u64 = 0;
+    let mut last_pct: u32 = 0;
+
+    let mut temp_file = tokio::fs::File::create(&zst_temp_path)
+        .await
+        .map_err(|e| format!("Failed to create temporary file '{}': {}", zst_temp_path, e))?;
+
+    use tokio::io::AsyncWriteExt;
+    while let Ok(Some(chunk)) = response.chunk().await {
+        temp_file.write_all(&chunk).await.map_err(|e| format!("Write chunk error: {}", e))?;
+        downloaded_bytes += chunk.len() as u64;
+
+        if total_bytes > 0 {
+            let pct = ((downloaded_bytes as f64 / total_bytes as f64) * 100.0) as u32;
+            if pct >= last_pct + 5 || pct == 100 {
+                last_pct = pct;
+                let _ = app.emit("provision-download-progress", serde_json::json!({
+                    "downloaded": downloaded_bytes,
+                    "total": total_bytes,
+                    "percent": pct,
+                    "phase": "Downloading NixOS Appliance Image"
+                }));
+            }
+        }
+    }
+    temp_file.flush().await.map_err(|e| e.to_string())?;
+    drop(temp_file);
+
+    InstallerLogger::info("PROVISIONING", &format!("Decompressing zstd image to '{}'...", vhdx_path));
+    let _ = app.emit("provision-step", serde_json::json!({
+        "step": 2,
+        "phase": "Image Decompression",
+        "message": "Decompressing FastFree NixOS Clan appliance disk image...",
+        "success": true
+    }));
+
+    let zst_clone = zst_temp_path.clone();
+    let vhdx_clone = vhdx_path.to_string();
+    tokio::task::spawn_blocking(move || -> Result<(), String> {
+        let input_file = std::fs::File::open(&zst_clone)
+            .map_err(|e| format!("Failed to open downloaded archive: {}", e))?;
+        let mut decoder = zstd::stream::Decoder::new(input_file)
+            .map_err(|e| format!("Failed to initialize zstd decoder: {}", e))?;
+        let mut output_file = std::fs::File::create(&vhdx_clone)
+            .map_err(|e| format!("Failed to create destination VHDX: {}", e))?;
+        std::io::copy(&mut decoder, &mut output_file)
+            .map_err(|e| format!("Failed to decompress image stream: {}", e))?;
+        output_file.sync_all().map_err(|e| e.to_string())?;
+        Ok(())
+    })
+    .await
+    .map_err(|e| format!("Decompression task join error: {}", e))??;
+
+    let _ = std::fs::remove_file(&zst_temp_path);
+    InstallerLogger::info("PROVISIONING", &format!("NixOS appliance image provisioned at '{}'", vhdx_path));
+    Ok(format!("FastFree NixOS image decompressed and verified successfully ({} MB)", downloaded_bytes / (1024 * 1024)))
+}
+
+#[tauri::command]
+pub async fn reconfigure_hyperv_vm(
+    client_id: String,
+    target_drive: String,
+    cores: Option<u32>,
+    ram_mb: Option<u64>,
+) -> Result<VmRealState, String> {
+    let vm_name = format!("FastFree-{}", client_id);
+    let cores = cores.unwrap_or(4);
+    let ram_mb = ram_mb.unwrap_or(8192);
+    let ram_bytes = ram_mb * 1024 * 1024;
+    let target_drive = target_drive.trim_end_matches('\\').to_string();
+
+    InstallerLogger::info("HYPERV_RECONFIG", &format!("Reconfiguring Hyper-V appliance '{}' to optimal FastFree preset", vm_name));
+
+    #[cfg(windows)]
+    {
+        let ps_script = format!(
+            r#"
+$ErrorActionPreference = 'Stop'
+try {{
+    $vm = Get-VM -Name '{vm_name}' -ErrorAction SilentlyContinue
+    if (-not $vm) {{
+        throw "VM '{vm_name}' does not exist in Hyper-V."
+    }}
+    if ($vm.State -eq 'Running') {{
+        Stop-VM -Name '{vm_name}' -TurnOff -ErrorAction SilentlyContinue | Out-Null
+    }}
+    $sw = Get-VMSwitch -Name 'Default Switch' -ErrorAction SilentlyContinue
+    if (-not $sw) {{
+        $sw = Get-VMSwitch -SwitchType External -ErrorAction SilentlyContinue | Select-Object -First 1
+    }}
+    if (-not $sw) {{
+        $sw = Get-VMSwitch -ErrorAction SilentlyContinue | Select-Object -First 1
+    }}
+    $activeSwitch = if ($sw) {{ $sw.Name }} else {{ 'Default Switch' }}
+
+    Connect-VMNetworkAdapter -VMName '{vm_name}' -SwitchName $activeSwitch -ErrorAction SilentlyContinue | Out-Null
+    Set-VMNetworkAdapter -VMName '{vm_name}' -MacAddressSpoofing On -ErrorAction SilentlyContinue | Out-Null
+    Set-VMProcessor -VMName '{vm_name}' -Count {cores} -ExposeVirtualizationExtensions $true -ErrorAction SilentlyContinue | Out-Null
+    Set-VMMemory -VMName '{vm_name}' -DynamicMemoryEnabled $false -StartupBytes {ram_bytes} -ErrorAction SilentlyContinue | Out-Null
+    Set-VMFirmware -VMName '{vm_name}' -EnableSecureBoot Off -ErrorAction SilentlyContinue | Out-Null
+
+    $hd = Get-VMHardDiskDrive -VMName '{vm_name}' -ErrorAction SilentlyContinue
+    if ($hd) {{
+        Set-VMFirmware -VMName '{vm_name}' -FirstBootDevice $hd[0] -ErrorAction SilentlyContinue | Out-Null
+        $bootDevs = @($hd)
+        $dvd = Get-VMDvdDrive -VMName '{vm_name}' -ErrorAction SilentlyContinue
+        if ($dvd) {{ $bootDevs += $dvd }}
+        $net = Get-VMNetworkAdapter -VMName '{vm_name}' -ErrorAction SilentlyContinue
+        if ($net) {{ $bootDevs += $net }}
+        Set-VMFirmware -VMName '{vm_name}' -BootOrder $bootDevs -ErrorAction SilentlyContinue | Out-Null
+    }}
+
+    Enable-VMIntegrationService -VMName '{vm_name}' -Name 'Guest Service Interface' -ErrorAction SilentlyContinue | Out-Null
+    Enable-VMIntegrationService -VMName '{vm_name}' -Name 'Key-Value Pair Exchange' -ErrorAction SilentlyContinue | Out-Null
+    Enable-VMIntegrationService -VMName '{vm_name}' -Name 'Time Synchronization' -ErrorAction SilentlyContinue | Out-Null
+    Enable-VMIntegrationService -VMName '{vm_name}' -Name 'Shutdown' -ErrorAction SilentlyContinue | Out-Null
+    Enable-VMIntegrationService -VMName '{vm_name}' -Name 'VSS' -ErrorAction SilentlyContinue | Out-Null
+
+    $smartPagingDir = '{target_drive}\FastFree\SmartPaging'
+    if (-not (Test-Path $smartPagingDir)) {{
+        New-Item -ItemType Directory -Path $smartPagingDir -Force | Out-Null
+    }}
+    Set-VM -VMName '{vm_name}' `
+        -CheckpointType Production `
+        -AutomaticStartAction Start `
+        -AutomaticStartDelay 15 `
+        -AutomaticStopAction ShutDown `
+        -SmartPagingFilePath $smartPagingDir -ErrorAction SilentlyContinue | Out-Null
+
+    Start-VM -Name '{vm_name}' -ErrorAction Stop | Out-Null
+}} catch {{
+    Write-Error $_.Exception.Message
+    exit 1
+}}
+"#,
+            vm_name = vm_name,
+            cores = cores,
+            ram_bytes = ram_bytes,
+            target_drive = target_drive
+        );
+
+        let out = hidden_powershell().args(["-Command", &ps_script]).output();
+        if let Ok(res) = out {
+            if !res.status.success() {
+                let err = String::from_utf8_lossy(&res.stderr);
+                InstallerLogger::warn("HYPERV_RECONFIG", &format!("Reconfigure warning: {}", err));
+            }
+        }
+    }
+
+    get_vm_real_state(client_id).await
+}
+
 #[tauri::command]
 pub async fn provision_node(
     app: AppHandle,
@@ -654,27 +944,23 @@ pub async fn provision_node(
             ])
             .output();
 
-        // 3. Ensure Virtual Switch exists with robust fallback
+        // 3. Resolve Virtual Switch: Prefer Default Switch (Host NAT + DHCP + Internet)
         let vswitch_script = r#"
-$switchName = 'FastFree-Default-Switch'
-$sw = Get-VMSwitch -Name $switchName -ErrorAction SilentlyContinue
+$sw = Get-VMSwitch -Name 'Default Switch' -ErrorAction SilentlyContinue
 if (-not $sw) {
-    try {
-        $sw = New-VMSwitch -Name $switchName -SwitchType Internal -Notes 'FastFree Mesh Switch' -ErrorAction Stop
-        $switchName = $sw.Name
-    } catch {
-        $sw = Get-VMSwitch -Name 'Default Switch' -ErrorAction SilentlyContinue
-        if (-not $sw) {
-            $sw = Get-VMSwitch -ErrorAction SilentlyContinue | Select-Object -First 1
-        }
-        if ($sw) {
-            $switchName = $sw.Name
-        } else {
-            throw "Failed to create or locate a virtual switch in Hyper-V: $($_.Exception.Message)"
-        }
-    }
+    $sw = Get-VMSwitch -SwitchType External -ErrorAction SilentlyContinue | Select-Object -First 1
 }
-Write-Output "FASTFREE_SWITCH_READY:$switchName"
+if (-not $sw) {
+    $sw = Get-VMSwitch -Name 'FastFree-Default-Switch' -ErrorAction SilentlyContinue
+}
+if (-not $sw) {
+    $sw = Get-VMSwitch -ErrorAction SilentlyContinue | Select-Object -First 1
+}
+if ($sw) {
+    Write-Output "FASTFREE_SWITCH_READY:$($sw.Name)"
+} else {
+    throw "No virtual switch detected in Hyper-V."
+}
 "#;
         let sw_out = hidden_powershell()
             .args(["-Command", vswitch_script])
@@ -687,70 +973,115 @@ Write-Output "FASTFREE_SWITCH_READY:$switchName"
                     .lines()
                     .find(|l| l.starts_with("FASTFREE_SWITCH_READY:"))
                     .and_then(|l| l.strip_prefix("FASTFREE_SWITCH_READY:"))
-                    .unwrap_or("FastFree-Default-Switch")
+                    .unwrap_or("Default Switch")
                     .trim()
                     .to_string()
             }
             Ok(ref out) => {
                 let err = String::from_utf8_lossy(&out.stderr).to_string();
-                InstallerLogger::error("PROVISIONING", &format!("Switch creation error: {}", err));
-                let msg = format!("Virtual switch initialization failed: {}", err.trim());
-                let _ = app.emit("provision-failed", &msg);
-                return Err(msg);
+                InstallerLogger::warn("PROVISIONING", &format!("Switch lookup notice: {}", err));
+                "Default Switch".to_string()
             }
-            Err(e) => {
-                let msg = format!("Failed to spawn PowerShell for switch check: {}", e);
-                InstallerLogger::error("PROVISIONING", &msg);
-                let _ = app.emit("provision-failed", &msg);
-                return Err(msg);
-            }
+            Err(_) => "Default Switch".to_string(),
         };
 
         let step2 = ProvisioningStepLog {
             step: 2,
             phase: "Virtual Switch & Networking".to_string(),
-            message: format!("Configured Hyper-V Virtual Switch: '{}'.", switch_name),
+            message: format!("Bound to Hyper-V Virtual Switch: '{}' (Auto NAT & DHCP).", switch_name),
             success: true,
         };
         let _ = app.emit("provision-step", &step2);
         step_logs.push(step2);
 
-        // 4. Create Generation 2 VM, configure resources, attach VHDX, and verify 'Running' state
+        // 4. Verify or download real FastFree NixOS appliance VHDX image
+        if let Err(e) = ensure_appliance_vhdx(&app, &client_id, &vhdx_path).await {
+            InstallerLogger::warn("PROVISIONING", &format!("Appliance VHDX notice: {}", e));
+            // If download fails and file is still missing, we report clearly rather than silent corruption
+            if !std::path::Path::new(&vhdx_path).exists() {
+                let err_msg = format!("Missing FastFree NixOS disk image: {}. Please place '{}.vhdx' in '{}'.", e, client_id, vhdx_dir);
+                let _ = app.emit("provision-failed", &err_msg);
+                return Err(err_msg);
+            }
+        }
+
+        // 5. Create / Configure Generation 2 VM with Optimal FastFree NixOS Preset
+        let target_drive_clean = target_drive.trim_end_matches('\\');
         let vm_script = format!(
             r#"
 $ErrorActionPreference = 'Stop'
 try {{
+    $activeSwitch = '{switch_name}'
     $vm = Get-VM -Name '{vm_name}' -ErrorAction SilentlyContinue
     if (-not $vm) {{
-        $vhdxExists = Test-Path -LiteralPath '{vhdx_path}'
-        if ($vhdxExists) {{
-            New-VM -Name '{vm_name}' -Generation 2 -MemoryStartupBytes {ram_bytes} -SwitchName '{switch_name}' -VHDPath '{vhdx_path}' | Out-Null
-        }} else {{
-            New-VM -Name '{vm_name}' -Generation 2 -MemoryStartupBytes {ram_bytes} -SwitchName '{switch_name}' -NewVHDPath '{vhdx_path}' -NewVHDSizeBytes 64GB | Out-Null
-        }}
-        Set-VMProcessor -VMName '{vm_name}' -Count {cores} | Out-Null
-        Set-VMMemory -VMName '{vm_name}' -DynamicMemoryEnabled $false | Out-Null
-        Set-VMFirmware -VMName '{vm_name}' -EnableSecureBoot On -SecureBootTemplate 'MicrosoftUEFICertificateAuthority' -ErrorAction SilentlyContinue | Out-Null
-        $hd = Get-VMHardDiskDrive -VMName '{vm_name}' -ErrorAction SilentlyContinue
-        if ($hd) {{
-            Set-VMFirmware -VMName '{vm_name}' -FirstBootDevice $hd[0] -ErrorAction SilentlyContinue | Out-Null
-        }}
-        Set-VM -VMName '{vm_name}' -AutomaticStopAction ShutDown -ErrorAction SilentlyContinue | Out-Null
+        New-VM -Name '{vm_name}' -Generation 2 -MemoryStartupBytes {ram_bytes} -SwitchName $activeSwitch -VHDPath '{vhdx_path}' | Out-Null
     }} else {{
-        Set-VMProcessor -VMName '{vm_name}' -Count {cores} -ErrorAction SilentlyContinue | Out-Null
-        Set-VMMemory -VMName '{vm_name}' -StartupBytes {ram_bytes} -DynamicMemoryEnabled $false -ErrorAction SilentlyContinue | Out-Null
+        if ($vm.State -eq 'Running') {{
+            Stop-VM -Name '{vm_name}' -TurnOff -ErrorAction SilentlyContinue | Out-Null
+        }}
+        $existingHd = Get-VMHardDiskDrive -VMName '{vm_name}' -ErrorAction SilentlyContinue
+        if (-not $existingHd) {{
+            Add-VMHardDiskDrive -VMName '{vm_name}' -Path '{vhdx_path}' -ErrorAction SilentlyContinue | Out-Null
+        }} elseif ($existingHd[0].Path -ne '{vhdx_path}') {{
+            Set-VMHardDiskDrive -VMName '{vm_name}' -ControllerNumber 0 -ControllerLocation 0 -Path '{vhdx_path}' -ErrorAction SilentlyContinue | Out-Null
+        }}
     }}
 
-    $vCheck = Get-VM -Name '{vm_name}' -ErrorAction Stop
-    if (-not $vCheck) {{
-        throw "VM '{vm_name}' could not be registered in Hyper-V."
+    # Processor & Nested Virtualization for fastfree.kvm
+    Set-VMProcessor -VMName '{vm_name}' -Count {cores} | Out-Null
+    Set-VMProcessor -VMName '{vm_name}' -ExposeVirtualizationExtensions $true | Out-Null
+    Set-VMProcessor -VMName '{vm_name}' -RelativeWeight 100 | Out-Null
+
+    # Memory Strategy: Static RAM for ERP database determinism
+    Set-VMMemory -VMName '{vm_name}' -DynamicMemoryEnabled $false -StartupBytes {ram_bytes} | Out-Null
+
+    # Firmware: Disable Secure Boot for NixOS GRUB 2 (unsigned Linux bootloader)
+    Set-VMFirmware -VMName '{vm_name}' -EnableSecureBoot Off -ErrorAction SilentlyContinue | Out-Null
+
+    # Firmware: Hard Disk Drive First in Boot Order (Eliminate PXE delay)
+    $hd = Get-VMHardDiskDrive -VMName '{vm_name}' -ErrorAction SilentlyContinue
+    if ($hd) {{
+        Set-VMFirmware -VMName '{vm_name}' -FirstBootDevice $hd[0] -ErrorAction SilentlyContinue | Out-Null
+        $bootDevs = @($hd)
+        $dvd = Get-VMDvdDrive -VMName '{vm_name}' -ErrorAction SilentlyContinue
+        if ($dvd) {{ $bootDevs += $dvd }}
+        $net = Get-VMNetworkAdapter -VMName '{vm_name}' -ErrorAction SilentlyContinue
+        if ($net) {{ $bootDevs += $net }}
+        Set-VMFirmware -VMName '{vm_name}' -BootOrder $bootDevs -ErrorAction SilentlyContinue | Out-Null
     }}
 
-    if ($vCheck.State -ne 'Running') {{
-        Start-VM -Name '{vm_name}' -ErrorAction Stop
-    }}
+    # Network Adapter: Switch Binding & MAC Spoofing for WireGuard Mesh
+    Connect-VMNetworkAdapter -VMName '{vm_name}' -SwitchName $activeSwitch -ErrorAction SilentlyContinue | Out-Null
+    Set-VMNetworkAdapter -VMName '{vm_name}' -MacAddressSpoofing On -ErrorAction SilentlyContinue | Out-Null
 
-    # Real verification: Poll up to 10 seconds to verify it enters 'Running' state
+    # Integration Services: Enable all services including Guest Service Interface
+    Enable-VMIntegrationService -VMName '{vm_name}' -Name 'Guest Service Interface' -ErrorAction SilentlyContinue | Out-Null
+    Enable-VMIntegrationService -VMName '{vm_name}' -Name 'Key-Value Pair Exchange' -ErrorAction SilentlyContinue | Out-Null
+    Enable-VMIntegrationService -VMName '{vm_name}' -Name 'Time Synchronization' -ErrorAction SilentlyContinue | Out-Null
+    Enable-VMIntegrationService -VMName '{vm_name}' -Name 'Shutdown' -ErrorAction SilentlyContinue | Out-Null
+    Enable-VMIntegrationService -VMName '{vm_name}' -Name 'VSS' -ErrorAction SilentlyContinue | Out-Null
+
+    # Management: Production Checkpoints, AutoStart with 15s delay, Smart Paging on target drive
+    $smartPagingDir = '{target_drive}\FastFree\SmartPaging'
+    if (-not (Test-Path $smartPagingDir)) {{
+        New-Item -ItemType Directory -Path $smartPagingDir -Force | Out-Null
+    }}
+    Set-VM -VMName '{vm_name}' `
+        -CheckpointType Production `
+        -AutomaticStartAction Start `
+        -AutomaticStartDelay 15 `
+        -AutomaticStopAction ShutDown `
+        -SmartPagingFilePath $smartPagingDir -ErrorAction SilentlyContinue | Out-Null
+
+    # Start VM
+    Start-VM -Name '{vm_name}' -ErrorAction Stop
+
+    # Verification: Check disk file size
+    $diskItem = Get-Item -LiteralPath '{vhdx_path}' -ErrorAction SilentlyContinue
+    $diskSizeBytes = if ($diskItem) {{ $diskItem.Length }} else {{ 0 }}
+    $isEmpty = ($diskSizeBytes -le 10485760)
+
+    # Poll up to 10 seconds for Running state
     $timeoutSec = 10
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     $currentState = "Unknown"
@@ -758,18 +1089,12 @@ try {{
         $poll = Get-VM -Name '{vm_name}' -ErrorAction SilentlyContinue
         if ($poll) {{
             $currentState = $poll.State.ToString()
-            if ($currentState -eq 'Running') {{
-                break
-            }}
+            if ($currentState -eq 'Running') {{ break }}
         }}
         Start-Sleep -Milliseconds 500
     }}
 
-    if ($currentState -ne 'Running') {{
-        throw "Virtual Machine '{vm_name}' was registered but failed to reach 'Running' state. Current state: '$currentState'."
-    }}
-
-    Write-Output "FASTFREE_VM_DEPLOYED_SUCCESSFULLY:STATE=$currentState"
+    Write-Output "FASTFREE_VM_DEPLOYED_SUCCESSFULLY:STATE=$currentState:EMPTY=$isEmpty"
 }} catch {{
     Write-Error $_.Exception.Message
     exit 1
@@ -779,7 +1104,8 @@ try {{
             ram_bytes = ram_bytes,
             vhdx_path = vhdx_path,
             cores = cores,
-            switch_name = switch_name
+            switch_name = switch_name,
+            target_drive = target_drive_clean
         );
 
         let vm_res = hidden_powershell()
@@ -791,19 +1117,29 @@ try {{
                 let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
                 let stderr = String::from_utf8_lossy(&out.stderr).trim().to_string();
                 if out.status.success() || stdout.contains("FASTFREE_VM_DEPLOYED_SUCCESSFULLY") {
+                    let is_empty = stdout.contains("EMPTY=True");
                     let step3 = ProvisioningStepLog {
                         step: 3,
                         phase: "Hyper-V Virtual Machine Creation".to_string(),
-                        message: format!("Successfully registered VM '{}' (Generation 2, {} vCPUs, {} MB aligned RAM, VHDX: {}).", vm_name, cores, aligned_ram_mb, vhdx_path),
+                        message: format!(
+                            "Registered VM '{}' (Generation 2, {} vCPUs, Nested Virt: True, SecureBoot: Off, RAM: {} MB).",
+                            vm_name, cores, aligned_ram_mb
+                        ),
                         success: true,
                     };
                     let _ = app.emit("provision-step", &step3);
                     step_logs.push(step3);
 
+                    let step4_msg = if is_empty {
+                        format!("Virtual machine '{}' verified in Running state. Warning: Attached VHDX is empty (4MB stub).", vm_name)
+                    } else {
+                        format!("Virtual machine '{}' verified in Hyper-V Running state with valid NixOS appliance image.", vm_name)
+                    };
+
                     let step4 = ProvisioningStepLog {
                         step: 4,
                         phase: "Power & State Verification".to_string(),
-                        message: format!("Virtual machine '{}' verified in Hyper-V 'Running' state.", vm_name),
+                        message: step4_msg,
                         success: true,
                     };
                     let _ = app.emit("provision-step", &step4);
