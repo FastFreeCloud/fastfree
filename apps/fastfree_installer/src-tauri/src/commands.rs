@@ -16,6 +16,20 @@ pub fn hidden_command(program: &str) -> std::process::Command {
     cmd
 }
 
+pub fn hidden_powershell() -> std::process::Command {
+    let mut cmd = hidden_command("powershell");
+    #[cfg(windows)]
+    cmd.args([
+        "-NoProfile",
+        "-NonInteractive",
+        "-WindowStyle",
+        "Hidden",
+        "-ExecutionPolicy",
+        "Bypass",
+    ]);
+    cmd
+}
+
 #[tauri::command]
 pub async fn get_system_discovery_report() -> Result<SystemDiscoveryReport, String> {
     tokio::task::spawn_blocking(HostDiscoveryPipeline::collect_report)
@@ -152,8 +166,8 @@ try {{
 
     #[cfg(windows)]
     {
-        let output = hidden_command("powershell")
-            .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", &ps_cmd])
+        let output = hidden_powershell()
+            .args(["-Command", &ps_cmd])
             .output();
 
         match output {
@@ -216,8 +230,6 @@ pub async fn get_vm_real_state(client_id: String) -> Result<VmRealState, String>
 
     #[cfg(windows)]
     {
-        let _ = ensure_hyperv_environment();
-
         let ps_cmd = format!(
             r#"
 $ErrorActionPreference = 'Stop'
@@ -270,8 +282,8 @@ try {{
             vm_name
         );
 
-        let output = hidden_command("powershell")
-            .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", &ps_cmd])
+        let output = hidden_powershell()
+            .args(["-Command", &ps_cmd])
             .output();
 
         match output {
@@ -347,20 +359,24 @@ if ($vmms) {
     }
 }
 
-# 2. Add current user to Hyper-V Administrators
+# 2. Add current user to Hyper-V Administrators purely via PowerShell cmdlets (zero external console processes)
 $user = $env:USERNAME
-net localgroup "Hyper-V Administrators" "$user" /add 2>&1 | Out-Null
+try {
+    Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member $user -ErrorAction SilentlyContinue
+} catch {}
 
-$members = net localgroup "Hyper-V Administrators" 2>&1
-if ($members -match $user) {
-    $res.in_group = $true
-}
+try {
+    $members = Get-LocalGroupMember -Group 'Hyper-V Administrators' -ErrorAction SilentlyContinue
+    if ($members | Where-Object { $_.Name -like "*\$user" -or $_.Name -eq $user }) {
+        $res.in_group = $true
+    }
+} catch {}
 
 Write-Output "FASTFREE_ENV:vmms_installed=$($res.vmms_installed);vmms_running=$($res.vmms_running);in_group=$($res.in_group)"
 "#;
 
-        let output = hidden_command("powershell")
-            .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script])
+        let output = hidden_powershell()
+            .args(["-Command", script])
             .output();
 
         if let Ok(out) = output {
@@ -384,8 +400,6 @@ pub async fn check_vm_exists(client_id: String) -> Result<bool, String> {
 
     #[cfg(windows)]
     {
-        let _ = ensure_hyperv_environment();
-
         let script = format!(
             r#"
 $ErrorActionPreference = 'SilentlyContinue'
@@ -403,8 +417,8 @@ try {{
             vm_name
         );
 
-        let output = hidden_command("powershell")
-            .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", &script])
+        let output = hidden_powershell()
+            .args(["-Command", &script])
             .output();
 
         match output {
@@ -533,11 +547,8 @@ pub async fn install_hyperv_feature() -> Result<String, String> {
                     &format!("DISM result: exit={:?}, out={}, err={}", out.status.code(), stdout, stderr),
                 );
 
-                let _ = hidden_command("powershell")
+                let _ = hidden_powershell()
                     .args([
-                        "-NoProfile",
-                        "-ExecutionPolicy",
-                        "Bypass",
                         "-Command",
                         "Set-Service -Name vmms -StartupType Automatic -ErrorAction SilentlyContinue; Start-Service -Name vmms -ErrorAction SilentlyContinue",
                     ])
@@ -557,8 +568,8 @@ dism.exe /Online /Enable-Feature /All /FeatureName:Microsoft-Hyper-V /NoRestart
 Set-Service -Name vmms -StartupType Automatic -ErrorAction SilentlyContinue
 Start-Service -Name vmms -ErrorAction SilentlyContinue
 "#;
-                    let home_out = hidden_command("powershell")
-                        .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", home_script])
+                    let home_out = hidden_powershell()
+                        .args(["-Command", home_script])
                         .output();
 
                     if let Ok(h_out) = home_out {
@@ -636,13 +647,10 @@ pub async fn provision_node(
         step_logs.push(step1);
 
         // 2. Ensure Hyper-V Service VMMS is running and user is in Hyper-V Administrators
-        let _ = hidden_command("powershell")
+        let _ = hidden_powershell()
             .args([
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
                 "-Command",
-                "Set-Service -Name vmms -StartupType Automatic -ErrorAction SilentlyContinue; Start-Service -Name vmms -ErrorAction SilentlyContinue; net localgroup 'Hyper-V Administrators' \"$env:USERNAME\" /add 2>&1 | Out-Null",
+                "Set-Service -Name vmms -StartupType Automatic -ErrorAction SilentlyContinue; Start-Service -Name vmms -ErrorAction SilentlyContinue; try { Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member $env:USERNAME -ErrorAction SilentlyContinue } catch {}",
             ])
             .output();
 
@@ -668,8 +676,8 @@ if (-not $sw) {
 }
 Write-Output "FASTFREE_SWITCH_READY:$switchName"
 "#;
-        let sw_out = hidden_command("powershell")
-            .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", vswitch_script])
+        let sw_out = hidden_powershell()
+            .args(["-Command", vswitch_script])
             .output();
 
         let switch_name = match sw_out {
@@ -774,8 +782,8 @@ try {{
             switch_name = switch_name
         );
 
-        let vm_res = hidden_command("powershell")
-            .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", &vm_script])
+        let vm_res = hidden_powershell()
+            .args(["-Command", &vm_script])
             .output();
 
         match vm_res {
@@ -1186,10 +1194,8 @@ pub async fn check_wireguard_firewall_rule() -> Result<FirewallRuleStatus, Strin
         }
         let is_admin = unsafe { IsUserAnAdmin() != 0 };
 
-        let output = hidden_command("powershell")
+        let output = hidden_powershell()
             .args([
-                "-NoProfile",
-                "-NonInteractive",
                 "-Command",
                 r#"
                 $rule = Get-NetFirewallRule -Name 'FastFree-WireGuard-Mesh' -ErrorAction SilentlyContinue
@@ -1278,19 +1284,19 @@ pub async fn enable_wireguard_firewall_rule() -> Result<FirewallRuleStatus, Stri
         "#;
 
         if is_admin {
-            let _ = hidden_command("powershell")
-                .args(["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", ps_script])
+            let _ = hidden_powershell()
+                .args(["-Command", ps_script])
                 .output();
         } else {
             // Elevate via standard UAC dialog
             let one_line = ps_script.replace('\r', " ").replace('\n', " ");
             let escaped = one_line.replace('"', "\\\"");
             let elevate_cmd = format!(
-                "Start-Process powershell -Verb RunAs -WindowStyle Hidden -Wait -ArgumentList \"-NoProfile -ExecutionPolicy Bypass -Command \\\"{}\\\"\"",
+                "Start-Process powershell -Verb RunAs -WindowStyle Hidden -Wait -ArgumentList \"-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -Command \\\"{}\\\"\"",
                 escaped
             );
-            let _ = hidden_command("powershell")
-                .args(["-NoProfile", "-NonInteractive", "-Command", &elevate_cmd])
+            let _ = hidden_powershell()
+                .args(["-Command", &elevate_cmd])
                 .output();
         }
 

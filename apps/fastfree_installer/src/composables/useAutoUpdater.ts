@@ -55,7 +55,7 @@ let lastNotifiedVersion = '';
 let autoUpdateTimer: ReturnType<typeof setInterval> | null = null;
 
 // Current local running version (initialized dynamically)
-export const currentAppVersion = ref('26.5.0');
+export const currentAppVersion = ref('26.5.31');
 
 export async function initAppVersion(): Promise<string> {
   try {
@@ -69,7 +69,7 @@ export async function initAppVersion(): Promise<string> {
   return currentAppVersion.value;
 }
 
-function compareSemver(v1: string, v2: string): number {
+export function compareSemver(v1: string, v2: string): number {
   const parts1 = v1.replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
   const parts2 = v2.replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
   for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
@@ -112,11 +112,11 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
   isCheckingUpdate.value = true;
   updateError.value = '';
 
-  await initAppVersion();
-  logInfo('Updater', `Checking for updates (current: v${currentAppVersion.value}, silent=${silent})...`);
-
-  // 1. Primary: Native Rust Tauri Updater command (Type-safe & Zero Private-field errors)
   try {
+    await initAppVersion();
+    logInfo('Updater', `Checking for updates (current: v${currentAppVersion.value}, silent=${silent})...`);
+
+    // 1. Primary: Native Rust Tauri Updater command + Rust reqwest fallback
     const update = await invoke<UpdateInfo | null>('check_app_update');
     if (update && update.available) {
       updateAvailable.value = true;
@@ -139,52 +139,19 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
       }
       return true;
     }
+
+    updateAvailable.value = false;
+    manualDownloadUrl.value = '';
+    logInfo('Updater', 'FastFree Companion is up to date (Latest Version).');
+    return false;
   } catch (err: unknown) {
-    logWarn('Updater', 'Native Rust updater check notice:', String(err));
+    logWarn('Updater', 'Rust updater check encounter:', String(err));
+    updateAvailable.value = false;
+    manualDownloadUrl.value = '';
+    return false;
+  } finally {
+    isCheckingUpdate.value = false;
   }
-
-  // 2. Fallback: Query GitHub Releases API directly for live releases
-  try {
-    const res = await fetch('https://api.github.com/repos/FastFreeCloud/fastfree/releases/latest', {
-      headers: { Accept: 'application/vnd.github.v3+json' },
-    });
-    if (res.ok) {
-      const release = await res.json();
-      const rawTag = String(release.tag_name || '');
-      const remoteVer = rawTag.replace(/^installer-v/, '').replace(/^v/, '');
-      const asset = release.assets?.find((a: { name?: string }) => a.name?.endsWith('.exe'));
-
-      if (remoteVer && compareSemver(remoteVer, currentAppVersion.value) > 0) {
-        updateAvailable.value = true;
-        isMandatoryUpdate.value = true;
-        updateVersion.value = remoteVer;
-        updateNotes.value = release.body || 'FastFree Appliance Mandatory Engine & Security Update';
-        manualDownloadUrl.value = asset?.browser_download_url
-          || `https://github.com/FastFreeCloud/fastfree/releases/download/${rawTag}/FastFree-Node-Setup.exe`;
-        logSuccess(
-          'Updater',
-          `Mandatory release detected via GitHub API: v${remoteVer} (${rawTag})`,
-          `Asset: ${manualDownloadUrl.value}`
-        );
-
-        if (lastNotifiedVersion !== remoteVer) {
-          lastNotifiedVersion = remoteVer;
-          await dispatchDesktopNotification(
-            'تحديث إلزامي متوفر لـ FastFree',
-            `تم إصدار النسخة الإلزامية v${remoteVer}. يتطلب النظام التحديث للاستمرار.`
-          );
-        }
-        return true;
-      }
-    }
-  } catch (ghErr: unknown) {
-    logWarn('Updater', 'GitHub Releases API fallback notice:', String(ghErr));
-  }
-
-  updateAvailable.value = false;
-  manualDownloadUrl.value = '';
-  logInfo('Updater', 'FastFree Companion is up to date (Latest Version).');
-  return false;
 }
 
 /**
