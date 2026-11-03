@@ -102,6 +102,35 @@
         </select>
       </div>
 
+      <!-- Sovereign Security & Service Account Isolation Card -->
+      <div class="config-card">
+        <div class="card-title-row">
+          <div class="security-title-wrap">
+            <span class="security-icon-shield">
+              <svg class="sec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <path d="m9 12 2 2 4-4"></path>
+              </svg>
+            </span>
+            <label class="config-label" for="hardened-security-toggle">
+              {{ t('sizing.hardenedSecurityTitle') }}
+            </label>
+          </div>
+          <div class="toggle-switch-wrapper">
+            <input
+              id="hardened-security-toggle"
+              v-model="hardenedSecurityEnabled"
+              type="checkbox"
+              class="fluent-toggle"
+            />
+            <label for="hardened-security-toggle" class="fluent-toggle-track">
+              <span class="fluent-toggle-thumb"></span>
+            </label>
+          </div>
+        </div>
+        <p class="hint-text" v-html="t('sizing.hardenedSecurityHint', { account: `fastfree_${selectedClientId}` })"></p>
+      </div>
+
       <!-- Allocation Summary Pill -->
       <div class="allocation-summary-box">
         <div class="summary-item">
@@ -112,6 +141,12 @@
           <span class="sum-label">{{ t('sizing.workloadClass') }}</span>
           <span class="sum-val text-accent">
             {{ assignedRamMb >= 8192 ? t('sizing.prodErp') : t('sizing.stdEnterprise') }}
+          </span>
+        </div>
+        <div class="summary-item">
+          <span class="sum-label">{{ t('sizing.securityProfile') }}</span>
+          <span class="sum-val" :class="hardenedSecurityEnabled ? 'text-emerald' : 'text-amber'">
+            {{ hardenedSecurityEnabled ? t('sizing.isolatedAccount', { account: `fastfree_${selectedClientId}` }) : t('sizing.standardAccount') }}
           </span>
         </div>
         <div class="summary-item">
@@ -143,6 +178,7 @@ import {
   assignedCpuCores,
   assignedRamMb,
   targetDiskDrive,
+  hardenedSecurityEnabled,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
 
@@ -400,5 +436,88 @@ const availableClients = computed(() => {
 
 .btn-secondary:hover {
   background: var(--border-color, #3F3F46);
+}
+
+.security-card {
+  border-color: rgba(56, 189, 248, 0.2);
+  background: linear-gradient(135deg, rgba(24, 24, 27, 0.8) 0%, rgba(15, 23, 42, 0.5) 100%);
+}
+
+.security-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.security-icon-shield {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--accent-sky, #38BDF8);
+  flex-shrink: 0;
+}
+
+.sec-svg {
+  width: 18px;
+  height: 18px;
+}
+
+.config-hint {
+  font-size: 11px;
+  color: var(--text-muted, #94A3B8);
+  margin: 2px 0 0 0;
+}
+
+.fluent-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 22px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.fluent-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.fluent-toggle-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #3F3F46;
+  border-radius: 9999px;
+  transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.fluent-toggle-thumb {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 2px;
+  background-color: #FFFFFF;
+  border-radius: 50%;
+  transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.fluent-toggle input:checked + .fluent-toggle-track {
+  background-color: #0284C7;
+  border-color: #38BDF8;
+}
+
+.fluent-toggle input:checked + .fluent-toggle-track .fluent-toggle-thumb {
+  transform: translateX(20px);
 }
 </style>

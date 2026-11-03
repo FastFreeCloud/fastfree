@@ -142,6 +142,7 @@ import {
   assignedCpuCores,
   assignedRamMb,
   targetDiskDrive,
+  hardenedSecurityEnabled,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
 import { logInfo, logError, logSuccess } from '../composables/useDiagnostics';
@@ -177,15 +178,18 @@ async function setupEventListeners() {
       async (event) => {
         const payload = event.payload;
         if (payload.step === 1) {
-          progress.value = 25;
+          progress.value = 20;
           currentPhaseText.value = payload.phase;
         } else if (payload.step === 2) {
-          progress.value = 50;
+          progress.value = 40;
           currentPhaseText.value = payload.phase;
         } else if (payload.step === 3) {
-          progress.value = 75;
+          progress.value = 60;
           currentPhaseText.value = payload.phase;
         } else if (payload.step === 4) {
+          progress.value = 80;
+          currentPhaseText.value = payload.phase;
+        } else if (payload.step === 5) {
           progress.value = 100;
           currentPhaseText.value = payload.phase;
         }
@@ -244,6 +248,7 @@ async function runProvisioning() {
         cores: assignedCpuCores.value || 4,
         ramMb: safeAlignedRam,
         targetDrive: targetDiskDrive.value || 'C:\\',
+        hardenedSecurity: hardenedSecurityEnabled.value,
       }
     );
 

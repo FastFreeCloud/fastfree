@@ -86,6 +86,17 @@ pub struct VmActionStatus {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ServiceAccountResult {
+    pub success: bool,
+    pub account_name: String,
+    pub sid: String,
+    pub cloaked: bool,
+    pub hyperv_admin: bool,
+    pub dpapi_path: String,
+    pub vm_dir: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VmRealState {
     pub exists: bool,
     pub state: String,
@@ -103,6 +114,13 @@ pub struct VmRealState {
     pub is_empty_disk: bool,
     pub guest_status: String,
     pub guest_status_message: String,
+    pub service_account: String,
+    pub is_account_cloaked: bool,
+    pub is_storage_hardened: bool,
+    #[serde(default)]
+    pub hardened_account_configured: bool,
+    #[serde(default)]
+    pub service_account_name: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
