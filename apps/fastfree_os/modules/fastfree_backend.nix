@@ -239,10 +239,17 @@ in {
       path = [ pkgs.coreutils pkgs.gnused pkgs.jq pkgs.curl pkgs.git ];
       script = ''
         SITE="${siteName}"
-        DB_PASSWORD="FastFreeRoot@2026"
-        [ -f "${dbRootPassFile}" ] && DB_PASSWORD=$(cat "${dbRootPassFile}")
-        ADMIN_PASSWORD="FastFreeAdmin@2026"
-        [ -f "${frappeAdminPassFile}" ] && ADMIN_PASSWORD=$(cat "${frappeAdminPassFile}")
+        if [ ! -f "${dbRootPassFile}" ]; then
+          echo "[setup] ERROR: MariaDB root password file not found: ${dbRootPassFile}" >&2
+          exit 1
+        fi
+        DB_PASSWORD=$(cat "${dbRootPassFile}")
+
+        if [ ! -f "${frappeAdminPassFile}" ]; then
+          echo "[setup] ERROR: Frappe admin password file not found: ${frappeAdminPassFile}" >&2
+          exit 1
+        fi
+        ADMIN_PASSWORD=$(cat "${frappeAdminPassFile}")
         BENCH_DIR="/var/lib/frappe/frappe-bench"
         SITES_DIR="$BENCH_DIR/sites"
         COMMON_CFG="$SITES_DIR/common_site_config.json"

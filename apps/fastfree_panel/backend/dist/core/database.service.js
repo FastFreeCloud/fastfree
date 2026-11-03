@@ -118,7 +118,7 @@ export class DatabaseService {
         INSERT INTO hindsight_memories (id, bank_id, stratum, content, confidence, timestamp)
         VALUES (?, ?, ?, ?, ?, ?);
       `);
-            insert.run('mem-001', 'fastfree-core-memory', 'World Facts', 'NixOS Clan 26.05 topology: client1 VPS (Controller), client2..client11 Hyper-V appliances.', 0.99, new Date().toISOString());
+            insert.run('mem-001', 'fastfree-core-memory', 'World Facts', 'NixOS Clan 26.05 topology: client1 Hyper-V (Controller), client2..client11 Hyper-V appliances.', 0.99, new Date().toISOString());
             insert.run('mem-002', 'fastfree-core-memory', 'Agent Experiences', 'Purged 59 emoji instances from apps/fastfree_installer with zero build warnings.', 0.96, new Date().toISOString());
             insert.run('mem-003', 'fastfree-core-memory', 'Entity Summaries', 'LowCode engine contains 38 components, 27 composables; useFormatNumber & useStatusHelpers mandatory.', 0.98, new Date().toISOString());
             insert.run('mem-004', 'fastfree-core-memory', 'Evolving Beliefs', 'Dual-Agent review discipline (Writer: Antigravity / Reviewer: OpenCode) prevents regression slips.', 0.95, new Date().toISOString());

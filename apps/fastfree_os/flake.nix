@@ -12,10 +12,6 @@
       url = "https://git.clan.lol/clan/clan-core/archive/26.05.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # Pinned unstable for opencode.
-    nixpkgs-unstable = {
-      url = "github:NixOS/nixpkgs/nixos-unstable";
-    };
   };
 
   outputs = { self, nixpkgs, disko, clan-core, ... } @ inputs:
@@ -113,9 +109,9 @@
       # (official convert template: inherit nixosConfigurations from clan).
       nixosConfigurations = clanResult.config.nixosConfigurations;
 
-      # -- VHDX packages for Hyper-V clients (client2 through client11) --
+      # -- VHDX packages for Hyper-V clients (client1 through client11) --
       packages.${system} = lib.genAttrs
-        (map (n: "client${toString n}") (lib.range 2 11))
+        (map (n: "client${toString n}") (lib.range 1 11))
         (machine: (clanResult.config.nixosConfigurations.${machine}.extendModules {
           modules = [ hypervImageModule ];
         }).config.system.build.hypervImage);

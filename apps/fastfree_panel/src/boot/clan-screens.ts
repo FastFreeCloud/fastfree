@@ -60,6 +60,7 @@ export default defineBoot(() => {
     { type: 'clan-secrets', loader: () => import('../screens/ClanSecretsScreen.vue'), label: 'Secrets · الأسرار والتشفير', icon: 'mdi-shield-key', groupId: 'clan.security' },
     { type: 'clan-vars', loader: () => import('../screens/ClanVarsScreen.vue'), label: 'Vars & State · المتغيرات والحالة', icon: 'mdi-code-braces', groupId: 'clan.fleet' },
     { type: 'clan-services', loader: () => import('../screens/ClanServicesScreen.vue'), label: 'Services · الخدمات والعمليات', icon: 'mdi-cogs', groupId: 'clan.nixos' },
+    { type: 'clan-omnigent', loader: () => import('../screens/ClanOmnigentScreen.vue'), label: 'Omnigent Studio · وكلاء Omnigent', icon: 'mdi-sitemap', groupId: 'clan.agents' },
     { type: 'clan-paseo', loader: () => import('../screens/ClanPaseoScreen.vue'), label: 'Paseo Agents · وكلاء Paseo', icon: 'mdi-robot-outline', groupId: 'clan.agents' },
   ];
 

@@ -337,3 +337,53 @@ export async function applyWireGuardConfig(
     throw err;
   }
 }
+
+export interface FirewallRuleStatus {
+  rule_exists: boolean;
+  enabled: boolean;
+  name: string;
+  local_ports: string;
+  protocol: string;
+  action: string;
+  is_admin: boolean;
+  message: string;
+}
+
+export const firewallStatus = ref<FirewallRuleStatus | null>(null);
+export const loadingFirewall = ref<boolean>(false);
+
+export async function fetchFirewallStatus(): Promise<FirewallRuleStatus> {
+  loadingFirewall.value = true;
+  try {
+    const status = await invoke<FirewallRuleStatus>('check_wireguard_firewall_rule');
+    firewallStatus.value = status;
+    return status;
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    logWarn('Firewall', `Could not query Windows Firewall status: ${msg}`);
+    throw err;
+  } finally {
+    loadingFirewall.value = false;
+  }
+}
+
+export async function enableFirewallRule(): Promise<FirewallRuleStatus> {
+  loadingFirewall.value = true;
+  logInfo('Firewall', 'Authorizing Windows Firewall inbound rule for WireGuard (UDP 51820-51835)...');
+  try {
+    const status = await invoke<FirewallRuleStatus>('enable_wireguard_firewall_rule');
+    firewallStatus.value = status;
+    if (status.rule_exists && status.enabled) {
+      logSuccess('Firewall', 'Windows Firewall rule verified and active', `Ports: ${status.local_ports} (${status.protocol})`);
+    } else {
+      logWarn('Firewall', 'Firewall configuration notice', status.message);
+    }
+    return status;
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    logError('Firewall', 'Failed to configure Windows Firewall rule', msg);
+    throw err;
+  } finally {
+    loadingFirewall.value = false;
+  }
+}

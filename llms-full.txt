@@ -15,51 +15,56 @@ Follow these coding standards:
 - Keep functions small and focused (typically < 50 lines)
 - Handle errors explicitly, never silently
 
-## Multi-Agent Orchestration with Paseo
+## Multi-Agent Orchestration with Omnigent & Hindsight
 
 Source: .ai-rulez/rules/multi-agent-orchestration.md
 
-### Multi-Agent Orchestration with Paseo
+### Multi-Agent Orchestration with Omnigent & Hindsight
 
-FastFree is designed to run in a collaborative multi-agent ecosystem:
+FastFree is powered by an autonomous, multi-agent meta-harness ecosystem:
 
-1. **Paseo Daemon Requirement**:
-   - The Paseo daemon (`~/.paseo`, local MCP server on `127.0.0.1:6767`) is the canonical orchestrator for AI agents (OpenCode, Claude Code, Codex) across workspaces and worktrees.
-   - Any AI assistant acting on major subsystem completions, core packages, or release testing MUST use the Paseo MCP tools (`list_agents`, `create_workspace`, `create_agent`, `send_agent_prompt`, `get_agent_status`, `get_agent_activity`) or the CLI equivalents (`paseo ls/run/send/wait/logs`).
+1. **Omnigent Meta-Harness & Subagents Architecture**:
+   - Omnigent (`~/.omnigent`, local server on `127.0.0.1:8090`) is the canonical orchestrator for AI agents and subagents.
+   - Omnigent coordinates specialized subagents defined via declarative YAML specifications in `.omnigent/agents/` (e.g., `fastfree_supervisor.yaml` coordinating `subagent_researcher`, `subagent_implementer`, and `subagent_reviewer`).
+   - Worktree isolation: Each execution session runs in a dedicated ephemeral Git worktree (`.worktrees/omnigent-*`), isolating code mutations from the primary working directory.
+   - Paseo and Herdr are retired from canonical fleet orchestration in favor of Omnigent.
 
-2. **Independent Reviewer Invariant**:
-   - Critical milestones (such as finalizing the Desktop Installer, OS deployment profiles, or lowcode runtime invariants) must not rely solely on a single agent's self-assessment.
-   - The primary agent acts as **Writer / Implementer**, and MUST launch an **OpenCode** agent with a Review-oriented profile (different provider family, no file edits) via the `paseo-review-loop` skill as an independent **Reviewer**, relaying findings until `VERDICT: APPROVE`.
-3. **Skill Contracts**: Use the sanctioned skills — `paseo-conductor` (observe & drive agents), `paseo-fanout` (N worktree-isolated attempts), `paseo-review-loop` (writer/reviewer discipline). Keep destructive calls low: reads are free; creates/prompts are deliberate.
+2. **Hindsight Persistent Long-Term Memory**:
+   - Long-term memory is managed via the Hindsight memory engine (`fastfree-core-memory` bank).
+   - Agents maintain cognitive continuity across sessions via `hindsight_recall`, `hindsight_retain`, and `hindsight_reflect`.
+   - **Secret Sanitizer Invariant**: Every memory payload passes through `MemorySanitizer` before indexing; WireGuard keys, Clan Vars, keystore passwords, and internal Hyper-V IPs are strictly forbidden from being ingested into memory banks.
 
-## Paseo Governance — the Only Orchestrator
+3. **Independent Reviewer Invariant (Dual-Agent Review Loop)**:
+   - The primary implementer acts as **Writer / Implementer** (Claude / Antigravity).
+   - An independent **Reviewer** agent (OpenCode / DeepSeek R1 profile) must audit diffs, run `vue-tsc`, verify AI-Rulez policies, and issue an objective sign-off (`VERDICT: APPROVE`).
+   - No release, installer finalization, or core monorepo mutation is accepted without independent verification.
+
+4. **Human-In-The-Loop (HITL) Approvals & Cost Caps**:
+   - Destructive operations (`git push`, `rm -rf`, `clan vars set`) require explicit operator authorization via the Approvals Gate.
+   - Cost ceilings and token budgets are enforced in real-time.
+
+## Omnigent Meta-Harness Governance (Paseo Retired)
 
 Source: .ai-rulez/rules/paseo-hub-governance.md
 
-### Paseo Governance — the Only Orchestrator
+### Omnigent Meta-Harness Governance (Paseo Retired)
 
-Paseo is the **sole** agent orchestrator for FastFree; Herdr is fully retired
-from the repository and fleet.
+Omnigent is the **canonical** agent orchestrator for FastFree; Paseo and Herdr are retired from canonical fleet orchestration and replaced by Omnigent on port `8090`.
 
-1. **Role Boundaries**:
-   - Agent orchestration (workspaces, worktrees, prompts, reviews, fan-out) runs exclusively through Paseo MCP tools and the `paseo-conductor` / `paseo-fanout` / `paseo-review-loop` skills.
-   - Value beyond raw orchestration: programmatic permission approvals (`list_pending_permissions` / `respond_to_permission`), cron schedules and heartbeats, mobile/web review via the E2E-encrypted relay, and Hub-level org automation.
-   - Providers without first-class Paseo support (e.g. Antigravity) MUST be validated via a custom provider / ACP adapter before being used in unattended (scheduled or Hub-triggered) runs.
+1. **Role Boundaries & Multi-Harness Integration**:
+   - Agent orchestration (workspaces, worktrees, subagents, reviews, fan-out) runs through Omnigent server/runner architecture and Hindsight memory banks.
+   - Omnigent enforces OS-level sandboxing (bubblewrap/seccomp), L7 egress proxying for sensitive credentials, and centralized MCP connection pooling (`ServerMcpPool`).
+   - Programmatic permission approvals (`apiPendingApprovals` / `apiDecideApproval`) operate via the FastFree Panel Hono backend (`/api/v1/governance/*`).
 
-2. **Sovereignty — Self-Hosted Hub Only**:
-   - The Paseo Hub MUST be self-hosted on the sovereign controller (`client1`), NOT the hosted `hub.paseo.sh` origin, for any fleet automation touching customer appliances (`client2..11`).
-   - Appliance daemons enroll over the WireGuard mesh using single-use, 10-minute enrollment tokens (`POST /api/v1/daemons/enrollment-tokens`, scope `daemons:enroll`).
+2. **Sovereignty & Isolated Runner**:
+   - The Omnigent runner executes locally on host or sovereign VPS (`client1`).
+   - Customer appliances (`client2..11`) are protected by network isolation; runners are strictly blocked from probing the `10.0.0.0/8` WireGuard subnet.
 
-3. **Secrets Classification (secure-secrets applies)**:
-   - Every Paseo hub API key (`paseo_pk_...`) is a regulated secret: GitHub Secrets or out-of-repo secret storage ONLY. Zero plaintext keys in the repo, Nix expressions, or generated context files.
-   - Issued keys use least-privilege scopes; the `fastfree_panel` Hono backend may hold only `runs:dispatch` + `projects:read`.
+3. **Secrets Classification & DLP (secure-secrets applies)**:
+   - Sensitive credentials (keystore passwords, Clan Vars, private keys) are brokered at the L7 proxy layer and never passed as raw environment variables to agent prompts.
+   - The DLP inspection engine terminates any egress connection containing WireGuard or Clan Var secret patterns.
 
-4. **Trigger Security**:
-   - Every trigger MUST declare a non-empty `from_users` allowlist; dispatch actors outside it are rejected (403).
-   - Unattended agent steps default to the least-capable mode; `full-access` mode and widened GitHub authority (`contents: write`) require explicit scope justification in the workflow file.
-   - Hub has no queue/retry: any consumer (e.g. the panel backend) MUST implement its own retry with a stable `deliveryKey` for dedup.
-
-5. **Lint Gate**: `ai-rulez verifiers run --strict` MUST pass after any change to this rule or to Paseo-related configuration.
+4. **Lint Gate**: `ai-rulez verifiers run --strict` MUST pass after any change to orchestration or governance configuration.
 
 ## Zero Plaintext Secrets Policy
 
@@ -142,10 +147,10 @@ Source: .ai-rulez/domains/nixos-clan/rules/nixos-clan.md
 ### FastFree OS & Clan 26.05 Standards
 
 When working on `apps/fastfree_os`:
-- **Fleet Topology**: `client1` is the single central public VPS. `client2` through `client11` are customer Hyper-V appliances.
-- **Profiles**: Shared system configurations must be in `profiles/base.nix`, `profiles/vps.nix`, or `profiles/hyperv.nix`. Keep `machines/<name>/configuration.nix` minimal.
+- **Fleet Topology**: All 11 nodes (`client1` through `client11`) are sovereign Hyper-V appliances. `client1` serves as the central mesh controller appliance (with port forwarding UDP 51820 on router/Windows Firewall).
+- **Profiles**: Shared system configurations must be in `profiles/base.nix` or `profiles/hyperv.nix`. Keep `machines/<name>/configuration.nix` minimal.
 - **Clan Services**: Core Clan services (`wireguard`, `sshd`, `users`, `internet`) must be declared under `inventory.instances` with `module.input = "clan-core"`. Custom services (e.g. `fastfree-erp`) must use `_class = "clan.service"` and be instantiated under `inventory.instances`.
-- **WireGuard**: Each client machine (`client2..11`) gets an isolated WireGuard instance (`client${n}-network`) on a distinct UDP port (`51820 + n`), connecting to controller `client1`.
+- **WireGuard**: Nodes connect to controller `client1` on UDP port `51820`. Each peer node (`client2..11`) gets an isolated WireGuard instance (`client${n}-network`) on a distinct UDP port (`51820 + n`).
 - **Secrets Management**: Never embed plaintext passwords in Nix expressions. Use Clan Vars (`clan vars generate <machine>`).
 
 ## Multi-Agent Operating Environment with Paseo
@@ -234,7 +239,7 @@ FastFree is a sovereign, offline-first enterprise multi-agent monorepo and opera
   - `fastfree_erp`, `fastfree_pos`, `fastfree_hr`: Standalone Quasar apps with Capacitor mobile builds (`src-capacitor`).
   - `fastfree_website`: FastFree public portal.
   - `fastfree_backend`: Custom Frappe v15 app (Python / MariaDB).
-  - `apps/fastfree_os`: Sovereign NixOS Clan 26.05 infrastructure (VPS `client1`, Hyper-V appliances `client2..11`, WireGuard).
+  - `apps/fastfree_os`: Sovereign NixOS Clan 26.05 infrastructure (All 11 nodes `client1..11` are Hyper-V appliances, WireGuard mesh).
 - **packages/**: Core shared modular domain packages (0 TypeScript errors required):
   - `fastfree_lowcode`: UI engine, dynamic forms, datatables, 38 components, 27 composables, RTL/i18n engine.
   - `fastfree_auth`: Identity, licenses, role-based access control (Has Role child tables), API client.
@@ -274,7 +279,7 @@ FastFree is a sovereign, offline-first enterprise multi-agent monorepo and opera
 
 ##### Key Targets:
 - **`apps/fastfree_installer`**: Tauri v2 + Vue 3 desktop node installer for Windows 11 Fluent 2.
-- **`apps/fastfree_os`**: Sovereign NixOS Clan 26.05 infrastructure (`client1` VPS, `client2..11` Hyper-V appliances).
+- **`apps/fastfree_os`**: Sovereign NixOS Clan 26.05 infrastructure (11 sovereign Hyper-V appliance nodes `client1..11`).
 - **`apps/fastfree_panel`**: Central Clan management panel (Quasar 2 SPA + Hono backend).
 - **`apps/fastfree_ledger` / `pos` / `erp` / `hr`**: Quasar 2 enterprise client apps with Capacitor Android builds.
 - **`packages/*`**: Modular domain engines (`accounting`, `inventory`, `sales`, `purchase`, `hr`, `crm`, `lowcode`, `auth`).
@@ -299,6 +304,13 @@ FastFree is a sovereign, offline-first enterprise multi-agent monorepo and opera
 - **CRITICAL SECURITY FIX**: Discovered hardcoded keystore passwords in plaintext in all 4 Android workflows (`pos`, `hr`, `ledger`, `erp`).
 - Patched all 4 workflows to reference `${{ secrets.ANDROID_KEYSTORE_PASSWORD }}`.
 - Synchronized all `ai-rulez` verifiers (`7 passed, 0 failed`).
+
+##### D. Omnigent & Hindsight Integration (Paseo Retired)
+- **Omnigent Meta-Harness**: Integrated on port `8090` with declarative YAML specs (`.omnigent/agents/fastfree_supervisor.yaml`) coordinating subagent researcher, implementer, and reviewer.
+- **Hindsight Long-Term Memory**: Structured cross-session memory across World Facts, Agent Experiences, Entity Summaries, and Evolving Beliefs.
+- **Secret Sanitizer Engine**: Strict regex + entropy filter (`MemorySanitizer`) preventing WireGuard keys, Clan Vars, and keystore passwords from memory retention.
+- **Quasar AI Engineering Studio**: Mounted `ClanOmnigentScreen.vue` and upgraded `ClanAgentsHub.vue` with Session Trees, Approvals Gate, Cost/Token Telemetry, and Hindsight Memory Explorer.
+- **Paseo Retirement**: Paseo gracefully retired in favor of Omnigent's unified meta-harness architecture.
 
 ---
 

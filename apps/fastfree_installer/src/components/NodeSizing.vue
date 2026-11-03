@@ -169,7 +169,7 @@ const availableClients = computed(() => {
   if (licenseState.value && licenseState.value.eligible_clients.length > 0) {
     return licenseState.value.eligible_clients;
   }
-  return Array.from({ length: 10 }, (_, i) => `client${i + 2}`);
+  return Array.from({ length: 11 }, (_, i) => `client${i + 1}`);
 });
 </script>
 

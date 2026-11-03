@@ -3,7 +3,7 @@
 #
 # طريقة العمل:
 #   1. يتم التشغيل يدويًا عبر workflow_dispatch أو عبر لوحة التحكم (FastFree Panel API).
-#   2. يقوم ببناء صورة النظام المحددة (client2..11) بالصيغة المطلوبة
+#   2. يقوم ببناء صورة النظام المحددة (client1..11) بالصيغة المطلوبة
 #      (iso, vhdx, qcow2, raw) والمعمارية المستهدفة.
 #   3. لصيغة vhdx: يقوم ببناء مثبت ويندوز الذكي المستقل (.exe) مباشرة ونشره في Releases.
 #   4. لصيغ iso/raw/qcow2: يرفع الصورة مباشرة إلى Releases.
@@ -16,9 +16,10 @@ on:
   workflow_dispatch:
     inputs:
       machine:
-        description: "Hyper-V machine in Clan (client2-client11)"
+        description: "Hyper-V machine in Clan (client1-client11)"
         type: choice
         options:
+          - client1
           - client2
           - client3
           - client4

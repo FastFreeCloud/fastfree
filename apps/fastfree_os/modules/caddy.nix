@@ -3,12 +3,8 @@
 let
   sd = config.fastfree.subdomains;
   domain = config.fastfree.identity.domain;
-  isLocal = lib.hasSuffix ".local" domain;
-  tlsBlock = if isLocal then "tls internal" else ''
-    tls sales@fastfree.cloud {
-      ca https://acme.zerossl.com/v2/DV90
-    }
-  '';
+  # Pure offline-first internal TLS: uses Caddy's built-in local CA (Zero internet/ACME dependencies)
+  tlsBlock = "tls internal";
 
   # Shared SPA handlers (used by BOTH the https site and the loopback site).
   spaInner = spaDir: ''

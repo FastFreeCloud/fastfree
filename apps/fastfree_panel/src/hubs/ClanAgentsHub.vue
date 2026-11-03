@@ -3,13 +3,13 @@
     <!-- Hub Top Navigation Bar -->
     <div class="hub-header q-px-md q-py-sm bg-grey-10 text-white row items-center justify-between no-wrap">
       <div class="row items-center q-gutter-x-sm no-wrap">
-        <q-icon name="mdi-robot-outline" size="24px" color="cyan" />
+        <q-icon name="mdi-sitemap" size="24px" color="cyan" />
         <div>
           <div class="text-subtitle1 text-weight-bold">
-            Paseo AI Agents Hub · منظومة الوكلاء والطرفيات
+            Omnigent Multi-Agent Studio · منظومة الوكلاء المتقدمة
           </div>
           <div class="text-caption text-grey-5 gt-xs">
-            17 Multi-Agent Terminals, MCP Orchestration & Prompt Command Dispatch
+            Meta-Harness Orchestration, Subagent Worktrees, Hindsight Memory & Approvals Gate
           </div>
         </div>
       </div>
@@ -24,15 +24,15 @@
         class="text-grey-4"
         :mobile-arrows="true"
       >
-        <q-tab name="ecosystem" icon="mdi-robot-outline" label="Active Agents · الوكلاء النشطون" />
+        <q-tab name="omnigent" icon="mdi-sitemap" label="Omnigent Studio · استوديو الوكلاء" />
       </q-tabs>
     </div>
 
     <!-- Hub Tab Panels with State Persistence -->
     <div class="col overflow-hidden">
       <q-tab-panels v-model="activeTab" animated keep-alive class="fit bg-transparent">
-        <q-tab-panel name="ecosystem" class="q-pa-none fit">
-          <ClanPaseoScreen />
+        <q-tab-panel name="omnigent" class="q-pa-none fit">
+          <ClanOmnigentScreen />
         </q-tab-panel>
       </q-tab-panels>
     </div>
@@ -41,9 +41,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import ClanPaseoScreen from '../screens/ClanPaseoScreen.vue';
+import ClanOmnigentScreen from '../screens/ClanOmnigentScreen.vue';
 
-const activeTab = ref<'ecosystem'>('ecosystem');
+const activeTab = ref<'omnigent'>('omnigent');
 </script>
 
 <style scoped lang="scss">

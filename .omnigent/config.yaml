@@ -1,0 +1,102 @@
+# Omnigent Meta-Harness Central Configuration
+# Reference: https://omnigent.ai/docs/build/models
+
+version: "1.0"
+
+default_agent: "polly"
+
+smart_routing:
+  enabled: true
+  judge: "builtin-llm"
+  fallback_to_free_tier: true
+
+providers:
+  # OpenRouter Gateway for High-Performance Free Models
+  openrouter:
+    kind: gateway
+    openai:
+      base_url: https://openrouter.ai/api/v1
+      api_key: ${OPENROUTER_API_KEY}
+      models:
+        - id: deepseek/deepseek-r1:free
+          pricing:
+            input_per_million: 0.0
+            output_per_million: 0.0
+        - id: qwen/qwen-2.5-coder-32b-instruct:free
+          pricing:
+            input_per_million: 0.0
+            output_per_million: 0.0
+        - id: meta-llama/llama-3.3-70b-instruct:free
+          pricing:
+            input_per_million: 0.0
+            output_per_million: 0.0
+        - id: google/gemini-2.0-flash-exp:free
+          pricing:
+            input_per_million: 0.0
+            output_per_million: 0.0
+
+  # Local Offline Ollama Gateway
+  ollama-local:
+    kind: local
+    openai:
+      base_url: http://localhost:11434/v1
+      api_key: ollama
+      pricing:
+        input_per_million: 0.0
+        output_per_million: 0.0
+      models:
+        - deepseek-r1:14b
+        - qwen2.5-coder:14b
+
+  # Anthropic First-Party
+  anthropic:
+    kind: first-party
+    api_key: ${ANTHROPIC_API_KEY}
+    models:
+      - claude-3-7-sonnet
+      - claude-3-5-haiku
+
+harnesses:
+  claude-sdk:
+    enabled: true
+  opencode:
+    enabled: true
+    default_model: deepseek/deepseek-r1:free
+  agy:
+    enabled: true
+  cursor:
+    enabled: true
+
+# GitHub Connect Integration (https://omnigent.ai/docs/deploy/github-connect)
+github_connect:
+  enabled: true
+  token_sources:
+    - "env:COPILOT_GITHUB_TOKEN"
+    - "env:GH_TOKEN"
+    - "env:GITHUB_TOKEN"
+    - "cli:gh auth token"
+  features:
+    private_clone: true
+    pull_requests: true
+    ci_status_stream: true
+    split_diff_view: true
+    auto_pr_cross_vendor: true
+
+# Database Architecture (https://omnigent.ai/docs/deploy/database)
+database:
+  # Primary Enterprise Production Backend: PostgreSQL (High Concurrency & Multi-Subagent Fleet)
+  url: ${DATABASE_URL:-postgresql://postgres:postgres@127.0.0.1:5432/fastfree_omnigent}
+  backend: postgres # Default enterprise production standard
+  pool:
+    max_connections: 200
+    max_overflow: 20
+    timeout_seconds: 10
+  migration:
+    auto_migrate: true
+    healthcheck_grace_period_seconds: 120
+  # Note: SQLite (sqlite://~/.omnigent/omnigent.db) is only for single-node standalone dev testing
+
+worktree:
+  root: ".worktrees"
+  prefix: "omnigent-"
+  cleanup_on_finish: true

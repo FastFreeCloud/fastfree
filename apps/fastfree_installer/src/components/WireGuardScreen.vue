@@ -194,6 +194,47 @@
         </div>
       </div>
 
+      <!-- Windows Defender Firewall Inbound Rule Card -->
+      <div class="firewall-card" :class="{ 'is-allowed': firewallStatus?.rule_exists && firewallStatus?.enabled }">
+        <div class="firewall-card-content">
+          <div class="firewall-icon-box">
+            <svg class="firewall-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <path d="m9 12 2 2 4-4"></path>
+            </svg>
+          </div>
+          <div class="firewall-info">
+            <div class="firewall-header-row">
+              <span class="firewall-title">{{ t('wireguard.firewallCardTitle') }}</span>
+              <span v-if="firewallStatus?.rule_exists && firewallStatus?.enabled" class="pill pill-green">
+                <span class="dot-green"></span>
+                <span>{{ t('wireguard.firewallAllowed') }}</span>
+              </span>
+              <span v-else class="pill pill-amber">
+                <span class="dot-amber"></span>
+                <span>{{ t('wireguard.firewallBlocked') }}</span>
+              </span>
+            </div>
+            <p class="firewall-desc">{{ t('wireguard.firewallCardDesc') }}</p>
+            <div class="firewall-meta">
+              <code class="font-mono text-xs">{{ t('wireguard.firewallPorts', { ports: firewallStatus?.local_ports || '51820-51835', proto: firewallStatus?.protocol || 'UDP' }) }}</code>
+            </div>
+          </div>
+        </div>
+        <div class="firewall-action-wrap">
+          <button
+            type="button"
+            class="btn btn-firewall"
+            :disabled="loadingFirewall || (firewallStatus?.rule_exists && firewallStatus?.enabled)"
+            @click="handleConfigureFirewall"
+          >
+            <span v-if="loadingFirewall" class="spinner-tiny"></span>
+            <span v-else-if="firewallStatus?.rule_exists && firewallStatus?.enabled">{{ t('wireguard.firewallAllowed') }}</span>
+            <span v-else>{{ t('wireguard.firewallConfigureBtn') }}</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Security / Clan Invariant Notice -->
       <div class="security-card">
         <div class="sec-title">
@@ -237,12 +278,16 @@ import {
   wireGuardConfig,
   fetchWireGuardConfig,
   applyWireGuardConfig,
+  firewallStatus,
+  loadingFirewall,
+  fetchFirewallStatus,
+  enableFirewallRule,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
 
 const { t, isRtl } = useI18n();
 
-const allNodes = Array.from({ length: 10 }, (_, i) => `client${i + 2}`);
+const allNodes = Array.from({ length: 11 }, (_, i) => `client${i + 1}`);
 
 const isLoadingConfig = ref(true);
 const isTestingPing = ref(false);
@@ -257,8 +302,19 @@ const manualConf = ref<string>('');
 const confCopied = ref(false);
 
 onMounted(async () => {
-  await loadConfigForNode(selectedClientId.value);
+  await Promise.all([
+    loadConfigForNode(selectedClientId.value),
+    fetchFirewallStatus().catch((e) => console.warn('Firewall query error:', e)),
+  ]);
 });
+
+async function handleConfigureFirewall() {
+  try {
+    await enableFirewallRule();
+  } catch (err) {
+    console.warn('Firewall rule activation warning:', err);
+  }
+}
 
 async function selectTargetNode(nodeId: string) {
   selectedClientId.value = nodeId;
@@ -271,7 +327,9 @@ async function loadConfigForNode(nodeId: string) {
     const config = await fetchWireGuardConfig(nodeId);
     manualPort.value = config.listen_port;
     manualTunnelIp.value = config.client_tunnel_ip;
-    manualEndpoint.value = `${config.controller_endpoint}:${config.listen_port}`;
+    manualEndpoint.value = config.controller_endpoint.includes(':')
+      ? config.controller_endpoint
+      : `${config.controller_endpoint}:${config.listen_port}`;
     syncManualConf();
   } catch (err) {
     console.error('Failed to load wireguard config:', err);
@@ -290,7 +348,7 @@ PrivateKey = PLACEHOLDER_PRIVATE_KEY_client${n}==========================
 MTU = 1420
 
 [Peer]
-PublicKey = ff+client1+controller+vps+primary+master===
+PublicKey = Tk+A5Rv0ETng+fjsLjpmEmGYK6NR28R+l+Wz3RbbVlI=
 Endpoint = ${manualEndpoint.value}
 AllowedIPs = 10.24.0.0/16
 PersistentKeepalive = 25
@@ -299,10 +357,10 @@ PersistentKeepalive = 25
 
 function resetToDefaults() {
   const numStr = selectedClientId.value.replace('client', '');
-  const n = parseInt(numStr, 10) || 2;
-  manualPort.value = 51820 + n;
-  manualTunnelIp.value = `10.24.0.${n}/32`;
-  manualEndpoint.value = `client1.fastfree.cloud:${manualPort.value}`;
+  const n = parseInt(numStr, 10) || 1;
+  manualPort.value = n === 1 ? 51820 : 51820 + n;
+  manualTunnelIp.value = n === 1 ? '10.24.0.1/16' : `10.24.0.${n}/32`;
+  manualEndpoint.value = n === 1 ? '127.0.0.1:51820' : `client1.fastfree.cloud:${manualPort.value}`;
   syncManualConf();
 }
 
@@ -849,6 +907,126 @@ async function testHandshake() {
 
 .font-mono {
   font-family: 'Consolas', 'Courier New', monospace;
+}
+
+/* Windows Defender Firewall Inbound Card */
+.firewall-card {
+  background: var(--card-glass-bg, var(--bg-card, #18181B));
+  border: 1px solid var(--border-color, #27272A);
+  border-radius: var(--radius-card, 14px);
+  padding: 10px 14px;
+  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(8px);
+  transition: all 0.25s ease;
+}
+
+.firewall-card.is-allowed {
+  border-color: rgba(52, 211, 153, 0.4);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.firewall-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.firewall-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(25, 118, 210, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--accent-sky, #38BDF8);
+}
+
+.firewall-card.is-allowed .firewall-icon-box {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34D399;
+}
+
+.firewall-svg {
+  width: 18px;
+  height: 18px;
+}
+
+.firewall-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.firewall-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.firewall-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-main, #FFFFFF);
+}
+
+.firewall-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.badge-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-allowed {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.firewall-desc {
+  font-size: 10.5px;
+  color: var(--text-muted, #94A3B8);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.firewall-action {
+  flex-shrink: 0;
+}
+
+.btn-firewall {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #1976D2;
+  color: #FFFFFF;
+  border: none;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-firewall:hover:not(:disabled) {
+  background: #1565C0;
+}
+
+.btn-firewall.allowed {
+  background: rgba(52, 211, 153, 0.2);
+  color: #34D399;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  cursor: default;
 }
 
 .security-card {

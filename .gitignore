@@ -42,6 +42,13 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 
+# Databases & Omnigent Worktrees
+*.db
+*.db-wal
+*.db-shm
+.worktrees/
+**/.omnigent/*.db
+
 # Google service account keys (NEVER commit — live credentials)
 fastfree-508417-8f88d017a77c.json
 *-service-account*.json

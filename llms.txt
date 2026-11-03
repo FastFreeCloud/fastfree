@@ -5,8 +5,8 @@
 ## Rules
 
 - [Code Quality Standards](.ai-rulez/rules/code-quality.md): Follow these coding standards:
-- [Multi-Agent Orchestration with Paseo](.ai-rulez/rules/multi-agent-orchestration.md): FastFree is designed to run in a collaborative multi-agent ecosystem:
-- [Paseo Governance — the Only Orchestrator](.ai-rulez/rules/paseo-hub-governance.md): Paseo is the **sole** agent orchestrator for FastFree; Herdr is fully retired
+- [Multi-Agent Orchestration with Omnigent & Hindsight](.ai-rulez/rules/multi-agent-orchestration.md): FastFree is powered by an autonomous, multi-agent meta-harness ecosystem:
+- [Omnigent Meta-Harness Governance (Paseo Retired)](.ai-rulez/rules/paseo-hub-governance.md): Omnigent is the **canonical** agent orchestrator for FastFree; Paseo and Herdr are retired from canonical fleet orchestration and replaced by Omnigent on port `8090`.
 - [Zero Plaintext Secrets Policy](.ai-rulez/rules/secure-secrets.md): 1. **Nix Expressions**: Never embed plaintext passwords, private keys, hashes, or API secrets inside `.nix` files.
 - [FastFree Desktop Installer & Hyper-V Companion Invariants](.ai-rulez/domains/desktop-installer/rules/desktop-installer.md): Domain desktop-installer. When working within `apps/fastfree_installer`:
 - [FastFree ERP Domain Invariants](.ai-rulez/domains/erp-modules/rules/erp-invariants.md): Domain erp-modules. When working within ERP domain packages:
