@@ -1,0 +1,39 @@
+/**
+ * FastFree Sovereign Design System Tokens
+ * Theme: Windows 11 Fluent 2 (Dark Mica) + Cairo RTL
+ */
+:root {
+  /* Surfaces & Backgrounds */
+  --bg: #070B14;
+  --surface: #0B1120;
+  --surface-elevated: #151F32;
+  --surface-overlay: rgba(15, 23, 42, 0.75);
+
+  /* Primary Brand Colors */
+  --accent: #2563EB;
+  --accent-sky: #38BDF8;
+  --accent-amber: #F59E0B;
+  --accent-emerald: #10B981;
+  --accent-danger: #EF4444;
+
+  /* Typography */
+  --font-display: "Segoe UI Variable Display", "Cairo", sans-serif;
+  --font-body: "Segoe UI Variable Text", "Cairo", sans-serif;
+  --font-mono: "Cascadia Code", "Consolas", monospace;
+
+  /* Text Contrast */
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+
+  /* Borders & Shadows */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(56, 189, 248, 0.5);
+  --shadow-fluent: 0 16px 40px rgba(0, 0, 0, 0.55);
+
+  /* Windows 11 Fluent 2 Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+}
