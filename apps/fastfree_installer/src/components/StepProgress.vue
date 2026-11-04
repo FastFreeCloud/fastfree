@@ -8,6 +8,7 @@
       :class="{
         active: currentStep === step.number,
         completed: currentStep > step.number,
+        'dev-clickable': isDev,
       }"
       @click="navigateIfAllowed(step.number)"
     >
@@ -36,6 +37,9 @@
     </div>
     <div class="status-right">
       <span class="status-hint">{{ isRtl ? 'الإعداد والتهيئة مكتملان بالكامل • تم قفل التكوين لضمان استقرار العتاد' : 'Configuration locked for system integrity • Live in System Tray' }}</span>
+      <button v-if="isDev" class="dev-nav-btn" @click="currentStep = 1">
+        {{ isRtl ? 'وضع التطوير: معالج التثبيت' : 'DEV: Wizard Steps' }}
+      </button>
     </div>
   </div>
 </template>
@@ -45,6 +49,7 @@ import { currentStep } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
 
 const { t, isRtl } = useI18n();
+const isDev = import.meta.env.DEV;
 
 interface StepConfig {
   number: number;
@@ -62,6 +67,10 @@ const steps: StepConfig[] = [
 ];
 
 function navigateIfAllowed(target: number) {
+  if (isDev) {
+    currentStep.value = target;
+    return;
+  }
   // STRICT INVARIANT: If setup is completed and on Launchpad (Step 6), navigation back is locked!
   if (currentStep.value >= 6) {
     return;
@@ -106,6 +115,27 @@ function navigateIfAllowed(target: number) {
 .step-item.completed {
   opacity: 0.9;
   cursor: pointer;
+}
+
+.step-item.dev-clickable {
+  cursor: pointer;
+}
+
+.dev-nav-btn {
+  margin-inline-start: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #a1a1aa;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dev-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
 }
 
 .step-badge {

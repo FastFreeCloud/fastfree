@@ -22,6 +22,7 @@
 ## Skills
 
 - [AI-Rulez](.ai-rulez/skills/ai-rulez/SKILL.md): Use AI-Rulez correctly in user projects, including CLI, MCP, configuration, and generation workflows
+- [Anti-Slop Design & Craft Contract](.ai-rulez/skills/anti-slop-design/SKILL.md): Zero-tolerance Anti-AI-Slop design engineering and review contract for FastFree. Enforces human-grade UI quality, eliminates generic LLM tropes, and aligns Vue/Quasar/Tauri interfaces with Windows...
 - [caveman](.ai-rulez/skills/caveman/SKILL.md): Terse caveman communication mode: strips conversational fluff, boilerplate preambles, and repetitive explanations while preserving 100% of technical substance, code, errors, and exact facts to save...
 - [Code Reviewer](.ai-rulez/skills/code-reviewer/SKILL.md): Specialized agent for code review and quality assurance
 - [FastFree Change Policy & Commit Conventions](.ai-rulez/skills/fastfree-change-policy/SKILL.md): Mandatory code modification rules, scope boundary enforcement, secret prevention, and commit conventions for all human developers and AI agents operating within the FastFree Monorepo.

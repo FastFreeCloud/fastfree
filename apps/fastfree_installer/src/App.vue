@@ -148,7 +148,12 @@ const { t, locale, isRtl, toggleLocale, setLocale } = useI18n();
 const { theme, cycleTheme } = useTheme();
 const { isDiagnosticOpen, totalErrors, totalWarnings, logInfo, logWarn } = useDiagnostics();
 
-const appWindow = getCurrentWindow();
+let appWindow: any = null;
+try {
+  appWindow = getCurrentWindow();
+} catch {
+  // Browser preview mode fallback
+}
 
 onMounted(async () => {
   const bootStart = Date.now();
@@ -225,7 +230,9 @@ onMounted(async () => {
 });
 
 function minimizeWindow() {
-  appWindow.minimize();
+  if (appWindow) {
+    appWindow.minimize();
+  }
 }
 
 async function closeWindow() {

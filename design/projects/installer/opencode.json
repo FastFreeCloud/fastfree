@@ -1,0 +1,55 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": true,
+  "mcp": {
+    "ai-rulez": {
+      "type": "local",
+      "command": ["npx", "-y", "ai-rulez@latest", "mcp", "--allow-any-dir", "--serve-skills"],
+      "enabled": true
+    },
+    "quasar": {
+      "type": "local",
+      "command": ["npx", "-y", "@quasar/mcp@latest"],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "C:/Users/FastFree/Desktop/fastfree"
+    },
+    "jcodemunch": {
+      "type": "local",
+      "command": ["uvx", "jcodemunch-mcp==1.108.397", "serve"],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "C:/Users/FastFree/Desktop/fastfree"
+    },
+    "repomap": {
+      "type": "local",
+      "command": ["npx", "-y", "@sylphx/repomap@1.8.0", "mcp"],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "C:/Users/FastFree/Desktop/fastfree"
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
+    },
+    "tauri": {
+      "type": "local",
+      "command": ["npx", "-y", "@hypothesi/tauri-mcp-server@0.13.2"],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "C:/Users/FastFree/Desktop/fastfree"
+    },
+    "fastfree-poster": {
+      "type": "local",
+      "command": ["node", "C:/Users/FastFree/Desktop/fastfree/fastfree_mcp_tools/fastfree_poster_mcp/src/index.js"],
+      "enabled": true,
+      "timeout": 120000,
+      "cwd": "C:/Users/FastFree/Desktop/fastfree"
+    }
+  },
+  "instructions": [
+    "C:/Users/FastFree/Desktop/fastfree/AGENTS.md",
+    "DESIGN.md"
+  ]
+}

@@ -8,6 +8,8 @@
     ".agents/rules/secure-secrets.md",
     ".agents/skills/ai-rulez/SKILL.md",
     ".agents/skills/android-build-release/SKILL.md",
+    ".agents/skills/anti-slop-design/SKILL.md",
+    ".agents/skills/anti-slop-design/references/anti-slop-rules.md",
     ".agents/skills/caveman/SKILL.md",
     ".agents/skills/check-installer/SKILL.md",
     ".agents/skills/check-poster/SKILL.md",
@@ -94,6 +96,8 @@
     ".claude/rules/secure-secrets.md",
     ".claude/skills/ai-rulez/SKILL.md",
     ".claude/skills/android-build-release/SKILL.md",
+    ".claude/skills/anti-slop-design/SKILL.md",
+    ".claude/skills/anti-slop-design/references/anti-slop-rules.md",
     ".claude/skills/caveman/SKILL.md",
     ".claude/skills/check-installer/SKILL.md",
     ".claude/skills/check-poster/SKILL.md",
@@ -234,15 +238,10 @@
         "mcpServers",
         "ai-rulez"
       ]
-    ],
-    "opencode.json": [
-      [
-        "mcp",
-        "ai-rulez"
-      ]
     ]
   },
   "assets": {
+    ".agents/skills/anti-slop-design/references/anti-slop-rules.md": "7c12f4de9f595f02609acd3ffae400e9af0f6f53c1d1b2981dbcc9fcb498d470",
     ".agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-erp-bg.svg": "ffdaf14b9ec7491a60f5665e4099d31039012e46a2b85f348d483bae42b50067",
     ".agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-erp-fg.svg": "81b96e2c6e5d6ae76918692a53a664077ad081b5c97046dd3dcaf219554f43df",
     ".agents/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-bg.svg": "23b6716bc7ab7ccf3320707a47431b0ed8686481b6ed666966cbed650172f449",
@@ -298,6 +297,7 @@
     ".agents/skills/fastfree-guide/scripts/sync-mcp.sh": "143dc62a0559452e8102c442af8b3fece0c0800e26b0340e2d7d62f951daa35f",
     ".agents/skills/paseo-conductor/references/TOOLS.md": "7a1dbb0138f1cb664cc968c15ef3a637192a7a4135bde31a65489f88092501a6",
     ".agents/skills/paseo-conductor/references/approvals.md": "929d8962e3fa58d6e4c9da244b118d712b18d6e3b26acdddd5b9f437d0d38a12",
+    ".claude/skills/anti-slop-design/references/anti-slop-rules.md": "7c12f4de9f595f02609acd3ffae400e9af0f6f53c1d1b2981dbcc9fcb498d470",
     ".claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-erp-bg.svg": "ffdaf14b9ec7491a60f5665e4099d31039012e46a2b85f348d483bae42b50067",
     ".claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-erp-fg.svg": "81b96e2c6e5d6ae76918692a53a664077ad081b5c97046dd3dcaf219554f43df",
     ".claude/skills/fastfree-brand/assets/adaptive-icons/adaptive-hr-bg.svg": "23b6716bc7ab7ccf3320707a47431b0ed8686481b6ed666966cbed650172f449",

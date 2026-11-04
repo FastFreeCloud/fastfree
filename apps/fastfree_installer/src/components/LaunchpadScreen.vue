@@ -322,6 +322,14 @@
         </div>
       </div>
 
+      <!-- Live Dial Telemetry & Hardware Gauges (CasaOS Sovereign Integration) -->
+      <TelemetryDialCard
+        :telemetry="liveTelemetry"
+        :node-name="selectedClientId + '.fastfree'"
+        :is-rtl="isRtl"
+        style="margin-bottom: 16px;"
+      />
+
       <!-- Quick Access Endpoints & Web Portals -->
       <div class="endpoints-grid">
         <!-- Local Web Portal Card -->
@@ -364,6 +372,13 @@
           </div>
         </div>
       </div>
+
+      <!-- 8-App Sovereign Fleet Grid (CasaOS Launchpad) -->
+      <AppLaunchGrid
+        :is-rtl="isRtl"
+        :node-host="selectedClientId + '.fastfree.local'"
+        @launch="handleAppLaunch"
+      />
 
       <!-- Appliance Power & Operation Center -->
       <div class="companion-card">
@@ -486,6 +501,25 @@
         <span>{{ t('launchpad.openErpPortal') }}</span>
       </button>
     </div>
+
+    <!-- CasaOS Floating 4-way Movable Dock -->
+    <CasaOsDock
+      :is-rtl="isRtl"
+      :is-refreshing="isCheckingVm"
+      @refresh="checkVmStatus"
+      @open-portal="launchPortal"
+      @toggle-console="isConsoleOpen = !isConsoleOpen"
+      @restart-vm="handleVmAction('restart')"
+    />
+
+    <!-- Real-time Live Console Drawer -->
+    <LiveConsoleModal
+      :is-open="isConsoleOpen"
+      :is-rtl="isRtl"
+      :logs="consoleLogs"
+      @close="isConsoleOpen = false"
+      @clear="consoleLogs = []"
+    />
   </div>
 </template>
 
@@ -510,8 +544,28 @@ import {
 import { useI18n } from '../composables/useI18n';
 import { logInfo, logWarn, logError, logSuccess } from '../composables/useDiagnostics';
 import { checkForUpdates, isCheckingUpdate } from '../composables/useAutoUpdater';
+import { TelemetryService } from '../domain/services/TelemetryService';
+import { ApplianceTelemetry } from '../domain/models/ApplianceTelemetry';
+import { SystemLogEntry } from '../domain/models/SystemLogEntry';
+import { SovereignApp } from '../domain/models/SovereignApp';
+import CasaOsDock from './dashboard/CasaOsDock.vue';
+import AppLaunchGrid from './dashboard/AppLaunchGrid.vue';
+import TelemetryDialCard from './dashboard/TelemetryDialCard.vue';
+import LiveConsoleModal from './dashboard/LiveConsoleModal.vue';
 
 const { t, isRtl } = useI18n();
+
+const telemetryService = TelemetryService.getInstance();
+const liveTelemetry = ref<ApplianceTelemetry>(telemetryService.currentTelemetry);
+const consoleLogs = ref<SystemLogEntry[]>(SystemLogEntry.createDefaultSeed(selectedClientId.value));
+const isConsoleOpen = ref(false);
+
+function handleAppLaunch(app: SovereignApp) {
+  logInfo('Launchpad', `Launching application: ${app.getName(isRtl.value)} on port ${app.port}`);
+  consoleLogs.value.unshift(
+    new SystemLogEntry('SYSTEM', `Launched ${app.getName(isRtl.value)} (Port ${app.port})`, 'info')
+  );
+}
 
 const copiedText = ref<string | null>(null);
 const vmActionBusy = ref(false);
@@ -678,6 +732,11 @@ async function handleManualCheckUpdate() {
 
 onMounted(async () => {
   await checkVmStatus();
+  telemetryService.subscribe((t) => {
+    liveTelemetry.value = t;
+  });
+  telemetryService.startPolling(selectedClientId.value);
+
   telemetryInterval = setInterval(async () => {
     if (!isCheckingVm.value && !isProvisioning.value && !vmActionBusy.value) {
       await checkVmStatus();
@@ -686,6 +745,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  telemetryService.stopPolling();
   if (telemetryInterval) {
     clearInterval(telemetryInterval);
     telemetryInterval = null;

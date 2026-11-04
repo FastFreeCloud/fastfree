@@ -88,6 +88,21 @@ tools:
       os_env: true
       github_connect: inherit
 
+  # Subagent 5: UI/UX & Anti-Slop Designer (OpenDesign Studio)
+  subagent_designer:
+    type: agent
+    prompt: |
+      You are the FastFree Sovereign UI/UX Designer Agent.
+      Interface with OpenDesign, enforce anti-slop rules (.agents/skills/anti-slop-design/SKILL.md),
+      and prototype Windows 11 Fluent 2 / Cairo RTL interfaces without raw emojis.
+    executor:
+      harness: claude-sdk
+      model: claude-3-7-sonnet
+      fallback_model: openrouter/qwen/qwen-2.5-coder-32b-instruct:free
+    tools:
+      os_env: true
+      hindsight_recall: inherit
+
 policies:
   - name: fastfree-change-policy
     rule: "require human approval before modifying .ai-rulez/ or committing to main"

@@ -83,6 +83,14 @@
         },
         {
           "kind": "skill",
+          "id": "anti-slop-design",
+          "path": "skills/anti-slop-design/SKILL.md",
+          "delivery": "static",
+          "bytes": 3822,
+          "tokens": 796
+        },
+        {
+          "kind": "skill",
           "id": "caveman",
           "path": "skills/caveman/SKILL.md",
           "delivery": "static",
@@ -270,14 +278,14 @@
         }
       ],
       "totals": {
-        "items": 29,
-        "bytes": 497345,
-        "tokens": 23180,
+        "items": 30,
+        "bytes": 501167,
+        "tokens": 23976,
         "by_kind": {
           "check": 2,
           "command": 4,
           "rule": 6,
-          "skill": 17
+          "skill": 18
         },
         "served_skills": 3,
         "served_tokens": 7072
@@ -347,6 +355,14 @@
           "delivery": "static",
           "bytes": 2278,
           "tokens": 540
+        },
+        {
+          "kind": "skill",
+          "id": "anti-slop-design",
+          "path": "skills/anti-slop-design/SKILL.md",
+          "delivery": "static",
+          "bytes": 3822,
+          "tokens": 796
         },
         {
           "kind": "skill",
@@ -466,14 +482,14 @@
         }
       ],
       "totals": {
-        "items": 20,
-        "bytes": 111787,
-        "tokens": 14797,
+        "items": 21,
+        "bytes": 115609,
+        "tokens": 15593,
         "by_kind": {
           "check": 1,
           "command": 1,
           "rule": 5,
-          "skill": 13
+          "skill": 14
         },
         "served_skills": 0,
         "served_tokens": 0
@@ -559,6 +575,14 @@
           "delivery": "static",
           "bytes": 2278,
           "tokens": 540
+        },
+        {
+          "kind": "skill",
+          "id": "anti-slop-design",
+          "path": "skills/anti-slop-design/SKILL.md",
+          "delivery": "static",
+          "bytes": 3822,
+          "tokens": 796
         },
         {
           "kind": "skill",
@@ -751,14 +775,14 @@
         }
       ],
       "totals": {
-        "items": 29,
-        "bytes": 498031,
-        "tokens": 23365,
+        "items": 30,
+        "bytes": 501853,
+        "tokens": 24161,
         "by_kind": {
           "check": 2,
           "command": 3,
           "rule": 6,
-          "skill": 18
+          "skill": 19
         },
         "served_skills": 3,
         "served_tokens": 7072
@@ -832,6 +856,14 @@
           "delivery": "static",
           "bytes": 2278,
           "tokens": 540
+        },
+        {
+          "kind": "skill",
+          "id": "anti-slop-design",
+          "path": "skills/anti-slop-design/SKILL.md",
+          "delivery": "static",
+          "bytes": 3822,
+          "tokens": 796
         },
         {
           "kind": "skill",
@@ -1014,14 +1046,14 @@
         }
       ],
       "totals": {
-        "items": 27,
-        "bytes": 494611,
-        "tokens": 22531,
+        "items": 28,
+        "bytes": 498433,
+        "tokens": 23327,
         "by_kind": {
           "check": 2,
           "command": 3,
           "rule": 5,
-          "skill": 17
+          "skill": 18
         },
         "served_skills": 3,
         "served_tokens": 7072
@@ -1115,6 +1147,14 @@
           "delivery": "static",
           "bytes": 2278,
           "tokens": 540
+        },
+        {
+          "kind": "skill",
+          "id": "anti-slop-design",
+          "path": "skills/anti-slop-design/SKILL.md",
+          "delivery": "static",
+          "bytes": 3822,
+          "tokens": 796
         },
         {
           "kind": "skill",
@@ -1342,14 +1382,14 @@
         }
       ],
       "totals": {
-        "items": 34,
-        "bytes": 504744,
-        "tokens": 25166,
+        "items": 35,
+        "bytes": 508566,
+        "tokens": 25962,
         "by_kind": {
           "check": 3,
           "command": 4,
           "rule": 7,
-          "skill": 20
+          "skill": 21
         },
         "served_skills": 0,
         "served_tokens": 0

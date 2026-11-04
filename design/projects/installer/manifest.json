@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "od-design-system-project/v1",
+  "id": "fastfree-installer",
+  "name": "FastFree Installer & Node Companion",
+  "category": "Operating System & Enterprise",
+  "description": "Windows 11 Fluent 2 sovereign node installer and setup companion with live clock dock and 4-way edge docking for FastFree Installer.",
+  "source": {
+    "type": "local",
+    "path": "C:/Users/FastFree/Desktop/fastfree/design/projects/installer"
+  },
+  "files": {
+    "design": "DESIGN.md",
+    "tokens": "tokens.css",
+    "components": "components.html"
+  },
+  "craft": {
+    "applies": [
+      "color",
+      "accessibility-baseline",
+      "anti-ai-slop",
+      "rtl-and-bidi",
+      "fluent-2-dark"
+    ]
+  }
+}
