@@ -3,13 +3,45 @@ pub mod discovery;
 pub mod dto;
 pub mod licensing;
 pub mod logger;
+pub mod services;
 
 use logger::InstallerLogger;
 use tauri::{
-    menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Emitter, Manager,
+    Manager,
 };
+
+fn toggle_tray_dialog(app: &tauri::AppHandle) {
+    if let Some(tray_win) = app.get_webview_window("tray-dialog") {
+        let is_visible = tray_win.is_visible().unwrap_or(false);
+        if is_visible {
+            let _ = tray_win.hide();
+        } else {
+            // Position above the taskbar clock/tray notification area
+            if let Ok(Some(monitor)) = tray_win.primary_monitor() {
+                let screen_size = monitor.size();
+                let scale_factor = monitor.scale_factor();
+
+                let win_w = 320.0;
+                let win_h = 420.0;
+
+                let phys_w = (win_w * scale_factor) as i32;
+                let phys_h = (win_h * scale_factor) as i32;
+
+                let margin_x = (16.0 * scale_factor) as i32;
+                let margin_y = (60.0 * scale_factor) as i32;
+
+                let x = screen_size.width as i32 - phys_w - margin_x;
+                let y = screen_size.height as i32 - phys_h - margin_y;
+
+                let _ = tray_win.set_position(tauri::Position::Physical(tauri::PhysicalPosition { x, y }));
+            }
+            let _ = tray_win.show();
+            let _ = tray_win.unminimize();
+            let _ = tray_win.set_focus();
+        }
+    }
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -60,123 +92,43 @@ pub fn run() {
         .setup(|app| {
             InstallerLogger::info("BOOT", "Tauri core setup phase completed.");
 
-            // Build Elegant Context Menu for System Tray Companion (Near Windows Clock)
-            let title_item = MenuItem::with_id(app, "title_item", "FastFree Node Companion", false, None::<&str>)?;
-            let sep1 = PredefinedMenuItem::separator(app)?;
-            let open_portal = MenuItem::with_id(app, "open_portal", "دخول بوابة ERP (Open Portal)", true, None::<&str>)?;
-            let show_window = MenuItem::with_id(app, "show_window", "فتح لوحة التحكم (Control Center)", true, None::<&str>)?;
-            let sep2 = PredefinedMenuItem::separator(app)?;
-            let start_vm = MenuItem::with_id(app, "start_vm", "تشغيل العقدة (Start VM)", true, None::<&str>)?;
-            let restart_vm = MenuItem::with_id(app, "restart_vm", "إعادة تشغيل العقدة (Restart VM)", true, None::<&str>)?;
-            let stop_vm = MenuItem::with_id(app, "stop_vm", "إيقاف مؤقت (Stop VM)", true, None::<&str>)?;
-            let sep3 = PredefinedMenuItem::separator(app)?;
-            let check_updates = MenuItem::with_id(app, "check_updates", "فحص وتثبيت التحديثات (Check Updates)", true, None::<&str>)?;
-            let sep4 = PredefinedMenuItem::separator(app)?;
-            let exit_app = MenuItem::with_id(app, "exit_app", "إغلاق التطبيق نهائياً (Exit)", true, None::<&str>)?;
+            // Explicitly set window icon for Taskbar and DWM in Windows 11
+            if let Some(icon) = app.default_window_icon().cloned() {
+                if let Some(main) = app.get_webview_window("main") {
+                    let _ = main.set_icon(icon.clone());
+                }
+                if let Some(splash) = app.get_webview_window("splashscreen") {
+                    let _ = splash.set_icon(icon);
+                }
+            }
 
-            let tray_menu = Menu::with_items(
-                app,
-                &[
-                    &title_item,
-                    &sep1,
-                    &open_portal,
-                    &show_window,
-                    &sep2,
-                    &start_vm,
-                    &restart_vm,
-                    &stop_vm,
-                    &sep3,
-                    &check_updates,
-                    &sep4,
-                    &exit_app,
-                ],
-            )?;
+            // Ensure Windows Explorer keeps the tray icon permanently pinned next to taskbar language and clock
+            #[cfg(windows)]
+            {
+                let _ = commands::hidden_powershell()
+                    .args([
+                        "-Command",
+                        "Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer' -Name 'EnableAutoTray' -Value 0 -Type DWord -ErrorAction SilentlyContinue",
+                    ])
+                    .output();
+            }
 
-            // Register System Tray Icon
-            let _tray = TrayIconBuilder::with_id("fastfree-companion-tray")
+            // Register System Tray Icon (Opens Modern Fluent 2 Flyout Dialog above clock)
+            let tray = TrayIconBuilder::with_id("fastfree-companion-tray")
                 .tooltip("FastFree Node Companion")
                 .icon(app.default_window_icon().cloned().expect("icon must be present"))
-                .menu(&tray_menu)
                 .show_menu_on_left_click(false)
-                .on_menu_event(|app, event| {
-                    match event.id.as_ref() {
-                        "open_portal" => {
-                            InstallerLogger::info("TRAY", "Opening FastFree ERP Portal URL");
-                            let _ = tauri_plugin_opener::open_url("http://client2.fastfree.local", None::<&str>);
-                        }
-                        "show_window" => {
-                            InstallerLogger::info("TRAY", "Restoring main window from tray");
-                            if let Some(main) = app.get_webview_window("main") {
-                                let _ = main.show();
-                                let _ = main.unminimize();
-                                let _ = main.set_focus();
-                            }
-                        }
-                        "start_vm" => {
-                            InstallerLogger::info("TRAY", "Triggering Start-VM 'FastFree-client2' from tray");
-                            #[cfg(windows)]
-                            {
-                                use std::os::windows::process::CommandExt;
-                                use std::process::Command;
-                                let _ = Command::new("powershell")
-                                    .creation_flags(0x08000000)
-                                    .args(["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-Command", "Start-VM -Name 'FastFree-client2' -ErrorAction SilentlyContinue"])
-                                    .spawn();
-                            }
-                        }
-                        "restart_vm" => {
-                            InstallerLogger::info("TRAY", "Triggering Restart-VM 'FastFree-client2' from tray");
-                            #[cfg(windows)]
-                            {
-                                use std::os::windows::process::CommandExt;
-                                use std::process::Command;
-                                let _ = Command::new("powershell")
-                                    .creation_flags(0x08000000)
-                                    .args(["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-Command", "Restart-VM -Name 'FastFree-client2' -Force -ErrorAction SilentlyContinue"])
-                                    .spawn();
-                            }
-                        }
-                        "stop_vm" => {
-                            InstallerLogger::info("TRAY", "Triggering Stop-VM 'FastFree-client2' from tray");
-                            #[cfg(windows)]
-                            {
-                                use std::os::windows::process::CommandExt;
-                                use std::process::Command;
-                                let _ = Command::new("powershell")
-                                    .creation_flags(0x08000000)
-                                    .args(["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-Command", "Stop-VM -Name 'FastFree-client2' -Force -ErrorAction SilentlyContinue"])
-                                    .spawn();
-                            }
-                        }
-                        "check_updates" => {
-                            InstallerLogger::info("TRAY", "Checking for updates from tray menu");
-                            if let Some(main) = app.get_webview_window("main") {
-                                let _ = main.show();
-                                let _ = main.unminimize();
-                                let _ = main.set_focus();
-                                let _ = main.emit("trigger-check-updates", ());
-                            }
-                        }
-                        "exit_app" => {
-                            InstallerLogger::info("TRAY", "Exiting FastFree Companion");
-                            app.exit(0);
-                        }
-                        _ => {}
-                    }
-                })
                 .on_tray_icon_event(|tray, event| {
+                    let app = tray.app_handle();
                     match event {
-                        TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. }
-                        | TrayIconEvent::DoubleClick { button: MouseButton::Left, .. } => {
-                            let app = tray.app_handle();
+                        TrayIconEvent::Click { button_state: MouseButtonState::Up, .. } => {
+                            toggle_tray_dialog(app);
+                        }
+                        TrayIconEvent::DoubleClick { button: MouseButton::Left, .. } => {
                             if let Some(main) = app.get_webview_window("main") {
-                                if main.is_visible().unwrap_or(false) && !main.is_minimized().unwrap_or(false) {
-                                    let _ = main.hide();
-                                } else {
-                                    let _ = main.show();
-                                    let _ = main.unminimize();
-                                    let _ = main.set_focus();
-                                }
+                                let _ = main.show();
+                                let _ = main.unminimize();
+                                let _ = main.set_focus();
                             }
                         }
                         _ => {}
@@ -184,19 +136,31 @@ pub fn run() {
                 })
                 .build(app)?;
 
+            // Persist TrayIcon in app state so it is never dropped/removed by Rust RAII
+            app.manage(tray);
+
             Ok(())
         })
         .on_window_event(|window, event| {
+            if window.label() == "tray-dialog" {
+                if let tauri::WindowEvent::Focused(false) = event {
+                    let _ = window.hide();
+                }
+            }
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                // Keep the companion alive in the system tray when window is closed
-                api.prevent_close();
-                let _ = window.hide();
+                if window.label() == "main" {
+                    // Keep the companion alive in the system tray when main window is closed
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
             }
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_system_discovery_report,
             commands::close_splashscreen,
             commands::verify_license_key,
+            commands::transfer_license_to_current_device,
+            commands::verify_admin_password,
             commands::get_machine_hwid,
             commands::get_wireguard_status,
             commands::manage_vm,
@@ -215,8 +179,11 @@ pub fn run() {
             commands::apply_wireguard_config,
             commands::check_wireguard_firewall_rule,
             commands::enable_wireguard_firewall_rule,
+            commands::probe_wireguard_endpoint,
             commands::reconfigure_hyperv_vm,
-            commands::ensure_service_account
+            commands::ensure_service_account,
+            commands::ensure_tray_promoted,
+            commands::audit_system_steps
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
