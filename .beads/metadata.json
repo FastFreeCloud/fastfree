@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "fastfree",
+  "project_id": "5e894442-1594-4064-8c30-1e01b60a4d89"
+}

@@ -133,3 +133,9 @@ midscene_run/
 apps/fastfree_installer/src-tauri/fastfree_updater.key
 *.download.zst
 *.download
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+.beads-credential-key
+.beads/proxieddb/
+*.gate.lock*
