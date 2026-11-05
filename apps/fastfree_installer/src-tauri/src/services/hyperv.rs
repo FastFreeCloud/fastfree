@@ -169,102 +169,64 @@ impl HyperVService {
             }
         };
     
-        let ps_cmd = format!(
-            r#"
-    $ErrorActionPreference = 'Stop'
-    try {{
-        $vm = Get-VM -Name '{0}' -ErrorAction SilentlyContinue
-        if (-not $vm) {{
-            throw "VM_NOT_FOUND: Virtual machine '{0}' does not exist in Hyper-V. Please provision the node first."
-        }}
-    
-        switch ('{1}') {{
-            'start' {{
-                if ($vm.State -ne 'Running') {{
-                    Start-VM -Name '{0}' -ErrorAction Stop
-                }}
-            }}
-            'stop' {{
-                if ($vm.State -eq 'Running') {{
-                    Stop-VM -Name '{0}' -Force -ErrorAction Stop
-                }}
-            }}
-            'restart' {{
-                Restart-VM -Name '{0}' -Force -ErrorAction Stop
-            }}
-            'status' {{
-                # Query only
-            }}
-        }}
-    
-        Start-Sleep -Milliseconds 600
-        $updatedVm = Get-VM -Name '{0}' -ErrorAction Stop
-        $realState = $updatedVm.State.ToString()
-        Write-Output "FASTFREE_REAL_STATE:$realState"
-    }} catch {{
-        Write-Error $_.Exception.Message
-        exit 1
-    }}
-    "#,
-            vm_name, ps_action
-        );
-    
-        InstallerLogger::info(
-            "VM_PROVISIONING",
-            &format!(
-                "Dispatching VM management action '{}' on VM '{}'",
-                action, vm_name
-            ),
-        );
-    
         #[cfg(windows)]
         {
-            let output = hidden_powershell()
-                .args(["-Command", &ps_cmd])
-                .output();
-    
-            match output {
-                Ok(out) => {
-                    let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
-                    let stderr = String::from_utf8_lossy(&out.stderr).trim().to_string();
-                    InstallerLogger::info(
-                        "VM_PROVISIONING",
-                        &format!(
-                            "VM command executed with exit status: {:?} (stdout: {}, stderr: {})",
-                            out.status.code(),
-                            stdout,
-                            stderr
-                        ),
+            use crate::services::hyperv_wmi;
+
+            InstallerLogger::info(
+                "VM_PROVISIONING",
+                &format!("Dispatching VM management action '{}' on VM '{}'", action, vm_name),
+            );
+
+            // VM must exist first (mirrors the old Get-VM probe).
+            let vm = match hyperv_wmi::find_vm(&vm_name) {
+                Ok(Some(vm)) => vm,
+                Ok(None) => {
+                    let msg = format!(
+                        "VM_NOT_FOUND: Virtual machine '{}' does not exist in Hyper-V. Please provision the node first.",
+                        vm_name
                     );
-                    if !out.status.success() {
-                        let err_detail = if !stderr.is_empty() { stderr } else { stdout };
-                        if err_detail.contains("VM_NOT_FOUND") {
-                            return Err(format!("VM_NOT_FOUND: {}", err_detail));
-                        }
-                        return Err(format!("Hyper-V VM error: {}", err_detail));
-                    }
-    
-                    let real_state = stdout
-                        .lines()
-                        .find(|line| line.starts_with("FASTFREE_REAL_STATE:"))
-                        .and_then(|line| line.strip_prefix("FASTFREE_REAL_STATE:"))
-                        .unwrap_or("Running")
-                        .trim()
-                        .to_string();
-    
-                    return Ok(VmActionStatus {
-                        success: true,
-                        client_id,
-                        state: real_state.clone(),
-                        message: format!("Virtual machine '{}' is now {}.", vm_name, real_state),
-                    });
-                }
-                Err(e) => {
-                    let msg = format!("Failed to spawn PowerShell for VM command: {}", e);
                     InstallerLogger::error("VM_PROVISIONING", &msg);
                     return Err(msg);
                 }
+                Err(e) => {
+                    InstallerLogger::error("VM_PROVISIONING", &e);
+                    return Err(e);
+                }
+            };
+
+            // Power-state transitions via Msvm_ComputerSystem.RequestStateChange.
+            let requested = match ps_action {
+                // Same semantics as: Start-VM / Stop-VM -Force (graceful shutdown) / Restart-VM -Force
+                "start" if vm.EnabledState != 2 => Some(2u32),
+                "start" => None,
+                "stop" if vm.EnabledState == 2 || vm.EnabledState == 6 => Some(4u32),
+                "stop" => None,
+                "restart" => Some(10u32),
+                _ => None, // "status"
+            };
+
+            if let Some(rs) = requested {
+                if let Err(e) = hyperv_wmi::request_state_change(&vm.Name, rs) {
+                    InstallerLogger::error("VM_PROVISIONING", &e);
+                    return Err(format!("Hyper-V VM error: {}", e));
+                }
             }
+
+            std::thread::sleep(std::time::Duration::from_millis(600));
+
+            let real_state = hyperv_wmi::find_vm(&vm_name)
+                .ok()
+                .flatten()
+                .map(|v| hyperv_wmi::state_string(v.EnabledState).to_string())
+                .unwrap_or_else(|| "Running".to_string());
+
+            return Ok(VmActionStatus {
+                success: true,
+                client_id,
+                state: real_state.clone(),
+                message: format!("Virtual machine '{}' is now {}.", vm_name, real_state),
+            });
         }
     
         #[cfg(not(windows))]
@@ -1067,7 +1029,7 @@ impl HyperVService {
             let _ = service_hub::ensure_vmms_autostart_running();
             let _ = service_hub::add_current_user_to_hyperv_administrators();
     
-            // 4. Resolve Virtual Switch: Prefer Default Switch (Host NAT + DHCP + Internet) — native WMI, no PowerShell.
+            // 4. Resolve Virtual Switch: Prefer Default Switch (Host NAT + DHCP + Internet) â€” native WMI, no PowerShell.
             #[cfg(windows)]
             let switch_name = crate::services::hyperv_wmi::resolve_virtual_switch();
             #[cfg(not(windows))]
