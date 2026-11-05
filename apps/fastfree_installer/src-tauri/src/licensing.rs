@@ -10,6 +10,7 @@ use tauri_plugin_store::StoreExt;
 pub const GOOGLE_SHEETS_ENDPOINT: &str =
     "https://script.google.com/macros/s/AKfycbyYqVXCWgZEcEWQQ9PTfChuTryk5N9S91xmSuYxWkAXgViuJr53PzWEJajR4HhHUllVGQ/exec";
 pub const API_SECRET_TOKEN: &str = "FASTFREE-API-SECRET-KEY-998822";
+pub const FASTFREE_MASTER_TRANSFER_SECRET: &str = "@87171393";
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -17,6 +18,8 @@ pub struct GoogleSheetsRequest<'a> {
     pub api_key: &'a str,
     pub license_key: &'a str,
     pub hwid: &'a str,
+    pub user_sid: &'a str,
+    pub admin_password: Option<&'a str>,
     pub computer_name: &'a str,
     pub windows_user: &'a str,
     pub hardware_specs: &'a str,
@@ -41,9 +44,17 @@ pub struct GoogleSheetsLicenseData {
     pub expires_at: Option<String>,
     #[serde(alias = "issued_at")]
     pub issued_at: Option<String>,
-    #[serde(alias = "max_users", alias = "max_seats", alias = "maxSeats", alias = "maxUsers")]
+    #[serde(alias = "max_users")]
     pub max_users: Option<u32>,
+    #[serde(alias = "max_seats")]
+    pub max_seats: Option<u32>,
     pub max_offline_days: Option<u64>,
+}
+
+impl GoogleSheetsLicenseData {
+    pub fn get_max_users(&self) -> u32 {
+        self.max_users.or(self.max_seats).unwrap_or(50)
+    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -146,6 +157,50 @@ impl LicensingManager {
         fallback
     }
 
+    /// Read the active Windows User Security Identifier (SID) without elevated privileges
+    pub fn get_user_sid() -> String {
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            use std::process::Command;
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+            if let Ok(output) = Command::new("whoami")
+                .creation_flags(CREATE_NO_WINDOW)
+                .args(["/user", "/fo", "csv", "/nh"])
+                .output()
+            {
+                if output.status.success() {
+                    let stdout = String::from_utf8_lossy(&output.stdout);
+                    for part in stdout.split(',') {
+                        let clean = part.trim().trim_matches('"');
+                        if clean.starts_with("S-1-5-") {
+                            InstallerLogger::info(
+                                "SID_PROBE",
+                                &format!("Probed Windows User SID: {}", clean),
+                            );
+                            return clean.to_string();
+                        }
+                    }
+                }
+            }
+        }
+
+        let fallback = std::env::var("USERNAME").unwrap_or_else(|_| "DEFAULT_USER".to_string());
+        InstallerLogger::warn(
+            "SID_PROBE",
+            &format!("User SID probe fell back to username: {}", fallback),
+        );
+        fallback
+    }
+
+    /// Generate the full compound fingerprint: HWID##USER_SID
+    pub fn get_compound_fingerprint() -> String {
+        let hwid = Self::get_machine_hwid();
+        let sid = Self::get_user_sid();
+        format!("{}##{}", hwid, sid)
+    }
+
     /// Path to backup local cache file in APPDATA
     fn get_cache_file_path(app: &AppHandle) -> PathBuf {
         app.path()
@@ -230,12 +285,15 @@ impl LicensingManager {
 
         let comp_name = std::env::var("COMPUTERNAME").unwrap_or_else(|_| "Windows-PC".to_string());
         let win_user = std::env::var("USERNAME").unwrap_or_else(|_| "Admin".to_string());
+        let user_sid = Self::get_user_sid();
         let specs = format!("Arch: {}", std::env::consts::ARCH);
 
         let payload = GoogleSheetsRequest {
             api_key: API_SECRET_TOKEN,
             license_key: clean_key,
             hwid,
+            user_sid: &user_sid,
+            admin_password: None,
             computer_name: &comp_name,
             windows_user: &win_user,
             hardware_specs: &specs,
@@ -321,7 +379,7 @@ impl LicensingManager {
             return Err("License key cannot be empty".to_string());
         }
 
-        let hwid = Self::get_machine_hwid();
+        let hwid = Self::get_compound_fingerprint();
 
         // 1. Online Verification requested
         if online_check {
@@ -339,6 +397,7 @@ impl LicensingManager {
                             expires_at: None,
                             issued_at: None,
                             max_users: None,
+                            max_seats: None,
                             max_offline_days: Some(90),
                         });
 
@@ -373,7 +432,7 @@ impl LicensingManager {
                             .or_else(|| Some("2028-12-31T23:59:59Z".to_string()));
 
                         let token = api_resp.token.unwrap_or_default();
-                        let max_users = lic.max_users.unwrap_or(50);
+                        let max_users = lic.get_max_users();
 
                         let cached_record = CachedLicenseRecord {
                             key: clean_key.clone(),
@@ -383,7 +442,7 @@ impl LicensingManager {
                             company_name: org_name.clone(),
                             expires_at: expires_at.clone(),
                             max_users,
-                            max_nodes: 10,
+                            max_nodes: 1,
                             node_id: node_id.clone(),
                             hwid: hwid.clone(),
                             cached_timestamp: Self::current_epoch_seconds(),
@@ -398,11 +457,7 @@ impl LicensingManager {
                             ),
                         );
 
-                        let mut eligible: Vec<String> = (1..=11).map(|k| format!("client{}", k)).collect();
-                        if let Some(pos) = eligible.iter().position(|x| x == &node_id) {
-                            eligible.remove(pos);
-                        }
-                        eligible.insert(0, node_id.clone());
+                        let eligible: Vec<String> = vec![node_id.clone()];
 
                         let token_preview = if !token.is_empty() {
                             format!(" (Token: {}...)", &token[..token.len().min(12)])
@@ -461,6 +516,11 @@ impl LicensingManager {
                                 InstallerLogger::error("LICENSING", &desc);
                                 return Err(desc);
                             }
+                            "USER_ACCOUNT_MISMATCH" => {
+                                let desc = "License key is bound to a different user account on this machine. مفتاح الترخيص مرتبط بحساب مستخدم آخر على هذا الجهاز.".to_string();
+                                InstallerLogger::error("LICENSING", &desc);
+                                return Err(desc);
+                            }
                             "LICENSE_SUSPENDED" => {
                                 let desc = "This license has been deactivated or suspended by administrator. تم إيقاف أو تجميد هذا الترخيص بواسطة المسؤول.".to_string();
                                 InstallerLogger::error("LICENSING", &desc);
@@ -502,6 +562,11 @@ impl LicensingManager {
 
                     // Network timeout or unreachable: check local cache first
                     if let Some(cached) = Self::load_license_cache(app, &clean_key) {
+                        if cached.hwid != hwid {
+                            let desc = "License cache belongs to a different hardware node or user account (HWID/SID mismatch).".to_string();
+                            InstallerLogger::error("LICENSING", &desc);
+                            return Err(desc);
+                        }
                         InstallerLogger::info(
                             "LICENSING",
                             "Online network unreachable; validated from local cached cryptographic token.",
@@ -583,11 +648,7 @@ impl LicensingManager {
     }
 
     fn cached_to_result(cached: &CachedLicenseRecord, message: &str) -> LicenseVerificationResult {
-        let mut eligible: Vec<String> = (1..=11).map(|k| format!("client{}", k)).collect();
-        if let Some(pos) = eligible.iter().position(|x| x == &cached.node_id) {
-            eligible.remove(pos);
-        }
-        eligible.insert(0, cached.node_id.clone());
+        let eligible: Vec<String> = vec![cached.node_id.clone()];
 
         LicenseVerificationResult {
             is_valid: true,
@@ -603,6 +664,159 @@ impl LicensingManager {
             unlocked_features: Self::get_standard_features(),
             message: message.to_string(),
         }
+    }
+
+    /// Transfer license from an older device to the current physical machine & user profile
+    pub async fn transfer_license(
+        app: &AppHandle,
+        key: &str,
+        admin_password: &str,
+    ) -> Result<LicenseVerificationResult, String> {
+        let clean_key = key.trim().to_uppercase();
+        if clean_key.is_empty() {
+            return Err("License key cannot be empty".to_string());
+        }
+
+        if admin_password.trim() != FASTFREE_MASTER_TRANSFER_SECRET {
+            let err_msg = "Invalid FastFree Master Password. كلمة المرور الإدارية غير صحيحة، يتطلب إلغاء الترخيص ونقله تفويض شركة FastFree.".to_string();
+            InstallerLogger::warn("LICENSE_TRANSFER", &err_msg);
+            return Err(err_msg);
+        }
+
+        let compound_fingerprint = Self::get_compound_fingerprint();
+        InstallerLogger::info(
+            "LICENSE_TRANSFER",
+            &format!("Requesting authorized license transfer for key '{}' to new compound fingerprint: '{}'", clean_key, compound_fingerprint),
+        );
+
+        let client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(12))
+            .redirect(reqwest::redirect::Policy::limited(10))
+            .build()
+            .map_err(|e| format!("HTTP Client initialization failed: {}", e))?;
+
+        let comp_name = std::env::var("COMPUTERNAME").unwrap_or_else(|_| "Windows-PC".to_string());
+        let win_user = std::env::var("USERNAME").unwrap_or_else(|_| "Admin".to_string());
+        let user_sid = Self::get_user_sid();
+        let specs = format!("Arch: {}", std::env::consts::ARCH);
+
+        let payload = GoogleSheetsRequest {
+            api_key: API_SECRET_TOKEN,
+            license_key: &clean_key,
+            hwid: &compound_fingerprint,
+            user_sid: &user_sid,
+            admin_password: Some(admin_password.trim()),
+            computer_name: &comp_name,
+            windows_user: &win_user,
+            hardware_specs: &specs,
+            action: "transfer_hwid",
+        };
+
+        let response = client
+            .post(GOOGLE_SHEETS_ENDPOINT)
+            .json(&payload)
+            .send()
+            .await
+            .map_err(|e| format!("Network request failed: {}", e))?;
+
+        let body_text = response
+            .text()
+            .await
+            .map_err(|e| format!("Failed to read response body: {}", e))?;
+
+        let api_resp: GoogleSheetsResponse = serde_json::from_str(&body_text)
+            .map_err(|e| {
+                InstallerLogger::error("LICENSE_TRANSFER", &format!("Failed to parse transfer response: {} | Raw: {}", e, body_text));
+                format!("Failed to parse transfer response: {}", e)
+            })?;
+
+        if !api_resp.success {
+            let err_msg = api_resp.message.unwrap_or_else(|| api_resp.error.unwrap_or_else(|| "Transfer rejected".to_string()));
+            return Err(err_msg);
+        }
+
+        InstallerLogger::info("LICENSE_TRANSFER", "Transfer confirmed by Cloud Registry. Activating local node...");
+
+        let lic = api_resp.license.unwrap_or(GoogleSheetsLicenseData {
+            license_key: Some(clean_key.clone()),
+            node_id: None,
+            organization: None,
+            tier: None,
+            tier_name: None,
+            hwid: Some(compound_fingerprint.clone()),
+            status: Some("ACTIVE".to_string()),
+            expires_at: None,
+            issued_at: None,
+            max_users: None,
+            max_seats: None,
+            max_offline_days: Some(90),
+        });
+
+        let node_id = lic.node_id.clone().unwrap_or_else(|| {
+            if clean_key.starts_with("FF-CL") {
+                let num: String = clean_key
+                    .chars()
+                    .skip(5)
+                    .take(2)
+                    .filter(|c| c.is_ascii_digit())
+                    .collect();
+                format!("client{}", num.parse().unwrap_or(2))
+            } else {
+                "client2".to_string()
+            }
+        });
+
+        let tier = lic.tier.clone().unwrap_or_else(|| "enterprise".to_string());
+        let tier_name = lic
+            .tier_name
+            .clone()
+            .unwrap_or_else(|| format!("FastFree Node License ({})", node_id));
+
+        let org_name = lic
+            .organization
+            .clone()
+            .unwrap_or_else(|| format!("Enterprise Client - {}", node_id));
+
+        let expires_at = lic
+            .expires_at
+            .clone()
+            .or_else(|| Some("2028-12-31T23:59:59Z".to_string()));
+
+        let token = api_resp.token.unwrap_or_default();
+        let max_users = lic.get_max_users();
+
+        let cached_record = CachedLicenseRecord {
+            key: clean_key.clone(),
+            token,
+            tier: tier.clone(),
+            tier_name: tier_name.clone(),
+            company_name: org_name.clone(),
+            expires_at: expires_at.clone(),
+            max_users,
+            max_nodes: 1,
+            node_id: node_id.clone(),
+            hwid: compound_fingerprint,
+            cached_timestamp: Self::current_epoch_seconds(),
+        };
+
+        Self::save_license_cache(app, &cached_record);
+
+        let eligible_clients = vec![node_id.clone()];
+
+        Ok(LicenseVerificationResult {
+            is_valid: true,
+            key: clean_key,
+            node_id,
+            tier,
+            tier_name,
+            company_name: org_name,
+            expires_at,
+            max_users,
+            max_nodes: 1,
+            eligible_clients,
+            unlocked_features: Self::get_standard_features(),
+            message: "تم إلغاء الترخيص القديم ونقله وتنشيطه على هذا الجهاز بنجاح.".to_string(),
+        })
     }
 
     /// Offline Pattern Validation Fallback
@@ -725,8 +939,7 @@ impl LicensingManager {
             "sales_and_crm_engine".to_string(),
             "purchase_and_supply_chain".to_string(),
             "hr_payroll_management".to_string(),
-            "clan_nixos_self_healing".to_string(),
-            "unlimited_local_users".to_string(),
+            "fastfree_panel_governance".to_string(),
         ]
     }
 
@@ -809,5 +1022,10 @@ mod tests {
         let res: GoogleSheetsResponse = serde_json::from_str(json_not_found).unwrap();
         assert!(!res.success);
         assert_eq!(res.error.as_deref(), Some("LICENSE_NOT_FOUND"));
+    }
+
+    #[test]
+    fn test_master_transfer_secret_authorization() {
+        assert_eq!(FASTFREE_MASTER_TRANSFER_SECRET, "@87171393");
     }
 }
