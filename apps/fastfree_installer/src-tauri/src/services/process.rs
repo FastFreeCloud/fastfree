@@ -89,11 +89,25 @@ pub fn read_native_clipboard() -> String {
 pub fn promote_tray_icon() -> Result<(), String> {
     #[cfg(windows)]
     {
+        use crate::services::service_hub::to_wide;
+        use windows::core::PCWSTR;
+        use windows::Win32::System::Registry::{
+            RegCloseKey, RegOpenKeyExW, RegSetValueExW, HKEY, HKEY_CURRENT_USER, KEY_SET_VALUE,
+            REG_DWORD,
+        };
+
         InstallerLogger::info("TRAY", "Configuring Windows Explorer to promote tray icon next to taskbar language and clock...");
-        let ps_cmd = r#"
-            Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -Name "EnableAutoTray" -Value 0 -Type DWord -ErrorAction SilentlyContinue
-        "#;
-        let _ = hidden_powershell().args(["-Command", ps_cmd]).output();
+        // Native HKCU registry write replaces the previous PowerShell Set-ItemProperty call.
+        unsafe {
+            let subkey = to_wide("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer");
+            let value_name = to_wide("EnableAutoTray");
+            let mut hkey = HKEY::default();
+            if RegOpenKeyExW(HKEY_CURRENT_USER, PCWSTR::from_raw(subkey.as_ptr()), 0, KEY_SET_VALUE, &mut hkey).0 == 0 {
+                let dword = 0u32.to_ne_bytes();
+                let _ = RegSetValueExW(hkey, PCWSTR::from_raw(value_name.as_ptr()), 0, REG_DWORD, Some(dword.as_slice()));
+                let _ = RegCloseKey(hkey);
+            }
+        }
     }
     Ok(())
 }
