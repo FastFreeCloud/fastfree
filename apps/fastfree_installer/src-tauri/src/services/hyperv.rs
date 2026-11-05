@@ -638,9 +638,26 @@ impl HyperVService {
         let target_drive = target_drive.trim_end_matches('\\').to_string();
     
         InstallerLogger::info("HYPERV_RECONFIG", &format!("Reconfiguring Hyper-V appliance '{}' to optimal FastFree preset", vm_name));
-    
+
         #[cfg(windows)]
         {
+            // 1. Stop VM via WMI v2 RequestStateChange (RequestedState=3 = Disabled/Stop).
+            match crate::services::hyperv_wmi::find_vm(&vm_name) {
+                Ok(Some(vm)) => {
+                    use crate::services::hyperv_wmi::request_state_change;
+                    let guid = vm.Name.clone();
+                    if let Err(e) = request_state_change(&guid, 3) {
+                        InstallerLogger::warn("HYPERV_RECONFIG", &format!("Failed to stop VM (continuing): {}", e));
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(1500));
+                }
+                Ok(None) => {
+                    return Err(format!("VM '{}' does not exist in Hyper-V.", vm_name));
+                }
+                Err(e) => {
+                    InstallerLogger::warn("HYPERV_RECONFIG", &format!("VM state lookup failed (continuing): {}", e));
+                }
+            }
             let ps_script = format!(
                 r#"
     $ErrorActionPreference = 'Stop'
