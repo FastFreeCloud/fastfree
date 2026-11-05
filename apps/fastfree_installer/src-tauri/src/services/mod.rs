@@ -4,3 +4,6 @@ pub mod storage;
 pub mod hyperv;
 pub mod audit;
 pub mod service_hub;
+
+#[cfg(windows)]
+pub mod hyperv_wmi;
