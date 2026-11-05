@@ -1,11 +1,12 @@
 name: fastfree-lead-supervisor
-version: "1.1.0"
-description: "Master supervisor coordinating 4 specialized subagents with Hindsight persistent memory and zero-cost free model fallbacks"
+version: "1.2.0"
+description: "Master supervisor coordinating 7 specialized subagents with Hindsight persistent memory, OpenCode dual-agent review loop, and zero-cost free model fallbacks"
 prompt: |
-  You are the FastFree Lead Architect Supervisor.
-  You coordinate complex tasks across modular domain packages, Quasar apps, and NixOS configurations.
-  Decompose high-level engineering goals and delegate to your 4 specialized subagents.
+  You are the FastFree Chief Architect & AI Development Center Lead Supervisor.
+  You coordinate complex engineering workflows across modular domain packages, Quasar apps, NixOS infrastructure, and Tauri desktop nodes.
+  Decompose high-level engineering goals and delegate to your 7 specialized subagents.
   Always consult Hindsight memory for prior architecture decisions and conventions.
+  Follow the 7-phase engineering lifecycle: Understand -> Plan -> Delegate -> Execute -> Test -> Review -> Reflect.
 
 executor:
   harness: claude-sdk
@@ -27,53 +28,47 @@ tools:
     bank_id: fastfree-core-memory
 
   # ---------------------------------------------------------
-  # 2. Coordinated Subagents Fleet (4 Specialized Agents)
+  # 2. Coordinated Subagents Fleet (7 Specialized Agents)
   # ---------------------------------------------------------
 
-  # Subagent 1: Architecture & Codebase Researcher
-  subagent_researcher:
+  # Subagent 1: Project Architecture & Analysis Specialist
+  subagent_architecture:
     type: agent
-    prompt: |
-      You are a read-only research agent. Explore codebases, verify dependencies,
-      and index architectural references. Never perform destructive changes.
-    executor:
-      harness: claude-sdk
-      model: claude-3-5-haiku
-      fallback_model: openrouter/google/gemini-2.0-flash-exp:free
-    tools:
-      hindsight_recall: inherit
-      grep: inherit
-      context7: inherit
+    spec: .omnigent/agents/subagent_architecture.yaml
 
-  # Subagent 2: Full-Stack Implementer (TypeScript & LowCode)
-  subagent_implementer:
+  # Subagent 2: NixOS & Nix Flakes Infrastructure Specialist
+  subagent_nixos:
     type: agent
-    prompt: |
-      You are an expert full-stack TypeScript and Vue 3 developer.
-      Implement features strictly adhering to LowCode composables and 0 TS errors.
-      Execute in isolated worktrees (.worktrees/omnigent-*).
-    executor:
-      harness: claude-sdk
-      model: claude-3-7-sonnet
-      fallback_model: openrouter/qwen/qwen-2.5-coder-32b-instruct:free
-    tools:
-      os_env: true
-      github_connect: inherit
+    spec: .omnigent/agents/subagent_nixos.yaml
 
-  # Subagent 3: Automated Quality & Testing Agent (Cypress & Typecheck)
-  subagent_tester:
+  # Subagent 3: Clan & Sovereign Mesh Infrastructure Engineer
+  subagent_clan:
     type: agent
-    prompt: |
-      You are an automated testing and validation engineer.
-      Execute vue-tsc, Cypress specs, and strict verifiers. Never report false positives.
-    executor:
-      harness: claude-sdk
-      model: claude-3-5-haiku
-      fallback_model: openrouter/meta-llama/llama-3.3-70b-instruct:free
-    tools:
-      os_env: true
+    spec: .omnigent/agents/subagent_clan.yaml
 
-  # Subagent 4: Independent Adversarial Reviewer (OpenCode Profile)
+  # Subagent 4: Backend & Frappe Services Specialist
+  subagent_backend:
+    type: agent
+    spec: .omnigent/agents/subagent_backend.yaml
+
+  # Subagent 5: Frontend & Quasar / LowCode Specialist
+  subagent_frontend:
+    type: agent
+    spec: .omnigent/agents/subagent_frontend.yaml
+
+  # Subagent 6: Testing & QA Automation Engineer
+  subagent_qa:
+    type: agent
+    spec: .omnigent/agents/subagent_qa.yaml
+
+  # Subagent 7: Research, Documentation & AI-Rulez Specialist
+  subagent_research:
+    type: agent
+    spec: .omnigent/agents/subagent_research.yaml
+
+  # ---------------------------------------------------------
+  # 3. Independent Adversarial Reviewer (OpenCode / DeepSeek R1)
+  # ---------------------------------------------------------
   subagent_reviewer:
     type: agent
     prompt: |
@@ -88,21 +83,6 @@ tools:
       os_env: true
       github_connect: inherit
 
-  # Subagent 5: UI/UX & Anti-Slop Designer (OpenDesign Studio)
-  subagent_designer:
-    type: agent
-    prompt: |
-      You are the FastFree Sovereign UI/UX Designer Agent.
-      Interface with OpenDesign, enforce anti-slop rules (.agents/skills/anti-slop-design/SKILL.md),
-      and prototype Windows 11 Fluent 2 / Cairo RTL interfaces without raw emojis.
-    executor:
-      harness: claude-sdk
-      model: claude-3-7-sonnet
-      fallback_model: openrouter/qwen/qwen-2.5-coder-32b-instruct:free
-    tools:
-      os_env: true
-      hindsight_recall: inherit
-
 policies:
   - name: fastfree-change-policy
     rule: "require human approval before modifying .ai-rulez/ or committing to main"
@@ -110,3 +90,5 @@ policies:
     rule: "pause and alert if session spend exceeds $10.00"
   - name: free-tier-routing
     rule: "route non-critical research and lint checks to free open models when budget < $2.00"
+  - name: independent-reviewer-invariant
+    rule: "no core change or release accepted without independent sign-off from subagent_reviewer"
