@@ -1,5 +1,4 @@
 use crate::logger::InstallerLogger;
-use crate::services::process::hidden_powershell;
 use crate::services::network::NetworkService;
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
@@ -30,6 +29,359 @@ pub struct SystemAuditReport {
 
 pub struct AuditService;
 
+/// Native collection probes for `audit_system_steps` — these replace the
+/// single PowerShell audit script. Everything is silent/best-effort by design
+/// (the original script ran with `$ErrorActionPreference = 'SilentlyContinue'`
+/// and every probe fell back to a conservative default instead of failing).
+
+/// SCM query for the Hyper-V Virtual Machine Management service (`vmms`).
+#[cfg(windows)]
+fn vmms_running_native() -> bool {
+    use crate::services::service_hub::to_wide;
+    use windows::Win32::System::Services::{
+        CloseServiceHandle, OpenSCManagerW, OpenServiceW, QueryServiceStatusEx,
+        SC_MANAGER_CONNECT, SC_STATUS_PROCESS_INFO, SERVICE_QUERY_STATUS, SERVICE_RUNNING,
+        SERVICE_STATUS_PROCESS,
+    };
+    use windows::core::PCWSTR;
+
+    unsafe {
+        let scm = match OpenSCManagerW(None, None, SC_MANAGER_CONNECT) {
+            Ok(handle) => handle,
+            Err(_) => return false,
+        };
+        let service_name = to_wide("vmms");
+        let service = match OpenServiceW(
+            scm,
+            PCWSTR::from_raw(service_name.as_ptr()),
+            SERVICE_QUERY_STATUS,
+        ) {
+            Ok(handle) => handle,
+            Err(_) => {
+                let _ = CloseServiceHandle(scm);
+                return false;
+            }
+        };
+        let mut status = SERVICE_STATUS_PROCESS::default();
+        let mut bytes_needed = 0u32;
+        let buffer = std::slice::from_raw_parts_mut(
+            &mut status as *mut _ as *mut u8,
+            std::mem::size_of::<SERVICE_STATUS_PROCESS>(),
+        );
+        let query = QueryServiceStatusEx(service, SC_STATUS_PROCESS_INFO, Some(buffer), &mut bytes_needed);
+        let running = query.is_ok() && status.dwCurrentState == SERVICE_RUNNING;
+        let _ = CloseServiceHandle(service);
+        let _ = CloseServiceHandle(scm);
+        running
+    }
+}
+
+/// Token-based membership check for the local "Hyper-V Administrators" group
+/// (replaces `Get-LocalGroupMember -Group 'Hyper-V Administrators'`).
+/// `CheckTokenMembership` resolves nested group membership and, with a NULL
+/// token, inspects the calling thread's access token.
+#[cfg(windows)]
+fn in_hyperv_admin_group_native() -> bool {
+    use crate::services::service_hub::to_wide;
+    use windows::Win32::Foundation::{BOOL, HANDLE};
+    use windows::Win32::Security::{CheckTokenMembership, LookupAccountNameW, PSID, SID_NAME_USE};
+    use windows::core::{PCWSTR, PWSTR};
+
+    let account = to_wide("Hyper-V Administrators");
+    unsafe {
+        // Sizing probe for the SID and the referenced domain name.
+        let mut sid_len = 0u32;
+        let mut domain_len = 0u32;
+        let mut sid_use = SID_NAME_USE(0);
+        let _ = LookupAccountNameW(
+            PCWSTR::null(),
+            PCWSTR::from_raw(account.as_ptr()),
+            PSID(std::ptr::null_mut()),
+            &mut sid_len,
+            PWSTR::null(),
+            &mut domain_len,
+            &mut sid_use,
+        );
+        if sid_len == 0 {
+            return false;
+        }
+        let mut sid_buffer = vec![0u8; sid_len as usize];
+        let mut domain_buffer = vec![0u16; domain_len as usize];
+        let lookup = LookupAccountNameW(
+            PCWSTR::null(),
+            PCWSTR::from_raw(account.as_ptr()),
+            PSID(sid_buffer.as_mut_ptr() as *mut core::ffi::c_void),
+            &mut sid_len,
+            PWSTR::from_raw(domain_buffer.as_mut_ptr()),
+            &mut domain_len,
+            &mut sid_use,
+        );
+        if lookup.is_err() {
+            return false;
+        }
+        let mut is_member = BOOL::default();
+        CheckTokenMembership(
+            HANDLE(std::ptr::null_mut()),
+            PSID(sid_buffer.as_mut_ptr() as *mut core::ffi::c_void),
+            &mut is_member,
+        )
+        .map(|_| is_member.0 != 0)
+        .unwrap_or(false)
+    }
+}
+
+/// Existence probe for the "WireGuard" / "FastFree" Windows firewall rules
+/// (replaces `Get-NetFirewallRule -DisplayName "*WireGuard*" | "*FastFree*"`).
+/// Local firewall policy values are REG_SZ pipe-separated `key=value` payloads
+/// under FirewallPolicy\FirewallRules; the `Name=` segment holds the display name.
+/// Group-Policy-distributed rules are out of scope here, same as worst-case
+/// failures of the old command (which also mapped to `hasFwRule = $false`).
+#[cfg(windows)]
+fn wireguard_or_fastfree_firewall_rule_exists() -> bool {
+    use crate::services::service_hub::to_wide;
+    use windows::Win32::System::Registry::{
+        HKEY_LOCAL_MACHINE, KEY_READ, REG_SZ, RegCloseKey, RegEnumValueW, RegOpenKeyExW,
+        RegQueryInfoKeyW,
+    };
+    use windows::core::{PCWSTR, PWSTR};
+
+    const FIREWALL_RULES_SUBKEY: &str =
+        "SYSTEM\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy\\FirewallRules";
+
+    let subkey = to_wide(FIREWALL_RULES_SUBKEY);
+    unsafe {
+        let mut hkey = windows::Win32::System::Registry::HKEY::default();
+        if RegOpenKeyExW(
+            HKEY_LOCAL_MACHINE,
+            PCWSTR::from_raw(subkey.as_ptr()),
+            0,
+            KEY_READ,
+            &mut hkey,
+        )
+        .0 != 0
+        {
+            return false;
+        }
+
+        let mut num_values = 0u32;
+        let mut max_value_name = 0u32;
+        let mut max_value_data = 0u32;
+        let info = RegQueryInfoKeyW(
+            hkey,
+            PWSTR::null(),
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(&mut num_values),
+            Some(&mut max_value_name),
+            Some(&mut max_value_data),
+            None,
+            None,
+        );
+        if info.0 != 0 || num_values == 0 {
+            let _ = RegCloseKey(hkey);
+            return false;
+        }
+
+        let mut found = false;
+        for index in 0..num_values {
+            let mut name_buffer = vec![0u16; max_value_name as usize + 2];
+            let mut data_buffer = vec![0u8; max_value_data as usize + 4];
+            let mut name_len = name_buffer.len() as u32;
+            let mut data_len = data_buffer.len() as u32;
+            let mut value_type = 0u32;
+            let rc = RegEnumValueW(
+                hkey,
+                index,
+                PWSTR::from_raw(name_buffer.as_mut_ptr()),
+                &mut name_len,
+                None,
+                Some(&mut value_type),
+                Some(data_buffer.as_mut_ptr()),
+                Some(&mut data_len),
+            );
+            if rc.0 != 0 || value_type != REG_SZ.0 {
+                continue;
+            }
+            // REG_SZ payload: UTF-16LE, possibly null-padded.
+            let words: Vec<u16> = data_buffer[..data_len as usize]
+                .chunks_exact(2)
+                .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
+                .collect();
+            let payload = String::from_utf16_lossy(&words);
+            // The display name is stored in the `Name=` segment (pipe-separated).
+            for segment in payload.split('|') {
+                if let Some(display_name) = segment.strip_prefix("Name=") {
+                    let lowered = display_name.to_lowercase();
+                    if lowered.contains("wireguard") || lowered.contains("fastfree") {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if found {
+                break;
+            }
+        }
+        let _ = RegCloseKey(hkey);
+        found
+    }
+}
+
+/// Native equivalent of `Get-VMSwitch -Name 'Default Switch'` with the
+/// `-ErrorAction SilentlyContinue | Select-Object -First 1` fallback chain.
+/// Returns `None` when no virtual switch exists (audit maps this to "None").
+#[cfg(windows)]
+fn virtual_switch_name_native() -> Option<String> {
+    #[derive(serde::Deserialize)]
+    #[allow(non_snake_case)]
+    struct MsvmVirtualEthernetSwitchSettingData {
+        ElementName: String,
+    }
+
+    let con = wmi::WMIConnection::with_namespace_path("ROOT\\virtualization\\v2").ok()?;
+    let switches: Vec<MsvmVirtualEthernetSwitchSettingData> = con.query().ok()?;
+    if switches.is_empty() {
+        return None;
+    }
+    switches
+        .iter()
+        .find(|switch| switch.ElementName.eq_ignore_ascii_case("Default Switch"))
+        .map(|switch| switch.ElementName.clone())
+        .or_else(|| switches.first().map(|switch| switch.ElementName.clone()))
+}
+
+/// Everything the audit needs out of the Hyper-V WMI namespace
+/// (`root\virtualization\v2`) — replaces `Get-VM`, `Get-VMHardDiskDrive`,
+/// `Test-Path` and `Get-VMFirmware`.
+#[cfg(windows)]
+fn probe_vm(vm_name: &str) -> VmNativeProbe {
+    let mut probe = VmNativeProbe {
+        exists: false,
+        actual_name: vm_name.to_string(),
+        state: "NotFound".to_string(),
+        guid: String::new(),
+        hd_path: String::new(),
+        secure_boot: false,
+    };
+
+    #[derive(serde::Deserialize)]
+    #[allow(non_snake_case)]
+    struct MsvmComputerSystem {
+        Name: String,
+        ElementName: String,
+        EnabledState: u32,
+    }
+    #[derive(serde::Deserialize)]
+    #[allow(non_snake_case)]
+    struct MsvmVirtualSystemSettingData {
+        VirtualSystemIdentifier: Option<String>,
+        SecureBootEnabled: Option<bool>,
+    }
+    #[derive(serde::Deserialize)]
+    #[allow(non_snake_case)]
+    struct MsvmStorageAllocationSettingData {
+        InstanceID: Option<String>,
+        HostResource: Option<Vec<String>>,
+    }
+
+    let con = match wmi::WMIConnection::with_namespace_path("ROOT\\virtualization\\v2") {
+        Ok(con) => con,
+        Err(_) => return probe,
+    };
+    let systems: Vec<MsvmComputerSystem> = match con.query() {
+        Ok(systems) => systems,
+        Err(_) => return probe,
+    };
+    // Exact match first, then any FastFree-* appliance VM (the old script's
+    // `Get-VM | Where-Object { $_.Name -like 'FastFree-*' } | Select -First 1`).
+    let picked = systems
+        .iter()
+        .find(|system| system.ElementName.eq_ignore_ascii_case(vm_name))
+        .or_else(|| {
+            systems
+                .iter()
+                .find(|system| system.ElementName.to_lowercase().starts_with("fastfree-"))
+        });
+    let vm = match picked {
+        Some(vm) => vm,
+        None => return probe,
+    };
+    probe.exists = true;
+    probe.actual_name = vm.ElementName.clone();
+    probe.state = vm_state_label(vm.EnabledState).to_string();
+    probe.guid = vm.Name.clone();
+
+    // Secure Boot lives on Msvm_VirtualSystemSettingData (Get-VMFirmware equivalent).
+    if let Ok(settings) = con.query::<MsvmVirtualSystemSettingData>() {
+        if let Some(setting) = settings
+            .iter()
+            .find(|setting| setting.VirtualSystemIdentifier.as_deref() == Some(probe.guid.as_str()))
+        {
+            probe.secure_boot = setting.SecureBootEnabled.unwrap_or(false);
+        }
+    }
+
+    // VHD/VHDX attach path lives in Msvm_StorageAllocationSettingData.HostResource;
+    // the instance ID embeds the VM GUID ("Microsoft:<guid>\<device>").
+    if let Ok(allocations) = con.query::<MsvmStorageAllocationSettingData>() {
+        let mut first_path: Option<String> = None;
+        let mut vhd_path: Option<String> = None;
+        for allocation in allocations.iter() {
+            let belongs_to_vm = allocation
+                .InstanceID
+                .as_deref()
+                .map(|id| id.contains(probe.guid.as_str()))
+                .unwrap_or(false);
+            if !belongs_to_vm {
+                continue;
+            }
+            if let Some(resource) = allocation.HostResource.as_ref().and_then(|res| res.first()) {
+                let lowered = resource.to_lowercase();
+                if lowered.ends_with(".vhdx") || lowered.ends_with(".vhd") {
+                    vhd_path = Some(resource.clone());
+                    break;
+                }
+                if first_path.is_none() {
+                    first_path = Some(resource.clone());
+                }
+            }
+        }
+        probe.hd_path = vhd_path.or(first_path).unwrap_or_default();
+    }
+
+    probe
+}
+
+#[cfg(windows)]
+struct VmNativeProbe {
+    exists: bool,
+    actual_name: String,
+    state: String,
+    guid: String,
+    hd_path: String,
+    secure_boot: bool,
+}
+
+/// DMTF/Hyper-V `EnabledState` values mapped to the Get-VM `State` vocabulary
+/// used by the report messages ("Running" is the only value that gates step 6).
+#[cfg(windows)]
+fn vm_state_label(enabled_state: u32) -> &'static str {
+    match enabled_state {
+        2 => "Running",
+        3 => "Off",
+        4 => "Stopping",
+        6 => "Offline",
+        9 => "Quiesce",
+        10 => "Starting",
+        32768 => "Paused",
+        32769 => "Saved",
+        _ => "Unknown",
+    }
+}
+
 impl AuditService {
     pub async fn audit_system_steps(client_id: Option<String>) -> Result<SystemAuditReport, String> {
         let cid = client_id.unwrap_or_else(|| "client1".to_string());
@@ -37,120 +389,69 @@ impl AuditService {
     
         #[cfg(windows)]
         {
-            let ps_script = format!(
-                r#"
-    $ErrorActionPreference = 'SilentlyContinue'
-    $clientId = '{cid}'
-    $vmName = "FastFree-$clientId"
-    
-    # 1. Hyper-V & Admin
-    $isAdmin = $false
-    try {{
-        $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    }} catch {{}}
-    $vmms = Get-Service -Name vmms -ErrorAction SilentlyContinue
-    $vmmsRunning = ($vmms -and $vmms.Status -eq 'Running')
-    $inHypervGroup = $false
-    try {{
-        $members = Get-LocalGroupMember -Group 'Hyper-V Administrators' -ErrorAction SilentlyContinue
-        $inHypervGroup = ($members | Where-Object {{ $_.Name -like "*$env:USERNAME*" }}).Count -gt 0
-    }} catch {{}}
-    
-    # 2. License check
-    $licenseFile1 = "$env:APPDATA\cloud.fastfree.installer\fastfree_license_store.json"
-    $licenseFile2 = "$env:APPDATA\cloud.fastfree.installer\fastfree_license_cache.json"
-    $hasLicense = (Test-Path $licenseFile1) -or (Test-Path $licenseFile2)
-    
-    # 3. Storage check
-    $targetDrive = if (Test-Path "G:\") {{ "G:" }} else {{ "C:" }}
-    $driveObj = Get-PSDrive -Name ($targetDrive.TrimEnd(':')) -ErrorAction SilentlyContinue
-    $freeGb = if ($driveObj) {{ [math]::Round($driveObj.Free / 1GB, 1) }} else {{ 0 }}
-    
-    # 4. Switch & VPN
-    $sw = Get-VMSwitch -Name 'Default Switch' -ErrorAction SilentlyContinue
-    if (-not $sw) {{ $sw = Get-VMSwitch -ErrorAction SilentlyContinue | Select-Object -First 1 }}
-    $wgConf = "$env:APPDATA\FastFree\wireguard\$clientId.conf"
-    $hasWgConf = Test-Path $wgConf
-    $fwRule = Get-NetFirewallRule -DisplayName "*WireGuard*" -ErrorAction SilentlyContinue
-    if (-not $fwRule) {{ $fwRule = Get-NetFirewallRule -DisplayName "*FastFree*" -ErrorAction SilentlyContinue }}
-    
-    # 5. VM & Bootable Disk
-    $vm = Get-VM -Name $vmName -ErrorAction SilentlyContinue
-    if (-not $vm) {{
-        $vm = Get-VM | Where-Object {{ $_.Name -like 'FastFree-*' }} | Select-Object -First 1
-    }}
-    $vmExists = ($null -ne $vm)
-    $actualVmName = if ($vm) {{ $vm.Name }} else {{ $vmName }}
-    $vmState = if ($vm) {{ $vm.State.ToString() }} else {{ "NotFound" }}
-    $hd = if ($vm) {{ Get-VMHardDiskDrive $vm -ErrorAction SilentlyContinue }} else {{ $null }}
-    $hdPath = if ($hd) {{ $hd[0].Path }} else {{ "" }}
-    $diskExists = $false
-    $hasOs = $false
-    if ($hdPath) {{
-        if (Test-Path -LiteralPath $hdPath -ErrorAction SilentlyContinue) {{
-            $diskExists = $true
-            $vhd = Get-VHD -Path $hdPath -ErrorAction SilentlyContinue
-            if ($vhd -and $vhd.MinimumSize -and $vhd.MinimumSize -gt 0) {{
-                $hasOs = $true
-            }}
-        }}
-    }}
-    $secBoot = $false
-    if ($vm) {{
-        $fw = Get-VMFirmware $vm -ErrorAction SilentlyContinue
-        if ($fw) {{ $secBoot = ($fw.SecureBoot -eq 'On') }}
-    }}
-    
-    [PSCustomObject]@{{
-        isAdmin = $isAdmin
-        vmmsRunning = $vmmsRunning
-        inHypervGroup = $inHypervGroup
-        hasLicense = $hasLicense
-        targetDrive = $targetDrive
-        freeSpaceGb = $freeGb
-        switchName = if ($sw) {{ $sw.Name }} else {{ "None" }}
-        hasWgConf = $hasWgConf
-        hasFwRule = ($null -ne $fwRule)
-        vmExists = $vmExists
-        actualVmName = $actualVmName
-        vmState = $vmState
-        hdPath = $hdPath
-        diskExists = $diskExists
-        hasOsPartitions = $hasOs
-        secureBootOn = $secBoot
-    }} | ConvertTo-Json -Compress
-    "#,
-                cid = cid
-            );
-    
-            let output = hidden_powershell()
-                .args(["-Command", &ps_script])
-                .output()
-                .map_err(|e| format!("PowerShell audit failure: {}", e))?;
-    
-            let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
-            let raw: serde_json::Value = serde_json::from_str(&stdout)
-                .unwrap_or(serde_json::json!({}));
-    
-            let is_admin = raw["isAdmin"].as_bool().unwrap_or(false);
-            let vmms_running = raw["vmmsRunning"].as_bool().unwrap_or(false);
-            let in_hyperv_group = raw["inHypervGroup"].as_bool().unwrap_or(false);
-            let has_license = raw["hasLicense"].as_bool().unwrap_or(false);
-            let target_drive = raw["targetDrive"].as_str().unwrap_or("C:");
-            let free_space_gb = raw["freeSpaceGb"].as_f64().unwrap_or(0.0);
-            let switch_name = raw["switchName"].as_str().unwrap_or("None");
-            let has_wg_conf = raw["hasWgConf"].as_bool().unwrap_or(false);
+            // Native collection replaces the PowerShell audit script entirely.
+            let vm_name = format!("FastFree-{}", cid);
+
+            let is_admin = crate::services::process::is_admin_elevated();
+            let vmms_running = vmms_running_native();
+            let in_hyperv_group = in_hyperv_admin_group_native();
+
+            let appdata = std::env::var_os("APPDATA").map(std::path::PathBuf::from);
+            let has_license = appdata
+                .as_ref()
+                .map(|dir| {
+                    let base = dir.join("cloud.fastfree.installer");
+                    base.join("fastfree_license_store.json").exists()
+                        || base.join("fastfree_license_cache.json").exists()
+                })
+                .unwrap_or(false);
+
+            let target_drive = if std::path::Path::new("G:\\").exists() {
+                "G:"
+            } else {
+                "C:"
+            };
+            let free_space_gb = {
+                use sysinfo::Disks;
+                Disks::new_with_refreshed_list()
+                    .list()
+                    .iter()
+                    .find(|disk| {
+                        disk.mount_point()
+                            .to_string_lossy()
+                            .to_uppercase()
+                            .starts_with(target_drive)
+                    })
+                    .map(|disk| (disk.available_space() as f64) / (1024.0 * 1024.0 * 1024.0))
+                    .unwrap_or(0.0)
+            };
+            let free_space_gb = (free_space_gb * 10.0).round() / 10.0;
+
+            let switch_name = virtual_switch_name_native().unwrap_or_else(|| "None".to_string());
+            let has_wg_conf = appdata
+                .as_ref()
+                .map(|dir| {
+                    dir.join("FastFree")
+                        .join("wireguard")
+                        .join(format!("{}.conf", cid))
+                        .exists()
+                })
+                .unwrap_or(false);
             if has_wg_conf {
                 let _ = NetworkService::configure_windows_dns_and_hosts(&cid);
             }
-            let has_fw_rule = raw["hasFwRule"].as_bool().unwrap_or(false);
-            let vm_exists = raw["vmExists"].as_bool().unwrap_or(false);
-            let actual_vm_name = raw["actualVmName"].as_str().unwrap_or("FastFree-client1");
-            let vm_state = raw["vmState"].as_str().unwrap_or("NotFound");
-            let hd_path = raw["hdPath"].as_str().unwrap_or("");
-            let disk_exists = raw["diskExists"].as_bool().unwrap_or(false);
-            let has_os_partitions = raw["hasOsPartitions"].as_bool().unwrap_or(false);
-            let secure_boot_on = raw["secureBootOn"].as_bool().unwrap_or(false);
+            let has_fw_rule = wireguard_or_fastfree_firewall_rule_exists();
+
+            let vm_probe = probe_vm(&vm_name);
+            let vm_exists = vm_probe.exists;
+            let actual_vm_name = vm_probe.actual_name.clone();
+            let vm_state = vm_probe.state.as_str();
+            let hd_path = vm_probe.hd_path.as_str();
+            let secure_boot_on = vm_probe.secure_boot;
+            let disk_exists =
+                !hd_path.is_empty() && std::path::Path::new(hd_path).exists();
+            let has_os_partitions =
+                disk_exists && crate::services::storage::is_valid_vhdx(std::path::Path::new(hd_path));
     
             let mut items = Vec::new();
     

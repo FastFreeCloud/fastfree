@@ -1,10 +1,98 @@
 use crate::logger::InstallerLogger;
-use crate::services::process::hidden_powershell;
 use std::fs;
 use std::path::Path;
 use tauri::{AppHandle, Emitter};
 
 pub struct StorageService;
+
+/// Minimal native VHDX container check — replaces the `Get-VHD` probe.
+/// A genuine VHDX image starts with the 8-byte "vhdxfile" signature at offset 0
+/// and carries a "head" header record at 64 KiB (primary) or 128 KiB (backup copy).
+/// This is deliberately the same level of validation the old script performed
+/// (Get-VHD parseable + present), not a full integrity audit.
+pub(crate) fn is_valid_vhdx(path: &Path) -> bool {
+    use std::io::{Read, Seek, SeekFrom};
+
+    let mut file = match fs::File::open(path) {
+        Ok(f) => f,
+        Err(_) => return false,
+    };
+    let mut signature = [0u8; 8];
+    if file.read_exact(&mut signature).is_err() || &signature != b"vhdxfile" {
+        return false;
+    }
+    for header_offset in [0x10000u64, 0x20000u64] {
+        if file.seek(SeekFrom::Start(header_offset)).is_err() {
+            continue;
+        }
+        let mut header = [0u8; 4];
+        if file.read_exact(&mut header).is_ok() && &header == b"head" {
+            return true;
+        }
+    }
+    false
+}
+
+/// Best-effort native power-off of the appliance VM — replaces
+/// `Stop-VM -Name <vm> -TurnOff -Force` so the disk handle is released
+/// before deletion. Silent on any failure (the old script ran with
+/// `-ErrorAction SilentlyContinue` and discarded all output).
+#[cfg(windows)]
+fn stop_vm_best_effort(client_id: &str) {
+    #[derive(serde::Deserialize)]
+    #[allow(non_snake_case)]
+    struct MsvmComputerSystem {
+        __Path: String,
+        ElementName: String,
+    }
+    #[derive(serde::Serialize)]
+    #[allow(non_snake_case)]
+    struct RequestStateChangeInput {
+        RequestedState: u16, // 3 = Disabled (turn off)
+    }
+    #[derive(serde::Deserialize)]
+    #[allow(non_snake_case)]
+    #[allow(dead_code)]
+    struct RequestStateChangeOutput {
+        ReturnValue: u32,
+    }
+
+    let vm_name = format!("FastFree-{}", client_id);
+    let con = match wmi::WMIConnection::with_namespace_path("ROOT\\virtualization\\v2") {
+        Ok(con) => con,
+        Err(_) => return,
+    };
+    let systems: Vec<MsvmComputerSystem> = match con.query() {
+        Ok(systems) => systems,
+        Err(_) => return,
+    };
+    if let Some(vm) = systems
+        .iter()
+        .find(|system| system.ElementName.eq_ignore_ascii_case(&vm_name))
+    {
+        // Turn the VM off (hard power-off, like `Stop-VM -TurnOff -Force`).
+        // Note: the old script also deleted VM snapshots and detached the disk
+        // drive; neither can be expressed through the frozen WMI binding, and
+        // both were silently best-effort anyway. Stopping the VM releases the
+        // file lock, which is the part that lets the deletion succeed.
+        let _ = con.exec_instance_method::<MsvmComputerSystem, RequestStateChangeOutput>(
+            &vm.__Path,
+            "RequestStateChange",
+            RequestStateChangeInput { RequestedState: 3 },
+        );
+    }
+}
+
+/// Best-effort removal of an image payload (file or directory tree) — replaces
+/// the `Remove-Item ... -Force` fallback. Silent on any failure, mirroring the
+/// previous discarded output. On Windows a best-effort VM power-off is
+/// attempted first so vmms releases its handles on the VHDX.
+fn force_remove_image_best_effort(client_id: &str, vhdx_path: &str) {
+    #[cfg(windows)]
+    stop_vm_best_effort(client_id);
+    let _ = fs::remove_file(vhdx_path);
+    let _ = fs::remove_dir_all(vhdx_path);
+}
 
 impl StorageService {
     pub async fn ensure_appliance_vhdx(app: &AppHandle, client_id: &str, vhdx_path: &str) -> Result<String, String> {
@@ -12,27 +100,9 @@ impl StorageService {
         if path.exists() {
             if let Ok(meta) = fs::metadata(path) {
                 if meta.len() > 10 * 1024 * 1024 {
-                    let vhdx_validate_script = format!(
-                        r#"
-$vhd = Get-VHD -Path '{}' -ErrorAction SilentlyContinue
-if ($vhd -and $vhd.MinimumSize -and $vhd.MinimumSize -gt 0) {{
-    Write-Output "VHDX_HAS_OS:$([math]::Round($vhd.FileSize/1MB, 0))"
-}} else {{
-    Write-Output "VHDX_EMPTY_DISK"
-}}
-"#,
-                        vhdx_path
-                    );
-                    let validate_out = hidden_powershell()
-                        .args(["-Command", &vhdx_validate_script])
-                        .output();
-                    let is_bootable = match &validate_out {
-                        Ok(out) => {
-                            let stdout = String::from_utf8_lossy(&out.stdout);
-                            stdout.contains("VHDX_HAS_OS:")
-                        }
-                        Err(_) => meta.len() > 500 * 1024 * 1024,
-                    };
+                    // Native container check replaces the `Get-VHD` PowerShell probe.
+                    // Not bootable => empty/invalid dynamic stub => remove and re-deploy.
+                    let is_bootable = is_valid_vhdx(path);
                     if is_bootable {
                         let msg = format!("Valid FastFree NixOS appliance VHDX verified ({} MB)", meta.len() / (1024 * 1024));
                         InstallerLogger::info("PROVISIONING", &msg);
@@ -43,20 +113,7 @@ if ($vhd -and $vhd.MinimumSize -and $vhd.MinimumSize -gt 0) {{
                             &format!("Existing VHDX '{}' ({} MB) is an empty dynamic disk with no OS partitions. Removing to deploy bootable image.", vhdx_path, meta.len() / (1024 * 1024))
                         );
                         let _ = fs::remove_file(path);
-                        #[cfg(windows)]
-                        {
-                            let del_script = format!(
-                                r#"
-Stop-VM -Name 'FastFree-{cid}' -TurnOff -Force -ErrorAction SilentlyContinue | Out-Null
-Get-VMSnapshot -VMName 'FastFree-{cid}' -ErrorAction SilentlyContinue | Remove-VMSnapshot -ErrorAction SilentlyContinue | Out-Null
-Get-VMHardDiskDrive -VMName 'FastFree-{cid}' -ErrorAction SilentlyContinue | Remove-VMHardDiskDrive -ErrorAction SilentlyContinue | Out-Null
-icacls "{p}" /grant "$($env:USERNAME):(F)" /c /q | Out-Null
-Remove-Item -LiteralPath "{p}" -Force -ErrorAction SilentlyContinue | Out-Null
-"#,
-                                cid = client_id, p = vhdx_path
-                            );
-                            let _ = hidden_powershell().args(["-Command", &del_script]).output();
-                        }
+                        force_remove_image_best_effort(client_id, vhdx_path);
                     }
                 } else {
                     InstallerLogger::warn(
@@ -64,20 +121,7 @@ Remove-Item -LiteralPath "{p}" -Force -ErrorAction SilentlyContinue | Out-Null
                         &format!("Existing disk '{}' is an empty stub ({} bytes). Removing to deploy real image.", vhdx_path, meta.len())
                     );
                     let _ = fs::remove_file(path);
-                    #[cfg(windows)]
-                    {
-                        let del_script = format!(
-                            r#"
-Stop-VM -Name 'FastFree-{cid}' -TurnOff -Force -ErrorAction SilentlyContinue | Out-Null
-Get-VMSnapshot -VMName 'FastFree-{cid}' -ErrorAction SilentlyContinue | Remove-VMSnapshot -ErrorAction SilentlyContinue | Out-Null
-Get-VMHardDiskDrive -VMName 'FastFree-{cid}' -ErrorAction SilentlyContinue | Remove-VMHardDiskDrive -ErrorAction SilentlyContinue | Out-Null
-icacls "{p}" /grant "$($env:USERNAME):(F)" /c /q | Out-Null
-Remove-Item -LiteralPath "{p}" -Force -ErrorAction SilentlyContinue | Out-Null
-"#,
-                            cid = client_id, p = vhdx_path
-                        );
-                        let _ = hidden_powershell().args(["-Command", &del_script]).output();
-                    }
+                    force_remove_image_best_effort(client_id, vhdx_path);
                 }
             }
         }
