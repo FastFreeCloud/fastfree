@@ -7,13 +7,15 @@
       class="step-item"
       :class="{
         active: currentStep === step.number,
-        completed: currentStep > step.number,
-        'dev-clickable': isDev,
+        completed: isStepCompleted(step.number),
+        clickable: canClickStep(step.number),
+        disabled: !canClickStep(step.number),
       }"
-      @click="navigateIfAllowed(step.number)"
+      :title="getStepTooltip(step.number)"
+      @click="handleStepClick(step.number)"
     >
       <div class="step-badge">
-        <span v-if="currentStep > step.number" class="check">
+        <span v-if="isStepCompleted(step.number)" class="check">
           <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
@@ -37,19 +39,27 @@
     </div>
     <div class="status-right">
       <span class="status-hint">{{ isRtl ? 'الإعداد والتهيئة مكتملان بالكامل • تم قفل التكوين لضمان استقرار العتاد' : 'Configuration locked for system integrity • Live in System Tray' }}</span>
-      <button v-if="isDev" class="dev-nav-btn" @click="currentStep = 1">
-        {{ isRtl ? 'وضع التطوير: معالج التثبيت' : 'DEV: Wizard Steps' }}
-      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { currentStep } from '../composables/useDiscovery';
+import {
+  currentStep,
+  loadingDiscovery,
+  discoveryReport,
+  licenseState,
+  assignedCpuCores,
+  assignedRamMb,
+  targetDiskDrive,
+  wireGuardConfig,
+  isProvisioningDone,
+  canEnterStep,
+  navigateToStep,
+} from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
 
 const { t, isRtl } = useI18n();
-const isDev = import.meta.env.DEV;
 
 interface StepConfig {
   number: number;
@@ -66,19 +76,58 @@ const steps: StepConfig[] = [
   { number: 6, titleKey: 'steps.step6.title', subtitleKey: 'steps.step6.subtitle' },
 ];
 
-function navigateIfAllowed(target: number) {
-  if (isDev) {
-    currentStep.value = target;
-    return;
+function isStepCompleted(stepNum: number): boolean {
+  if (currentStep.value > stepNum) return true;
+  if (stepNum === 1) return !loadingDiscovery.value && !!discoveryReport.value;
+  if (stepNum === 2) return !!licenseState.value && licenseState.value.is_valid;
+  if (stepNum === 3) return assignedCpuCores.value >= 1 && assignedRamMb.value >= 1024 && !!targetDiskDrive.value;
+  if (stepNum === 4) return !!wireGuardConfig.value && !!wireGuardConfig.value.listen_port;
+  if (stepNum === 5) return isProvisioningDone.value;
+  return false;
+}
+
+function canClickStep(stepNum: number): boolean {
+  if (currentStep.value >= 6) return false;
+  // Block leaving step 5 while provisioning is in progress
+  if (currentStep.value === 5 && !isProvisioningDone.value) return false;
+  if (stepNum === currentStep.value) return false;
+  // Allow jumping backward to previously visited steps
+  if (stepNum < currentStep.value) return true;
+  // Forward jumping: only allow next immediate step IF prerequisites are fully met
+  if (stepNum === currentStep.value + 1) {
+    return canEnterStep(stepNum).allowed;
   }
-  // STRICT INVARIANT: If setup is completed and on Launchpad (Step 6), navigation back is locked!
+  // Strictly disallow skipping multiple steps ahead
+  return false;
+}
+
+function getStepTooltip(stepNum: number): string {
   if (currentStep.value >= 6) {
-    return;
+    return isRtl.value ? 'معالج التثبيت مقفل لضمان استقرار العتاد' : 'Wizard locked for system integrity';
   }
-  // Allow jumping backwards to already visited steps prior to provisioning
-  if (target < currentStep.value && currentStep.value < 5) {
-    currentStep.value = target;
+  if (currentStep.value === 5 && !isProvisioningDone.value) {
+    return isRtl.value ? 'جارٍ نشر وتثبيت العقدة في Hyper-V...' : 'Provisioning in progress...';
   }
+  if (stepNum === currentStep.value) {
+    return isRtl.value ? 'الخطوة الحالية' : 'Current step';
+  }
+  if (stepNum < currentStep.value) {
+    return isRtl.value ? 'العودة لهذه الخطوة المكتملة' : 'Return to this completed step';
+  }
+  if (stepNum > currentStep.value + 1) {
+    return isRtl.value
+      ? 'لا يمكن تخطي الخطوات! يجب إكمال المراحل السابقة بالترتيب لضمان أمان النظام.'
+      : 'Cannot skip steps! Complete previous stages in order.';
+  }
+  const check = canEnterStep(stepNum);
+  return check.allowed
+    ? (isRtl.value ? 'المتابعة لهذه الخطوة' : 'Proceed to this step')
+    : (isRtl.value ? `محظور: ${check.reason || 'يجب استيفاء الشروط المسبقة'}` : `Blocked: ${check.reason || 'Prerequisites required'}`);
+}
+
+function handleStepClick(target: number) {
+  if (!canClickStep(target)) return;
+  navigateToStep(target);
 }
 </script>
 
@@ -100,42 +149,36 @@ function navigateIfAllowed(target: number) {
   gap: 8px;
   position: relative;
   flex: 1;
-  opacity: 0.55;
+  opacity: 0.4;
   transition: all 0.25s ease;
+  cursor: not-allowed;
 }
 
 .step-item:last-child {
   flex: 0 1 auto;
 }
 
+.step-item.clickable {
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.step-item.clickable:hover {
+  opacity: 1;
+}
+
 .step-item.active {
   opacity: 1;
+  cursor: default;
 }
 
 .step-item.completed {
   opacity: 0.9;
-  cursor: pointer;
 }
 
-.step-item.dev-clickable {
-  cursor: pointer;
-}
-
-.dev-nav-btn {
-  margin-inline-start: 12px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #a1a1aa;
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.dev-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
+.step-item.disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
 }
 
 .step-badge {

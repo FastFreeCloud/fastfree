@@ -128,6 +128,52 @@ export const currentStep = ref<number>(1);
 export const loadingDiscovery = ref<boolean>(true);
 export const discoveryReport = ref<SystemDiscoveryReport | null>(null);
 
+// Persistent User Preferences Cache (LocalStorage Key)
+const STORAGE_PREF_PREFIX = 'fastfree_wizard_';
+
+export function saveUserPreferences() {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(`${STORAGE_PREF_PREFIX}target_drive`, targetDiskDrive.value);
+      localStorage.setItem(`${STORAGE_PREF_PREFIX}cores`, String(assignedCpuCores.value));
+      localStorage.setItem(`${STORAGE_PREF_PREFIX}ram_mb`, String(assignedRamMb.value));
+      localStorage.setItem(`${STORAGE_PREF_PREFIX}client_id`, selectedClientId.value);
+      if (licenseState.value?.key) {
+        localStorage.setItem(`${STORAGE_PREF_PREFIX}license_key`, licenseState.value.key);
+      }
+      if (licenseState.value) {
+        localStorage.setItem(`${STORAGE_PREF_PREFIX}license_data`, JSON.stringify(licenseState.value));
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to save user preferences cache:', e);
+  }
+}
+
+export function loadUserPreferences() {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const savedDrive = localStorage.getItem(`${STORAGE_PREF_PREFIX}target_drive`);
+      const savedCores = localStorage.getItem(`${STORAGE_PREF_PREFIX}cores`);
+      const savedRam = localStorage.getItem(`${STORAGE_PREF_PREFIX}ram_mb`);
+      const savedClientId = localStorage.getItem(`${STORAGE_PREF_PREFIX}client_id`);
+      const savedLicenseData = localStorage.getItem(`${STORAGE_PREF_PREFIX}license_data`);
+
+      if (savedDrive) targetDiskDrive.value = savedDrive;
+      if (savedCores && !isNaN(Number(savedCores))) assignedCpuCores.value = Number(savedCores);
+      if (savedRam && !isNaN(Number(savedRam))) assignedRamMb.value = Number(savedRam);
+      if (savedClientId) selectedClientId.value = savedClientId;
+      if (savedLicenseData) {
+        try {
+          licenseState.value = JSON.parse(savedLicenseData);
+        } catch {}
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load user preferences cache:', e);
+  }
+}
+
 // Configuration state
 export const licenseState = ref<LicenseVerificationResult | null>(null);
 export const selectedClientId = ref<string>('client2');
@@ -136,12 +182,111 @@ export const assignedRamMb = ref<number>(4096);
 export const targetDiskDrive = ref<string>('C:\\');
 export const wireGuardConfig = ref<WireGuardPeerConfig | null>(null);
 
+// Initialize from persistent cache if available
+loadUserPreferences();
+
 // Provisioning state
 export const provisioningProgress = ref<number>(0);
 export const hardenedSecurityEnabled = ref<boolean>(true);
 export const provisioningPhase = ref<string>('Ready');
 export const provisioningLogs = ref<string[]>([]);
 export const isProvisioningDone = ref<boolean>(false);
+export const isProvisioningRunning = ref<boolean>(false);
+
+/**
+ * Strict Step Prerequisite Validator:
+ * Evaluates whether all preceding requirements are fulfilled before a target step can be entered.
+ */
+export function canEnterStep(targetStep: number): { allowed: boolean; reason?: string } {
+  // Step 1: Always accessible unless on Launchpad locked state
+  if (targetStep <= 1) {
+    if (currentStep.value >= 6) {
+      return { allowed: false, reason: 'Wizard is locked while operational in Launchpad mode.' };
+    }
+    return { allowed: true };
+  }
+
+  // Step 2: Requires Host Discovery completion
+  if (targetStep === 2) {
+    if (loadingDiscovery.value) {
+      return { allowed: false, reason: 'Host hardware discovery must finish first.' };
+    }
+    return { allowed: true };
+  }
+
+  // Step 3: FastOS Settings / Sizing - STRICT REQUIREMENT: Verified License
+  if (targetStep === 3) {
+    if (!licenseState.value || !licenseState.value.is_valid) {
+      return { allowed: false, reason: 'A valid verified license key is required.' };
+    }
+    return { allowed: true };
+  }
+
+  // Step 4: FastFree VPN (WireGuard) - Requires Step 3 resource assignment
+  if (targetStep === 4) {
+    const s3 = canEnterStep(3);
+    if (!s3.allowed) return s3;
+    if (!assignedCpuCores.value || assignedCpuCores.value < 1 || !assignedRamMb.value || !targetDiskDrive.value) {
+      return { allowed: false, reason: 'vCPU, RAM, and target drive must be assigned.' };
+    }
+    return { allowed: true };
+  }
+
+  // Step 5: Provisioning - Requires Step 4 (License + Sizing + VPN Config)
+  if (targetStep === 5) {
+    const s4 = canEnterStep(4);
+    if (!s4.allowed) return s4;
+    return { allowed: true };
+  }
+
+  // Step 6: Launchpad - Requires VM provisioning complete and verified
+  if (targetStep === 6) {
+    const isProv = isProvisioningDone.value || (typeof localStorage !== 'undefined' && localStorage.getItem('fastfree_provisioned') === 'true');
+    if (!isProv) {
+      return { allowed: false, reason: 'Appliance provisioning must complete and be verified in Hyper-V first.' };
+    }
+    return { allowed: true };
+  }
+
+  return { allowed: false, reason: 'Invalid target step.' };
+}
+
+/**
+ * Centralized, guarded navigation helper.
+ * Strictly prevents jumping forward past uncompleted steps or skipping prerequisites.
+ */
+export function navigateToStep(targetStep: number): boolean {
+  if (targetStep === currentStep.value) return true;
+
+  // Once on Launchpad (Step 6), wizard navigation is completely locked
+  if (currentStep.value >= 6) {
+    return false;
+  }
+
+  // If currently provisioning in Step 5 and not finished, block leaving
+  if (currentStep.value === 5 && !isProvisioningDone.value) {
+    return false;
+  }
+
+  // Backward navigation: allow going back to any step < currentStep
+  if (targetStep < currentStep.value) {
+    currentStep.value = targetStep;
+    return true;
+  }
+
+  // Forward navigation: STRICT INVARIANT - user cannot skip intermediate steps.
+  // Must verify all intermediate steps up to targetStep
+  for (let s = currentStep.value + 1; s <= targetStep; s++) {
+    const check = canEnterStep(s);
+    if (!check.allowed) {
+      logWarn('Navigation', `Navigation to Step ${targetStep} blocked: ${check.reason}`);
+      return false;
+    }
+  }
+
+  currentStep.value = targetStep;
+  return true;
+}
 
 // Tauri Invocations
 export async function fetchSystemDiscovery(): Promise<SystemDiscoveryReport> {
@@ -150,10 +295,17 @@ export async function fetchSystemDiscovery(): Promise<SystemDiscoveryReport> {
     const result = await invoke<SystemDiscoveryReport>('get_system_discovery_report');
     discoveryReport.value = result;
     if (result.recommendation) {
-      assignedCpuCores.value = result.recommendation.recommended_cores;
+      // Prioritize user's saved choice from persistent cache if present
+      const savedDrive = typeof localStorage !== 'undefined' ? localStorage.getItem(`${STORAGE_PREF_PREFIX}target_drive`) : null;
+      const savedCores = typeof localStorage !== 'undefined' ? localStorage.getItem(`${STORAGE_PREF_PREFIX}cores`) : null;
+      const savedRam = typeof localStorage !== 'undefined' ? localStorage.getItem(`${STORAGE_PREF_PREFIX}ram_mb`) : null;
+
+      targetDiskDrive.value = savedDrive || result.recommendation.target_disk_drive;
+      assignedCpuCores.value = savedCores ? Number(savedCores) : result.recommendation.recommended_cores;
       const rawRam = result.recommendation.recommended_ram_mb;
-      assignedRamMb.value = Math.round(rawRam / 1024) * 1024 || 8192;
-      targetDiskDrive.value = result.recommendation.target_disk_drive;
+      assignedRamMb.value = savedRam ? Number(savedRam) : (Math.round(rawRam / 1024) * 1024 || 8192);
+      
+      saveUserPreferences();
     }
     logSuccess(
       'Discovery',
@@ -204,6 +356,7 @@ export async function verifyLicense(key: string, onlineCheck: boolean = true): P
       selectedClientId.value = result.eligible_clients[0];
     }
     if (result.is_valid) {
+      saveUserPreferences();
       logSuccess(
         'Licensing',
         `License valid: ${result.tier_name} (${result.company_name})`,
@@ -236,6 +389,45 @@ export async function fetchWireGuardConfig(clientId: string): Promise<WireGuardP
   } catch (err: any) {
     const msg = String(err?.message || err);
     logError('WireGuard', `Failed to load WireGuard configuration for ${clientId}`, msg);
+    throw err;
+  }
+}
+
+export interface WireguardProbeResult {
+  success: boolean;
+  reachable: boolean;
+  endpoint: string;
+  resolved_ip?: string;
+  resolvedIp?: string;
+  latency_ms?: number;
+  latencyMs?: number;
+  status: string;
+  message: string;
+}
+
+export async function probeWireguardEndpoint(endpoint: string, port?: number): Promise<WireguardProbeResult> {
+  logInfo('FastFree VPN', `Probing real endpoint connectivity: ${endpoint}...`);
+  try {
+    const result = await invoke<WireguardProbeResult>('probe_wireguard_endpoint', {
+      endpoint,
+      port,
+    });
+    const latency = result.latency_ms ?? result.latencyMs ?? 0;
+    const resolved = result.resolved_ip ?? result.resolvedIp ?? endpoint;
+    result.latencyMs = latency;
+    result.latency_ms = latency;
+    result.resolvedIp = resolved;
+    result.resolved_ip = resolved;
+
+    if (result.reachable) {
+      logSuccess('FastFree VPN', `Real ping verified: ${resolved} (${latency} ms)`);
+    } else {
+      logWarn('FastFree VPN', `Endpoint probe: ${result.status}`, result.message);
+    }
+    return result;
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    logError('FastFree VPN', `Endpoint probe failed for ${endpoint}`, msg);
     throw err;
   }
 }

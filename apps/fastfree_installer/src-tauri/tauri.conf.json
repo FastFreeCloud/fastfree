@@ -33,6 +33,20 @@
         "decorations": false,
         "transparent": true,
         "visible": true
+      },
+      {
+        "label": "tray-dialog",
+        "url": "index.html?view=tray",
+        "width": 320,
+        "height": 420,
+        "resizable": false,
+        "center": false,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "visible": false,
+        "shadow": true
       }
     ],
     "security": {

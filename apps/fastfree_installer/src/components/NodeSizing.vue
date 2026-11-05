@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="screen-container" :class="{ 'is-rtl': isRtl }">
     <div class="header-box">
       <div class="step-tag">{{ t('sizing.stepTag') }}</div>
@@ -7,169 +7,327 @@
     </div>
 
     <div class="content-body">
-      <!-- Target Node Appliance Selector -->
-      <div class="config-card">
-        <div class="card-title-row">
-          <label class="config-label" for="client-select">{{ t('sizing.targetAppliance') }}</label>
-          <span class="topology-badge">{{ t('sizing.topologyBadge') }}</span>
-        </div>
-        <select
-          id="client-select"
-          v-model="selectedClientId"
-          class="custom-select"
-        >
-          <option
-            v-for="client in availableClients"
-            :key="client"
-            :value="client"
-          >
-            {{ client }} (FastFree Appliance Node — Hyper-V)
-          </option>
-        </select>
-        <p class="hint-text" v-html="t('sizing.clientHint')"></p>
-      </div>
+      <div class="sizing-grid">
+        <!-- Left Column: All Hardware Resource Allocations & Progress Sliders Under Each Other -->
+        <div class="sizing-col">
+          <!-- 1. CPU Sizing Slider Progress -->
+          <div class="config-card">
+            <div class="card-title-row">
+              <div class="title-with-icon">
+                <svg class="title-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="4" y="4" width="16" height="16" rx="2"/>
+                  <rect x="9" y="9" width="6" height="6"/>
+                  <line x1="9" y1="1" x2="9" y2="4"/>
+                  <line x1="15" y1="1" x2="15" y2="4"/>
+                  <line x1="9" y1="20" x2="9" y2="23"/>
+                  <line x1="15" y1="20" x2="15" y2="23"/>
+                  <line x1="20" y1="9" x2="23" y2="9"/>
+                  <line x1="20" y1="14" x2="23" y2="14"/>
+                  <line x1="1" y1="9" x2="4" y2="9"/>
+                  <line x1="1" y1="14" x2="4" y2="14"/>
+                </svg>
+                <label class="config-label">
+                  {{ t('sizing.assignedCpu') }} <strong class="text-accent">{{ assignedCpuCores }} {{ t('common.cores') }}</strong>
+                </label>
+              </div>
+              <span class="sub-stat">{{ t('sizing.hostCpu', { count: totalHostCores }) }} ({{ cpuHostPercent }}%)</span>
+            </div>
+            <div class="slider-wrapper">
+              <input
+                v-model.number="assignedCpuCores"
+                type="range"
+                :min="minCores"
+                :max="maxCores"
+                step="1"
+                class="range-slider"
+                :style="{ '--slider-fill': `${cpuSliderFillPercent}%` }"
+              />
+              <div class="slider-ticks">
+                <button type="button" class="preset-tick-btn" @click="assignedCpuCores = minCores">
+                  {{ t('sizing.minCores', { min: minCores }) }}
+                </button>
+                <button
+                  type="button"
+                  class="preset-tick-btn text-accent font-semibold is-rec"
+                  @click="assignedCpuCores = recommendedCores"
+                >
+                  â˜… {{ t('sizing.recommendedCores', { count: recommendedCores }) }}
+                </button>
+                <button type="button" class="preset-tick-btn" @click="assignedCpuCores = maxCores">
+                  {{ t('sizing.maxCores', { max: maxCores }) }}
+                </button>
+              </div>
+            </div>
+          </div>
 
-      <!-- CPU Sizing Slider -->
-      <div class="config-card">
-        <div class="card-title-row">
-          <label class="config-label">
-            {{ t('sizing.assignedCpu') }} <strong class="text-accent">{{ assignedCpuCores }} {{ t('common.cores') }}</strong>
-          </label>
-          <span class="sub-stat">{{ t('sizing.hostCpu', { count: totalHostCores }) }}</span>
-        </div>
-        <div class="slider-wrapper">
-          <input
-            v-model.number="assignedCpuCores"
-            type="range"
-            :min="minCores"
-            :max="maxCores"
-            step="1"
-            class="range-slider"
-          />
-          <div class="slider-ticks">
-            <span>{{ t('sizing.minCores', { min: minCores }) }}</span>
-            <span class="text-accent font-semibold">{{ t('sizing.recommendedCores', { count: recommendedCores }) }}</span>
-            <span>{{ t('sizing.maxCores', { max: maxCores }) }}</span>
+          <!-- 2. RAM Sizing Slider Progress -->
+          <div class="config-card">
+            <div class="card-title-row">
+              <div class="title-with-icon">
+                <svg class="title-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 19v-3"/>
+                  <path d="M10 19v-3"/>
+                  <path d="M14 19v-3"/>
+                  <path d="M18 19v-3"/>
+                  <rect x="2" y="5" width="20" height="11" rx="2"/>
+                </svg>
+                <label class="config-label">
+                  {{ t('sizing.assignedRam') }}
+                  <strong class="text-accent">{{ (assignedRamMb / 1024).toFixed(1) }} {{ t('common.gb') }}</strong>
+                </label>
+              </div>
+              <span class="sub-stat">{{ t('sizing.hostTotalRam', { val: (totalHostRamMb / 1024).toFixed(1) }) }} ({{ ramHostPercent }}%)</span>
+            </div>
+            <div class="slider-wrapper">
+              <input
+                v-model.number="assignedRamMb"
+                type="range"
+                :min="minRamMb"
+                :max="maxRamMb"
+                step="1024"
+                class="range-slider"
+                :style="{ '--slider-fill': `${ramSliderFillPercent}%` }"
+              />
+              <div class="slider-ticks">
+                <button type="button" class="preset-tick-btn" @click="assignedRamMb = minRamMb">
+                  {{ t('sizing.minRam', { min: (minRamMb / 1024).toFixed(0) }) }}
+                </button>
+                <button
+                  type="button"
+                  class="preset-tick-btn text-accent font-semibold is-rec"
+                  @click="assignedRamMb = recommendedRamMb"
+                >
+                  â˜… {{ t('sizing.recommendedRam', { val: (recommendedRamMb / 1024).toFixed(0) }) }}
+                </button>
+                <button type="button" class="preset-tick-btn" @click="assignedRamMb = maxRamMb">
+                  {{ t('sizing.maxRam', { max: (maxRamMb / 1024).toFixed(0) }) }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Storage Destination & Disk Gauge Progress (Stacked Under RAM Progress) -->
+          <div class="config-card">
+            <div class="card-title-row">
+              <div class="title-with-icon">
+                <svg class="title-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="22" y1="12" x2="2" y2="12"></line>
+                  <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                  <line x1="6" y1="16" x2="6.01" y2="16"></line>
+                  <line x1="10" y1="16" x2="10.01" y2="16"></line>
+                </svg>
+                <label class="config-label" for="drive-select">{{ t('sizing.storageDest') }}</label>
+              </div>
+              <span class="sub-stat">{{ t('sizing.dynamicVhdxHint') }}</span>
+            </div>
+            <select
+              id="drive-select"
+              v-model="targetDiskDrive"
+              class="custom-select"
+              dir="ltr"
+            >
+              <option
+                v-for="disk in disksList"
+                :key="disk.mount_point"
+                :value="disk.mount_point"
+              >
+                {{ formatDiskOption(disk) }}
+              </option>
+            </select>
+
+            <!-- Visual Drive Capacity & Space Gauge Progress -->
+            <div v-if="selectedDiskInfo" class="disk-gauge-container">
+              <div class="disk-gauge-bar">
+                <div
+                  class="disk-gauge-fill"
+                  :style="{ width: `${diskUsedPercent}%` }"
+                  :class="{ 'gauge-warn': diskUsedPercent > 85 }"
+                ></div>
+              </div>
+              <div class="disk-gauge-meta">
+                <span class="disk-meta-text">
+                  {{ isRtl ? 'Ø§Ù„Ù…Ø³Ø§Ø­Ø© Ø§Ù„Ù…ØªÙˆÙØ±Ø©:' : 'Free Space:' }}
+                  <strong class="text-emerald">{{ selectedDiskInfo.available_space_gb.toFixed(1) }} {{ t('common.gb') }}</strong>
+                  <span class="text-muted"> / {{ selectedDiskInfo.total_space_gb.toFixed(0) }} {{ t('common.gb') }}</span>
+                </span>
+                <span class="disk-meta-badge font-mono">{{ selectedDiskInfo.file_system }}</span>
+              </div>
+            </div>
+
+            <div class="vhdx-path-pill" dir="ltr">
+              <span class="vhdx-tag">VHDX</span>
+              <code class="vhdx-code font-mono" :title="vhdxFullPath">{{ vhdxFullPath }}</code>
+              <button
+                type="button"
+                class="btn-copy-path"
+                :title="isRtl ? 'Ù†Ø³Ø® Ù…Ø³Ø§Ø± Ø§Ù„Ù‚Ø±Øµ' : 'Copy VHDX Path'"
+                @click="copyVhdxPath"
+              >
+                <svg v-if="!isPathCopied" class="copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <svg v-else class="copy-svg text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>{{ isPathCopied ? (isRtl ? 'ØªÙ… Ø§Ù„Ù†Ø³Ø®!' : 'Copied!') : (isRtl ? 'Ù†Ø³Ø®' : 'Copy') }}</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- RAM Sizing Slider -->
-      <div class="config-card">
-        <div class="card-title-row">
-          <label class="config-label">
-            {{ t('sizing.assignedRam') }}
-            <strong class="text-accent">{{ (assignedRamMb / 1024).toFixed(1) }} {{ t('common.gb') }}</strong>
-            <span class="text-muted">({{ assignedRamMb }} {{ t('common.mb') }})</span>
-          </label>
-          <span class="sub-stat">{{ t('sizing.hostTotalRam', { val: (totalHostRamMb / 1024).toFixed(1) }) }}</span>
-        </div>
-        <div class="slider-wrapper">
-          <input
-            v-model.number="assignedRamMb"
-            type="range"
-            :min="minRamMb"
-            :max="maxRamMb"
-            step="1024"
-            class="range-slider"
-          />
-          <div class="slider-ticks">
-            <span>{{ t('sizing.minRam', { min: (minRamMb / 1024).toFixed(0) }) }}</span>
-            <span class="text-accent font-semibold">{{ t('sizing.recommendedRam', { val: (recommendedRamMb / 1024).toFixed(0) }) }}</span>
-            <span>{{ t('sizing.maxRam', { max: (maxRamMb / 1024).toFixed(0) }) }}</span>
+        <!-- Right Column: Node Identity, Security Isolation & Architecture Bento Grid -->
+        <div class="sizing-col">
+          <!-- Target Node Appliance Selector -->
+          <div class="config-card">
+            <div class="card-title-row">
+              <label class="config-label" for="client-select">{{ t('sizing.targetAppliance') }}</label>
+              <span class="topology-badge">{{ t('sizing.topologyBadge') }}</span>
+            </div>
+            <!-- Licensed Node Appliance Lock -->
+            <div v-if="!hasMultipleEligibleNodes" class="locked-node-card">
+              <div class="locked-node-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="locked-svg">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </div>
+              <div class="locked-node-info">
+                <span class="locked-node-title font-mono">FastFree-{{ selectedClientId }}</span>
+                <span class="locked-node-sub">{{ isRtl ? 'Ø¹Ù‚Ø¯Ø© Ø³ÙŠØ§Ø¯ÙŠØ© Ù…Ø¹ØªÙ…Ø¯Ø© ÙˆÙ…Ù‚ØªØ±Ù†Ø© Ø¨Ø§Ù„ØªØ±Ø®ÙŠØµ Ø§Ù„Ø±Ù‚Ù…ÙŠ' : 'Licensed & cryptographically bound appliance node' }}</span>
+              </div>
+              <span class="locked-status-pill">
+                <span class="dot-green"></span>
+                {{ isRtl ? 'Ù…Ø±Ø®Øµ' : 'Licensed' }}
+              </span>
+            </div>
+            <select
+              v-else
+              id="client-select"
+              v-model="selectedClientId"
+              class="custom-select"
+            >
+              <option
+                v-for="client in availableClients"
+                :key="client"
+                :value="client"
+              >
+                {{ client }} (FastFree Appliance Node â€” Hyper-V)
+              </option>
+            </select>
+            <p class="hint-text" v-html="t('sizing.clientHint')"></p>
           </div>
-        </div>
-      </div>
 
-      <!-- Storage Destination -->
-      <div class="config-card">
-        <div class="card-title-row">
-          <label class="config-label" for="drive-select">{{ t('sizing.storageDest') }}</label>
-          <span class="sub-stat">{{ t('sizing.dynamicVhdxHint') }}</span>
-        </div>
-        <select
-          id="drive-select"
-          v-model="targetDiskDrive"
-          class="custom-select"
-        >
-          <option
-            v-for="disk in disksList"
-            :key="disk.mount_point"
-            :value="disk.mount_point"
-          >
-            {{ disk.name || disk.mount_point }} ({{ disk.mount_point }}) — {{ disk.available_space_gb.toFixed(1) }} {{ t('common.gb') }} {{ t('common.free') }} ({{ disk.file_system }})
-          </option>
-        </select>
-      </div>
-
-      <!-- Sovereign Security & Service Account Isolation Card -->
-      <div class="config-card">
-        <div class="card-title-row">
-          <div class="security-title-wrap">
-            <span class="security-icon-shield">
-              <svg class="sec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                <path d="m9 12 2 2 4-4"></path>
-              </svg>
-            </span>
-            <label class="config-label" for="hardened-security-toggle">
-              {{ t('sizing.hardenedSecurityTitle') }}
-            </label>
+          <!-- Sovereign Security & Service Account Isolation Card -->
+          <div class="config-card">
+            <div class="card-title-row">
+              <div class="security-title-wrap">
+                <span class="security-icon-shield">
+                  <svg class="sec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="m9 12 2 2 4-4"></path>
+                  </svg>
+                </span>
+                <label class="config-label" for="hardened-security-toggle">
+                  {{ t('sizing.hardenedSecurityTitle') }}
+                </label>
+              </div>
+              <label class="fluent-toggle" for="hardened-security-toggle">
+                <input
+                  id="hardened-security-toggle"
+                  v-model="hardenedSecurityEnabled"
+                  type="checkbox"
+                />
+                <span class="fluent-toggle-track">
+                  <span class="fluent-toggle-thumb"></span>
+                </span>
+              </label>
+            </div>
+            <p class="hint-text" v-html="t('sizing.hardenedSecurityHint', { account: `fastfree_${selectedClientId}` })"></p>
           </div>
-          <div class="toggle-switch-wrapper">
-            <input
-              id="hardened-security-toggle"
-              v-model="hardenedSecurityEnabled"
-              type="checkbox"
-              class="fluent-toggle"
-            />
-            <label for="hardened-security-toggle" class="fluent-toggle-track">
-              <span class="fluent-toggle-thumb"></span>
-            </label>
-          </div>
-        </div>
-        <p class="hint-text" v-html="t('sizing.hardenedSecurityHint', { account: `fastfree_${selectedClientId}` })"></p>
-      </div>
 
-      <!-- Allocation Summary Pill -->
-      <div class="allocation-summary-box">
-        <div class="summary-item">
-          <span class="sum-label">{{ t('sizing.hostRamPreserved') }}</span>
-          <span class="sum-val text-emerald">{{ ((totalHostRamMb - assignedRamMb) / 1024).toFixed(1) }} {{ t('common.gb') }}</span>
-        </div>
-        <div class="summary-item">
-          <span class="sum-label">{{ t('sizing.workloadClass') }}</span>
-          <span class="sum-val text-accent">
-            {{ assignedRamMb >= 8192 ? t('sizing.prodErp') : t('sizing.stdEnterprise') }}
-          </span>
-        </div>
-        <div class="summary-item">
-          <span class="sum-label">{{ t('sizing.securityProfile') }}</span>
-          <span class="sum-val" :class="hardenedSecurityEnabled ? 'text-emerald' : 'text-amber'">
-            {{ hardenedSecurityEnabled ? t('sizing.isolatedAccount', { account: `fastfree_${selectedClientId}` }) : t('sizing.standardAccount') }}
-          </span>
-        </div>
-        <div class="summary-item">
-          <span class="sum-label">{{ t('sizing.vswitch') }}</span>
-          <span class="sum-val">{{ t('sizing.vswitchName') }}</span>
+          <!-- Unified Appliance Architecture & Headroom Bento Grid -->
+          <div class="config-card hyperv-firmware-card">
+            <div class="card-title-row">
+              <div class="title-with-icon">
+                <svg class="title-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                  <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                  <line x1="6" y1="6" x2="6.01" y2="6"/>
+                  <line x1="6" y1="18" x2="6.01" y2="18"/>
+                </svg>
+                <span class="config-label">{{ isRtl ? 'Ù…ÙˆØ§ØµÙØ§Øª FastOS ÙˆØªÙˆØ²ÙŠØ¹ Ø§Ù„Ù…ÙˆØ§Ø±Ø¯ Ø§Ù„Ø­ÙŠØ©' : 'FastOS Architecture & Live Telemetry' }}</span>
+              </div>
+              <span class="gen2-badge">Gen 2 UEFI</span>
+            </div>
+
+            <div class="bento-telemetry-grid">
+              <div class="bento-cell">
+                <span class="bento-key">{{ t('sizing.hostRamPreserved') }}</span>
+                <span class="bento-val text-emerald font-semibold">{{ ((totalHostRamMb - assignedRamMb) / 1024).toFixed(1) }} {{ t('common.gb') }}</span>
+              </div>
+              <div class="bento-cell">
+                <span class="bento-key">{{ isRtl ? 'Ø§Ù„Ø£Ù…Ø§Ù† ÙˆØªØ´ÙÙŠØ± TPM' : 'Firmware Security' }}</span>
+                <span class="bento-val text-emerald">
+                  <span class="dot-green-micro"></span>
+                  UEFI + TPM 2.0
+                </span>
+              </div>
+              <div class="bento-cell">
+                <span class="bento-key">{{ t('sizing.workloadClass') }}</span>
+                <span class="bento-val text-accent">
+                  {{ assignedRamMb >= 8192 ? t('sizing.prodErp') : t('sizing.stdEnterprise') }}
+                </span>
+              </div>
+              <div class="bento-cell">
+                <span class="bento-key">{{ isRtl ? 'Ù†Ø¸Ø§Ù… Ø§Ù„ØªØ´ØºÙŠÙ„ Ø§Ù„Ø³ÙŠØ§Ø¯ÙŠ' : 'Sovereign OS' }}</span>
+                <span class="bento-val font-mono text-cyan">NixOS Clan 26.05</span>
+              </div>
+              <div class="bento-cell span-2">
+                <span class="bento-key">{{ t('sizing.vswitch') }}</span>
+                <span class="bento-val font-mono text-xs">{{ t('sizing.vswitchName') }}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Action Bar -->
     <div class="action-bar">
-      <button class="btn btn-secondary" @click="currentStep = 2">
-        {{ t('sizing.backToLicense') }}
-      </button>
-      <button class="btn btn-primary" @click="currentStep = 4">
-        {{ t('sizing.inspectWireguard') }}
-      </button>
+      <div class="action-bar-start">
+        <button class="btn btn-secondary" @click="currentStep = 2">
+          <span class="btn-flex">
+            <svg class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline :points="isRtl ? '9 18 15 12 9 6' : '15 18 9 12 15 6'"></polyline>
+            </svg>
+            <span>{{ t('sizing.backToLicense') }}</span>
+          </span>
+        </button>
+      </div>
+
+      <!-- CENTER: Persistent FastFree 3D Precision Timepiece -->
+      <div class="action-bar-center">
+        <FastFreeTimepiece />
+      </div>
+
+      <div class="action-bar-end">
+        <button class="btn btn-primary btn-next" @click="currentStep = 4">
+          <span class="btn-flex">
+            <span>{{ t('sizing.inspectWireguard') }}</span>
+            <svg class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline :points="isRtl ? '15 18 9 12 15 6' : '9 18 15 12 9 6'"></polyline>
+            </svg>
+          </span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed, watch } from 'vue';
+import FastFreeTimepiece from './FastFreeTimepiece.vue';
 import {
   currentStep,
   discoveryReport,
@@ -179,10 +337,40 @@ import {
   assignedRamMb,
   targetDiskDrive,
   hardenedSecurityEnabled,
+  saveUserPreferences,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
 
 const { t, isRtl } = useI18n();
+
+const isPathCopied = ref(false);
+async function copyVhdxPath() {
+  try {
+    await navigator.clipboard.writeText(vhdxFullPath.value);
+    isPathCopied.value = true;
+    setTimeout(() => {
+      isPathCopied.value = false;
+    }, 2000);
+  } catch (err) {
+    console.error('Failed to copy path', err);
+  }
+}
+
+// Automatically persist user choices whenever modified
+watch([assignedCpuCores, assignedRamMb, targetDiskDrive], () => {
+  saveUserPreferences();
+});
+
+function formatDiskOption(disk: { name?: string; mount_point: string; available_space_gb: number; file_system: string }) {
+  const mountLetter = disk.mount_point.replace(/[\\\/]+$/, '');
+  let label = disk.name || '';
+  label = label.replace(/\s*\([A-Za-z]:[\\\/]*\)\s*/g, '').trim();
+  if (!label || label === disk.mount_point) {
+    label = isRtl.value ? 'Ù‚Ø±Øµ Ù…Ø­Ù„ÙŠ' : 'Local Disk';
+  }
+  const freeText = `${disk.available_space_gb.toFixed(1)} ${t('common.gb')} ${t('common.free')}`;
+  return `${mountLetter} [${label}] â€” ${freeText} (${disk.file_system})`;
+}
 
 const totalHostCores = computed(() => discoveryReport.value?.cpu_count || 8);
 const totalHostRamMb = computed(() => discoveryReport.value?.total_memory_mb || 16384);
@@ -201,323 +389,60 @@ const recommendedRamMb = computed(() => discoveryReport.value?.recommendation?.r
 
 const disksList = computed(() => discoveryReport.value?.disks || []);
 
+const selectedDiskInfo = computed(() => {
+  const current = (targetDiskDrive.value || '').toLowerCase();
+  return disksList.value.find((d) => d.mount_point.toLowerCase() === current)
+    || disksList.value[0]
+    || null;
+});
+
+const diskUsedPercent = computed(() => {
+  if (!selectedDiskInfo.value || selectedDiskInfo.value.total_space_gb <= 0) return 0;
+  const used = selectedDiskInfo.value.total_space_gb - selectedDiskInfo.value.available_space_gb;
+  return Math.min(100, Math.max(0, Math.round((used / selectedDiskInfo.value.total_space_gb) * 100)));
+});
+
+const vhdxFullPath = computed(() => {
+  const letter = (targetDiskDrive.value || 'C:').replace(/[\\\/]+$/, '');
+  return `${letter}\\FastFree\\Disks\\fastfree_${selectedClientId.value || 'client1'}.vhdx`;
+});
+
+const cpuHostPercent = computed(() => {
+  if (totalHostCores.value <= 0) return 0;
+  return Math.round((assignedCpuCores.value / totalHostCores.value) * 100);
+});
+
+const cpuSliderFillPercent = computed(() => {
+  const span = maxCores.value - minCores.value;
+  if (span <= 0) return 0;
+  return Math.min(100, Math.max(0, Math.round(((assignedCpuCores.value - minCores.value) / span) * 100)));
+});
+
+const ramHostPercent = computed(() => {
+  if (totalHostRamMb.value <= 0) return 0;
+  return Math.round((assignedRamMb.value / totalHostRamMb.value) * 100);
+});
+
+const ramSliderFillPercent = computed(() => {
+  const span = maxRamMb.value - minRamMb.value;
+  if (span <= 0) return 0;
+  return Math.min(100, Math.max(0, Math.round(((assignedRamMb.value - minRamMb.value) / span) * 100)));
+});
+
+const hasMultipleEligibleNodes = computed(() => {
+  return (licenseState.value?.eligible_clients?.length || 0) > 1;
+});
+
 const availableClients = computed(() => {
   if (licenseState.value && licenseState.value.eligible_clients.length > 0) {
     return licenseState.value.eligible_clients;
   }
-  return Array.from({ length: 11 }, (_, i) => `client${i + 1}`);
+  const boundNode = licenseState.value?.node_id || selectedClientId.value;
+  return boundNode ? [boundNode] : ['client2'];
 });
 </script>
 
+
 <style scoped>
-.screen-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.header-box {
-  margin-bottom: 12px;
-}
-
-.step-tag {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--accent-sky, #38BDF8);
-  letter-spacing: 0.8px;
-  margin-bottom: 4px;
-}
-
-.header-box h2 {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-main, #F8FAFC);
-  margin: 0;
-}
-
-.subtitle {
-  color: var(--text-muted, #94A3B8);
-  font-size: 12px;
-  margin-top: 4px;
-  margin-bottom: 0;
-}
-
-.content-body {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow-y: auto;
-  padding-right: 2px;
-}
-
-.config-card {
-  background: var(--card-glass-bg, var(--bg-card, #18181B));
-  border: 1px solid var(--border-color, #27272A);
-  border-radius: var(--radius-card, 14px);
-  padding: 10px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
-  backdrop-filter: blur(8px);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.config-card:hover {
-  transform: translateY(-1px);
-  border-color: rgba(56, 189, 248, 0.3);
-  box-shadow: var(--card-hover-shadow, 0 8px 25px -4px rgba(0, 0, 0, 0.45));
-}
-
-.card-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.config-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-main, #F4F4F5);
-}
-
-.topology-badge {
-  font-size: 10px;
-  color: var(--accent-sky, #38BDF8);
-  background: rgba(56, 189, 248, 0.12);
-  padding: 2px 8px;
-  border-radius: var(--radius-pill, 9999px);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-}
-
-.sub-stat {
-  font-size: 11px;
-  color: var(--text-muted, #71717A);
-}
-
-.custom-select {
-  width: 100%;
-  background: var(--bg-sub, #09090B);
-  border: 1px solid var(--border-color, #3F3F46);
-  border-radius: var(--radius-inner, 10px);
-  padding: 8px 12px;
-  font-size: 12px;
-  color: var(--text-main, #F8FAFC);
-  outline: none;
-  cursor: pointer;
-  font-family: inherit;
-  transition: border-color 0.2s;
-}
-
-.custom-select:focus {
-  border-color: var(--accent-sky, #38BDF8);
-}
-
-.hint-text {
-  font-size: 11px;
-  color: var(--text-muted, #71717A);
-  margin: 2px 0 0 0;
-  line-height: 1.4;
-}
-
-.hint-text code {
-  color: var(--accent-sky, #38BDF8);
-  background: rgba(0, 0, 0, 0.3);
-  padding: 1px 4px;
-  border-radius: 4px;
-}
-
-.slider-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 4px 0;
-}
-
-.range-slider {
-  width: 100%;
-  height: 6px;
-  accent-color: #1976D2;
-  cursor: pointer;
-}
-
-.slider-ticks {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--text-muted, #71717A);
-}
-
-.allocation-summary-box {
-  background: var(--card-glass-bg, var(--bg-sub, #141416));
-  border: 1px solid var(--border-color, #27272A);
-  border-radius: var(--radius-card, 14px);
-  padding: 8px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
-  backdrop-filter: blur(8px);
-}
-
-.summary-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.sum-label {
-  font-size: 10px;
-  color: var(--text-muted, #71717A);
-  text-transform: uppercase;
-}
-
-.sum-val {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-main, #F8FAFC);
-}
-
-.text-accent {
-  color: var(--accent-sky, #38BDF8);
-}
-
-.text-emerald {
-  color: #34D399;
-}
-
-.text-muted {
-  color: var(--text-muted, #71717A);
-  font-weight: normal;
-  font-size: 11px;
-}
-
-.font-semibold {
-  font-weight: 600;
-}
-
-.action-bar {
-  margin-top: auto;
-  padding-top: 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-top: 1px solid var(--border-color, #27272A);
-}
-
-.btn {
-  padding: 8px 20px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.btn-primary {
-  background: var(--accent-primary, #1976D2);
-  color: #FFFFFF;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--accent-hover, #1565C0);
-  box-shadow: 0 2px 10px rgba(25, 118, 210, 0.4);
-}
-
-.btn-secondary {
-  background: var(--bg-sub, #27272A);
-  color: var(--text-main, #E4E4E7);
-}
-
-.btn-secondary:hover {
-  background: var(--border-color, #3F3F46);
-}
-
-.security-card {
-  border-color: rgba(56, 189, 248, 0.2);
-  background: linear-gradient(135deg, rgba(24, 24, 27, 0.8) 0%, rgba(15, 23, 42, 0.5) 100%);
-}
-
-.security-title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.security-icon-shield {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: rgba(56, 189, 248, 0.12);
-  color: var(--accent-sky, #38BDF8);
-  flex-shrink: 0;
-}
-
-.sec-svg {
-  width: 18px;
-  height: 18px;
-}
-
-.config-hint {
-  font-size: 11px;
-  color: var(--text-muted, #94A3B8);
-  margin: 2px 0 0 0;
-}
-
-.fluent-toggle {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 22px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.fluent-toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.fluent-toggle-track {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #3F3F46;
-  border-radius: 9999px;
-  transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.fluent-toggle-thumb {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  left: 3px;
-  bottom: 2px;
-  background-color: #FFFFFF;
-  border-radius: 50%;
-  transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-}
-
-.fluent-toggle input:checked + .fluent-toggle-track {
-  background-color: #0284C7;
-  border-color: #38BDF8;
-}
-
-.fluent-toggle input:checked + .fluent-toggle-track .fluent-toggle-thumb {
-  transform: translateX(20px);
-}
+@import '../assets/styles/node-sizing.css';
 </style>
