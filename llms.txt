@@ -17,6 +17,7 @@
 
 - [Multi-Agent Operating Environment with Paseo](.ai-rulez/context/agents.md): المشروع يدار بواسطة وكلاء ذكاء اصطناعي متعددين يعملون بالتوازي عبر **Paseo** (الديمون المحلي `127.0.0.1:6767` مع حقن أدوات MCP تلقائياً `injectIntoAgents`):
 - [FastFree Monorepo Architecture](.ai-rulez/context/architecture.md): FastFree is a sovereign, offline-first enterprise multi-agent monorepo and operating system ecosystem.
+- [Beads Workflow (bd)](.ai-rulez/context/beads.md): Run `bd ready` to find available work. Issues are stored in the local Dolt DB
 - [FastFree Monorepo State & Session Memory](.ai-rulez/context/session-memory.md): FastFree is a sovereign, offline-first enterprise multi-agent monorepo and operating system ecosystem.
 
 ## Skills
