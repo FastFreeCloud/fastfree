@@ -2,6 +2,7 @@ use crate::commands::ProvisioningStepLog;
 use crate::dto::*;
 use crate::logger::InstallerLogger;
 use crate::services::process::{hidden_command, hidden_powershell};
+use crate::services::service_hub;
 use tauri::{AppHandle, Emitter};
 
 pub struct HyperVService;
@@ -481,12 +482,8 @@ impl HyperVService {
                         &format!("DISM result: exit={:?}, out={}, err={}", out.status.code(), stdout, stderr),
                     );
     
-                    let _ = hidden_powershell()
-                        .args([
-                            "-Command",
-                            "Set-Service -Name vmms -StartupType Automatic -ErrorAction SilentlyContinue; Start-Service -Name vmms -ErrorAction SilentlyContinue",
-                        ])
-                        .output();
+                    // Native SCM call replaces the previous PowerShell Set-Service/Start-Service script.
+                    service_hub::ensure_vmms_autostart_running()?;
     
                     if out.status.success() || stdout.contains("The operation completed successfully") {
                         return Ok("Hyper-V features enabled successfully. A system restart may be required if this is the first activation.".to_string());
@@ -951,12 +948,9 @@ impl HyperVService {
             }
     
             // 3. Ensure Hyper-V Service VMMS is running and user is in Hyper-V Administrators
-            let _ = hidden_powershell()
-                .args([
-                    "-Command",
-                    "Set-Service -Name vmms -StartupType Automatic -ErrorAction SilentlyContinue; Start-Service -Name vmms -ErrorAction SilentlyContinue; try { Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member $env:USERNAME -ErrorAction SilentlyContinue } catch {}",
-                ])
-                .output();
+            // Native SCM + NetLocalGroup calls replace the previous PowerShell one-liner.
+            let _ = service_hub::ensure_vmms_autostart_running();
+            let _ = service_hub::add_current_user_to_hyperv_administrators();
     
             // 4. Resolve Virtual Switch: Prefer Default Switch (Host NAT + DHCP + Internet)
             let vswitch_script = r#"
