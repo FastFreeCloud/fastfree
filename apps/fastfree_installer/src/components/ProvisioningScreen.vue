@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="screen-container" :class="{ 'is-rtl': isRtl }">
     <div class="header-box">
       <div class="step-tag">{{ t('provisioning.stepTag') }}</div>
@@ -36,6 +36,24 @@
           ></div>
         </div>
 
+        <!-- 5-Stage Visual Pipeline Stepper -->
+        <div class="pipeline-stepper">
+          <div
+            v-for="(stage, sIdx) in pipelineStages"
+            :key="stage.id"
+            class="pipeline-pill"
+            :class="{
+              'is-active': currentStageNumber === sIdx + 1 && !isDone && !isFailed,
+              'is-completed': currentStageNumber > sIdx + 1 || isDone,
+              'is-failed': isFailed && currentStageNumber === sIdx + 1
+            }"
+          >
+            <span class="stage-step-num">{{ sIdx + 1 }}</span>
+            <span class="stage-name">{{ isRtl ? stage.titleAr : stage.titleEn }}</span>
+            <span v-if="currentStageNumber > sIdx + 1 || isDone" class="stage-check">âœ“</span>
+          </div>
+        </div>
+
         <div class="stats-row">
           <span>{{ t('provisioning.targetDrive', { path: `${targetDiskDrive}FastFree\\VMs\\${selectedClientId}.vhdx` }) }}</span>
           <span>{{ t('provisioning.vcpuRam', { cores: assignedCpuCores, ram: (assignedRamMb / 1024).toFixed(0) }) }}</span>
@@ -53,7 +71,7 @@
         </div>
         <div class="error-banner-content">
           <div class="error-banner-title">
-            {{ isRtl ? 'تعذر إتمام تهيئة وتثبيت الآلة في Hyper-V' : 'Hyper-V Appliance Provisioning Failed' }}
+            {{ isRtl ? 'ØªØ¹Ø°Ø± Ø¥ØªÙ…Ø§Ù… ØªÙ‡ÙŠØ¦Ø© ÙˆØªØ«Ø¨ÙŠØª Ø§Ù„Ø¢Ù„Ø© ÙÙŠ Hyper-V' : 'Hyper-V Appliance Provisioning Failed' }}
           </div>
           <div class="error-banner-msg font-mono text-xs">{{ errorMessage }}</div>
           <div class="error-banner-actions">
@@ -63,7 +81,7 @@
                   <polyline points="23 4 23 10 17 10"></polyline>
                   <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
                 </svg>
-                <span>{{ isRtl ? 'إعادة المحاولة' : 'Retry Provisioning' }}</span>
+                <span>{{ isRtl ? 'Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø©' : 'Retry Provisioning' }}</span>
               </span>
             </button>
             <button class="btn-back-sizing" @click="currentStep = 3">
@@ -72,7 +90,7 @@
                   <circle cx="12" cy="12" r="3"></circle>
                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
-                <span>{{ isRtl ? 'تعديل موارد العتاد (الأنوية والرام)' : 'Adjust Hardware Sizing' }}</span>
+                <span>{{ isRtl ? 'ØªØ¹Ø¯ÙŠÙ„ Ù…ÙˆØ§Ø±Ø¯ Ø§Ù„Ø¹ØªØ§Ø¯ (Ø§Ù„Ø£Ù†ÙˆÙŠØ© ÙˆØ§Ù„Ø±Ø§Ù…)' : 'Adjust Hardware Sizing' }}</span>
               </span>
             </button>
           </div>
@@ -82,23 +100,61 @@
       <!-- Live Terminal Console Log -->
       <div class="console-card">
         <div class="console-header">
-          <div class="term-dots">
-            <span class="dot dot-red"></span>
-            <span class="dot dot-yellow"></span>
-            <span class="dot dot-green"></span>
+          <div class="win-term-badge">
+            <span class="terminal-traffic-lights">
+              <span class="term-dot dot-red"></span>
+              <span class="term-dot dot-yellow"></span>
+              <span class="term-dot dot-green"></span>
+            </span>
+            <svg class="term-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 17 10 11 4 5"></polyline>
+              <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+            <span class="term-title">{{ t('provisioning.consoleTitle') }}</span>
           </div>
-          <span class="term-title">{{ t('provisioning.consoleTitle') }}</span>
-          <span class="log-count">{{ t('provisioning.eventsCount', { count: logs.length }) }}</span>
+          <div class="header-actions">
+            <span class="log-count">{{ t('provisioning.eventsCount', { count: logs.length }) }}</span>
+            <button
+              type="button"
+              class="btn-console-act"
+              :title="isRtl ? 'Ù†Ø³Ø® Ø§Ù„Ø³Ø¬Ù„Ø§Øª' : 'Copy Logs'"
+              @click="copyAllLogs"
+            >
+              <svg v-if="!isLogsCopied" class="copy-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <svg v-else class="copy-svg-mini text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>{{ isLogsCopied ? (isRtl ? 'ØªÙ… Ø§Ù„Ù†Ø³Ø®!' : 'Copied!') : (isRtl ? 'Ù†Ø³Ø®' : 'Copy') }}</span>
+            </button>
+            <button
+              type="button"
+              class="btn-console-act"
+              :title="isRtl ? 'Ù…Ø³Ø­ Ø§Ù„Ø·Ø±ÙÙŠØ©' : 'Clear Terminal'"
+              @click="logs = []"
+            >
+              <svg class="copy-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>{{ isRtl ? 'Ù…Ø³Ø­' : 'Clear' }}</span>
+            </button>
+          </div>
         </div>
-        <div ref="logContainer" class="console-body">
+        <div ref="logContainer" class="console-body" dir="ltr">
           <div
-            v-for="(log, idx) in logs"
-            :key="idx"
+            v-for="item in parsedLogs"
+            :key="item.id"
             class="log-line"
-            :class="{ 'log-success': log.includes('SUCCESS') || log.includes('Done') || log.includes('بنجاح') }"
+            :class="item.levelClass"
           >
+            <span class="log-time font-mono">{{ item.time }}</span>
             <span class="log-prompt">&gt;</span>
-            <span class="log-text">{{ log }}</span>
+            <span v-if="item.phase" class="log-phase-badge font-mono" :class="item.phaseClass">{{ item.phase }}</span>
+            <span class="log-msg font-mono">{{ item.message }}</span>
+            <span v-if="item.count > 1" class="log-repeat-pill font-mono">x{{ item.count }}</span>
           </div>
         </div>
       </div>
@@ -106,35 +162,54 @@
 
     <!-- Action Bar -->
     <div class="action-bar">
-      <div class="status-summary">
-        <span v-if="isFailed" class="status-failed">
-          <span class="dot-red-pulse"></span>
-          <span>{{ isRtl ? 'فشل التثبيت — انظر التقرير أعلاه' : 'Provisioning Failed — Check Details' }}</span>
-        </span>
-        <span v-else-if="!isDone" class="status-live">
-          <span class="dot-amber"></span>
-          <span>{{ t('provisioning.inProgressNotice') }}</span>
-        </span>
-        <span v-else class="status-ready">
-          <span class="dot-green"></span>
-          <span>{{ t('provisioning.readyNotice') }}</span>
-        </span>
+      <div class="action-bar-start">
+        <button v-if="isFailed" class="btn btn-secondary" @click="currentStep = 4">
+          <span class="btn-flex">
+            <svg class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline :points="isRtl ? '9 18 15 12 9 6' : '15 18 9 12 15 6'"></polyline>
+            </svg>
+            <span>{{ isRtl ? 'Ø§Ù„Ø¹ÙˆØ¯Ø© Ù„Ù€ FastFree VPN' : 'Back to FastFree VPN' }}</span>
+          </span>
+        </button>
+        <div v-else class="status-summary">
+          <span v-if="!isDone" class="status-live">
+            <span class="dot-amber"></span>
+            <span>{{ t('provisioning.inProgressNotice') }}</span>
+          </span>
+          <span v-else class="status-ready">
+            <span class="dot-green"></span>
+            <span>{{ t('provisioning.readyNotice') }}</span>
+          </span>
+        </div>
       </div>
 
-      <button
-        class="btn btn-primary"
-        :disabled="!isDone || isFailed"
-        @click="currentStep = 6"
-      >
-        {{ t('provisioning.continueToLaunchpad') }}
-      </button>
+      <!-- CENTER: Persistent FastFree 3D Precision Timepiece -->
+      <div class="action-bar-center">
+        <FastFreeTimepiece />
+      </div>
+
+      <div class="action-bar-end">
+        <button
+          class="btn btn-primary btn-next"
+          :disabled="!isDone || isFailed"
+          @click="currentStep = 6"
+        >
+          <span class="btn-flex">
+            <span>{{ t('provisioning.continueToLaunchpad') }}</span>
+            <svg class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline :points="isRtl ? '15 18 9 12 15 6' : '9 18 15 12 9 6'"></polyline>
+            </svg>
+          </span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
+import FastFreeTimepiece from './FastFreeTimepiece.vue';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
   currentStep,
@@ -143,26 +218,149 @@ import {
   assignedRamMb,
   targetDiskDrive,
   hardenedSecurityEnabled,
+  getVmRealState,
+  provisioningLogs,
+  isProvisioningDone,
+  isProvisioningRunning,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
 import { logInfo, logError, logSuccess } from '../composables/useDiagnostics';
 
 const { t, isRtl } = useI18n();
 
-const progress = ref(5);
-const isDone = ref(false);
+const progress = ref(isProvisioningDone.value ? 100 : 5);
+const isDone = ref(isProvisioningDone.value);
 const isFailed = ref(false);
 const errorMessage = ref('');
-const currentPhaseText = ref('');
-const logs = ref<string[]>([]);
+const currentPhaseText = ref(
+  isProvisioningDone.value
+    ? (isRtl.value ? 'ØªÙ… Ø§Ù„ØªØ«Ø¨ÙŠØª ÙˆØ§Ù„ØªØ­Ù‚Ù‚ Ø¨Ù†Ø¬Ø§Ø­!' : 'Provisioning Completed & Verified!')
+    : (isRtl.value ? 'Ø¨Ø¯Ø¡ ØªØ¬Ù‡ÙŠØ² Ø§Ù„Ø¨ÙŠØ¦Ø©...' : 'Initializing environment...')
+);
+const logs = provisioningLogs;
 const logContainer = ref<HTMLElement | null>(null);
+
+interface ParsedLog {
+  id: number;
+  time: string;
+  phase?: string;
+  message: string;
+  levelClass: string;
+  phaseClass: string;
+  count: number;
+}
+
+const parsedLogs = computed<ParsedLog[]>(() => {
+  return logs.value.map((raw, idx) => {
+    let time = '';
+    let rest = raw;
+    let count = 1;
+
+    // Check for repeat suffix (xN)
+    const countMatch = rest.match(/\s\(x(\d+)\)$/);
+    if (countMatch) {
+      count = parseInt(countMatch[1], 10);
+      rest = rest.slice(0, rest.length - countMatch[0].length);
+    }
+
+    const timeMatch = rest.match(/^\[(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AP]M)?)\]\s*/i);
+    if (timeMatch) {
+      time = timeMatch[1];
+      rest = rest.slice(timeMatch[0].length);
+    } else {
+      time = new Date().toLocaleTimeString();
+    }
+
+    let phase = '';
+    const phaseMatch = rest.match(/^\[([^\]]+)\]\s*/);
+    if (phaseMatch) {
+      phase = phaseMatch[1];
+      rest = rest.slice(phaseMatch[0].length);
+    }
+
+    let levelClass = 'level-info';
+    let phaseClass = 'phase-default';
+
+    const lower = (phase + ' ' + rest).toLowerCase();
+    if (lower.includes('error') || lower.includes('fail') || lower.includes('ÙØ´Ù„')) {
+      levelClass = 'level-error';
+      phaseClass = 'phase-error';
+    } else if (
+      lower.includes('success') ||
+      lower.includes('verified') ||
+      lower.includes('done') ||
+      lower.includes('ready') ||
+      lower.includes('running') ||
+      lower.includes('Ø¨Ù†Ø¬Ø§Ø­')
+    ) {
+      levelClass = 'level-success';
+      phaseClass = 'phase-success';
+    } else if (lower.includes('warn') || lower.includes('notice') || lower.includes('ØªÙ†Ø¨ÙŠÙ‡')) {
+      levelClass = 'level-warn';
+      phaseClass = 'phase-warn';
+    } else if (phase) {
+      phaseClass = 'phase-accent';
+    }
+
+    return {
+      id: idx,
+      time,
+      phase,
+      message: rest,
+      levelClass,
+      phaseClass,
+      count,
+    };
+  });
+});
+
+const pipelineStages = [
+  { id: 'storage', titleEn: 'VHDX Disk', titleAr: 'Ù‚Ø±Øµ VHDX' },
+  { id: 'image', titleEn: 'NixOS Clan 26.05', titleAr: 'Ù†Ø¸Ø§Ù… Clan 26.05' },
+  { id: 'vm', titleEn: 'Gen-2 Hyper-V', titleAr: 'Ø¨ÙŠØ¦Ø© Hyper-V' },
+  { id: 'mesh', titleEn: 'FastFree VPN Mesh', titleAr: 'Ø´Ø¨ÙƒØ© FastFree VPN' },
+  { id: 'boot', titleEn: 'Frappe ERP Active', titleAr: 'Ø®Ø¯Ù…Ø§Øª ERP' },
+];
+
+const currentStageNumber = computed(() => {
+  if (isDone.value) return 5;
+  if (progress.value >= 80) return 5;
+  if (progress.value >= 60) return 4;
+  if (progress.value >= 40) return 3;
+  if (progress.value >= 20) return 2;
+  return 1;
+});
+
+const isLogsCopied = ref(false);
+async function copyAllLogs() {
+  try {
+    const formatted = parsedLogs.value
+      .map((l) => `[${l.time}] > ${l.phase ? `[${l.phase}] ` : ''}${l.message}${l.count > 1 ? ` (x${l.count})` : ''}`)
+      .join('\n');
+    await navigator.clipboard.writeText(formatted);
+    isLogsCopied.value = true;
+    setTimeout(() => {
+      isLogsCopied.value = false;
+    }, 2000);
+  } catch (err) {
+    console.error('Failed to copy logs', err);
+  }
+}
 
 let unlistenStep: UnlistenFn | null = null;
 let unlistenFail: UnlistenFn | null = null;
 
 onMounted(async () => {
-  currentPhaseText.value = isRtl.value ? 'بدء تجهيز البيئة...' : 'Initializing environment...';
   await setupEventListeners();
+
+  // If already provisioned, do not re-provision
+  if (isProvisioningDone.value) {
+    progress.value = 100;
+    isDone.value = true;
+    currentPhaseText.value = isRtl.value ? 'ØªÙ… Ø§Ù„ØªØ«Ø¨ÙŠØª ÙˆØ§Ù„ØªØ­Ù‚Ù‚ Ø¨Ù†Ø¬Ø§Ø­!' : 'Provisioning Completed & Verified!';
+    return;
+  }
+
   await runProvisioning();
 });
 
@@ -172,6 +370,7 @@ onUnmounted(() => {
 });
 
 async function setupEventListeners() {
+  if (unlistenStep || unlistenFail) return;
   try {
     unlistenStep = await listen<{ step: number; phase: string; message: string; success: boolean }>(
       'provision-step',
@@ -200,8 +399,10 @@ async function setupEventListeners() {
     unlistenFail = await listen<string>('provision-failed', async (event) => {
       isFailed.value = true;
       isDone.value = false;
+      isProvisioningDone.value = false;
+      isProvisioningRunning.value = false;
       errorMessage.value = event.payload;
-      currentPhaseText.value = isRtl.value ? 'فشل التثبيت في Hyper-V' : 'Hyper-V Provisioning Failed';
+      currentPhaseText.value = isRtl.value ? 'ÙØ´Ù„ Ø§Ù„ØªØ«Ø¨ÙŠØª ÙÙŠ Hyper-V' : 'Hyper-V Provisioning Failed';
       await addLog(`[ERROR] ${event.payload}`);
     });
   } catch (err) {
@@ -211,7 +412,28 @@ async function setupEventListeners() {
 
 async function addLog(text: string) {
   const timestamp = new Date().toLocaleTimeString();
-  logs.value.push(`[${timestamp}] ${text}`);
+  const rawText = text.trim();
+
+  // Deduplicate consecutive identical lines
+  const lastIndex = logs.value.length - 1;
+  if (lastIndex >= 0) {
+    const lastEntry = logs.value[lastIndex];
+    const lastMsgOnly = lastEntry
+      .replace(/^\[\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AP]M)?\]\s*/i, '')
+      .replace(/\s\(x\d+\)$/, '');
+    if (lastMsgOnly === rawText) {
+      const match = lastEntry.match(/\s\(x(\d+)\)$/);
+      const currentCount = match ? parseInt(match[1], 10) : 1;
+      logs.value[lastIndex] = `[${timestamp}] ${rawText} (x${currentCount + 1})`;
+      await nextTick();
+      if (logContainer.value) {
+        logContainer.value.scrollTop = logContainer.value.scrollHeight;
+      }
+      return;
+    }
+  }
+
+  logs.value.push(`[${timestamp}] ${rawText}`);
   await nextTick();
   if (logContainer.value) {
     logContainer.value.scrollTop = logContainer.value.scrollHeight;
@@ -219,15 +441,41 @@ async function addLog(text: string) {
 }
 
 async function retryProvisioning() {
+  if (isProvisioningRunning.value) return;
   isFailed.value = false;
   errorMessage.value = '';
   progress.value = 5;
   isDone.value = false;
+  isProvisioningDone.value = false;
   logs.value = [];
-  await runProvisioning();
+  await runProvisioning(true);
 }
 
-async function runProvisioning() {
+async function runProvisioning(forceRetry: boolean = false) {
+  // 1. Guard against concurrent provisioning runs
+  if (isProvisioningRunning.value) {
+    return;
+  }
+
+  // 2. Idempotent check: if VM is already Running, skip deployment entirely!
+  if (!forceRetry) {
+    try {
+      const liveState = await getVmRealState(selectedClientId.value);
+      if (liveState.exists && (liveState.state === 'Running' || liveState.state === '2')) {
+        progress.value = 100;
+        isDone.value = true;
+        isProvisioningDone.value = true;
+        currentPhaseText.value = isRtl.value ? 'Ø§Ù„Ø¢Ù„Ø© Ù‚ÙŠØ¯ Ø§Ù„ØªØ´ØºÙŠÙ„ ÙˆØ§Ù„ØªØ­Ù‚Ù‚ Ø¬Ø§Ù‡Ø²' : 'Appliance is Running and verified';
+        await addLog(`[Hyper-V] Appliance FastFree-${selectedClientId.value} is already active and Running.`);
+        await addLog('Provisioning verified. Virtual machine is Running and ready.');
+        return;
+      }
+    } catch (checkErr) {
+      console.warn('Pre-provisioning live check warning:', checkErr);
+    }
+  }
+
+  isProvisioningRunning.value = true;
   isFailed.value = false;
   errorMessage.value = '';
   isDone.value = false;
@@ -238,7 +486,7 @@ async function runProvisioning() {
   logInfo('Provisioning', `Starting deployment for ${selectedClientId.value}...`);
   await addLog(`Starting automated deployment pipeline for ${selectedClientId.value}...`);
   await addLog(`Selected Drive: ${targetDiskDrive.value} | Cores: ${assignedCpuCores.value} | Aligned RAM: ${safeAlignedRam} MB`);
-  currentPhaseText.value = isRtl.value ? 'جارٍ تهيئة قرص التخزين ومحول الشبكة...' : 'Configuring storage and virtual switch...';
+  currentPhaseText.value = isRtl.value ? 'Ø¬Ø§Ø±Ù ØªÙ‡ÙŠØ¦Ø© Ù‚Ø±Øµ Ø§Ù„ØªØ®Ø²ÙŠÙ† ÙˆÙ…Ø­ÙˆÙ„ Ø§Ù„Ø´Ø¨ÙƒØ©...' : 'Configuring storage and virtual switch...';
 
   try {
     const realLogs = await invoke<Array<{ step: number; phase: string; message: string; success: boolean }>>(
@@ -262,7 +510,8 @@ async function runProvisioning() {
 
     progress.value = 100;
     isDone.value = true;
-    currentPhaseText.value = isRtl.value ? 'تم التثبيت والتحقق بنجاح!' : 'Provisioning Completed & Verified!';
+    isProvisioningDone.value = true;
+    currentPhaseText.value = isRtl.value ? 'ØªÙ… Ø§Ù„ØªØ«Ø¨ÙŠØª ÙˆØ§Ù„ØªØ­Ù‚Ù‚ Ø¨Ù†Ø¬Ø§Ø­!' : 'Provisioning Completed & Verified!';
 
     try {
       localStorage.setItem('fastfree_provisioned', 'true');
@@ -276,401 +525,18 @@ async function runProvisioning() {
     console.warn('Real Hyper-V provisioning error:', err);
     isFailed.value = true;
     isDone.value = false;
+    isProvisioningDone.value = false;
     errorMessage.value = msg;
-    currentPhaseText.value = isRtl.value ? 'فشل التثبيت في Hyper-V' : 'Hyper-V Provisioning Failed';
+    currentPhaseText.value = isRtl.value ? 'ÙØ´Ù„ Ø§Ù„ØªØ«Ø¨ÙŠØª ÙÙŠ Hyper-V' : 'Hyper-V Provisioning Failed';
     logError('Provisioning', `Failed to deploy appliance ${selectedClientId.value}`, msg);
     await addLog(`[ERROR] Hyper-V Provisioning Error: ${msg}`);
+  } finally {
+    isProvisioningRunning.value = false;
   }
 }
 </script>
 
+
 <style scoped>
-.screen-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.header-box {
-  margin-bottom: 12px;
-}
-
-.step-tag {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--accent-sky, #38BDF8);
-  letter-spacing: 0.8px;
-  margin-bottom: 4px;
-}
-
-.header-box h2 {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-main, #F8FAFC);
-  margin: 0;
-}
-
-.subtitle {
-  color: var(--text-muted, #94A3B8);
-  font-size: 12px;
-  margin-top: 4px;
-  margin-bottom: 0;
-}
-
-.content-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow: hidden;
-}
-
-.progress-hero-card {
-  background: var(--card-glass-bg, var(--bg-card, #18181B));
-  border: 1px solid var(--border-color, #27272A);
-  border-radius: var(--radius-card, 14px);
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
-  backdrop-filter: blur(8px);
-}
-
-.hero-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.phase-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--accent-sky, #38BDF8);
-}
-
-.spinner-tiny {
-  width: 12px;
-  height: 12px;
-  border: 2px solid rgba(56, 189, 248, 0.3);
-  border-top-color: #38BDF8;
-  border-radius: 50%;
-  animation: spin 0.7s infinite linear;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.check-tiny {
-  color: #10B981;
-  font-weight: 700;
-}
-
-.pct-text {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-main, #F8FAFC);
-}
-
-.progress-track {
-  width: 100%;
-  height: 8px;
-  background: var(--bg-sub, #27272A);
-  border-radius: var(--radius-pill, 9999px);
-  overflow: hidden;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #1976D2, #38BDF8);
-  border-radius: var(--radius-pill, 9999px);
-  transition: width 0.15s ease-out;
-}
-
-.progress-bar-fill.bar-complete {
-  background: linear-gradient(90deg, #059669, #10B981);
-}
-
-.stats-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--text-muted, #71717A);
-}
-
-.console-card {
-  flex: 1;
-  min-height: 0;
-  background: var(--bg-stream, #09090B);
-  border: 1px solid var(--border-color, #27272A);
-  border-radius: var(--radius-card, 14px);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
-}
-
-.console-header {
-  padding: 8px 14px;
-  background: var(--bg-header, #121214);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-bottom: 1px solid var(--border-color, #27272A);
-}
-
-.term-dots {
-  display: flex;
-  gap: 5px;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.dot-red { background: #EF4444; }
-.dot-yellow { background: #F59E0B; }
-.dot-green { background: #10B981; }
-
-.term-title {
-  font-size: 11px;
-  color: var(--text-muted, #A1A1AA);
-  font-weight: 600;
-  flex: 1;
-}
-
-.log-count {
-  font-size: 10px;
-  color: var(--text-muted, #71717A);
-}
-
-.console-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px 14px;
-  font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 11px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.log-line {
-  display: flex;
-  gap: 6px;
-  color: var(--text-secondary, #D4D4D8);
-  line-height: 1.4;
-}
-
-.log-prompt {
-  color: var(--accent-sky, #38BDF8);
-  font-weight: 700;
-}
-
-.log-success {
-  color: #34D399;
-  font-weight: 600;
-}
-
-.action-bar {
-  margin-top: auto;
-  padding-top: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-top: 1px solid var(--border-color, #27272A);
-}
-
-.status-summary {
-  font-size: 11px;
-}
-
-.status-live, .status-ready {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.status-live { color: #FBBF24; }
-.status-ready { color: #34D399; }
-
-.dot-amber {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #F59E0B;
-  box-shadow: 0 0 6px #F59E0B;
-}
-
-.status-failed {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #EF4444;
-  font-weight: 600;
-}
-
-.dot-red-pulse {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #EF4444;
-  box-shadow: 0 0 8px #EF4444;
-  animation: pulse-red 1.5s infinite;
-}
-
-@keyframes pulse-red {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
-}
-
-.fail-tiny {
-  color: #EF4444;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-}
-
-.phase-svg-fail {
-  width: 13px;
-  height: 13px;
-  stroke: #EF4444;
-}
-
-.phase-svg-ok {
-  width: 13px;
-  height: 13px;
-  stroke: #10B981;
-}
-
-.err-svg {
-  width: 22px;
-  height: 22px;
-  stroke: #EF4444;
-}
-
-.btn-svg {
-  width: 12px;
-  height: 12px;
-}
-
-.btn-flex {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.text-red {
-  color: #EF4444 !important;
-}
-
-.bar-failed {
-  background: linear-gradient(90deg, #EF4444, #DC2626) !important;
-}
-
-.progress-hero-card.is-failed {
-  border-color: rgba(239, 68, 68, 0.4);
-}
-
-.error-banner {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  border-radius: 12px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.error-banner-icon {
-  font-size: 20px;
-}
-
-.error-banner-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.error-banner-title {
-  color: #F87171;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.error-banner-msg {
-  color: var(--text-secondary, #D4D4D8);
-  font-size: 11px;
-  line-height: 1.4;
-  word-break: break-all;
-}
-
-.error-banner-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 6px;
-}
-
-.btn-retry {
-  background: #DC2626;
-  color: #FFFFFF;
-  border: none;
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-retry:hover {
-  background: #B91C1C;
-}
-
-.btn-back-sizing {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-main, #F8FAFC);
-  border: 1px solid var(--border-color, #3F3F46);
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-back-sizing:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.btn {
-  padding: 8px 20px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.btn-primary {
-  background: var(--accent-primary, #1976D2);
-  color: #FFFFFF;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--accent-hover, #1565C0);
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+@import '../assets/styles/provisioning-screen.css';
 </style>

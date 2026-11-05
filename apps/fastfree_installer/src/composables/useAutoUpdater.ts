@@ -108,6 +108,12 @@ export async function dispatchDesktopNotification(title: string, body: string): 
  * and falls back to querying the GitHub Releases API directly.
  */
 export async function checkForUpdates(silent: boolean = true): Promise<boolean> {
+  if (import.meta.env.DEV) {
+    logInfo('Updater', 'Development mode active (import.meta.env.DEV): auto-update check bypassed.');
+    updateAvailable.value = false;
+    return false;
+  }
+
   if (isCheckingUpdate.value) return false;
   isCheckingUpdate.value = true;
   updateError.value = '';
@@ -223,6 +229,10 @@ export async function openManualDownload(): Promise<void> {
  * Starts automatic background polling for updates at specified intervals (default 30 mins).
  */
 export function startAutoUpdatePolling(intervalMinutes: number = 30): void {
+  if (import.meta.env.DEV) {
+    logInfo('Updater', 'Development mode active: skipping background auto-update polling.');
+    return;
+  }
   if (autoUpdateTimer) return;
   logInfo('Updater', `Auto-update background polling initialized (every ${intervalMinutes} min).`);
 

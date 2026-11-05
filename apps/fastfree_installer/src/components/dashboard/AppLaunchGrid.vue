@@ -10,8 +10,8 @@
       </div>
     </div>
 
-    <!-- The 8-App Grid Cards -->
-    <div class="apps-grid">
+    <!-- The 8-App CasaOS 136px Squircles Grid -->
+    <div class="apps-grid" @click="closeAllMenus">
       <div
         v-for="app in apps"
         :key="app.id"
@@ -19,65 +19,111 @@
         :class="`category-${app.category}`"
         @click="handleLaunch(app)"
       >
-        <div class="app-card-top">
-          <div class="app-icon-wrap" :class="`icon-${app.badgeColor}`">
-            <!-- App Specific Vector SVGs (Zero Raw Emojis) -->
-            <svg v-if="app.id === 'erp'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-              <line x1="8" y1="21" x2="16" y2="21"></line>
-              <line x1="12" y1="17" x2="12" y2="21"></line>
-            </svg>
-            <svg v-else-if="app.id === 'pos'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-              <line x1="6" y1="8" x2="6" y2="8"></line>
-              <line x1="10" y1="8" x2="18" y2="8"></line>
-              <line x1="6" y1="12" x2="18" y2="12"></line>
-              <line x1="6" y1="16" x2="12" y2="16"></line>
-            </svg>
-            <svg v-else-if="app.id === 'ledger'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
-            <svg v-else-if="app.id === 'hr'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            <svg v-else-if="app.id === 'crm'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <polyline points="16 11 18 13 22 9"></polyline>
-            </svg>
-            <svg v-else-if="app.id === 'panel'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="3" y1="9" x2="21" y2="9"></line>
-              <line x1="9" y1="21" x2="9" y2="9"></line>
-            </svg>
-            <svg v-else-if="app.id === 'hyperv'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="4" y="4" width="16" height="16" rx="2"></rect>
-              <rect x="9" y="9" width="6" height="6"></rect>
-            </svg>
-            <svg v-else class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-          </div>
+        <!-- 3-Dots Context Menu Button -->
+        <button
+          class="card-menu-btn"
+          :title="isRtl ? 'خيارات سريعة' : 'Quick Options'"
+          @click.stop="toggleMenu(app.id)"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="2" />
+            <circle cx="12" cy="12" r="2" />
+            <circle cx="12" cy="19" r="2" />
+          </svg>
+        </button>
 
-          <div class="app-badge-pill" :class="`pill-${app.badgeColor}`">
-            <span>{{ app.getBadge(isRtl) }}</span>
-          </div>
+        <!-- 3-Dots Popover Dropdown -->
+        <div
+          v-if="openMenuId === app.id"
+          class="app-popover-menu"
+          @click.stop
+        >
+          <button class="popover-item-btn" @click="handleMenuAction('open', app)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            <span>{{ isRtl ? 'فتح التطبيق' : 'Open App' }}</span>
+          </button>
+          <button class="popover-item-btn" @click="handleMenuAction('copy', app)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>{{ isRtl ? 'نسخ الرابط' : 'Copy URL' }}</span>
+          </button>
+          <button class="popover-item-btn" @click="handleMenuAction('restart', app)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            <span>{{ isRtl ? 'إعادة تشغيل الخدمة' : 'Restart Unit' }}</span>
+          </button>
+          <button class="popover-item-btn" @click="handleMenuAction('logs', app)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 17 10 11 4 5"></polyline>
+              <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+            <span>{{ isRtl ? 'سجلات الخدمة' : 'View Logs' }}</span>
+          </button>
         </div>
 
-        <div class="app-card-body">
-          <h4 class="app-title">{{ app.getName(isRtl) }}</h4>
-          <p class="app-desc">{{ app.getDescription(isRtl) }}</p>
+        <!-- Squircle App Icon (58x58) with Vibrant Linear Gradient -->
+        <div class="app-icon-squircle" :style="{ background: app.gradient }">
+          <svg v-if="app.id === 'erp'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          <svg v-else-if="app.id === 'pos'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+            <line x1="7" y1="8" x2="17" y2="8"></line>
+            <line x1="7" y1="12" x2="17" y2="12"></line>
+            <line x1="7" y1="16" x2="11" y2="16"></line>
+          </svg>
+          <svg v-else-if="app.id === 'ledger'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <svg v-else-if="app.id === 'hr'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <svg v-else-if="app.id === 'crm'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+          <svg v-else-if="app.id === 'panel'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <svg v-else-if="app.id === 'hyperv'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+          </svg>
+          <svg v-else-if="app.id === 'wireguard'" class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <svg v-else class="app-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
         </div>
 
-        <div class="app-card-footer">
-          <span class="app-port-tag font-mono">Port {{ app.port }}</span>
-          <span class="app-open-link font-bold">
-            {{ isRtl ? 'تشغيل التطبيق' : 'Launch' }} ↗
+        <!-- Label Column -->
+        <div class="app-label-column">
+          <span class="app-title-text">{{ app.getName(isRtl) }}</span>
+          <span class="app-port-badge">
+            <span class="app-dot-active"></span>
+            {{ formatPort(app) }}
           </span>
         </div>
       </div>
@@ -88,207 +134,289 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { SovereignApp } from '../../domain/models/SovereignApp';
-import { AppRegistryService } from '../../domain/services/AppRegistryService';
 
 const props = defineProps<{
+  apps: SovereignApp[];
   isRtl: boolean;
   nodeHost?: string;
 }>();
 
 const emit = defineEmits<{
   (e: 'launch', app: SovereignApp): void;
+  (e: 'restart', app: SovereignApp): void;
+  (e: 'logs', app: SovereignApp): void;
+  (e: 'copy-url', url: string): void;
 }>();
 
-const appService = AppRegistryService.getInstance();
-const apps = ref<SovereignApp[]>(appService.getAllApps());
+const openMenuId = ref<string | null>(null);
+
+function toggleMenu(id: string) {
+  openMenuId.value = openMenuId.value === id ? null : id;
+}
+
+function closeAllMenus() {
+  openMenuId.value = null;
+}
 
 function handleLaunch(app: SovereignApp) {
+  closeAllMenus();
   emit('launch', app);
-  appService.launchApp(app, props.nodeHost || 'localhost');
+}
+
+function handleMenuAction(action: 'open' | 'copy' | 'restart' | 'logs', app: SovereignApp) {
+  closeAllMenus();
+  if (action === 'open') {
+    emit('launch', app);
+  } else if (action === 'copy') {
+    const url = app.getLaunchUrl(props.nodeHost || 'localhost');
+    navigator.clipboard?.writeText(url);
+    emit('copy-url', url);
+  } else if (action === 'restart') {
+    emit('restart', app);
+  } else if (action === 'logs') {
+    emit('logs', app);
+  }
+}
+
+function formatPort(app: SovereignApp): string {
+  if (app.id === 'ledger') return 'General Ledger';
+  if (app.id === 'hr') return 'Payroll & Staff';
+  if (app.id === 'crm') return 'Sales & Leads';
+  if (app.id === 'hyperv') return 'NixOS 26.05';
+  if (app.id === 'wireguard') return 'UDP 51822';
+  return `Port ${app.port}`;
 }
 </script>
 
 <style scoped>
 .app-grid-container {
-  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
 }
 
 .grid-header-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  align-items: center;
 }
 
 .grid-title-wrap {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .grid-heading {
-  margin: 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
-  color: #F8FAFC;
+  color: #fff;
+  letter-spacing: -0.2px;
 }
 
 .grid-count-badge {
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 12px;
+  font-size: 11.5px;
+  padding: 3px 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 9999px;
+  color: var(--text-secondary, #CBD5E1);
   font-weight: 600;
-  background: rgba(56, 189, 248, 0.12);
-  color: #38BDF8;
-  border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
 .filter-hint {
   font-size: 12px;
-  color: #94A3B8;
+  color: var(--text-muted, #94A3B8);
+  font-weight: 500;
 }
 
-/* 4-column responsive grid */
+/* 136px Squircles Grid */
 .apps-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+  gap: 18px;
 }
 
 .app-card {
-  background: rgba(30, 41, 59, 0.45);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  background: rgba(21, 31, 50, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 16px;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 14px;
+  padding: 18px 12px 14px 12px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.45);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
 }
 
 .app-card:hover {
-  background: rgba(30, 41, 59, 0.75);
+  transform: translateY(-5px);
+  background: rgba(30, 41, 59, 0.85);
   border-color: rgba(56, 189, 248, 0.35);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.15);
 }
 
-.app-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+.app-card:active {
+  transform: translateY(-2px) scale(0.98);
 }
 
-.app-icon-wrap {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+/* 3-Dots Menu Button */
+.card-menu-btn {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #94A3B8);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.2s ease;
 }
 
-.icon-cyan {
-  color: #38BDF8;
-  border-color: rgba(56, 189, 248, 0.25);
+.is-rtl .card-menu-btn {
+  left: auto;
+  right: 8px;
 }
 
-.icon-emerald {
-  color: #10B981;
-  border-color: rgba(16, 185, 129, 0.25);
+.app-card:hover .card-menu-btn {
+  opacity: 1;
 }
 
-.icon-purple {
-  color: #A855F7;
-  border-color: rgba(168, 85, 247, 0.25);
+.card-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
 }
 
-.icon-amber {
-  color: #F59E0B;
-  border-color: rgba(245, 158, 11, 0.25);
+.card-menu-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Squircle App Icon (58x58) */
+.app-icon-squircle {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  transition: transform 0.25s ease;
+  color: #fff;
+}
+
+.app-card:hover .app-icon-squircle {
+  transform: scale(1.08);
 }
 
 .app-svg {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
 }
 
-.app-badge-pill {
-  padding: 2px 8px;
-  border-radius: 8px;
-  font-size: 11px;
+.app-label-column {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.app-title-text {
+  font-size: 13px;
   font-weight: 700;
-  font-family: 'Cascadia Code', Consolas, monospace;
-}
-
-.pill-cyan {
-  background: rgba(56, 189, 248, 0.15);
-  color: #38BDF8;
-}
-
-.pill-emerald {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10B981;
-}
-
-.pill-purple {
-  background: rgba(168, 85, 247, 0.15);
-  color: #A855F7;
-}
-
-.pill-amber {
-  background: rgba(245, 158, 11, 0.15);
-  color: #F59E0B;
-}
-
-.app-card-body {
-  margin-bottom: 14px;
-}
-
-.app-title {
-  margin: 0 0 4px 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: #F1F5F9;
-}
-
-.app-desc {
-  margin: 0;
-  font-size: 12px;
-  color: #94A3B8;
-  line-height: 1.45;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  color: #fff;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.app-card-footer {
+.app-port-badge {
+  font-size: 10.5px;
+  color: var(--text-muted, #94A3B8);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding-top: 10px;
+  justify-content: center;
+  gap: 5px;
 }
 
-.app-port-tag {
-  font-size: 11px;
-  color: #64748B;
+.app-dot-active {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10B981;
 }
 
-.app-open-link {
+/* 3-Dots Context Menu Popover */
+.app-popover-menu {
+  position: absolute;
+  top: 36px;
+  left: 8px;
+  z-index: 100;
+  width: 175px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 6px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65), 0 0 20px rgba(56, 189, 248, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.is-rtl .app-popover-menu {
+  left: auto;
+  right: 8px;
+}
+
+.popover-item-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #CBD5E1);
   font-size: 12px;
-  color: #38BDF8;
-  transition: color 0.15s ease;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  width: 100%;
 }
 
-.app-card:hover .app-open-link {
-  color: #60A5FA;
+.is-rtl .popover-item-btn {
+  text-align: right;
+}
+
+.popover-item-btn:hover {
+  background: rgba(56, 189, 248, 0.14);
+  color: #fff;
+}
+
+.popover-item-btn svg {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted, #94A3B8);
+}
+
+.popover-item-btn:hover svg {
+  color: #38BDF8;
 }
 </style>

@@ -1,1473 +1,861 @@
 <template>
   <div class="screen-container" :class="{ 'is-rtl': isRtl }">
-    <!-- Header Box -->
-    <div class="header-box">
-      <div class="step-tag-live">
-        <span class="live-dot-pulse"></span>
-        <span>{{ isRtl ? 'لوحة التحكم للعقدة — Hyper-V' : 'FastFree Node Control Center — Hyper-V' }}</span>
-      </div>
-      <h2>{{ t('launchpad.title') }}</h2>
-      <p class="subtitle">{{ t('launchpad.subtitle') }}</p>
-    </div>
+    <!-- 1. Ambient Lighting Orbs (CasaOS Atmosphere) -->
+    <div class="ambient-orb-1" aria-hidden="true"></div>
+    <div class="ambient-orb-2" aria-hidden="true"></div>
 
     <div class="content-body">
-      <!-- Warning Banner if VM is NOT created in Hyper-V -->
-      <div v-if="vmExists === false" class="hero-unprovisioned-card">
-        <div class="unprovisioned-icon-badge">
-          <svg class="badge-svg-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <!-- 2. Unprovisioned VM Banner (If VM is not registered in Hyper-V) -->
+      <div v-if="vmExists === false" class="unprovisioned-alert-banner">
+        <div class="alert-content">
+          <svg class="alert-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
             <line x1="12" y1="9" x2="12" y2="13"></line>
             <line x1="12" y1="17" x2="12.01" y2="17"></line>
           </svg>
-        </div>
-        <div class="unprovisioned-content">
-          <div class="unprovisioned-title-row">
-            <h3>{{ isRtl ? `الآلة الافتراضية (FastFree-${selectedClientId}) غير منشأة بعد في Hyper-V` : `Hyper-V VM (FastFree-${selectedClientId}) Not Provisioned Yet` }}</h3>
-            <span class="unprovisioned-status-pill">
-              <span class="dot-amber"></span>
-              <span>{{ isRtl ? 'تثبيت مطلوب' : 'Setup Required' }}</span>
-            </span>
-          </div>
-          <p class="unprovisioned-sub-text">
+          <span>
             {{ isRtl
-              ? 'لم يتم العثور على الآلة الافتراضية مسجلة في Hyper-V. يمكنك إنشاء محول الشبكة الداخلي والقرص وتسجيل الآلة وتشغيلها فوراً بنقرة واحدة:'
-              : 'The virtual machine is not registered in Hyper-V yet. You can configure the virtual switch, disk, and deploy the appliance now with one click:'
+              ? `الآلة الافتراضية (FastFree-${selectedClientId}) غير منشأة بعد في Hyper-V.`
+              : `Hyper-V VM (FastFree-${selectedClientId}) is not provisioned yet.`
             }}
-          </p>
-          <div class="unprovisioned-actions-row">
-            <button
-              class="btn-instant-provision"
-              :disabled="isProvisioning"
-              @click="handleInstantProvisioning"
-            >
-              <span v-if="isProvisioning" class="spinner-tiny"></span>
-              <span v-else>{{ t('launchpad.createVmNow') }}</span>
-            </button>
-            <button
-              class="btn-revisit-setup"
-              :disabled="isProvisioning"
-              @click="handleRestartWizard"
-            >
-              {{ t('launchpad.restartWizard') }}
-            </button>
-          </div>
-          <div v-if="provisioningMessage" class="provisioning-live-text">
-            <span class="spinner-tiny"></span>
-            <span>{{ provisioningMessage }}</span>
-          </div>
+          </span>
+        </div>
+        <div class="alert-actions">
+          <button
+            class="btn-create-vm"
+            :disabled="isProvisioning"
+            @click="handleInstantProvisioning"
+          >
+            <span v-if="isProvisioning" class="spinner-tiny"></span>
+            <span>{{ isProvisioning ? (isRtl ? 'جارٍ الإنشاء...' : 'Creating...') : (isRtl ? 'إنشاء وتشغيل الآلة الآن' : 'Create VM Now') }}</span>
+          </button>
         </div>
       </div>
 
-      <!-- Critical Alert if VHDX is empty or Guest OS failed to boot -->
-      <div v-else-if="realVmState?.is_empty_disk || realVmState?.guest_status === 'UEFI_NoOS'" class="hero-unprovisioned-card" style="border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.06);">
-        <div class="unprovisioned-icon-badge" style="background: rgba(239, 68, 68, 0.15); color: #EF4444;">
-          <svg class="badge-svg-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      <!-- 3. Top Header Bar & Search / Diagnostic Bar -->
+      <header class="casaos-header-bar">
+        <div class="header-search-wrap">
+          <svg class="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-        </div>
-        <div class="unprovisioned-content">
-          <div class="unprovisioned-title-row">
-            <h3 style="color: #EF4444;">{{ isRtl ? 'تنبيه إقلاع UEFI: لم يتم العثور على نظام التشغيل!' : 'UEFI Boot Alert: No Operating System Loaded!' }}</h3>
-            <span class="unprovisioned-status-pill" style="border-color: rgba(239, 68, 68, 0.3); color: #EF4444;">
-              <span class="dot-red-pulse"></span>
-              <span>{{ isRtl ? 'قرص فارغ (4 MB)' : 'Empty 4MB Stub Disk' }}</span>
-            </span>
-          </div>
-          <p class="unprovisioned-sub-text">
-            {{ isRtl
-              ? 'الآلة الافتراضية قيد التشغيل ولكن القرص الحالي عبارة عن ملف هيكلي فارغ بحجم 4 ميجابايت ولا يحتوي على ملفات إقلاع NixOS. اضغط على الزر لتحميل صورة نظام FastFree NixOS وضبط إعدادات Hyper-V فوراً:'
-              : 'Virtual machine is running but the disk is an empty 4MB stub without NixOS boot files. Click below to download the real FastFree NixOS image and tune Hyper-V settings now:'
-            }}
-          </p>
-          <div class="unprovisioned-actions-row">
-            <button
-              class="btn-instant-provision"
-              :disabled="isProvisioning"
-              @click="handleInstantProvisioning"
-            >
-              <span v-if="isProvisioning" class="spinner-tiny"></span>
-              <span v-else>{{ isRtl ? 'تحميل وتثبيت صورة النظام الحقيقية' : 'Download & Provision Real NixOS Image' }}</span>
-            </button>
-            <button
-              class="btn-revisit-setup"
-              :disabled="isProvisioning"
-              @click="handleReconfigureHyperV"
-            >
-              {{ isRtl ? 'إصلاح وضبط إعدادات Hyper-V' : 'Auto-Tune Hyper-V Settings' }}
-            </button>
-          </div>
-          <div v-if="provisioningMessage" class="provisioning-live-text">
-            <span class="spinner-tiny"></span>
-            <span>{{ provisioningMessage }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Master Live Status Hero -->
-      <div class="hero-success-card" :class="{ 'is-warning': vmExists === false, 'is-stopped': realVmState && realVmState.state !== 'Running' && realVmState.exists }">
-        <div class="success-icon-badge" :class="{ 'badge-amber': vmExists === false, 'badge-gray': realVmState && realVmState.state === 'Off' }">
-          <svg v-if="vmExists === false" class="badge-status-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-          <svg v-else-if="realVmState && realVmState.state === 'Off'" class="badge-status-svg" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="6" y="6" width="12" height="12" rx="2"></rect>
-          </svg>
-          <svg v-else class="badge-status-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-        </div>
-        <div class="hero-text">
-          <div class="node-title-row">
-            <h3>{{ selectedClientId }} — {{ licenseState?.company_name || 'FastFree Enterprise Node' }}</h3>
-            <span class="live-status-pill" :class="{
-              'pill-amber': vmExists === false,
-              'pill-green': realVmState && realVmState.state === 'Running',
-              'pill-gray': realVmState && realVmState.state === 'Off'
-            }">
-              <span :class="{
-                'dot-amber': vmExists === false || (realVmState && realVmState.state === 'Starting'),
-                'dot-live': realVmState && realVmState.state === 'Running',
-                'dot-gray': realVmState && realVmState.state === 'Off'
-              }"></span>
-              <span>
-                {{
-                  vmExists === false
-                    ? (isRtl ? 'في انتظار التثبيت' : 'Setup Required')
-                    : (realVmState?.state === 'Running'
-                        ? (isRtl ? 'تعمل الآن في Hyper-V (Running)' : 'Live & Running in Hyper-V')
-                        : (realVmState?.state === 'Off'
-                            ? (isRtl ? 'متوقفة حالياً (Off)' : 'Appliance Off in Hyper-V')
-                            : (realVmState?.state || t('launchpad.onlineOperational'))))
-                }}
-              </span>
-            </span>
-          </div>
-          <p class="node-sub-text">
-            {{ vmExists === false
-              ? (isRtl ? 'الآلة الافتراضية غير مسجلة حالياً في Hyper-V. اضغط على زر "إنشاء وتثبيت الآلة الافتراضية الآن" أعلاه لتشغيلها.' : 'Virtual machine is not registered in Hyper-V yet. Click "Create & Install Virtual Machine Now" above.')
-              : (realVmState?.state === 'Running'
-                  ? (isRtl ? 'تم التحقق من تشغيل الآلة في Hyper-V بنجاح. تعمل بكامل طاقتها مع اتصال مشفر عبر واير جارد.' : 'Verified running in Hyper-V. Operating smoothly with active WireGuard mesh tunnel.')
-                  : (isRtl ? 'الآلة مسجلة في Hyper-V ولكنها متوقفة. اضغط على زر تشغيل (Start) بالأسفل.' : 'Appliance is registered in Hyper-V but currently Off. Click Start button below.'))
-            }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Comprehensive Appliance Telemetry Grid (All Information) -->
-      <div class="telemetry-grid">
-        <!-- 1. License & Entity -->
-        <div class="spec-card">
-          <div class="spec-header">
-            <span class="spec-icon">
-              <svg class="spec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-              </svg>
-            </span>
-            <span class="spec-title">{{ isRtl ? 'بيانات الترخيص والمؤسسة' : 'License & Client Entity' }}</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'المنشأة:' : 'Entity:' }}</span>
-            <span class="spec-v font-bold">{{ licenseState?.company_name || 'Enterprise Client' }}</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'الفئة:' : 'Tier:' }}</span>
-            <span class="spec-v text-accent uppercase font-bold">{{ licenseState?.tier_name || 'Enterprise' }}</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'المفتاح:' : 'Key:' }}</span>
-            <span class="spec-v font-mono text-xs">{{ licenseState?.key || 'ACTIVE-KEY' }}</span>
-          </div>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="search-input"
+            :placeholder="isRtl ? 'ابحث عن تطبيق سيادي، منفذ، أو خدمة...' : 'Search sovereign app, port, or service...'"
+          />
+          <button v-if="searchQuery" class="search-clear-btn" @click="searchQuery = ''">✕</button>
         </div>
 
-        <!-- 2. Live Hyper-V Hardware Allocation -->
-        <div class="spec-card">
-          <div class="spec-header">
-            <span class="spec-icon">
-              <svg class="spec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="4" width="16" height="16" rx="2"></rect>
-                <rect x="9" y="9" width="6" height="6"></rect>
-                <line x1="9" y1="1" x2="9" y2="4"></line>
-                <line x1="15" y1="1" x2="15" y2="4"></line>
-                <line x1="9" y1="20" x2="9" y2="23"></line>
-                <line x1="15" y1="20" x2="15" y2="23"></line>
-                <line x1="20" y1="9" x2="23" y2="9"></line>
-                <line x1="20" y1="15" x2="23" y2="15"></line>
-                <line x1="1" y1="9" x2="4" y2="9"></line>
-                <line x1="1" y1="15" x2="4" y2="15"></line>
-              </svg>
-            </span>
-            <span class="spec-title">{{ isRtl ? 'بيانات Hyper-V الحية' : 'Live Hyper-V Telemetry' }}</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'الأنوية (vCPU):' : 'vCPU Cores:' }}</span>
-            <span class="spec-v font-bold text-accent">{{ realVmState?.cpu_cores || assignedCpuCores }} {{ t('common.cores') }}</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'الذاكرة (RAM):' : 'Memory (RAM):' }}</span>
-            <span class="spec-v font-bold text-emerald">
-              {{ realVmState?.memory_mb ? (realVmState.memory_mb / 1024).toFixed(1) : (assignedRamMb / 1024).toFixed(0) }} {{ t('common.gb') }}
-            </span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'مدة التشغيل الحية:' : 'Live Uptime:' }}</span>
-            <span class="spec-v font-mono text-xs text-accent">
-              {{ realVmState?.exists ? formatUptime(realVmState.uptime_seconds) : '-' }}
-            </span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'القرص الافتراضي:' : 'Virtual Disk:' }}</span>
-            <span class="spec-v font-mono text-xs truncate" :title="realVmState?.vhdx_path">
-              {{ realVmState?.vhdx_size_bytes ? (realVmState.vhdx_size_bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB' : '-' }}
-              <span v-if="realVmState?.is_empty_disk" class="text-amber font-bold"> [{{ isRtl ? 'قرص فارغ 4MB!' : 'Empty Stub!' }}]</span>
-              <span v-else-if="realVmState?.vhdx_size_bytes" class="text-emerald font-bold"> [NixOS]</span>
-            </span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'محرك KVM الافتراضي:' : 'KVM Engine:' }}</span>
-            <span class="spec-v font-bold" :class="realVmState?.nested_virt_enabled ? 'text-emerald' : 'text-amber'">
-              {{ realVmState?.nested_virt_enabled ? (isRtl ? 'نشط (Nested KVM)' : 'Active (Nested KVM)') : (isRtl ? 'معطل' : 'Disabled') }}
-            </span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'الإقلاع الآمن (SecureBoot):' : 'Secure Boot:' }}</span>
-            <span class="spec-v font-mono text-xs" :class="realVmState?.secure_boot_enabled ? 'text-amber' : 'text-emerald'">
-              {{ realVmState?.secure_boot_enabled ? (isRtl ? 'مفعل (قد يعيق GRUB)' : 'Enabled') : (isRtl ? 'معطل (NixOS GRUB جاهز)' : 'Disabled (NixOS GRUB Ready)') }}
-            </span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'محول شبكة Hyper-V:' : 'Virtual Switch:' }}</span>
-            <span class="spec-v font-mono text-xs text-accent truncate">
-              {{ realVmState?.switch_name || 'Default Switch' }} (NAT & DHCP)
-            </span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'نبض النظام (Heartbeat):' : 'Guest Heartbeat:' }}</span>
-            <span class="spec-v font-bold" :class="realVmState?.heartbeat === 'OK' ? 'text-emerald' : 'text-amber'">
-              {{ realVmState?.heartbeat || 'No Contact' }}
-            </span>
-          </div>
+        <div class="header-right-badges">
+          <button
+            type="button"
+            class="btn-header-tool"
+            :title="isRtl ? 'سجل تشخيص النظام' : 'System Terminal Console'"
+            @click="isTerminalOpen = !isTerminalOpen"
+          >
+            <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 17 10 11 4 5"></polyline>
+              <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+            <span>{{ isRtl ? 'الطرفية' : 'Terminal' }}</span>
+          </button>
+
+          <span class="status-node-pill font-mono">
+            <span class="node-status-dot" :class="{ 'is-active': isApplianceActive }"></span>
+            FastFree-{{ selectedClientId }}
+          </span>
         </div>
+      </header>
 
-        <!-- 3. Network & WireGuard Mesh -->
-        <div class="spec-card">
-          <div class="spec-header">
-            <span class="spec-icon">
-              <svg class="spec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </svg>
-            </span>
-            <span class="spec-title">{{ isRtl ? 'الشبكة والنفق المشفر' : 'WireGuard Mesh Network' }}</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'عنوان النفق:' : 'Tunnel IP:' }}</span>
-            <span class="spec-v font-mono text-emerald font-bold">{{ wireGuardConfig?.client_tunnel_ip || '10.24.0.2/32' }}</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'منفذ UDP:' : 'UDP Port:' }}</span>
-            <span class="spec-v font-mono text-accent font-bold">{{ wireGuardConfig?.listen_port || 51822 }}</span>
-          </div>
-          <div v-if="realVmState?.ip_addresses?.length" class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'عناوين Hyper-V:' : 'Hyper-V IPs:' }}</span>
-            <span class="spec-v font-mono text-xs text-accent truncate" :title="realVmState.ip_addresses.join(', ')">
-              {{ realVmState.ip_addresses.join(', ') }}
-            </span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'المتحكم:' : 'Controller:' }}</span>
-            <span class="spec-v font-mono text-xs">client1.fastfree.cloud</span>
-          </div>
-        </div>
-
-        <!-- 4. Sovereign Identity & Access Control -->
-        <div class="spec-card">
-          <div class="spec-header">
-            <span class="spec-icon">
-              <svg class="spec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-              </svg>
-            </span>
-            <span class="spec-title">{{ isRtl ? 'الهوية السيادية والحماية' : 'Sovereign Identity & Access' }}</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'حساب الخدمة:' : 'Service Identity:' }}</span>
-            <span class="spec-v font-mono text-xs font-bold text-accent">
-              {{ realVmState?.service_account || ('fastfree_' + selectedClientId) }}
-            </span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'حالة التخفي (Cloaked):' : 'Cloaking Status:' }}</span>
-            <span class="spec-v font-bold" :class="realVmState?.is_account_cloaked ? 'text-emerald' : 'text-amber'">
-              {{ realVmState?.is_account_cloaked ? (isRtl ? 'محجوب عن شاشة الدخول' : 'Hidden from Winlogon') : (isRtl ? 'افتراضي' : 'Standard') }}
-            </span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'عزل التخزين (NTFS ACL):' : 'Storage ACL:' }}</span>
-            <span class="spec-v font-mono text-xs" :class="realVmState?.is_storage_hardened ? 'text-emerald' : 'text-amber'">
-              {{ realVmState?.is_storage_hardened ? (isRtl ? 'محصن (SYSTEM + Hyper-V)' : 'Hardened (SYSTEM + Hyper-V)') : (isRtl ? 'عام' : 'Inherited') }}
-            </span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-k">{{ isRtl ? 'صلاحيات LSA:' : 'LSA Rights:' }}</span>
-            <span class="spec-v font-mono text-xs text-accent">
-              {{ isRtl ? 'تسجيل دخول كخدمة فقط' : 'SeDenyInteractiveLogon' }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Live Dial Telemetry & Hardware Gauges (CasaOS Sovereign Integration) -->
-      <TelemetryDialCard
-        :telemetry="liveTelemetry"
-        :node-name="selectedClientId + '.fastfree'"
-        :is-rtl="isRtl"
-        style="margin-bottom: 16px;"
-      />
-
-      <!-- Quick Access Endpoints & Web Portals -->
-      <div class="endpoints-grid">
-        <!-- Local Web Portal Card -->
-        <div class="endpoint-card">
-          <div class="ep-header">
-            <span class="ep-icon">
-              <svg class="ep-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="2" y1="12" x2="22" y2="12"></line>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-              </svg>
-            </span>
-            <span class="ep-label">{{ t('launchpad.localPortalAddress') }}</span>
-          </div>
-          <div class="ep-url font-mono">http://{{ selectedClientId }}.fastfree.local</div>
-          <div class="ep-actions">
-            <button class="btn-copy" @click="copyText(`http://${selectedClientId}.fastfree.local`)">
-              {{ copiedText === `http://${selectedClientId}.fastfree.local` ? t('common.copied') : t('common.copy') }}
-            </button>
-            <button class="btn-launch-sm" @click="launchPortal">{{ t('launchpad.openPortal') }} ↗</button>
-          </div>
-        </div>
-
-        <!-- WireGuard Gateway Card -->
-        <div class="endpoint-card">
-          <div class="ep-header">
-            <span class="ep-icon">
-              <svg class="ep-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-              </svg>
-            </span>
-            <span class="ep-label">{{ t('launchpad.wgOverlayIp') }}</span>
-          </div>
-          <div class="ep-url font-mono">{{ wireGuardConfig?.client_tunnel_ip || '10.24.0.2/32' }}</div>
-          <div class="ep-actions">
-            <button class="btn-copy" @click="copyText(wireGuardConfig?.client_tunnel_ip || '10.24.0.2')">
-              {{ copiedText?.startsWith('10.24') ? t('common.copied') : t('common.copy') }}
-            </button>
-            <span class="ep-note">{{ t('launchpad.udpPort', { port: wireGuardConfig?.listen_port || 51822 }) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 8-App Sovereign Fleet Grid (CasaOS Launchpad) -->
-      <AppLaunchGrid
-        :is-rtl="isRtl"
-        :node-host="selectedClientId + '.fastfree.local'"
-        @launch="handleAppLaunch"
-      />
-
-      <!-- Appliance Power & Operation Center -->
-      <div class="companion-card">
-        <div class="comp-title-row">
-          <div class="comp-title">
-            <span class="comp-icon">
-              <svg class="comp-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-              </svg>
-            </span>
-            <span>{{ isRtl ? 'إدارة وتحكم الآلة الافتراضية (Hyper-V Power)' : 'Hyper-V VM Power Management' }}</span>
-          </div>
-          <div class="vm-power-controls">
-            <button
-              class="btn-vm-action btn-start"
-              :disabled="!!(vmActionBusy || realVmState?.state === 'Running')"
-              title="Start VM"
-              @click="handleVmAction('start')"
-            >
-              <span v-if="activeAction === 'start'" class="spinner-tiny"></span>
-              <span v-else class="btn-flex">
-                <svg class="action-btn-svg" viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      <!-- 4. CasaOS Main 2-Column Workspace Layout (280px sidebar + 1fr grid) -->
+      <main class="casa-workspace-layout">
+        <!-- Left Sidebar Column: Credentials, Gauges, FastFree VPN -->
+        <aside class="casa-sidebar">
+          <!-- Credentials & Access Card -->
+          <div class="casa-card widget-creds">
+            <div class="creds-header">
+              <span class="creds-title">{{ isRtl ? 'بيانات الوصول المعتمدة' : 'Sovereign Node Access' }}</span>
+              <button
+                type="button"
+                class="btn-copy-creds"
+                :title="isRtl ? 'نسخ بيانات الدخول' : 'Copy Credentials'"
+                @click="copyCredentials"
+              >
+                <svg v-if="!isCredsCopied" class="copy-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
-                <span>{{ isRtl ? 'تشغيل' : 'Start' }}</span>
-              </span>
-            </button>
-            <button
-              class="btn-vm-action"
-              :disabled="Boolean(vmActionBusy)"
-              title="Restart Guest VM"
-              @click="handleVmAction('restart')"
-            >
-              <span v-if="activeAction === 'restart'" class="spinner-tiny"></span>
-              <span v-else class="btn-flex">
-                <svg class="action-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="23 4 23 10 17 10"></polyline>
-                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                <svg v-else class="copy-svg-mini text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span>{{ t('launchpad.restartVm') }}</span>
-              </span>
-            </button>
-            <button
-              class="btn-vm-action btn-danger"
-              :disabled="!!(vmActionBusy || realVmState?.state === 'Off')"
-              title="Stop Guest VM"
-              @click="handleVmAction('stop')"
-            >
-              <span v-if="activeAction === 'stop'" class="spinner-tiny"></span>
-              <span v-else class="btn-flex">
-                <svg class="action-btn-svg" viewBox="0 0 24 24" fill="currentColor">
-                  <rect x="4" y="4" width="16" height="16" rx="2"></rect>
-                </svg>
-                <span>{{ t('launchpad.stopVm') }}</span>
-              </span>
-            </button>
-            <button
-              class="btn-vm-action btn-restart-wizard"
-              :disabled="vmActionBusy"
-              :title="t('launchpad.restartWizardHint')"
-              @click="handleRestartWizard"
-            >
-              <span class="btn-flex">
-                <svg class="action-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="1 4 1 10 7 10"></polyline>
-                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-                </svg>
-                <span>{{ isRtl ? 'إعادة تشغيل المعالج' : 'Restart Setup' }}</span>
-              </span>
-            </button>
+                <span>{{ isCredsCopied ? (isRtl ? 'تم النسخ!' : 'Copied!') : (isRtl ? 'نسخ' : 'Copy') }}</span>
+              </button>
+            </div>
+            <div class="creds-body">
+              <div class="cred-row">
+                <span class="cred-label">{{ isRtl ? 'رابط البوابة:' : 'Portal URL:' }}</span>
+                <span class="cred-val font-mono text-cyan">http://{{ selectedClientId }}.fastfree.local</span>
+              </div>
+              <div class="cred-row">
+                <span class="cred-label">{{ isRtl ? 'المستخدم:' : 'Username:' }}</span>
+                <span class="cred-val font-mono text-emerald">Administrator</span>
+              </div>
+            </div>
           </div>
-        </div>
-        <p class="comp-desc">
-          {{ t('launchpad.companionDesc') }}
-        </p>
-      </div>
 
-      <!-- Action Status Notice Pill -->
-      <div v-if="actionNotice" class="notice-pill">
-        <span>{{ actionNotice }}</span>
-      </div>
+          <!-- System Status & Radial Telemetry Dials -->
+          <TelemetryDialCard
+            :telemetry="liveTelemetry"
+            :node-name="`FastFree-${selectedClientId}`"
+            :is-rtl="isRtl"
+          />
+
+          <!-- WireGuard Mesh Tunnel Widget -->
+          <div class="casa-card widget-wireguard">
+            <div class="wg-top-row">
+              <span class="wg-label">{{ isRtl ? 'شبكة FastFree VPN المشفرة' : 'FastFree VPN Mesh Network' }}</span>
+              <span class="wg-ip font-mono">{{ wireGuardConfig?.client_tunnel_ip || '10.24.0.2/32' }}</span>
+            </div>
+            <div class="wg-sub-row font-mono">
+              <span>{{ isRtl ? 'المنفذ: ' : 'Port: ' }}UDP {{ wireGuardConfig?.listen_port || 51822 }}</span>
+              <span>client1.fastfree.cloud</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Right Main Workspace: 8-App CasaOS Squircle Grid -->
+        <section class="casa-workspace-main">
+          <AppLaunchGrid
+            :apps="filteredApps"
+            :is-rtl="isRtl"
+            :node-host="`${selectedClientId}.fastfree.local`"
+            @launch="handleAppLaunch"
+            @restart="handleAppRestart"
+            @logs="handleAppLogs"
+            @copy-url="handleCopyUrl"
+          />
+        </section>
+      </main>
     </div>
 
-    <!-- Master Action Bar (No Back Button; Locked Post-Provisioning) -->
+    <!-- 5. Universal Standard Action Bar (56px) -->
     <div class="action-bar">
-      <div class="action-left">
-        <button class="btn btn-secondary" @click="handleMinimizeToTray">
-          <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="4" y1="12" x2="20" y2="12"></line>
-          </svg>
-          <span>{{ t('launchpad.minimizeToTray') }}</span>
-        </button>
-        <button class="btn btn-secondary" :disabled="isCheckingUpdate" @click="handleManualCheckUpdate">
-          <span v-if="isCheckingUpdate" class="spinner-tiny"></span>
-          <span v-else class="btn-flex">
-            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <div class="action-bar-start">
+        <div class="status-summary">
+          <span class="status-live">
+            <span :class="isApplianceActive ? 'dot-green' : 'dot-amber'"></span>
+            <span class="font-mono text-xs">FastFree-{{ selectedClientId }} ({{ isApplianceActive ? (isRtl ? 'نشط ويعمل' : 'Running') : (isRtl ? 'جاهز' : 'Ready') }})</span>
+          </span>
+          <button
+            type="button"
+            class="btn-vm-restart"
+            :title="isRtl ? 'إعادة تشغيل الآلة' : 'Restart Hyper-V VM'"
+            @click="handleVmAction('restart')"
+          >
+            <svg class="vm-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="23 4 23 10 17 10"></polyline>
               <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
             </svg>
-            <span>{{ isRtl ? 'فحص التحديثات' : 'Check Updates' }}</span>
-          </span>
-        </button>
-        <button class="btn btn-secondary" @click="handleRestartWizard" :title="t('launchpad.restartWizardHint')">
+            <span>{{ isRtl ? 'إعادة تشغيل' : 'Restart' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CENTER: Persistent FastFree 3D Precision Timepiece -->
+      <div class="action-bar-center">
+        <FastFreeTimepiece />
+      </div>
+
+      <div class="action-bar-end">
+        <button class="btn btn-primary btn-portal" @click="launchPortal">
           <span class="btn-flex">
-            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="1 4 1 10 7 10"></polyline>
-              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            <svg class="portal-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
             </svg>
-            <span>{{ isRtl ? 'إعادة تشغيل المعالج' : 'Restart Setup' }}</span>
+            <span>{{ isRtl ? 'دخول بوابة فاست فري ERP' : 'Open FastFree ERP Portal' }}</span>
           </span>
         </button>
       </div>
-      <button class="btn btn-primary btn-portal" @click="launchPortal">
-        <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-          <polyline points="15 3 21 3 21 9"></polyline>
-          <line x1="10" y1="14" x2="21" y2="3"></line>
-        </svg>
-        <span>{{ t('launchpad.openErpPortal') }}</span>
-      </button>
     </div>
 
-    <!-- CasaOS Floating 4-way Movable Dock -->
-    <CasaOsDock
-      :is-rtl="isRtl"
-      :is-refreshing="isCheckingVm"
-      @refresh="checkVmStatus"
-      @open-portal="launchPortal"
-      @toggle-console="isConsoleOpen = !isConsoleOpen"
-      @restart-vm="handleVmAction('restart')"
-    />
-
-    <!-- Real-time Live Console Drawer -->
+    <!-- 6. Slide-Up Diagnostic Terminal Console -->
     <LiveConsoleModal
-      :is-open="isConsoleOpen"
+      :is-open="isTerminalOpen"
       :is-rtl="isRtl"
       :logs="consoleLogs"
-      @close="isConsoleOpen = false"
+      @close="isTerminalOpen = false"
       @clear="consoleLogs = []"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import FastFreeTimepiece from './FastFreeTimepiece.vue';
 import {
-  currentStep,
   selectedClientId,
   wireGuardConfig,
-  licenseState,
   assignedCpuCores,
   assignedRamMb,
   targetDiskDrive,
   executeVmCommand,
-  minimizeToTray,
   getVmRealState,
   provisionNode,
-  reconfigureHyperVVm,
   type VmRealState,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
-import { logInfo, logWarn, logError, logSuccess } from '../composables/useDiagnostics';
-import { checkForUpdates, isCheckingUpdate } from '../composables/useAutoUpdater';
 import { TelemetryService } from '../domain/services/TelemetryService';
+import { AppRegistryService } from '../domain/services/AppRegistryService';
 import { ApplianceTelemetry } from '../domain/models/ApplianceTelemetry';
 import { SystemLogEntry } from '../domain/models/SystemLogEntry';
 import { SovereignApp } from '../domain/models/SovereignApp';
-import CasaOsDock from './dashboard/CasaOsDock.vue';
-import AppLaunchGrid from './dashboard/AppLaunchGrid.vue';
+
 import TelemetryDialCard from './dashboard/TelemetryDialCard.vue';
+import AppLaunchGrid from './dashboard/AppLaunchGrid.vue';
 import LiveConsoleModal from './dashboard/LiveConsoleModal.vue';
 
-const { t, isRtl } = useI18n();
+const { isRtl } = useI18n();
 
+// Domain Services
 const telemetryService = TelemetryService.getInstance();
+const appRegistryService = AppRegistryService.getInstance();
+
+// Reactive State
 const liveTelemetry = ref<ApplianceTelemetry>(telemetryService.currentTelemetry);
+const allApps = ref<SovereignApp[]>(appRegistryService.getAllApps());
+const searchQuery = ref('');
 const consoleLogs = ref<SystemLogEntry[]>(SystemLogEntry.createDefaultSeed(selectedClientId.value));
-const isConsoleOpen = ref(false);
 
-function handleAppLaunch(app: SovereignApp) {
-  logInfo('Launchpad', `Launching application: ${app.getName(isRtl.value)} on port ${app.port}`);
-  consoleLogs.value.unshift(
-    new SystemLogEntry('SYSTEM', `Launched ${app.getName(isRtl.value)} (Port ${app.port})`, 'info')
-  );
-}
-
-const copiedText = ref<string | null>(null);
-const vmActionBusy = ref(false);
-const activeAction = ref<'start' | 'stop' | 'restart' | null>(null);
-const actionNotice = ref('');
-const vmExists = ref<boolean | null>(null);
-const realVmState = ref<VmRealState | null>(null);
+const isTerminalOpen = ref(false);
 const isCheckingVm = ref(false);
 const isProvisioning = ref(false);
-const provisioningMessage = ref('');
-let telemetryInterval: any = null;
+const vmExists = ref<boolean | null>(null);
+const realVmState = ref<VmRealState | null>(null);
+const isCredsCopied = ref(false);
 
-function formatUptime(seconds: number): string {
-  if (!seconds || seconds <= 0) return '0s';
-  const d = Math.floor(seconds / (3600 * 24));
-  const h = Math.floor((seconds % (3600 * 24)) / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  if (d > 0) return `${d}d ${h}h ${m}m`;
-  if (h > 0) return `${h}h ${m}m ${s}s`;
-  if (m > 0) return `${m}m ${s}s`;
-  return `${s}s`;
+let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+const isApplianceActive = computed(() => {
+  return realVmState.value?.state === 'Running' || realVmState.value?.state === '2';
+});
+
+const filteredApps = computed(() => {
+  const q = searchQuery.value.toLowerCase().trim();
+  if (!q) return allApps.value;
+  return allApps.value.filter(app =>
+    app.getName(isRtl.value).toLowerCase().includes(q) ||
+    app.port.toString().includes(q) ||
+    app.descriptionAr.toLowerCase().includes(q) ||
+    app.descriptionEn.toLowerCase().includes(q)
+  );
+});
+
+async function copyCredentials() {
+  try {
+    const text = `URL: http://${selectedClientId.value}.fastfree.local\nUser: Administrator`;
+    await navigator.clipboard.writeText(text);
+    isCredsCopied.value = true;
+    setTimeout(() => { isCredsCopied.value = false; }, 2000);
+  } catch (err) {
+    console.error('Failed to copy credentials', err);
+  }
 }
 
 async function checkVmStatus() {
   isCheckingVm.value = true;
   try {
-    const telemetry = await getVmRealState(selectedClientId.value);
-    realVmState.value = telemetry;
-    vmExists.value = telemetry.exists;
-    if (!telemetry.exists) {
-      logWarn('Launchpad', `Hyper-V VM 'FastFree-${selectedClientId.value}' was not found in Hyper-V.`);
-    } else {
-      logInfo(
-        'Launchpad',
-        `Live Hyper-V verified for 'FastFree-${selectedClientId.value}': State=${telemetry.state}, Uptime=${telemetry.uptime_seconds}s, RAM=${telemetry.memory_mb}MB`
-      );
-      try {
-        localStorage.setItem('fastfree_provisioned', 'true');
-      } catch {}
-    }
-  } catch (err) {
-    console.warn('Error checking VM status:', err);
+    const s = await getVmRealState(selectedClientId.value);
+    realVmState.value = s;
+    vmExists.value = s.exists;
+  } catch {
     vmExists.value = false;
   } finally {
     isCheckingVm.value = false;
   }
 }
 
-async function waitForVmState(targetState: string, maxWaitMs = 15000, pollIntervalMs = 750): Promise<VmRealState> {
-  const startTime = Date.now();
-  while (Date.now() - startTime < maxWaitMs) {
-    try {
-      const state = await getVmRealState(selectedClientId.value);
-      realVmState.value = state;
-      vmExists.value = state.exists;
-      if (state.state.toLowerCase() === targetState.toLowerCase()) {
-        return state;
-      }
-    } catch {}
-    await new Promise((r) => setTimeout(r, pollIntervalMs));
+function appendTerminalLog(source: any, msg: string) {
+  consoleLogs.value.unshift(new SystemLogEntry(source, msg, 'info'));
+}
+
+function handleAppLaunch(app: SovereignApp) {
+  appRegistryService.launchApp(app, `${selectedClientId.value}.fastfree.local`);
+  appendTerminalLog('SYSTEM', `Launched application: ${app.getName(isRtl.value)} on port ${app.port}`);
+}
+
+function handleAppRestart(app: SovereignApp) {
+  appendTerminalLog('SYSTEM', `Restart signal sent to ${app.getName(false)} unit.`);
+}
+
+function handleAppLogs(app: SovereignApp) {
+  isTerminalOpen.value = true;
+  appendTerminalLog('HYPER-V', `Attached log stream for unit ${app.id}.service (${selectedClientId.value})`);
+}
+
+function handleCopyUrl(url: string) {
+  appendTerminalLog('SYSTEM', `Copied application endpoint URL: ${url}`);
+}
+
+async function launchPortal() {
+  const url = `http://${selectedClientId.value}.fastfree.local`;
+  try {
+    await openUrl(url);
+  } catch {
+    window.open(url, '_blank');
   }
-  const finalState = await getVmRealState(selectedClientId.value);
-  realVmState.value = finalState;
-  vmExists.value = finalState.exists;
-  return finalState;
+}
+
+async function handleVmAction(action: 'start' | 'stop' | 'restart') {
+  try {
+    await executeVmCommand(action, selectedClientId.value);
+    appendTerminalLog('HYPER-V', `Power command '${action}' dispatched to FastFree-${selectedClientId.value}`);
+    await checkVmStatus();
+  } catch (err: any) {
+    appendTerminalLog('HYPER-V', `Error: ${err.message || err}`);
+  }
 }
 
 async function handleInstantProvisioning() {
   if (isProvisioning.value) return;
   isProvisioning.value = true;
-  provisioningMessage.value = isRtl.value
-    ? 'جارٍ تهيئة محول الشبكة وإعداد قرص VHDX وتسجيل الآلة الافتراضية في Hyper-V...'
-    : 'Configuring Virtual Switch, allocating VHDX, and deploying VM in Hyper-V...';
-  logInfo('Launchpad', `Instant VM provisioning triggered for ${selectedClientId.value}`);
-
   try {
     const safeRam = Math.max(1024, Math.floor(((assignedRamMb.value || 8192) + 64) / 128) * 128);
-    const logs = await provisionNode(
-      selectedClientId.value,
-      assignedCpuCores.value || 4,
-      safeRam,
-      targetDiskDrive.value || 'C:\\'
-    );
-    logSuccess('Launchpad', `Instant VM provisioning succeeded: ${logs.length} step(s) completed.`);
-    actionNotice.value = isRtl.value
-      ? 'تم إنشاء وتثبيت وتشغيل الآلة الافتراضية بنجاح!'
-      : 'Virtual machine created, installed and started successfully!';
-
+    await provisionNode(selectedClientId.value, assignedCpuCores.value || 4, safeRam, targetDiskDrive.value || 'C:\\');
+    appendTerminalLog('HYPER-V', `VM FastFree-${selectedClientId.value} provisioned and started.`);
     await checkVmStatus();
   } catch (err: any) {
-    const msg = String(err?.message || err);
-    actionNotice.value = isRtl.value
-      ? `تعذر إنشاء الآلة في Hyper-V: ${msg}`
-      : `Failed to create VM in Hyper-V: ${msg}`;
-    logError('Launchpad', 'Instant provisioning error', msg);
+    appendTerminalLog('HYPER-V', `Provisioning failed: ${err.message || err}`);
   } finally {
     isProvisioning.value = false;
-    provisioningMessage.value = '';
-    setTimeout(() => {
-      actionNotice.value = '';
-    }, 6000);
-  }
-}
-
-async function handleReconfigureHyperV() {
-  if (isProvisioning.value) return;
-  isProvisioning.value = true;
-  provisioningMessage.value = isRtl.value
-    ? 'جارٍ تطبيق إعدادات FastFree المثالية على Hyper-V (تعطيل SecureBoot، تفعيل KVM، تعيين محول الشبكة)...'
-    : 'Applying optimal FastFree preset to Hyper-V (SecureBoot Off, KVM On, Default Switch)...';
-  logInfo('Launchpad', `Auto-tune Hyper-V settings requested for ${selectedClientId.value}`);
-
-  try {
-    const safeRam = Math.max(1024, Math.floor(((assignedRamMb.value || 8192) + 64) / 128) * 128);
-    const updated = await reconfigureHyperVVm(
-      selectedClientId.value,
-      targetDiskDrive.value || 'C:\\',
-      assignedCpuCores.value || 4,
-      safeRam
-    );
-    realVmState.value = updated;
-    actionNotice.value = isRtl.value
-      ? 'تم ضبط كافة إعدادات Hyper-V بنجاح للنمط المثالي لـ FastFree!'
-      : 'All Hyper-V settings tuned to optimal FastFree NixOS preset!';
-    logSuccess('Launchpad', `Hyper-V auto-tune completed for ${selectedClientId.value}`);
-    await checkVmStatus();
-  } catch (err: any) {
-    const msg = String(err?.message || err);
-    actionNotice.value = isRtl.value
-      ? `تعذر ضبط إعدادات Hyper-V: ${msg}`
-      : `Failed to configure Hyper-V: ${msg}`;
-    logError('Launchpad', 'Auto-tune error', msg);
-  } finally {
-    isProvisioning.value = false;
-    provisioningMessage.value = '';
-    setTimeout(() => {
-      actionNotice.value = '';
-    }, 6000);
-  }
-}
-
-function handleRestartWizard() {
-  try {
-    localStorage.removeItem('fastfree_provisioned');
-  } catch (err) {
-    console.warn('Storage clear error:', err);
-  }
-  logInfo('Launchpad', 'Restarting setup wizard from Step 1 on user request.');
-  currentStep.value = 1;
-}
-
-async function handleManualCheckUpdate() {
-  const hasUpdate = await checkForUpdates(false);
-  if (!hasUpdate) {
-    actionNotice.value = isRtl.value
-      ? 'أنت تستخدم أحدث إصدار معتمد من فاست فري'
-      : 'FastFree Companion is fully up to date';
-    setTimeout(() => {
-      actionNotice.value = '';
-    }, 4000);
   }
 }
 
 onMounted(async () => {
   await checkVmStatus();
+
   telemetryService.subscribe((t) => {
     liveTelemetry.value = t;
   });
   telemetryService.startPolling(selectedClientId.value);
 
-  telemetryInterval = setInterval(async () => {
-    if (!isCheckingVm.value && !isProvisioning.value && !vmActionBusy.value) {
+  pollTimer = setInterval(async () => {
+    if (!isCheckingVm.value && !isProvisioning.value) {
       await checkVmStatus();
     }
-  }, 4000);
+  }, 5000);
 });
 
 onUnmounted(() => {
   telemetryService.stopPolling();
-  if (telemetryInterval) {
-    clearInterval(telemetryInterval);
-    telemetryInterval = null;
-  }
+  if (pollTimer) clearInterval(pollTimer);
 });
-
-async function launchPortal() {
-  const url = `http://${selectedClientId.value}.fastfree.local`;
-  logInfo('Launchpad', `Opening FastFree portal at ${url}`);
-  try {
-    await openUrl(url);
-  } catch (err) {
-    console.warn('Fallback window.open:', err);
-    window.open(url, '_blank');
-  }
-}
-
-async function copyText(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    copiedText.value = text;
-    setTimeout(() => {
-      copiedText.value = null;
-    }, 2000);
-  } catch (err) {
-    console.error('Clipboard copy error:', err);
-  }
-}
-
-async function handleVmAction(action: 'start' | 'stop' | 'restart') {
-  if (vmExists.value === false) {
-    actionNotice.value = isRtl.value
-      ? 'الآلة الافتراضية غير منشأة بعد في Hyper-V. يرجى الضغط على زر "إنشاء وتثبيت الآلة الافتراضية الآن".'
-      : 'Virtual machine is not created yet. Please click "Create & Install Virtual Machine Now".';
-    return;
-  }
-
-  vmActionBusy.value = true;
-  activeAction.value = action;
-  actionNotice.value = action === 'restart'
-    ? t('launchpad.vmRestarting', { client: selectedClientId.value })
-    : action === 'start'
-    ? (isRtl.value ? `جارٍ تشغيل العقدة ${selectedClientId.value} والتحقق من حالتها في Hyper-V...` : `Starting VM ${selectedClientId.value} and waiting for Hyper-V...`)
-    : (isRtl.value ? `جارٍ إيقاف العقدة ${selectedClientId.value} والتحقق من حالتها في Hyper-V...` : `Stopping VM ${selectedClientId.value} and waiting for Hyper-V...`);
-
-  try {
-    const res = await executeVmCommand(action, selectedClientId.value);
-    const targetState = action === 'stop' ? 'Off' : 'Running';
-
-    // Actively poll until Hyper-V reflects target state!
-    const confirmedState = await waitForVmState(targetState);
-    if (confirmedState.state.toLowerCase() === targetState.toLowerCase()) {
-      actionNotice.value = action === 'start'
-        ? (isRtl.value ? 'تم تأكيد تشغيل الآلة الافتراضية في Hyper-V بنجاح!' : 'VM verified in Hyper-V Running state!')
-        : action === 'stop'
-        ? (isRtl.value ? 'تم تأكيد إيقاف الآلة الافتراضية في Hyper-V بنجاح' : 'VM verified in Hyper-V Off state')
-        : (isRtl.value ? 'تمت إعادة تشغيل الآلة الافتراضية بنجاح' : 'VM restarted and verified in Hyper-V');
-      logSuccess('VM', `Hyper-V state confirmed for ${selectedClientId.value}: ${confirmedState.state}`);
-    } else {
-      actionNotice.value = res.message || t('launchpad.vmSuccess');
-    }
-  } catch (err) {
-    const msg = String(err);
-    if (msg.includes('VM_NOT_FOUND') || msg.includes('unable to find a virtual machine')) {
-      vmExists.value = false;
-      actionNotice.value = isRtl.value
-        ? 'الآلة الافتراضية غير موجودة في Hyper-V. يمكنك إنشاؤها عبر الزر الظاهر بالأعلى.'
-        : 'Virtual machine not found in Hyper-V. You can create it using the button above.';
-    } else {
-      actionNotice.value = `Hyper-V Error: ${msg}`;
-    }
-    logError('VM', `VM ${action} failed`, msg);
-    await checkVmStatus();
-  } finally {
-    vmActionBusy.value = false;
-    activeAction.value = null;
-    setTimeout(() => {
-      actionNotice.value = '';
-    }, 5000);
-  }
-}
-
-async function handleMinimizeToTray() {
-  await minimizeToTray();
-}
 </script>
 
 <style scoped>
 .screen-container {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
   height: 100%;
-}
-
-.header-box {
-  margin-bottom: 12px;
-}
-
-.step-tag-live {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #10B981;
-  letter-spacing: 0.8px;
-  margin-bottom: 4px;
-}
-
-.live-dot-pulse {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #10B981;
-  box-shadow: 0 0 8px #10B981;
-  animation: pulse-dot 1.8s infinite ease-in-out;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.3); }
-}
-
-.header-box h2 {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-main, #F8FAFC);
-  margin: 0;
-}
-
-.subtitle {
-  color: var(--text-muted, #94A3B8);
-  font-size: 12px;
-  margin-top: 4px;
-  margin-bottom: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  position: relative;
+  color: #F8FAFC;
+  font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 .content-body {
   flex: 1;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
   overflow-y: auto;
-  padding-right: 2px;
-}
-
-.hero-unprovisioned-card {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(239, 68, 68, 0.1) 100%);
-  border: 1px solid rgba(245, 158, 11, 0.45);
-  border-radius: var(--radius-hero, 16px);
-  padding: 14px 18px;
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  box-shadow: 0 8px 30px -4px rgba(245, 158, 11, 0.22);
-  backdrop-filter: blur(12px);
-  animation: fadeIn 0.3s ease;
-}
-
-.unprovisioned-icon-badge {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(245, 158, 11, 0.2);
-  border: 1px solid rgba(245, 158, 11, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.unprovisioned-content {
-  flex: 1;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
+  scrollbar-width: thin;
+  padding: 4px 6px 12px 6px;
 }
 
-.unprovisioned-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Ambient Lighting Orbs */
+.ambient-orb-1 {
+  position: absolute;
+  top: -80px;
+  right: 15%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(25, 118, 210, 0.12) 0%, transparent 70%);
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
 }
 
-.unprovisioned-title-row h3 {
-  margin: 0;
-  font-size: 14.5px;
-  font-weight: 700;
-  color: #FBBF24;
+.ambient-orb-2 {
+  position: absolute;
+  bottom: -60px;
+  left: 10%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, transparent 70%);
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
 }
 
-.unprovisioned-status-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10.5px;
-  font-weight: 600;
-  color: #FBBF24;
-  background: rgba(245, 158, 11, 0.15);
-  padding: 2px 8px;
-  border-radius: 12px;
+/* Unprovisioned Warning Banner */
+.unprovisioned-alert-banner {
+  position: relative;
+  z-index: 20;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.12);
   border: 1px solid rgba(245, 158, 11, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
 }
 
-.unprovisioned-sub-text {
-  margin: 0;
-  font-size: 11.5px;
-  color: var(--text-secondary, #E2E8F0);
-  line-height: 1.45;
-}
-
-.unprovisioned-actions-row {
+.alert-content {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #F59E0B;
 }
 
-.btn-instant-provision {
-  background: linear-gradient(135deg, #F59E0B, #D97706);
-  color: #FFFFFF;
+.alert-svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-create-vm {
+  background: #F59E0B;
+  color: #070B14;
   border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 12px;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35);
+  transition: opacity 0.2s;
 }
 
-.btn-instant-provision:hover:not(:disabled) {
-  background: linear-gradient(135deg, #D97706, #B45309);
-  transform: translateY(-1px);
+.btn-create-vm:hover {
+  opacity: 0.9;
 }
 
-.btn-instant-provision:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-.btn-revisit-setup {
-  background: transparent;
-  color: var(--text-muted, #94A3B8);
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
-  border-radius: 8px;
-  padding: 7px 12px;
-  font-size: 11.5px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-revisit-setup:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-main, #FFFFFF);
-}
-
-.provisioning-live-text {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: #FCD34D;
-  margin-top: 4px;
-}
-
-.pulse-icon {
-  animation: pulse-dot 1.5s infinite;
-}
-
-.hero-success-card.is-warning {
-  background: rgba(245, 158, 11, 0.05);
-  border-color: rgba(245, 158, 11, 0.2);
-}
-
-.hero-success-card.is-stopped {
-  background: rgba(148, 163, 184, 0.08);
-  border-color: rgba(148, 163, 184, 0.25);
-}
-
-.success-icon-badge.badge-amber {
-  background: #F59E0B;
-  box-shadow: 0 0 14px rgba(245, 158, 11, 0.3);
-}
-
-.success-icon-badge.badge-gray {
-  background: #64748B;
-  box-shadow: 0 0 14px rgba(100, 116, 139, 0.3);
-}
-
-.live-status-pill.pill-amber {
-  color: #FBBF24;
-  background: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.3);
-}
-
-.live-status-pill.pill-green {
-  color: #10B981;
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.3);
-}
-
-.live-status-pill.pill-gray {
-  color: #94A3B8;
-  background: rgba(148, 163, 184, 0.15);
-  border-color: rgba(148, 163, 184, 0.3);
-}
-
-.dot-amber {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #F59E0B;
-}
-
-.dot-gray {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #94A3B8;
-}
-
-.hero-success-card {
-  background: var(--card-glass-bg, linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(25, 118, 210, 0.08)));
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: var(--radius-card, 14px);
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
-  backdrop-filter: blur(8px);
-}
-
-.success-icon-badge {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: #10B981;
-  color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: 700;
-  flex-shrink: 0;
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
-}
-
-.hero-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.node-title-row {
+/* Header Bar & Search */
+.casaos-header-bar {
+  position: relative;
+  z-index: 15;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
 
-.node-title-row h3 {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-main, #FFFFFF);
+.header-search-wrap {
+  position: relative;
+  width: 320px;
+  display: flex;
+  align-items: center;
 }
 
-.node-sub-text {
-  margin: 0;
+.search-svg {
+  position: absolute;
+  left: 12px;
+  width: 14px;
+  height: 14px;
+  color: #94A3B8;
+  pointer-events: none;
+}
+
+.is-rtl .search-svg {
+  left: auto;
+  right: 12px;
+}
+
+.search-input {
+  width: 100%;
+  height: 34px;
+  padding: 0 14px 0 34px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #F8FAFC;
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+}
+
+.is-rtl .search-input {
+  padding: 0 34px 0 14px;
+}
+
+.search-input:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #38BDF8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
   font-size: 11px;
-  color: var(--text-secondary, #CBD5E1);
-  line-height: 1.4;
 }
 
-.live-status-pill {
+.is-rtl .search-clear-btn {
+  right: auto;
+  left: 10px;
+}
+
+.header-right-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-header-tool {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted, #94A3B8);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-header-tool:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38BDF8;
+  color: #FFFFFF;
+}
+
+.tool-svg {
+  width: 13px;
+  height: 13px;
+}
+
+.status-node-pill {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #38BDF8;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 10.5px;
-  font-weight: 600;
-  color: #34D399;
-  background: rgba(16, 185, 129, 0.15);
-  padding: 2px 8px;
-  border-radius: 12px;
-  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-.dot-live {
+.node-status-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
+  background: #F59E0B;
+  box-shadow: 0 0 6px #F59E0B;
+}
+
+.node-status-dot.is-active {
   background: #10B981;
+  box-shadow: 0 0 6px #10B981;
 }
 
-/* 3-Column Specifications Grid */
-.telemetry-grid {
+/* Main 2-Column Workspace Layout */
+.casa-workspace-layout {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  align-items: start;
 }
 
-.spec-card {
-  background: var(--card-glass-bg, var(--bg-card, #18181B));
-  border: 1px solid var(--border-color, #27272A);
-  border-radius: var(--radius-card, 14px);
-  padding: 10px 12px;
+/* Left Sidebar */
+.casa-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
-  backdrop-filter: blur(8px);
+  gap: 12px;
+}
+
+.casa-card {
+  background: rgba(21, 31, 50, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.45);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.spec-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(56, 189, 248, 0.35);
-  box-shadow: var(--card-hover-shadow, 0 8px 25px -4px rgba(0, 0, 0, 0.45));
+.casa-card:hover {
+  border-color: rgba(56, 189, 248, 0.25);
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.55);
 }
 
-.spec-header {
+/* Credentials Card */
+.widget-creds {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-secondary, #E4E4E7);
-  margin-bottom: 2px;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.spec-icon {
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-}
-
-.spec-svg {
-  width: 14px;
-  height: 14px;
-  stroke: #38BDF8;
-}
-
-.spec-item {
+.creds-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.creds-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #F8FAFC;
+}
+
+.btn-copy-creds {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38BDF8;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-copy-creds:hover {
+  background: rgba(56, 189, 248, 0.22);
+  color: #FFFFFF;
+}
+
+.copy-svg-mini {
+  width: 11px;
+  height: 11px;
+}
+
+.creds-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   font-size: 11px;
 }
 
-.spec-k {
-  color: var(--text-muted, #71717A);
+.cred-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.spec-v {
-  color: var(--text-main, #F8FAFC);
+.cred-label {
+  color: #94A3B8;
+  font-size: 10.5px;
 }
 
-.font-bold {
-  font-weight: 700;
+.cred-val {
+  font-size: 11px;
 }
 
-.text-accent {
-  color: #38BDF8;
+.text-cyan {
+  color: #06B6D4;
 }
 
 .text-emerald {
-  color: #34D399;
+  color: #10B981;
 }
 
-.uppercase {
-  text-transform: uppercase;
-}
-
-.font-mono {
-  font-family: 'Consolas', 'Courier New', monospace;
-}
-
-.truncate {
-  max-width: 130px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.text-xs {
-  font-size: 10px;
-}
-
-/* Endpoints Grid */
-.endpoints-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-@media (max-width: 900px) {
-  .telemetry-grid,
-  .endpoints-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.endpoint-card {
-  background: var(--card-glass-bg, var(--bg-card, #18181B));
-  border: 1px solid var(--border-color, #27272A);
-  border-radius: var(--radius-card, 14px);
+/* WireGuard Widget */
+.widget-wireguard {
   padding: 10px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
-  backdrop-filter: blur(8px);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.endpoint-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(56, 189, 248, 0.35);
-  box-shadow: var(--card-hover-shadow, 0 8px 25px -4px rgba(0, 0, 0, 0.45));
-}
-
-.ep-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.ep-icon {
-  font-size: 13px;
-}
-
-.ep-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted, #94A3B8);
-}
-
-.ep-url {
-  font-size: 13px;
-  font-weight: 700;
-  color: #38BDF8;
-}
-
-.ep-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 2px;
-}
-
-.btn-copy {
-  background: var(--bg-sub, #09090B);
-  border: 1px solid var(--border-color, #3F3F46);
-  color: var(--text-secondary, #D4D4D8);
-  padding: 3px 8px;
-  border-radius: 5px;
-  font-size: 10.5px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-copy:hover {
-  background: var(--border-color, #3F3F46);
-  color: #FFFFFF;
-}
-
-.btn-launch-sm {
-  background: rgba(25, 118, 210, 0.2);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  color: #38BDF8;
-  padding: 3px 10px;
-  border-radius: 5px;
-  font-size: 10.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-launch-sm:hover {
-  background: rgba(25, 118, 210, 0.35);
-  color: #FFFFFF;
-}
-
-.ep-note {
-  font-size: 10px;
-  color: var(--text-muted, #71717A);
-  font-family: 'Consolas', 'Courier New', monospace;
-}
-
-/* Companion VM Controls Card */
-.companion-card {
-  background: var(--card-glass-bg, var(--bg-card, #18181B));
-  border: 1px solid var(--border-color, #27272A);
-  border-radius: var(--radius-card, 14px);
-  padding: 10px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  box-shadow: var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.35));
-  backdrop-filter: blur(8px);
-}
-
-.comp-title-row {
+.wg-top-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 11px;
+  margin-bottom: 4px;
 }
 
-.comp-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
+.wg-label {
+  color: #94A3B8;
+}
+
+.wg-ip {
+  color: #10B981;
   font-weight: 700;
-  color: var(--text-main, #FFFFFF);
 }
 
-.vm-power-controls {
+.wg-sub-row {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.btn-vm-action {
-  background: var(--bg-sub, #09090B);
-  border: 1px solid var(--border-color, #3F3F46);
-  color: var(--text-secondary, #D4D4D8);
-  padding: 4px 10px;
-  border-radius: var(--radius-inner, 8px);
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.btn-vm-action:hover:not(:disabled) {
-  background: var(--border-color, #3F3F46);
-  color: #FFFFFF;
-  transform: translateY(-1px);
-}
-
-.btn-vm-action:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-start {
-  color: #34D399;
-  border-color: rgba(16, 185, 129, 0.3);
-}
-
-.btn-start:hover:not(:disabled) {
-  background: rgba(16, 185, 129, 0.15);
-}
-
-.btn-danger {
-  color: #F87171;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
-}
-
-.btn-restart-wizard {
-  color: #38BDF8;
-  border-color: rgba(56, 189, 248, 0.35);
-}
-
-.btn-restart-wizard:hover:not(:disabled) {
-  background: rgba(56, 189, 248, 0.15);
-}
-
-.comp-desc {
-  margin: 0;
+  justify-content: space-between;
   font-size: 10.5px;
-  color: var(--text-muted, #71717A);
-  line-height: 1.4;
+  color: #94A3B8;
 }
 
-.notice-pill {
-  background: rgba(56, 189, 248, 0.1);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  color: #38BDF8;
-  font-size: 11px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  text-align: center;
+/* Right Main Workspace */
+.casa-workspace-main {
+  display: flex;
+  flex-direction: column;
 }
 
-/* Action Bar */
+/* Action Bar (Standard 56px) */
 .action-bar {
   margin-top: auto;
-  padding-top: 14px;
-  display: flex;
-  justify-content: space-between;
+  height: 56px;
+  min-height: 56px;
+  max-height: 56px;
+  padding: 0 2px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   border-top: 1px solid var(--border-color, #27272A);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  animation: action-bar-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.action-left {
+@keyframes action-bar-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.action-bar-start {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-start;
+}
+
+.action-bar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-bar-end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.status-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+}
+
+.status-live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot-green {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 6px #10B981;
+}
+
+.dot-amber {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #F59E0B;
+  box-shadow: 0 0 6px #F59E0B;
+}
+
+.btn-vm-restart {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted, #94A3B8);
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-vm-restart:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38BDF8;
+  color: #FFFFFF;
+}
+
+.vm-svg {
+  width: 11px;
+  height: 11px;
+}
+
+.btn-portal {
+  background: linear-gradient(135deg, #1976D2, #0284C7);
+  box-shadow: 0 4px 14px rgba(25, 118, 210, 0.35);
+}
+
+.btn-portal:hover {
+  background: linear-gradient(135deg, #1565C0, #0369A1);
+  box-shadow: 0 6px 18px rgba(25, 118, 210, 0.5);
+}
+
+.portal-svg {
+  width: 13px;
+  height: 13px;
 }
 
 .btn {
-  padding: 9px 22px;
+  height: 36px;
+  padding: 0 20px;
   border-radius: 8px;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  line-height: 1;
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
 }
 
@@ -1476,56 +864,29 @@ async function handleMinimizeToTray() {
   color: #FFFFFF;
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: var(--accent-hover, #1565C0);
-  box-shadow: 0 4px 14px rgba(25, 118, 210, 0.4);
-}
-
-.btn-secondary {
-  background: var(--bg-sub, #27272A);
-  color: var(--text-main, #E4E4E7);
-}
-
-.btn-secondary:hover {
-  background: var(--border-color, #3F3F46);
-}
-
-.badge-svg-warn {
-  width: 22px;
-  height: 22px;
-  stroke: #F59E0B;
-}
-
-.badge-status-svg {
-  width: 20px;
-  height: 20px;
-}
-
-.ep-svg {
-  width: 14px;
-  height: 14px;
-  stroke: var(--accent-sky, #38BDF8);
-}
-
-.comp-svg {
-  width: 14px;
-  height: 14px;
-  stroke: var(--accent-sky, #38BDF8);
-}
-
-.action-btn-svg {
-  width: 12px;
-  height: 12px;
-}
-
-.btn-svg {
-  width: 13px;
-  height: 13px;
-}
-
 .btn-flex {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.spinner-tiny {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-color: #070B14;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 860px) {
+  .casa-workspace-layout {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

@@ -58,10 +58,36 @@ export class SovereignApp {
     return isRtl ? this.badgeLabelAr : this.badgeLabelEn;
   }
 
+  public get gradient(): string {
+    switch (this.id) {
+      case 'erp':
+        return 'linear-gradient(135deg, #1E3A8A, #3B82F6)';
+      case 'pos':
+        return 'linear-gradient(135deg, #065F46, #10B981)';
+      case 'ledger':
+        return 'linear-gradient(135deg, #581C87, #8B5CF6)';
+      case 'hr':
+        return 'linear-gradient(135deg, #831843, #EC4899)';
+      case 'crm':
+        return 'linear-gradient(135deg, #7C2D12, #F97316)';
+      case 'panel':
+        return 'linear-gradient(135deg, #14532D, #22C55E)';
+      case 'hyperv':
+        return 'linear-gradient(135deg, #0F172A, #334155)';
+      case 'wireguard':
+      default:
+        return 'linear-gradient(135deg, #1E1B4B, #6366F1)';
+    }
+  }
+
   public getUrl(host: string = 'localhost'): string {
     if (this.port === 80) return `http://${host}`;
     if (this.port === 443) return `https://${host}`;
     return `http://${host}:${this.port}`;
+  }
+
+  public getLaunchUrl(host: string = 'localhost'): string {
+    return this.getUrl(host);
   }
 
   public static createDefaultFleet(): SovereignApp[] {
@@ -159,8 +185,8 @@ export class SovereignApp {
       }),
       new SovereignApp({
         id: 'wireguard',
-        nameAr: 'شبكة WireGuard المشفرة',
-        nameEn: 'WireGuard Mesh Tunnel',
+        nameAr: 'شبكة FastFree VPN المشفرة',
+        nameEn: 'FastFree VPN Mesh Tunnel',
         port: 51822,
         subdomain: 'wg',
         category: 'infrastructure',

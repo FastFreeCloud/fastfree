@@ -14,7 +14,7 @@
         <p class="mandatory-sub">
           {{ isRtl
             ? 'يتطلب الاستمرار في تهيئة واستخدام عقد فاست فري الترقية إلى الإصدار الأحدث لضمان استقرار محرك Hyper-V ومزامنة النفق المشفر.'
-            : 'Upgrading to the latest release is required to ensure Hyper-V compatibility, WireGuard mesh synchronicity, and system stability.'
+            : 'Upgrading to the latest release is required to ensure Hyper-V compatibility, FastFree VPN mesh synchronicity, and system stability.'
           }}
         </p>
       </div>

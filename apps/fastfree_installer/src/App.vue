@@ -1,40 +1,48 @@
 <template>
-  <div class="installer-app" @contextmenu.prevent :class="[`theme-${theme}`, { 'is-rtl': isRtl }]" :dir="isRtl ? 'rtl' : 'ltr'">
-    <!-- Custom Draggable Titlebar -->
+  <TrayCompanionDialog v-if="isTrayView" />
+  <div v-else class="installer-app" @contextmenu.prevent :class="[`theme-${theme}`, { 'is-rtl': isRtl }]" :dir="isRtl ? 'rtl' : 'ltr'">
+    <!-- Custom Draggable Titlebar (Windows 11 Fluent 2 Clean Branding) -->
     <header data-tauri-drag-region class="titlebar">
       <div class="brand">
-        <div class="brand-icon-wrap">
-          <img src="/logo.svg" class="brand-logo-img" alt="FastFree" />
-        </div>
+        <img src="/logo.svg" class="brand-logo-img" alt="FastFree" />
         <div class="brand-text">
-          <span class="title">{{ t('app.title') }}</span>
+          <span class="brand-company-title">FastFree</span>
           <span class="version-tag">v{{ currentAppVersion }}</span>
         </div>
       </div>
 
-      <!-- Center Titlebar Tools (Language, Theme, Diagnostic HUD) -->
+      <!-- Center Titlebar Tools (Language, Theme, Diagnostic HUD - Clean Icons Only) -->
       <div class="titlebar-tools">
-        <!-- Live Diagnostic HUD Button -->
+        <!-- Full System Diagnostics & Step Audit Button -->
         <button
-          class="tool-btn hud-btn"
-          :class="{ 'has-errors': totalErrors > 0, 'has-warns': totalWarnings > 0 && totalErrors === 0 }"
-          :title="t('app.diagHud')"
-          @click="isDiagnosticOpen = !isDiagnosticOpen"
+          class="tool-btn icon-btn audit-btn"
+          :title="isRtl ? 'استكشاف المشاكل وتدقيق خطوات التثبيت' : 'Full Diagnostics & Step Audit'"
+          @click="openHub('audit')"
         >
-          <span class="tool-icon">
-            <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-            </svg>
-          </span>
-          <span class="hud-label">{{ t('diagnostics.hudBadge') }}</span>
+          <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </button>
+
+        <!-- Live Diagnostic HUD Icon Button -->
+        <button
+          class="tool-btn icon-btn hud-btn"
+          :class="{ 'has-errors': totalErrors > 0, 'has-warns': totalWarnings > 0 && totalErrors === 0 }"
+          :title="isRtl ? 'مركز التشخيص والسجلات الجنائية' : 'Live Forensic Diagnostics'"
+          @click="openHub('logs')"
+        >
+          <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
           <span v-if="totalErrors > 0" class="mini-pill pill-err">{{ totalErrors }}</span>
           <span v-else-if="totalWarnings > 0" class="mini-pill pill-warn">{{ totalWarnings }}</span>
         </button>
 
-        <!-- Professional Theme Icon Button -->
+        <!-- Theme Toggle Button -->
         <button
           class="tool-btn icon-btn theme-btn"
-          :title="isRtl ? 'تبديل المظهر' : 'Toggle Theme'"
+          title="Toggle Theme"
           @click="cycleTheme"
         >
           <!-- Sun icon when dark -->
@@ -55,10 +63,10 @@
           </svg>
         </button>
 
-        <!-- Professional Language Icon Button -->
+        <!-- Language Toggle Button (Pure Code EN / AR) -->
         <button
           class="tool-btn icon-btn lang-btn"
-          :title="locale === 'ar' ? 'Switch to English' : 'التحويل إلى العربية'"
+          title="Switch Language"
           @click="toggleLocale"
         >
           <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -66,18 +74,18 @@
             <line x1="2" y1="12" x2="22" y2="12"></line>
             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
           </svg>
-          <span class="lang-code">{{ locale === 'ar' ? 'EN' : 'ع' }}</span>
+          <span class="lang-code">{{ locale === 'ar' ? 'EN' : 'AR' }}</span>
         </button>
       </div>
 
       <!-- Native Windows Fluent Caption Buttons -->
       <div class="window-controls">
-        <button class="win-btn" :title="t('app.minimize')" @click="minimizeWindow">
+        <button class="win-btn" title="Minimize" @click="minimizeWindow">
           <svg class="caption-svg" viewBox="0 0 10 10">
             <line x1="0" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1" />
           </svg>
         </button>
-        <button class="win-btn close" :title="t('app.close')" @click="closeWindow">
+        <button class="win-btn close" title="Close" @click="closeWindow">
           <svg class="caption-svg" viewBox="0 0 10 10">
             <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.1" />
             <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.1" />
@@ -107,13 +115,17 @@
       </main>
     </template>
 
-    <!-- Diagnostic HUD Drawer Overlay -->
-    <DiagnosticConsole />
+    <!-- Unified Diagnostic, Step Audit & Self-Healing Hub -->
+    <UnifiedDiagnosticHub
+      v-if="showHubModal"
+      :initial-tab="hubInitialTab"
+      @close="showHubModal = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
@@ -124,14 +136,17 @@ import NodeSizing from './components/NodeSizing.vue';
 import WireGuardScreen from './components/WireGuardScreen.vue';
 import ProvisioningScreen from './components/ProvisioningScreen.vue';
 import LaunchpadScreen from './components/LaunchpadScreen.vue';
-import DiagnosticConsole from './components/DiagnosticConsole.vue';
+import UnifiedDiagnosticHub from './components/UnifiedDiagnosticHub.vue';
 import MandatoryUpdateGate from './components/MandatoryUpdateGate.vue';
+import TrayCompanionDialog from './components/TrayCompanionDialog.vue';
 import {
   currentStep,
   loadingDiscovery,
   fetchSystemDiscovery,
   dismissSplash,
   minimizeToTray,
+  selectedClientId,
+  isProvisioningDone,
 } from './composables/useDiscovery';
 import { useI18n } from './composables/useI18n';
 import { useTheme } from './composables/useTheme';
@@ -144,9 +159,19 @@ import {
   startAutoUpdatePolling,
 } from './composables/useAutoUpdater';
 
-const { t, locale, isRtl, toggleLocale, setLocale } = useI18n();
+const { locale, isRtl, toggleLocale, setLocale } = useI18n();
 const { theme, cycleTheme } = useTheme();
-const { isDiagnosticOpen, totalErrors, totalWarnings, logInfo, logWarn } = useDiagnostics();
+const { totalErrors, totalWarnings, logInfo, logWarn } = useDiagnostics();
+
+const showHubModal = ref(false);
+const hubInitialTab = ref<'audit' | 'logs' | 'telemetry'>('audit');
+
+function openHub(tab: 'audit' | 'logs' | 'telemetry' = 'audit') {
+  hubInitialTab.value = tab;
+  showHubModal.value = true;
+}
+
+const isTrayView = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'tray';
 
 let appWindow: any = null;
 try {
@@ -167,24 +192,43 @@ onMounted(async () => {
     // restricted storage fallback
   }
 
-  // Verify if appliance was already provisioned AND VM actually exists in Hyper-V
+  // Verify if appliance was already provisioned OR if a FastFree VM already exists in Hyper-V
   try {
-    const isProvisioned = localStorage.getItem('fastfree_provisioned') === 'true';
-    if (isProvisioned) {
-      const exists = await invoke<boolean>('check_vm_exists', { clientId: 'client2' });
-      if (exists) {
+    const targetClient = selectedClientId.value || localStorage.getItem('fastfree_wizard_client_id') || 'client1';
+    const exists = await invoke<boolean>('check_vm_exists', { clientId: targetClient });
+    if (exists) {
+      // Check if VM has a real bootable disk or if it needs automated repair/provisioning
+      try {
+        const vmState = await invoke<any>('get_vm_real_state', { clientId: targetClient });
+        if (vmState && vmState.is_empty_disk) {
+          logWarn('App', `VM FastFree-${targetClient} exists in Hyper-V but disk is missing or empty. Auto-routing to Provisioning for seamless background deployment.`);
+          isProvisioningDone.value = false;
+          currentStep.value = 5;
+        } else {
+          isProvisioningDone.value = true;
+          try {
+            localStorage.setItem('fastfree_provisioned', 'true');
+            localStorage.setItem('fastfree_wizard_client_id', targetClient);
+          } catch {}
+          currentStep.value = 6;
+          logInfo('App', `Appliance FastFree-${targetClient} verified in Hyper-V; opening directly in Control Center mode.`);
+        }
+      } catch {
+        isProvisioningDone.value = true;
         currentStep.value = 6;
-        logInfo('App', 'Appliance verified in Hyper-V; opening directly in Control Center mode.');
-      } else {
-        logWarn('App', 'Appliance flag was set but VM FastFree-client2 was not found in Hyper-V. Starting at Discovery for fresh setup.');
+      }
+    } else {
+      const isProvisioned = localStorage.getItem('fastfree_provisioned') === 'true';
+      if (isProvisioned) {
+        logWarn('App', `Appliance flag was set in storage but VM FastFree-${targetClient} was not found in Hyper-V. Starting at Discovery for fresh setup.`);
         try {
           localStorage.removeItem('fastfree_provisioned');
         } catch {}
-        currentStep.value = 1;
       }
+      currentStep.value = 1;
     }
-  } catch {
-    // ignore
+  } catch (err) {
+    logWarn('App', `Failed to verify Hyper-V VM state on startup: ${err}`);
   }
 
   logInfo('App', `Installer application loaded in ${locale.value.toUpperCase()} mode.`);
@@ -395,36 +439,53 @@ body, html {
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.brand-icon-wrap {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  gap: 12px;
 }
 
 .brand-logo-img {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 6px rgba(0, 240, 255, 0.45));
+  display: block;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 10px rgba(56, 189, 248, 0.55));
+  animation: logo-gentle-breathe 4s ease-in-out infinite;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
+  cursor: pointer;
+}
+
+.brand-logo-img:hover {
+  transform: scale(1.14);
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.65)) drop-shadow(0 0 16px rgba(56, 189, 248, 0.9));
+}
+
+@keyframes logo-gentle-breathe {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(56, 189, 248, 0.45));
+  }
+  50% {
+    transform: scale(1.06);
+    filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 12px rgba(56, 189, 248, 0.7));
+  }
 }
 
 .brand-text {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 24px;
 }
 
-.title {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--text-main);
-  letter-spacing: 0.3px;
+.brand-company-title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  background: linear-gradient(135deg, #FFFFFF 40%, #38BDF8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
 }
 
 .version-tag {
@@ -432,10 +493,10 @@ body, html {
   font-weight: 700;
   color: #38BDF8;
   background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  padding: 2px 7px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  padding: 2px 8px;
   border-radius: 6px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
 }
 
 .titlebar-tools {
@@ -485,10 +546,14 @@ body, html {
 }
 
 .mini-pill {
+  position: absolute;
+  top: -3px;
+  right: -3px;
   padding: 1px 5px;
   border-radius: 10px;
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .pill-err {
@@ -771,5 +836,192 @@ body, html {
 .slide-down-leave-to {
   opacity: 0;
   transform: translateY(-100%);
+}
+
+/* Master Password Modal Styles */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-card {
+  background: #18181B;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(56, 189, 248, 0.15);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  padding: 24px;
+  color: #FAFAFA;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-sizing: border-box;
+}
+
+.modal-header {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  position: relative;
+}
+
+.modal-icon-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #38BDF8;
+}
+
+.modal-shield-svg {
+  width: 22px;
+  height: 22px;
+}
+
+.modal-title-text {
+  flex: 1;
+}
+
+.modal-title-text h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #F8FAFC;
+  margin: 0 0 4px 0;
+}
+
+.modal-title-text p {
+  font-size: 11.5px;
+  color: #94A3B8;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.btn-close-modal {
+  position: absolute;
+  inset-inline-end: -6px;
+  top: -6px;
+  background: transparent;
+  border: none;
+  color: #71717A;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-close-modal:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #F8FAFC;
+}
+
+.close-svg {
+  width: 18px;
+  height: 18px;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #CBD5E1;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.pwd-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.modal-input {
+  width: 100%;
+  background: #09090B;
+  border: 1px solid #3F3F46;
+  border-radius: 8px;
+  padding: 10px 42px 10px 14px;
+  font-size: 13px;
+  color: #F8FAFC;
+  outline: none;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.installer-app.is-rtl .modal-input {
+  padding: 10px 14px 10px 42px;
+}
+
+.modal-input:focus {
+  border-color: #38BDF8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+.btn-toggle-eye {
+  position: absolute;
+  inset-inline-end: 10px;
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-toggle-eye:hover {
+  color: #F8FAFC;
+}
+
+.eye-svg {
+  width: 18px;
+  height: 18px;
+}
+
+.modal-error-text {
+  font-size: 11px;
+  color: #F87171;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-top: 6px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.spinner-sm {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
 }
 </style>
