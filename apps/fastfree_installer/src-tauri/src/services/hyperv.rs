@@ -7,6 +7,117 @@ use tauri::{AppHandle, Emitter};
 
 pub struct HyperVService;
 
+/// Native SCM probe: `(vmms installed, vmms running)`. Read-only; never mutates.
+/// Mirrors what the old script derived from `Get-Service -Name vmms`.
+#[cfg(windows)]
+fn query_vmms_installed_and_running() -> (bool, bool) {
+    use windows::core::PCWSTR;
+    use windows::Win32::System::Services::{
+        CloseServiceHandle, OpenSCManagerW, OpenServiceW, QueryServiceStatus, SC_MANAGER_CONNECT,
+        SERVICE_QUERY_STATUS, SERVICE_RUNNING, SERVICE_STATUS,
+    };
+
+    unsafe {
+        let scm = match OpenSCManagerW(PCWSTR::null(), PCWSTR::null(), SC_MANAGER_CONNECT) {
+            Ok(handle) => handle,
+            Err(e) => {
+                InstallerLogger::warn("HYPERV_ENV", &format!("OpenSCManagerW failed: {}", e));
+                return (false, false);
+            }
+        };
+
+        let service_name = service_hub::to_wide("vmms");
+        let service = match OpenServiceW(
+            scm,
+            PCWSTR::from_raw(service_name.as_ptr()),
+            SERVICE_QUERY_STATUS,
+        ) {
+            Ok(handle) => handle,
+            Err(_) => {
+                // Service does not exist on this host.
+                let _ = CloseServiceHandle(scm);
+                return (false, false);
+            }
+        };
+
+        let mut status = SERVICE_STATUS::default();
+        let running = match QueryServiceStatus(service, &mut status) {
+            Ok(()) => status.dwCurrentState == SERVICE_RUNNING,
+            Err(_) => false,
+        };
+
+        let _ = CloseServiceHandle(service);
+        let _ = CloseServiceHandle(scm);
+        (true, running)
+    }
+}
+
+/// Native `NetLocalGroupGetMembers` (level 3) probe of the caller's membership in
+/// 'Hyper-V Administrators'. Matches the old script's semantics: the member is
+/// `$env:USERNAME`, matched case-insensitively, allowing a `DOMAIN\` prefix.
+#[cfg(windows)]
+fn current_user_is_hyperv_administrator() -> bool {
+    use windows::core::PCWSTR;
+    use windows::Win32::NetworkManagement::NetManagement::{
+        NetApiBufferFree, NetLocalGroupGetMembers, LOCALGROUP_MEMBERS_INFO_3,
+    };
+
+    let user = match std::env::var("USERNAME") {
+        Ok(name) if !name.is_empty() => name,
+        _ => return false,
+    };
+    let user_lower = user.to_ascii_lowercase();
+    let suffix = format!("\\{}", user_lower);
+
+    let group_wide = service_hub::to_wide("Hyper-V Administrators");
+    let mut buffer: *mut u8 = std::ptr::null_mut();
+    let mut entries_read: u32 = 0;
+    let mut total_entries: u32 = 0;
+
+    // prefmaxlen = MAX_PREFERRED_LENGTH (-1 as u32): one call returns all members.
+    let status = unsafe {
+        NetLocalGroupGetMembers(
+            PCWSTR::null(),
+            PCWSTR::from_raw(group_wide.as_ptr()),
+            3,
+            &mut buffer,
+            u32::MAX,
+            &mut entries_read,
+            &mut total_entries,
+            None,
+        )
+    };
+
+    // NET_API_STATUS: 0 == NERR_Success.
+    if status != 0 || buffer.is_null() {
+        InstallerLogger::warn(
+            "HYPERV_ENV",
+            &format!("NetLocalGroupGetMembers failed (error {}), assuming not a member.", status),
+        );
+        return false;
+    }
+
+    let mut in_group = false;
+    for index in 0..entries_read as usize {
+        let entry = unsafe { &*(buffer as *const LOCALGROUP_MEMBERS_INFO_3).add(index) };
+        if entry.lgrmi3_domainandname.is_null() {
+            continue;
+        }
+        if let Ok(domain_and_name) = unsafe { entry.lgrmi3_domainandname.to_string() } {
+            let member_lower = domain_and_name.to_ascii_lowercase();
+            if member_lower == user_lower || member_lower.ends_with(&suffix) {
+                in_group = true;
+                break;
+            }
+        }
+    }
+
+    unsafe {
+        let _ = NetApiBufferFree(Some(buffer as *const std::ffi::c_void));
+    }
+    in_group
+}
+
 impl HyperVService {
     pub fn ensure_hyperv_environment() -> Result<(), String> {
         #[cfg(windows)]
@@ -15,54 +126,28 @@ impl HyperVService {
                 "HYPERV_ENV",
                 "Verifying Hyper-V environment: VMMS service state and Hyper-V Administrators group...",
             );
-    
-            let script = r#"
-    $ErrorActionPreference = 'SilentlyContinue'
-    $res = @{ vmms_installed = $false; vmms_running = $false; in_group = $false }
-    
-    # 1. Check & start vmms service
-    $vmms = Get-Service -Name 'vmms' -ErrorAction SilentlyContinue
-    if ($vmms) {
-        $res.vmms_installed = $true
-        if ($vmms.StartType -ne 'Automatic') {
-            Set-Service -Name 'vmms' -StartupType Automatic -ErrorAction SilentlyContinue
-        }
-        if ($vmms.Status -ne 'Running') {
-            Start-Service -Name 'vmms' -ErrorAction SilentlyContinue
-            Start-Sleep -Milliseconds 600
-            $vmms = Get-Service -Name 'vmms' -ErrorAction SilentlyContinue
-        }
-        if ($vmms.Status -eq 'Running') {
-            $res.vmms_running = $true
-        }
-    }
-    
-    # 2. Add current user to Hyper-V Administrators purely via PowerShell cmdlets (zero external console processes)
-    $user = $env:USERNAME
-    try {
-        Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member $user -ErrorAction SilentlyContinue
-    } catch {}
-    
-    try {
-        $members = Get-LocalGroupMember -Group 'Hyper-V Administrators' -ErrorAction SilentlyContinue
-        if ($members | Where-Object { $_.Name -like "*\$user" -or $_.Name -eq $user }) {
-            $res.in_group = $true
-        }
-    } catch {}
-    
-    Write-Output "FASTFREE_ENV:vmms_installed=$($res.vmms_installed);vmms_running=$($res.vmms_running);in_group=$($res.in_group)"
-    "#;
-    
-            let output = hidden_powershell()
-                .args(["-Command", script])
-                .output();
-    
-            if let Ok(out) = output {
-                let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
-                InstallerLogger::info("HYPERV_ENV", &format!("Environment probe output: {}", stdout));
-                if stdout.contains("vmms_installed=False") {
-                    return Err("Hyper-V Virtual Machine Management Service (vmms) is not installed on this host. Please enable Hyper-V in Windows Features.".to_string());
-                }
+
+            // 1. Service ACTION via native SCM: set vmms to Automatic and ensure running.
+            let _ = service_hub::ensure_vmms_autostart_running();
+            // 2. Group ACTION via native NetLocalGroupAddMembers (best effort).
+            let _ = service_hub::add_current_user_to_hyperv_administrators();
+
+            // 3. Native QUERY portion: probe vmms install/running state via SCM and
+            //    Hyper-V Administrators membership via NetLocalGroupGetMembers.
+            let (vmms_installed, vmms_running) = query_vmms_installed_and_running();
+            let in_group = current_user_is_hyperv_administrator();
+
+            // Preserve the historical stdout-style marker (capitalized True/False).
+            let tf = |b: bool| if b { "True" } else { "False" };
+            let probe = format!(
+                "FASTFREE_ENV:vmms_installed={};vmms_running={};in_group={}",
+                tf(vmms_installed),
+                tf(vmms_running),
+                tf(in_group)
+            );
+            InstallerLogger::info("HYPERV_ENV", &format!("Environment probe output: {}", probe));
+            if !vmms_installed {
+                return Err("Hyper-V Virtual Machine Management Service (vmms) is not installed on this host. Please enable Hyper-V in Windows Features.".to_string());
             }
         }
         Ok(())
@@ -453,25 +538,91 @@ impl HyperVService {
                         return Ok("Hyper-V features enabled successfully. A system restart may be required if this is the first activation.".to_string());
                     } else if stdout.contains("0x800f080c") || stderr.contains("Feature name Microsoft-Hyper-V is unknown") {
                         InstallerLogger::info("HYPERV_INSTALL", "Detected Windows Home edition. Installing Hyper-V packages from servicing store...");
-                        let home_script = r#"
-    pushd "$env:SystemRoot\servicing\Packages"
-    $pkgs = Get-ChildItem -Filter "*Hyper-V*.mum" | ForEach-Object { $_.Name }
-    foreach ($pkg in $pkgs) {
-        dism.exe /Online /NoRestart /Add-Package:"$env:SystemRoot\servicing\Packages\$pkg"
-    }
-    dism.exe /Online /Enable-Feature /All /FeatureName:Microsoft-Hyper-V /NoRestart
-    Set-Service -Name vmms -StartupType Automatic -ErrorAction SilentlyContinue
-    Start-Service -Name vmms -ErrorAction SilentlyContinue
-    "#;
-                        let home_out = hidden_powershell()
-                            .args(["-Command", home_script])
-                            .output();
-    
-                        if let Ok(h_out) = home_out {
-                            let h_stdout = String::from_utf8_lossy(&h_out.stdout);
-                            InstallerLogger::info("HYPERV_INSTALL", &format!("Home installation output: {}", h_stdout));
-                            return Ok("Hyper-V packages installed for Windows Home. Please restart your PC to complete Hyper-V initialization.".to_string());
+                        let system_root = std::env::var("SystemRoot").unwrap_or_else(|_| "C:\\Windows".to_string());
+                        let packages_dir = std::path::Path::new(&system_root).join("servicing").join("Packages");
+
+                        // Equivalent of: Get-ChildItem -Filter "*Hyper-V*.mum" (case-insensitive).
+                        let mut mum_packages: Vec<std::path::PathBuf> = Vec::new();
+                        match std::fs::read_dir(&packages_dir) {
+                            Ok(entries) => {
+                                for entry in entries.flatten() {
+                                    let path = entry.path();
+                                    let name = entry.file_name().to_string_lossy().to_ascii_lowercase();
+                                    if name.contains("hyper-v") && name.ends_with(".mum") {
+                                        mum_packages.push(path);
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                InstallerLogger::warn(
+                                    "HYPERV_INSTALL",
+                                    &format!("Failed to enumerate servicing Packages dir '{}': {}", packages_dir.display(), e),
+                                );
+                            }
                         }
+
+                        for pkg in &mum_packages {
+                            let add_out = hidden_command("dism.exe")
+                                .args(["/Online", "/NoRestart", &format!("/Add-Package:{}", pkg.display())])
+                                .output();
+                            match add_out {
+                                Ok(pkg_out) => {
+                                    let pkg_stdout = String::from_utf8_lossy(&pkg_out.stdout);
+                                    let pkg_stderr = String::from_utf8_lossy(&pkg_out.stderr);
+                                    InstallerLogger::info(
+                                        "HYPERV_INSTALL",
+                                        &format!(
+                                            "Add-Package '{}' exit={:?} out={} err={}",
+                                            pkg.display(),
+                                            pkg_out.status.code(),
+                                            pkg_stdout,
+                                            pkg_stderr
+                                        ),
+                                    );
+                                }
+                                Err(e) => {
+                                    InstallerLogger::warn(
+                                        "HYPERV_INSTALL",
+                                        &format!("Failed to invoke DISM Add-Package for '{}': {}", pkg.display(), e),
+                                    );
+                                }
+                            }
+                        }
+
+                        // Service ACTION via native SCM instead of the PowerShell one-liner.
+                        let _ = service_hub::ensure_vmms_autostart_running();
+
+                        let enable_out = hidden_command("dism.exe")
+                            .args([
+                                "/Online",
+                                "/Enable-Feature",
+                                "/All",
+                                "/FeatureName:Microsoft-Hyper-V",
+                                "/NoRestart",
+                            ])
+                            .output();
+                        match enable_out {
+                            Ok(e_out) => {
+                                let e_stdout = String::from_utf8_lossy(&e_out.stdout);
+                                let e_stderr = String::from_utf8_lossy(&e_out.stderr);
+                                InstallerLogger::info(
+                                    "HYPERV_INSTALL",
+                                    &format!(
+                                        "Home Enable-Feature exit={:?} out={} err={}",
+                                        e_out.status.code(),
+                                        e_stdout,
+                                        e_stderr
+                                    ),
+                                );
+                            }
+                            Err(e) => {
+                                InstallerLogger::warn(
+                                    "HYPERV_INSTALL",
+                                    &format!("Failed to invoke DISM Enable-Feature (Home path): {}", e),
+                                );
+                            }
+                        }
+                        return Ok("Hyper-V packages installed for Windows Home. Please restart your PC to complete Hyper-V initialization.".to_string());
                     }
                     Ok("Hyper-V configuration applied. If requested by Windows, a quick restart will finalize activation.".to_string())
                 }
