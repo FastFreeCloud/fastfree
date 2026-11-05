@@ -78,6 +78,29 @@ pub struct WireGuardPeerConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FirewallRuleStatus {
+    pub rule_exists: bool,
+    pub enabled: bool,
+    pub name: String,
+    pub local_ports: String,
+    pub protocol: String,
+    pub action: String,
+    pub is_admin: bool,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WireguardProbeResult {
+    pub success: bool,
+    pub reachable: bool,
+    pub endpoint: String,
+    pub resolved_ip: Option<String>,
+    pub latency_ms: u32,
+    pub status: String,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VmActionStatus {
     pub success: bool,
     pub client_id: String,

@@ -131,3 +131,5 @@ midscene_run/
 # END ai-rulez
 
 apps/fastfree_installer/src-tauri/fastfree_updater.key
+*.download.zst
+*.download
