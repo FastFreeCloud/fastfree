@@ -303,7 +303,7 @@ impl HyperVService {
                 }
             };
 
-            // Not-found branch — mirrors the synthetic JSON object the PS script emitted.
+            // Not-found branch â€” mirrors the synthetic JSON object the PS script emitted.
             let vm = match vm_opt {
                 Some(v) => v,
                 None => {
@@ -398,7 +398,7 @@ impl HyperVService {
             let ip_addresses: Vec<String> = Vec::new();
 
             // uptime_seconds: not exposed as a plain property (only via GetSummaryInformation method);
-            // reported 0 until that method is wired — matches the old script's SilentlyContinue behavior.
+            // reported 0 until that method is wired â€” matches the old script's SilentlyContinue behavior.
             let uptime_seconds = 0u64;
 
             return Ok(VmRealState {
@@ -607,229 +607,12 @@ impl HyperVService {
         );
     
         let clean_drive = target_drive.trim_end_matches('\\').to_string();
-        let account_name = format!("fastfree_{}", client_id);
     
         #[cfg(windows)]
         {
-            let ps_script = format!(
-                r#"
-    $ErrorActionPreference = 'Stop'
-    try {{
-        $cleanDrive = '{clean_drive}'
-        $ClientId = '{client_id}'
-        $accountName = '{account_name}'
-        $secretsDir = "$cleanDrive\FastFree\Secrets"
-        $vmDir = "$cleanDrive\FastFree\VMs"
-        $smartPagingDir = "$cleanDrive\FastFree\SmartPaging"
-        $secretFile = "$secretsDir\account_$ClientId.dpapi"
-    
-        # 1. Compile In-Memory LSA Win32 Bridge for Atomic User Rights Assignment
-        if (-not ([System.Management.Automation.PSTypeName]'FastFreeLsaBridge').Type) {{
-            $csharpSource = @"
-    using System;
-    using System.Runtime.InteropServices;
-    using System.Security.Principal;
-    
-    public class FastFreeLsaBridge {{
-        [StructLayout(LayoutKind.Sequential)]
-        struct LSA_OBJECT_ATTRIBUTES {{
-            public int Length;
-            public IntPtr RootDirectory;
-            public IntPtr ObjectName;
-            public uint Attributes;
-            public IntPtr SecurityDescriptor;
-            public IntPtr SecurityQualityOfService;
-        }}
-    
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        struct LSA_UNICODE_STRING {{
-            public ushort Length;
-            public ushort MaximumLength;
-            public IntPtr Buffer;
-        }}
-    
-        [DllImport("advapi32.dll", SetLastError = true, PreserveSig = true)]
-        static extern uint LsaOpenPolicy(
-            IntPtr SystemName,
-            ref LSA_OBJECT_ATTRIBUTES ObjectAttributes,
-            uint DesiredAccess,
-            out IntPtr PolicyHandle
-        );
-    
-        [DllImport("advapi32.dll", SetLastError = true, PreserveSig = true)]
-        static extern uint LsaAddAccountRights(
-            IntPtr PolicyHandle,
-            IntPtr AccountSid,
-            LSA_UNICODE_STRING[] UserRights,
-            uint CountOfRights
-        );
-    
-        [DllImport("advapi32.dll")]
-        static extern uint LsaClose(IntPtr ObjectHandle);
-    
-        const uint POLICY_CREATE_ACCOUNT = 0x00000010;
-        const uint POLICY_LOOKUP_NAMES = 0x00000800;
-    
-        public static uint GrantRights(string accountName, string[] rights) {{
-            NTAccount account = new NTAccount(accountName);
-            SecurityIdentifier sid = (SecurityIdentifier)account.Translate(typeof(SecurityIdentifier));
-            byte[] sidArray = new byte[sid.BinaryLength];
-            sid.GetBinaryForm(sidArray, 0);
-    
-            IntPtr pSid = Marshal.AllocHGlobal(sidArray.Length);
-            Marshal.Copy(sidArray, 0, pSid, sidArray.Length);
-    
-            try {{
-                LSA_OBJECT_ATTRIBUTES objAttr = new LSA_OBJECT_ATTRIBUTES();
-                IntPtr policyHandle;
-                uint access = POLICY_CREATE_ACCOUNT | POLICY_LOOKUP_NAMES;
-                uint status = LsaOpenPolicy(IntPtr.Zero, ref objAttr, access, out policyHandle);
-                if (status != 0) return status;
-    
-                try {{
-                    LSA_UNICODE_STRING[] lsaRights = new LSA_UNICODE_STRING[rights.Length];
-                    for (int i = 0; i < rights.Length; i++) {{
-                        lsaRights[i] = new LSA_UNICODE_STRING();
-                        lsaRights[i].Buffer = Marshal.StringToHGlobalUni(rights[i]);
-                        lsaRights[i].Length = (ushort)(rights[i].Length * 2);
-                        lsaRights[i].MaximumLength = (ushort)((rights[i].Length + 1) * 2);
-                    }}
-    
-                    try {{
-                        return LsaAddAccountRights(policyHandle, pSid, lsaRights, (uint)rights.Length);
-                    }} finally {{
-                        for (int i = 0; i < rights.Length; i++) {{
-                            Marshal.FreeHGlobal(lsaRights[i].Buffer);
-                        }}
-                    }}
-                }} finally {{
-                    LsaClose(policyHandle);
-                }}
-            }} finally {{
-                Marshal.FreeHGlobal(pSid);
-            }}
-        }}
-    }}
-    "@
-            Add-Type -TypeDefinition $csharpSource -Language CSharp
-        }}
-    
-        # 2. Cryptographic Password Generation (48 characters, shell-safe entropy)
-        $rngBytes = New-Object byte[] 48
-        $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-        $rng.GetBytes($rngBytes)
-        $charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#%*+,-./:=?@_~"
-        $rawPassword = -join ($rngBytes | ForEach-Object {{ $charSet[$_ % $charSet.Length] }})
-        $secPassword = ConvertTo-SecureString $rawPassword -AsPlainText -Force
-    
-        # 3. Create or Update Local Service Account
-        $existingUser = Get-LocalUser -Name $accountName -ErrorAction SilentlyContinue
-        if (-not $existingUser) {{
-            New-LocalUser -Name $accountName `
-                -Password $secPassword `
-                -FullName "FastFree Appliance Service - $ClientId" `
-                -Description "Dedicated isolated service account for FastFree Sovereign Appliance $ClientId Hyper-V container execution." `
-                -PasswordNeverExpires:$true `
-                -UserCannotChangePassword:$true `
-                -AccountNeverExpires:$true | Out-Null
-        }} else {{
-            Set-LocalUser -Name $accountName `
-                -Password $secPassword `
-                -PasswordNeverExpires:$true `
-                -UserCannotChangePassword:$true `
-                -AccountNeverExpires:$true | Out-Null
-        }}
-    
-        # 4. Group Memberships: Hyper-V Admin YES, Users NO (removes from Settings "Other users")
-        Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member $accountName -ErrorAction SilentlyContinue
-        Remove-LocalGroupMember -Group 'Users' -Member $accountName -ErrorAction SilentlyContinue
-    
-        # 5. UI Cloaking: Hide from Windows Logon, Lock Screen, and Switch User
-        $regSpecialAccounts = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList"
-        if (-not (Test-Path $regSpecialAccounts)) {{
-            New-Item -Path $regSpecialAccounts -Force | Out-Null
-        }}
-        Set-ItemProperty -Path $regSpecialAccounts -Name $accountName -Value 0 -Type DWord -Force | Out-Null
-    
-        # 6. Apply LSA Denial Policies (No Interactive Desktop, No RDP)
-        $denyRights = @("SeDenyInteractiveLogonRight", "SeDenyRemoteInteractiveLogonRight", "SeDenyNetworkLogonRight")
-        [FastFreeLsaBridge]::GrantRights($accountName, $denyRights) | Out-Null
-    
-        # 7. Store DPAPI-Encrypted Password in Locked Directory
-        if (-not (Test-Path $secretsDir)) {{
-            New-Item -Path $secretsDir -ItemType Directory -Force | Out-Null
-        }}
-        icacls "$secretsDir" /inheritance:r /grant:r "SYSTEM:(OI)(CI)F" "Administrators:(OI)(CI)F" /c /q | Out-Null
-    
-        Add-Type -AssemblyName System.Security
-        $encBytes = [System.Security.Cryptography.ProtectedData]::Protect(
-            [System.Text.Encoding]::UTF8.GetBytes($rawPassword),
-            $null,
-            [System.Security.Cryptography.DataProtectionScope]::LocalMachine
-        )
-        [System.IO.File]::WriteAllBytes($secretFile, $encBytes)
-    
-        # 8. Storage & NTFS ACL Lockdown on VM Directory
-        if (-not (Test-Path $vmDir)) {{
-            New-Item -Path $vmDir -ItemType Directory -Force | Out-Null
-        }}
-        if (-not (Test-Path $smartPagingDir)) {{
-            New-Item -Path $smartPagingDir -ItemType Directory -Force | Out-Null
-        }}
-    
-        # Grant SYSTEM, Administrators, Service Account, and Hyper-V Virtual Machines SID (*S-1-5-83-0)
-        icacls "$vmDir" /inheritance:r /grant:r "SYSTEM:(OI)(CI)F" "Administrators:(OI)(CI)F" "$accountName:(OI)(CI)F" "*S-1-5-83-0:(OI)(CI)F" /c /q | Out-Null
-        icacls "$smartPagingDir" /inheritance:r /grant:r "SYSTEM:(OI)(CI)F" "Administrators:(OI)(CI)F" "$accountName:(OI)(CI)F" "*S-1-5-83-0:(OI)(CI)F" /c /q | Out-Null
-    
-        # 9. Return Structured Result
-        $sidObj = (New-Object System.Security.Principal.NTAccount($accountName)).Translate([System.Security.Principal.SecurityIdentifier])
-        $sid = if ($sidObj) {{ $sidObj.Value }} else {{ "S-1-5-21-CONFIGURED" }}
-        [PSCustomObject]@{{
-            success = $true
-            account_name = $accountName
-            sid = $sid
-            cloaked = $true
-            hyperv_admin = $true
-            dpapi_path = $secretFile
-            vm_dir = $vmDir
-        }} | ConvertTo-Json -Compress
-    }} catch {{
-        Write-Error $_.Exception.Message
-        exit 1
-    }}
-    "#,
-                clean_drive = clean_drive,
-                client_id = client_id,
-                account_name = account_name
-            );
-    
-            let output = hidden_powershell()
-                .args(["-Command", &ps_script])
-                .output()
-                .map_err(|e| format!("Failed to invoke PowerShell for service account: {}", e))?;
-    
-            if !output.status.success() {
-                let stderr = String::from_utf8_lossy(&output.stderr);
-                return Err(format!("Service account provisioning failed: {}", stderr));
-            }
-    
-            let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
-            let json_line = stdout
-                .lines()
-                .filter(|l| l.trim().starts_with('{') && l.trim().ends_with('}'))
-                .last()
-                .unwrap_or(&stdout);
-    
-            let result: ServiceAccountResult = serde_json::from_str(json_line)
-                .map_err(|e| format!("Failed to parse service account JSON: {}. Raw: {}", e, json_line))?;
-    
-            InstallerLogger::info(
-                "SECURITY",
-                &format!("Sovereign account '{}' secured and cloaked successfully.", result.account_name),
-            );
-            Ok(result)
+            crate::services::service_account::provision(&clean_drive, &client_id)
         }
-    
+
         #[cfg(not(windows))]
         Ok(ServiceAccountResult {
             success: true,
@@ -1027,7 +810,7 @@ impl HyperVService {
             let _ = service_hub::ensure_vmms_autostart_running();
             let _ = service_hub::add_current_user_to_hyperv_administrators();
     
-            // 4. Resolve Virtual Switch: Prefer Default Switch (Host NAT + DHCP + Internet) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â native WMI, no PowerShell.
+            // 4. Resolve Virtual Switch: Prefer Default Switch (Host NAT + DHCP + Internet) ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â native WMI, no PowerShell.
             #[cfg(windows)]
             let switch_name = crate::services::hyperv_wmi::resolve_virtual_switch();
             #[cfg(not(windows))]

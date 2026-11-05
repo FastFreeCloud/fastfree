@@ -7,3 +7,6 @@ pub mod service_hub;
 
 #[cfg(windows)]
 pub mod hyperv_wmi;
+
+#[cfg(windows)]
+pub mod service_account;
