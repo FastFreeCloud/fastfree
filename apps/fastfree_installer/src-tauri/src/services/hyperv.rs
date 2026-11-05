@@ -416,45 +416,9 @@ impl HyperVService {
     
         #[cfg(windows)]
         {
-            let script = format!(
-                r#"
-    $ErrorActionPreference = 'SilentlyContinue'
-    try {{
-        $vm = Get-VM -Name '{0}' -ErrorAction SilentlyContinue
-        if ($vm) {{
-            Write-Output "FASTFREE_VM_STATUS:EXISTS"
-        }} else {{
-            Write-Output "FASTFREE_VM_STATUS:NOT_FOUND"
-        }}
-    }} catch {{
-        Write-Output "FASTFREE_VM_STATUS:NOT_FOUND"
-    }}
-    "#,
-                vm_name
-            );
-    
-            let output = hidden_powershell()
-                .args(["-Command", &script])
-                .output();
-    
-            match output {
-                Ok(out) => {
-                    let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
-                    let stderr = String::from_utf8_lossy(&out.stderr).trim().to_string();
-                    InstallerLogger::info(
-                        "VM_CHECK",
-                        &format!("Status check for '{}': stdout='{}', stderr='{}'", vm_name, stdout, stderr),
-                    );
-                    Ok(stdout.contains("FASTFREE_VM_STATUS:EXISTS"))
-                }
-                Err(e) => {
-                    let err_msg = format!("Failed to execute PowerShell for VM existence check: {}", e);
-                    InstallerLogger::error("VM_CHECK", &err_msg);
-                    Err(err_msg)
-                }
-            }
+            Ok(crate::services::hyperv_wmi::vm_exists(&vm_name))
         }
-    
+
         #[cfg(not(windows))]
         Ok(false)
     }
@@ -952,46 +916,11 @@ impl HyperVService {
             let _ = service_hub::ensure_vmms_autostart_running();
             let _ = service_hub::add_current_user_to_hyperv_administrators();
     
-            // 4. Resolve Virtual Switch: Prefer Default Switch (Host NAT + DHCP + Internet)
-            let vswitch_script = r#"
-    $sw = Get-VMSwitch -Name 'Default Switch' -ErrorAction SilentlyContinue
-    if (-not $sw) {
-        $sw = Get-VMSwitch -SwitchType External -ErrorAction SilentlyContinue | Select-Object -First 1
-    }
-    if (-not $sw) {
-        $sw = Get-VMSwitch -Name 'FastFree-Default-Switch' -ErrorAction SilentlyContinue
-    }
-    if (-not $sw) {
-        $sw = Get-VMSwitch -ErrorAction SilentlyContinue | Select-Object -First 1
-    }
-    if ($sw) {
-        Write-Output "FASTFREE_SWITCH_READY:$($sw.Name)"
-    } else {
-        throw "No virtual switch detected in Hyper-V."
-    }
-    "#;
-            let sw_out = hidden_powershell()
-                .args(["-Command", vswitch_script])
-                .output();
-    
-            let switch_name = match sw_out {
-                Ok(ref out) if out.status.success() => {
-                    let stdout = String::from_utf8_lossy(&out.stdout).to_string();
-                    stdout
-                        .lines()
-                        .find(|l| l.starts_with("FASTFREE_SWITCH_READY:"))
-                        .and_then(|l| l.strip_prefix("FASTFREE_SWITCH_READY:"))
-                        .unwrap_or("Default Switch")
-                        .trim()
-                        .to_string()
-                }
-                Ok(ref out) => {
-                    let err = String::from_utf8_lossy(&out.stderr).to_string();
-                    InstallerLogger::warn("PROVISIONING", &format!("Switch lookup notice: {}", err));
-                    "Default Switch".to_string()
-                }
-                Err(_) => "Default Switch".to_string(),
-            };
+            // 4. Resolve Virtual Switch: Prefer Default Switch (Host NAT + DHCP + Internet) — native WMI, no PowerShell.
+            #[cfg(windows)]
+            let switch_name = crate::services::hyperv_wmi::resolve_virtual_switch();
+            #[cfg(not(windows))]
+            let switch_name = "Default Switch".to_string();
     
             let step3 = ProvisioningStepLog {
                 step: 3,
