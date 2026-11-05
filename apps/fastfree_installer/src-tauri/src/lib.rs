@@ -105,12 +105,8 @@ pub fn run() {
             // Ensure Windows Explorer keeps the tray icon permanently pinned next to taskbar language and clock
             #[cfg(windows)]
             {
-                let _ = commands::hidden_powershell()
-                    .args([
-                        "-Command",
-                        "Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer' -Name 'EnableAutoTray' -Value 0 -Type DWord -ErrorAction SilentlyContinue",
-                    ])
-                    .output();
+                // Native HKCU write via services::process::promote_tray_icon (replaces the hidden PowerShell call)
+                let _ = crate::services::process::promote_tray_icon();
             }
 
             // Register System Tray Icon (Opens Modern Fluent 2 Flyout Dialog above clock)
