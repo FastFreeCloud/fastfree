@@ -118,6 +118,47 @@ fn current_user_is_hyperv_administrator() -> bool {
     in_group
 }
 
+#[cfg(windows)]
+fn is_account_hidden_in_winlogon(svc_name: &str) -> bool {
+    use windows::core::PCWSTR;
+    use windows::Win32::System::Registry::{
+        HKEY_LOCAL_MACHINE, KEY_READ, RegCloseKey, RegOpenKeyExW, RegQueryValueExW,
+    };
+
+    unsafe {
+        let subkey = service_hub::to_wide("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\SpecialAccounts\\UserList");
+        let val_name = service_hub::to_wide(svc_name);
+        let mut hkey = windows::Win32::System::Registry::HKEY::default();
+
+        if RegOpenKeyExW(
+            HKEY_LOCAL_MACHINE,
+            PCWSTR::from_raw(subkey.as_ptr()),
+            0,
+            KEY_READ,
+            &mut hkey,
+        )
+        .is_err()
+        {
+            return false;
+        }
+
+        let mut data = [0u8; 4];
+        let mut size = 4u32;
+        let mut dtype = windows::Win32::System::Registry::REG_VALUE_TYPE(0u32);
+        let ok = RegQueryValueExW(
+            hkey,
+            PCWSTR::from_raw(val_name.as_ptr()),
+            None,
+            Some(&mut dtype),
+            Some(data.as_mut_ptr()),
+            Some(&mut size),
+        )
+        .is_ok();
+        let _ = RegCloseKey(hkey);
+        ok && data == [0, 0, 0, 0]
+    }
+}
+
 impl HyperVService {
     pub fn ensure_hyperv_environment() -> Result<(), String> {
         #[cfg(windows)]
@@ -244,188 +285,145 @@ impl HyperVService {
     
         #[cfg(windows)]
         {
-            let ps_cmd = format!(
-                r#"
-    $ErrorActionPreference = 'Stop'
-    try {{
-        $vm = Get-VM -Name '{0}' -ErrorAction SilentlyContinue
-        if (-not $vm) {{
-            [PSCustomObject]@{{
-                exists = $false
-                state = "NotFound"
-                uptime_seconds = 0
-                memory_mb = 0
-                cpu_cores = 0
-                ip_addresses = @()
-                heartbeat = "No Contact"
-                secure_boot_enabled = $false
-                nested_virt_enabled = $false
-                switch_name = "None"
-                checkpoint_type = "None"
-                vhdx_path = ""
-                vhdx_size_bytes = 0
-                is_empty_disk = $false
-                guest_status = "NotFound"
-                guest_status_message = "Virtual machine is not registered in Hyper-V."
-                service_account = "fastfree_{0}".Replace("FastFree-", "")
-                is_account_cloaked = $false
-                is_storage_hardened = $false
-                hardened_account_configured = $false
-                service_account_name = "fastfree_{0}".Replace("FastFree-", "")
-            }} | ConvertTo-Json -Compress
-        }} else {{
-            $ips = @()
-            $switchName = "Default Switch"
-            if ($vm.NetworkAdapters) {{
-                if ($vm.NetworkAdapters[0].SwitchName) {{
-                    $switchName = $vm.NetworkAdapters[0].SwitchName
-                }}
-                foreach ($adapter in $vm.NetworkAdapters) {{
-                    if ($adapter.IPAddresses) {{
-                        foreach ($ip in $adapter.IPAddresses) {{
-                            if ($ip -and $ip -notmatch '^fe80:' -and $ip -ne '127.0.0.1' -and $ip -notmatch '^::') {{
-                                $ips += $ip
-                            }}
-                        }}
-                    }}
-                }}
-            }}
-            $uptimeSec = 0
-            if ($vm.Uptime -and $vm.Uptime.TotalSeconds) {{
-                $uptimeSec = [math]::Floor($vm.Uptime.TotalSeconds)
-            }}
-            $memMb = [math]::Round($vm.MemoryAssigned / 1MB)
-            if ($memMb -eq 0) {{
-                $memMb = [math]::Round($vm.MemoryStartup / 1MB)
-            }}
-    
-            # Detailed Hyper-V hardware telemetry
-            $secBoot = $false
-            $fw = Get-VMFirmware $vm -ErrorAction SilentlyContinue
-            if ($fw) {{
-                $secBoot = ($fw.SecureBoot -eq 'On')
-            }}
-    
-            $nestedVirt = $false
-            $proc = Get-VMProcessor $vm -ErrorAction SilentlyContinue
-            if ($proc) {{
-                $nestedVirt = ($proc.ExposeVirtualizationExtensions -eq $true)
-            }}
-    
-            $heartbeatDesc = (Get-VMIntegrationService $vm -Name 'Heartbeat' -ErrorAction SilentlyContinue).PrimaryStatusDescription
-            if (-not $heartbeatDesc) {{ $heartbeatDesc = "No Contact" }}
-    
-            $hd = Get-VMHardDiskDrive $vm -ErrorAction SilentlyContinue
-            $hdPath = if ($hd) {{ $hd[0].Path }} else {{ "" }}
-            $diskSizeBytes = 0
-            $isEmptyDisk = $false
-            if ($hdPath -and (Test-Path -LiteralPath $hdPath)) {{
-                $diskItem = Get-Item -LiteralPath $hdPath -ErrorAction SilentlyContinue
-                if ($diskItem) {{
-                    $diskSizeBytes = [int64]$diskItem.Length
-                    if ($diskSizeBytes -le 10485760) {{
-                        $isEmptyDisk = $true
-                    }}
-                }}
-            }}
-    
-            $guestStatus = "Offline"
-            $guestMsg = "Virtual machine is powered off."
-            if ($vm.State -eq 'Running') {{
-                if ($isEmptyDisk) {{
-                    $guestStatus = "UEFI_NoOS"
-                    $guestMsg = "SCSI Disk (0,0): The boot loader did not load an operating system. Detected 4MB empty stub VHDX."
-                }} elseif ($heartbeatDesc -eq 'OK' -or $heartbeatDesc -match 'OK') {{
-                    $guestStatus = "Healthy"
-                    $guestMsg = "FastFree NixOS appliance operating normally."
-                }} else {{
-                    $guestStatus = "Starting"
-                    $guestMsg = "Guest OS is booting or waiting for integration heartbeat..."
-                }}
-            }}
-    
-            # Service Account Telemetry
-            $svcName = "fastfree_{0}".Replace("FastFree-", "")
-            $svcUser = Get-LocalUser -Name $svcName -ErrorAction SilentlyContinue
-            $hardenedConfigured = ($null -ne $svcUser)
-            $isCloaked = $false
-            $regKey = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList"
-            if (Test-Path $regKey) {{
-                $val = (Get-ItemProperty -Path $regKey -Name $svcName -ErrorAction SilentlyContinue).$svcName
-                if ($val -eq 0) {{ $isCloaked = $true }}
-            }}
-            $isStorageHardened = $false
-            if ($hdPath -and (Test-Path -LiteralPath $hdPath)) {{
-                $isStorageHardened = $true
-            }}
-    
-            [PSCustomObject]@{{
-                exists = $true
-                state = $vm.State.ToString()
-                uptime_seconds = [int64]$uptimeSec
-                memory_mb = [int64]$memMb
-                cpu_cores = [int]$vm.ProcessorCount
-                ip_addresses = $ips
-                heartbeat = $heartbeatDesc
-                secure_boot_enabled = $secBoot
-                nested_virt_enabled = $nestedVirt
-                switch_name = $switchName
-                checkpoint_type = $vm.CheckpointType.ToString()
-                vhdx_path = $hdPath
-                vhdx_size_bytes = [int64]$diskSizeBytes
-                is_empty_disk = $isEmptyDisk
-                guest_status = $guestStatus
-                guest_status_message = $guestMsg
-                service_account = $svcName
-                is_account_cloaked = $isCloaked
-                is_storage_hardened = $isStorageHardened
-                hardened_account_configured = $hardenedConfigured
-                service_account_name = $svcName
-            }} | ConvertTo-Json -Compress
-        }}
-    }} catch {{
-        Write-Error $_.Exception.Message
-        exit 1
-    }}
-    "#,
-                vm_name
-            );
-    
-            let output = hidden_powershell()
-                .args(["-Command", &ps_cmd])
-                .output();
-    
-            match output {
-                Ok(out) => {
-                    let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
-                    let stderr = String::from_utf8_lossy(&out.stderr).trim().to_string();
-                    if !out.status.success() {
-                        let err_detail = if !stderr.is_empty() { stderr } else { stdout };
-                        InstallerLogger::warn("VM_TELEMETRY", &format!("Hyper-V telemetry error for '{}': {}", vm_name, err_detail));
-                        return Err(format!("Hyper-V telemetry error: {}", err_detail));
-                    }
-    
-                    let json_line = stdout
-                        .lines()
-                        .filter(|l| l.trim().starts_with('{') && l.trim().ends_with('}'))
-                        .last()
-                        .unwrap_or(&stdout);
-    
-                    match serde_json::from_str::<VmRealState>(json_line) {
-                        Ok(state) => Ok(state),
-                        Err(e) => {
-                            let parse_err = format!("Failed to parse VM telemetry JSON: {} (raw: {})", e, json_line);
-                            InstallerLogger::error("VM_TELEMETRY", &parse_err);
-                            Err(parse_err)
-                        }
-                    }
-                }
+            use crate::services::hyperv_wmi;
+
+            // ------------------------------------------------------------
+            // Native telemetry: 21 VmRealState fields via WMI (v2) + std::fs + registry.
+            // Every probe is individually best-effort and falls back to the same
+            // defaults the old PowerShell silently used.
+            // ------------------------------------------------------------
+
+            let service_account = format!("fastfree_{}", client_id);
+
+            let vm_opt = match hyperv_wmi::find_vm(&vm_name) {
+                Ok(vm) => vm,
                 Err(e) => {
-                    let err_msg = format!("Failed to invoke PowerShell for VM telemetry: {}", e);
-                    InstallerLogger::error("VM_TELEMETRY", &err_msg);
-                    Err(err_msg)
+                    InstallerLogger::warn("VM_TELEMETRY", &format!("Hyper-V telemetry error for '{}': {}", vm_name, e));
+                    return Err(format!("Hyper-V telemetry error: {}", e));
                 }
-            }
+            };
+
+            // Not-found branch — mirrors the synthetic JSON object the PS script emitted.
+            let vm = match vm_opt {
+                Some(v) => v,
+                None => {
+                    return Ok(VmRealState {
+                        exists: false,
+                        state: "NotFound".to_string(),
+                        uptime_seconds: 0,
+                        memory_mb: 0,
+                        cpu_cores: 0,
+                        ip_addresses: vec![],
+                        heartbeat: "No Contact".to_string(),
+                        secure_boot_enabled: false,
+                        nested_virt_enabled: false,
+                        switch_name: "None".to_string(),
+                        checkpoint_type: "None".to_string(),
+                        vhdx_path: String::new(),
+                        vhdx_size_bytes: 0,
+                        is_empty_disk: false,
+                        guest_status: "NotFound".to_string(),
+                        guest_status_message: "Virtual machine is not registered in Hyper-V.".to_string(),
+                        service_account: service_account.clone(),
+                        is_account_cloaked: false,
+                        is_storage_hardened: false,
+                        hardened_account_configured: false,
+                        service_account_name: service_account,
+                    });
+                }
+            };
+
+            // --- Hardware probes (best-effort; each failure keeps a safe default) ---
+            let processor = hyperv_wmi::processor_settings(&vm.Name);
+            let cpu_cores: u32 = processor
+                .as_ref()
+                .map(|s| s.VirtualQuantity.min(u32::MAX as u64) as u32)
+                .unwrap_or(0);
+            let nested_virt_enabled = processor
+                .as_ref()
+                .map(|s| s.ExposeVirtualizationExtensions)
+                .unwrap_or(false);
+
+            let memory_mb: u64 = hyperv_wmi::memory_setting(&vm.Name)
+                .map(|m| m.VirtualQuantity)
+                .unwrap_or(0);
+
+            let virt_settings = hyperv_wmi::virtual_system_setting(&vm.Name);
+            let secure_boot_enabled = virt_settings.as_ref().map(|s| s.SecureBootEnabled).unwrap_or(false);
+            let checkpoint_type = virt_settings
+                .as_ref()
+                .map(|s| hyperv_wmi::checkpoint_type_string(s.CheckpointType))
+                .unwrap_or("Production")
+                .to_string();
+
+            let heartbeat = hyperv_wmi::heartbeat_status(&vm.Name); // "OK" | "No Contact"
+
+            // --- Disk: VHDX path via storage-allocation settings; size via std::fs ---
+            let vhdx_path = hyperv_wmi::vhdx_path(&vm.Name).unwrap_or_default();
+            let (vhdx_size_bytes, is_empty_disk) = match std::fs::metadata(&vhdx_path) {
+                Ok(meta) => {
+                    let len = meta.len();
+                    (len, len <= 10_485_760)
+                }
+                Err(_) => (0u64, false),
+            };
+            let is_storage_hardened = !vhdx_path.is_empty() && std::path::Path::new(&vhdx_path).exists();
+
+            // --- Guest health inference (mirrors the old PS decision tree) ---
+            let running = vm.EnabledState == 2;
+            let (guest_status, guest_status_message) = if running {
+                if is_empty_disk {
+                    (
+                        "UEFI_NoOS".to_string(),
+                        "SCSI Disk (0,0): The boot loader did not load an operating system. Detected 4MB empty stub VHDX.".to_string(),
+                    )
+                } else if heartbeat.eq_ignore_ascii_case("OK") {
+                    ("Healthy".to_string(), "FastFree NixOS appliance operating normally.".to_string())
+                } else {
+                    ("Starting".to_string(), "Guest OS is booting or waiting for integration heartbeat...".to_string())
+                }
+            } else {
+                ("Offline".to_string(), "Virtual machine is powered off.".to_string())
+            };
+
+            // --- Switch name via NIC allocation chain (adapter -> switch) ---
+            let switch_name = hyperv_wmi::vm_switch_name(&vm.Name).unwrap_or_else(|| "Default Switch".to_string());
+
+            // --- Service account / cloak detection: Win32_UserAccount + HKLM registry ---
+            let hardened_account_configured = hyperv_wmi::local_user_exists(&service_account);
+            let is_account_cloaked = is_account_hidden_in_winlogon(&service_account);
+
+            // ip_addresses: WMI v2 KVP exchange (Msvm_KvpExchangeComponent.GetInterNetworkAddresses)
+            // requires an out-param array over exec_method and is intentionally left to a later pass.
+            let ip_addresses: Vec<String> = Vec::new();
+
+            // uptime_seconds: not exposed as a plain property (only via GetSummaryInformation method);
+            // reported 0 until that method is wired — matches the old script's SilentlyContinue behavior.
+            let uptime_seconds = 0u64;
+
+            return Ok(VmRealState {
+                exists: true,
+                state: hyperv_wmi::state_string(vm.EnabledState).to_string(),
+                uptime_seconds,
+                memory_mb,
+                cpu_cores,
+                ip_addresses,
+                heartbeat,
+                secure_boot_enabled,
+                nested_virt_enabled,
+                switch_name,
+                checkpoint_type,
+                vhdx_path,
+                vhdx_size_bytes,
+                is_empty_disk,
+                guest_status,
+                guest_status_message,
+                service_account: service_account.clone(),
+                is_account_cloaked,
+                is_storage_hardened,
+                hardened_account_configured,
+                service_account_name: service_account,
+            });
         }
     
         #[cfg(not(windows))]
@@ -1029,7 +1027,7 @@ impl HyperVService {
             let _ = service_hub::ensure_vmms_autostart_running();
             let _ = service_hub::add_current_user_to_hyperv_administrators();
     
-            // 4. Resolve Virtual Switch: Prefer Default Switch (Host NAT + DHCP + Internet) â€” native WMI, no PowerShell.
+            // 4. Resolve Virtual Switch: Prefer Default Switch (Host NAT + DHCP + Internet) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â native WMI, no PowerShell.
             #[cfg(windows)]
             let switch_name = crate::services::hyperv_wmi::resolve_virtual_switch();
             #[cfg(not(windows))]

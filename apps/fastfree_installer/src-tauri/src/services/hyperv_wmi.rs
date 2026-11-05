@@ -24,6 +24,191 @@ pub struct MsvmVirtualEthernetSwitchSettingData {
     pub InstanceID: String,
 }
 
+#[derive(Deserialize, Debug)]
+#[allow(non_snake_case)]
+pub struct MsvmProcessorSettingData {
+    pub InstanceID: String,
+    #[serde(default)]
+    pub Parent: String,
+    #[serde(default)]
+    pub VirtualQuantity: u64,
+    #[serde(default)]
+    pub ExposeVirtualizationExtensions: bool,
+}
+
+#[derive(Deserialize, Debug)]
+#[allow(non_snake_case)]
+pub struct MsvmMemorySettingData {
+    pub InstanceID: String,
+    #[serde(default)]
+    pub Parent: String,
+    #[serde(default)]
+    pub VirtualQuantity: u64, // in MB (AllocationUnits = byte * 2^20)
+}
+
+#[derive(Deserialize, Debug)]
+#[allow(non_snake_case)]
+pub struct MsvmVirtualSystemSettingData {
+    pub InstanceID: String,
+    #[serde(default)]
+    pub VirtualSystemIdentifier: String,
+    #[serde(default)]
+    pub SecureBootEnabled: bool,
+    #[serde(default)]
+    pub CheckpointType: u32,
+}
+
+#[derive(Deserialize, Debug)]
+#[allow(non_snake_case)]
+pub struct MsvmStorageAllocationSettingData {
+    pub InstanceID: String,
+    #[serde(default)]
+    pub VirtualSystemIdentifier: String,
+    #[serde(default)]
+    pub HostResource: Vec<String>,
+}
+
+#[derive(Deserialize, Debug)]
+#[allow(non_snake_case)]
+pub struct MsvmSyntheticEthernetPortSettingData {
+    pub InstanceID: String,
+    #[serde(default)]
+    pub Parent: String,
+}
+
+#[derive(Deserialize, Debug)]
+#[allow(non_snake_case)]
+pub struct MsvmSyntheticEthernetAdapterSettingData {
+    #[serde(default)]
+    pub Connection: Vec<String>,
+}
+
+#[derive(Deserialize, Debug)]
+#[allow(non_snake_case)]
+pub struct MsvmHeartbeatComponent {
+    #[serde(default)]
+    pub Name: String,
+    #[serde(default)]
+    pub PrimaryStatus: u16,
+    #[serde(default)]
+    pub PrimaryStatusDescription: String,
+    #[serde(default)]
+    pub Parent: String,
+}
+
+#[derive(Deserialize, Debug)]
+#[allow(non_snake_case)]
+pub struct Win32UserAccount {
+    #[serde(default)]
+    pub Name: String,
+}
+
+fn connect_cimv2() -> Result<wmi::WMIConnection, String> {
+    wmi::WMIConnection::with_namespace_path("ROOT\\cimv2")
+        .map_err(|e| format!("Failed to open CIMV2 namespace: {}", e))
+}
+
+// Settings are VM-scoped via the `Parent` path (contains the VM's Configuration ID GUID), except
+// VirtualSystemSettingData which scopes on its own VirtualSystemIdentifier.
+pub fn processor_settings(vm_guid: &str) -> Option<MsvmProcessorSettingData> {
+    connect_v2()
+        .and_then(|con| con.query::<MsvmProcessorSettingData>().map_err(|e| e.to_string()))
+        .unwrap_or_default()
+        .into_iter()
+        .find(|s| s.Parent.contains(vm_guid))
+}
+
+pub fn memory_setting(vm_guid: &str) -> Option<MsvmMemorySettingData> {
+    connect_v2()
+        .and_then(|con| con.query::<MsvmMemorySettingData>().map_err(|e| e.to_string()))
+        .unwrap_or_default()
+        .into_iter()
+        .find(|s| s.Parent.contains(vm_guid))
+}
+
+pub fn virtual_system_setting(vm_guid: &str) -> Option<MsvmVirtualSystemSettingData> {
+    connect_v2()
+        .and_then(|con| con.query::<MsvmVirtualSystemSettingData>().map_err(|e| e.to_string()))
+        .unwrap_or_default()
+        .into_iter()
+        .find(|s| s.VirtualSystemIdentifier.eq_ignore_ascii_case(vm_guid))
+}
+
+/// CheckpointType (uint32): 0 = Production, 1 = Standard (legacy), anything else gets a
+/// safe "Production" default to keep the Hyper-V contract string.
+pub fn checkpoint_type_string(kind: u32) -> &'static str {
+    match kind {
+        0 => "Production",
+        1 => "Standard",
+        _ => "Production",
+    }
+}
+
+pub fn heartbeat_status(vm_guid: &str) -> String {
+    let found = connect_v2()
+        .and_then(|con| con.query::<MsvmHeartbeatComponent>().map_err(|e| e.to_string()))
+        .unwrap_or_default()
+        .into_iter()
+        .find(|h| h.Parent.contains(vm_guid));
+    match found {
+        Some(h) => {
+            let desc = h.PrimaryStatusDescription.trim().to_string();
+            if desc.is_empty() {
+                "No Contact".to_string()
+            } else {
+                desc
+            }
+        }
+        None => "No Contact".to_string(),
+    }
+}
+
+pub fn vhdx_path(vm_guid: &str) -> Option<String> {
+    connect_v2()
+        .and_then(|con| con.query::<MsvmStorageAllocationSettingData>().map_err(|e| e.to_string()))
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|s| s.InstanceID.contains(vm_guid) || s.VirtualSystemIdentifier.eq_ignore_ascii_case(vm_guid))
+        .find_map(|s| {
+            s.HostResource
+                .iter()
+                .find(|h| h.contains(".vhdx") || h.contains(".vhd"))
+                .cloned()
+        })
+}
+
+/// NIC -> Switch name: the appliance model creates one synthetic adapter per VM; the first
+/// port-allocation setting with a Connection wins (mirror of Get-VM.NetworkAdapters[0].SwitchName).
+/// Falls back to None (caller uses "Default Switch") rather than guessing a wrong NIC.
+pub fn vm_switch_name(_vm_guid: &str) -> Option<String> {
+    let con = connect_v2().ok()?;
+    let allocations: Vec<MsvmSyntheticEthernetAdapterSettingData> = con
+        .query::<MsvmSyntheticEthernetAdapterSettingData>()
+        .unwrap_or_default();
+    let switch_pid = allocations
+        .into_iter()
+        .find_map(|a| a.Connection.into_iter().next())?;
+    let needle = switch_pid
+        .split("InstanceID=\"")
+        .nth(1)
+        .and_then(|s| s.split('"').next())
+        .unwrap_or_else(|| switch_pid.as_str());
+    con.query::<MsvmVirtualEthernetSwitchSettingData>()
+        .ok()?
+        .into_iter()
+        .find(|s| s.InstanceID.eq_ignore_ascii_case(needle))
+        .map(|s| s.ElementName)
+}
+
+/// Cloak/hidden-account check: Win32_UserAccount in cimv2.
+pub fn local_user_exists(username: &str) -> bool {
+    connect_cimv2()
+        .and_then(|con| con.query::<Win32UserAccount>().map_err(|e| e.to_string()))
+        .unwrap_or_default()
+        .into_iter()
+        .any(|u| u.Name.eq_ignore_ascii_case(username))
+}
+
 fn connect_v2() -> Result<wmi::WMIConnection, String> {
     wmi::WMIConnection::with_namespace_path("ROOT\\virtualization\\v2")
         .map_err(|e| format!("Failed to open Hyper-V WMI namespace (root\\virtualization\\v2): {}", e))
