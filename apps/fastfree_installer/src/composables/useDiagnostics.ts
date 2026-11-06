@@ -145,15 +145,48 @@ export function buildUnifiedDiagnosticReport(auditReport: any, hwid?: string): s
   return text;
 }
 
-export async function copyDiagnosticLogs(): Promise<boolean> {
+/**
+ * Copies text to the clipboard with a deterministic fallback: async Clipboard
+ * API first (requires user activation and permission), then the legacy
+ * execCommand path inside a hidden textarea (works without the permission
+ * prompt). Returns whether the copy landed so callers can give honest feedback.
+ */
+export async function copyTextToClipboard(text: string): Promise<boolean> {
   try {
-    const text = exportLogsText();
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch (err) {
-    console.error('Failed to copy diagnostic logs:', err);
+    if (typeof navigator !== 'undefined' && navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (primaryErr) {
+    console.warn('Clipboard API refused, falling back to execCommand:', primaryErr);
+  }
+
+  try {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '-100px';
+    textarea.style.left = '-100px';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const succeeded = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return succeeded;
+  } catch (fallbackErr) {
+    console.error('Clipboard fallback failed:', fallbackErr);
     return false;
   }
+}
+
+export async function copyDiagnosticLogs(): Promise<boolean> {
+  const text = exportLogsText();
+  const ok = await copyTextToClipboard(text);
+  if (!ok) {
+    console.error('Failed to copy diagnostic logs: clipboard unavailable');
+  }
+  return ok;
 }
 
 export function openLogFile(): void {

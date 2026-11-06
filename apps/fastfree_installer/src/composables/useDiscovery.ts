@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { logInfo, logWarn, logError, logSuccess } from './useDiagnostics';
-import { RuntimeEnvironment } from '../domain/models/RuntimeEnvironment';
+import { RuntimeEnvironment, type RuntimeKind } from '../domain/models/RuntimeEnvironment';
 
 export interface DiskTelemetry {
   name: string;
@@ -131,8 +131,23 @@ export const discoveryReport = ref<SystemDiscoveryReport | null>(null);
 /** True when the UI renders outside a Tauri webview (plain browser preview tab). */
 export const browserPreviewMode = ref<boolean>(false);
 
-// Persistent User Preferences Cache (LocalStorage Key)
+/** Persistent User Preferences Cache (LocalStorage Key) */
 const STORAGE_PREF_PREFIX = 'fastfree_wizard_';
+
+/**
+ * Classifies the current runtime and keeps browserPreviewMode in sync.
+ * Single canonical entry shared by every composable so all runtime-gated
+ * surfaces agree on one classification.
+ */
+export function classifyRuntime(): RuntimeKind {
+  browserPreviewMode.value =
+    RuntimeEnvironment.classify(
+      () =>
+        typeof window !== 'undefined' &&
+        Boolean((window as unknown as Record<string, unknown>)[RuntimeEnvironment.TAURI_BRIDGE_GLOBAL]),
+    ) === 'browser-preview';
+  return browserPreviewMode.value ? 'browser-preview' : 'tauri';
+}
 
 export function saveUserPreferences() {
   try {
@@ -295,20 +310,13 @@ export function navigateToStep(targetStep: number): boolean {
 export async function fetchSystemDiscovery(): Promise<SystemDiscoveryReport> {
   logInfo('Discovery', 'Initiating system telemetry and hardware discovery...');
 
-  // Runtime classification: without the Tauri IPC bridge the hardware
+  // Runtime classification: without the desktop IPC bridge the hardware
   // report is physically unreachable, so surface the honest mode instead
   // of masquerading it as a discovery failure.
-  browserPreviewMode.value =
-    RuntimeEnvironment.classify(
-      () =>
-        typeof window !== 'undefined' &&
-        Boolean((window as unknown as Record<string, unknown>)[RuntimeEnvironment.TAURI_BRIDGE_GLOBAL]),
-    ) === 'browser-preview';
-
-  if (browserPreviewMode.value) {
+  if (classifyRuntime() === 'browser-preview') {
     logWarn(
       'Discovery',
-      'No Tauri IPC bridge detected in this runtime.',
+      'No desktop IPC bridge detected in this runtime.',
       'Hardware diagnostics run inside the desktop window only; skipping browser preview.',
     );
     throw new Error(`${RuntimeEnvironment.TAURI_BRIDGE_GLOBAL} is undefined in this runtime (browser preview)`);

@@ -6,7 +6,9 @@ import {
   diagnosticLogs,
   openLogFile,
   buildUnifiedDiagnosticReport,
+  copyTextToClipboard,
   logInfo,
+  logWarn,
   logError,
   logSuccess,
 } from './useDiagnostics';
@@ -16,6 +18,8 @@ import {
   assignedRamMb,
   targetDiskDrive,
   provisionNode,
+  classifyRuntime,
+  browserPreviewMode,
 } from './useDiscovery';
 
 export interface StepAuditItem {
@@ -51,6 +55,8 @@ const currentFixPhase = ref('');
 const auditError = ref<string | null>(null);
 const report = ref<SystemAuditReport | null>(null);
 const copyNotice = ref(false);
+/** True in browser preview: the deep audit pipeline is desktop-only. */
+const auditUnavailable = ref(false);
 
 const logsFilter = ref<'all' | 'error' | 'warn' | 'info'>('all');
 const logsSearchQuery = ref('');
@@ -86,6 +92,10 @@ export function useDiagnosticAudit() {
   });
 
   async function setupEventListeners() {
+    // IPC event listeners exist only inside the desktop webview window.
+    if (classifyRuntime() === 'browser-preview') {
+      return;
+    }
     unlistenProgress = await listen<{ percent?: number; phase?: string }>('provision-download-progress', evt => {
       if (evt.payload && typeof evt.payload.percent === 'number') {
         fixProgressPct.value = evt.payload.percent;
@@ -123,8 +133,18 @@ export function useDiagnosticAudit() {
   }
 
   async function runAudit() {
+    // The deep audit invokes the desktop pipeline; in browser preview
+    // classify honestly and show the neutral note instead of a raw error.
+    if (classifyRuntime() === 'browser-preview') {
+      isLoadingAudit.value = false;
+      auditError.value = null;
+      auditUnavailable.value = true;
+      logWarn('Audit', 'Deep audit runs inside the desktop window only.', 'Showing local diagnostics in browser preview.');
+      return;
+    }
     isLoadingAudit.value = true;
     auditError.value = null;
+    auditUnavailable.value = false;
     try {
       const res = await invoke<SystemAuditReport>('audit_system_steps', {
         clientId: selectedClientId.value || 'client1',
@@ -142,6 +162,10 @@ export function useDiagnosticAudit() {
 
   async function handleAutoFixAll() {
     if (isAutoFixing.value) return;
+    if (classifyRuntime() === 'browser-preview') {
+      logWarn('AutoFix', 'Self-healing is unavailable outside the desktop window.', 'Run the auto-fix inside the desktop app.');
+      return;
+    }
     isAutoFixing.value = true;
     fixProgressPct.value = 5;
     currentFixPhase.value = isRtl.value ? 'بدء فحص وتصحيح المكونات...' : 'Initiating self-healing pipeline...';
@@ -200,19 +224,24 @@ export function useDiagnosticAudit() {
 
   async function handleCopyFullReport() {
     let hwid = '';
-    try {
-      hwid = await invoke<string>('get_machine_hwid');
-    } catch {}
+    if (classifyRuntime() !== 'browser-preview') {
+      try {
+        hwid = await invoke<string>('get_machine_hwid');
+      } catch {
+        hwid = '';
+      }
+    }
 
     const fullReport = buildUnifiedDiagnosticReport(report.value, hwid);
-    try {
-      await navigator.clipboard.writeText(fullReport);
+    const copied = await copyTextToClipboard(fullReport);
+    if (copied) {
       copyNotice.value = true;
+      logSuccess('Copy', 'Unified diagnostic bundle copied to the clipboard.');
       setTimeout(() => {
         copyNotice.value = false;
       }, 2800);
-    } catch (err) {
-      console.error('Clipboard copy failed:', err);
+    } else {
+      logError('Copy', 'Clipboard copy failed', 'Clipboard access was refused in this environment.');
     }
   }
 
@@ -234,6 +263,7 @@ export function useDiagnosticAudit() {
     logsSearchQuery,
     filteredLogs,
     headerBadgeClass,
+    auditUnavailable,
     setupEventListeners,
     cleanupEventListeners,
     runAudit,
@@ -241,5 +271,6 @@ export function useDiagnosticAudit() {
     handleSingleFix,
     handleCopyFullReport,
     handleExportLogFile,
+    browserPreviewMode,
   };
 }
