@@ -280,9 +280,12 @@
       </div>
     </div>
 
-    <!-- Browser Preview State: no Tauri IPC bridge, hardware invoke unreachable -->
+    <!-- Browser Preview State: no desktop IPC bridge, hardware invoke unreachable -->
     <div v-else-if="browserPreviewMode" class="error-state preview-state">
       <p class="info-msg">{{ t('discovery.previewMode') }}</p>
+      <p v-if="browserSignal.cpuCores > 0" class="info-msg info-msg-sub">
+        {{ browserSignal.cpuCores }} {{ t('discovery.browserCoresHint') }}
+      </p>
     </div>
 
     <!-- Error or Fallback (real failure inside the desktop runtime) -->
@@ -336,8 +339,19 @@ import {
   saveUserPreferences,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
+import { BrowserHardwareSignal } from '../domain/models/BrowserHardwareSignal';
 
 const { t, isRtl } = useI18n();
+
+// Permissionless browser-side signal, rendered only in preview mode to
+// make the neutral panel informative instead of a dead end.
+const browserSignal = computed(() =>
+  BrowserHardwareSignal.read({
+    readCpuCores: () => (typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : 0),
+    readMemoryGiB: () =>
+      typeof navigator !== 'undefined' ? (navigator as unknown as { deviceMemory?: number }).deviceMemory ?? 0 : 0,
+  }),
+);
 
 // Stable disk list: filter tiny/EFI partitions (<2GB).
 // Recommended drive is listed first, then other drives in fixed alphabetical order (C:\, D:\, etc.)
