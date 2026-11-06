@@ -51,7 +51,7 @@
                   class="preset-tick-btn text-accent font-semibold is-rec"
                   @click="assignedCpuCores = recommendedCores"
                 >
-                  â˜… {{ t('sizing.recommendedCores', { count: recommendedCores }) }}
+                  ★ {{ t('sizing.recommendedCores', { count: recommendedCores }) }}
                 </button>
                 <button type="button" class="preset-tick-btn" @click="assignedCpuCores = maxCores">
                   {{ t('sizing.maxCores', { max: maxCores }) }}
@@ -97,7 +97,7 @@
                   class="preset-tick-btn text-accent font-semibold is-rec"
                   @click="assignedRamMb = recommendedRamMb"
                 >
-                  â˜… {{ t('sizing.recommendedRam', { val: (recommendedRamMb / 1024).toFixed(0) }) }}
+                  ★ {{ t('sizing.recommendedRam', { val: (recommendedRamMb / 1024).toFixed(0) }) }}
                 </button>
                 <button type="button" class="preset-tick-btn" @click="assignedRamMb = maxRamMb">
                   {{ t('sizing.maxRam', { max: (maxRamMb / 1024).toFixed(0) }) }}
@@ -212,7 +212,7 @@
                 :key="client"
                 :value="client"
               >
-                {{ client }} (FastFree Appliance Node â€” Hyper-V)
+                {{ client }} (FastFree Appliance Node — Hyper-V)
               </option>
             </select>
             <p class="hint-text" v-html="t('sizing.clientHint')"></p>
@@ -340,8 +340,11 @@ import {
   saveUserPreferences,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
+import { NodeSizingPolicy, type DiskFacts } from '../domain/models/NodeSizingPolicy';
+import { LicensePresentationService } from '../domain/services/LicensePresentationService';
 
 const { t, isRtl } = useI18n();
+const presentation = LicensePresentationService.getInstance();
 
 const isPathCopied = ref(false);
 async function copyVhdxPath() {
@@ -369,77 +372,67 @@ function formatDiskOption(disk: { name?: string; mount_point: string; available_
     label = isRtl.value ? 'قرص محلي' : 'Local Disk';
   }
   const freeText = `${disk.available_space_gb.toFixed(1)} ${t('common.gb')} ${t('common.free')}`;
-  return `${mountLetter} [${label}] â€” ${freeText} (${disk.file_system})`;
+  return `${mountLetter} [${label}] — ${freeText} (${disk.file_system})`;
 }
 
-const totalHostCores = computed(() => discoveryReport.value?.cpu_count || 8);
-const totalHostRamMb = computed(() => discoveryReport.value?.total_memory_mb || 16384);
+const totalHostCores = computed(() => discoveryReport.value?.cpu_count || NodeSizingPolicy.DEFAULT_HOST_CPU_COUNT);
+const totalHostRamMb = computed(() => discoveryReport.value?.total_memory_mb || NodeSizingPolicy.DEFAULT_HOST_RAM_MB);
 
-const minCores = computed(() => 2);
-const maxCores = computed(() => Math.max(2, (discoveryReport.value?.cpu_count || 8) - 1));
-const recommendedCores = computed(() => discoveryReport.value?.recommendation?.recommended_cores || 4);
+// Allocation limits & slider geometry come from the pure domain model (single source of truth)
+const limits = computed(() =>
+  NodeSizingPolicy.limits({
+    cpuCount: discoveryReport.value?.cpu_count,
+    totalMemoryMb: discoveryReport.value?.total_memory_mb,
+    recommendedCores: discoveryReport.value?.recommendation?.recommended_cores,
+    recommendedRamMb: discoveryReport.value?.recommendation?.recommended_ram_mb,
+  })
+);
 
-const minRamMb = computed(() => 2048);
-const maxRamMb = computed(() => {
-  const total = discoveryReport.value?.total_memory_mb || 16384;
-  // Always reserve at least 4 GB (4096 MB) for Windows host OS
-  return Math.max(4096, total - 4096);
-});
-const recommendedRamMb = computed(() => discoveryReport.value?.recommendation?.recommended_ram_mb || 4096);
+const minCores = computed(() => limits.value.minCores);
+const maxCores = computed(() => limits.value.maxCores);
+const recommendedCores = computed(() => limits.value.recommendedCores);
+const minRamMb = computed(() => limits.value.minRamMb);
+const maxRamMb = computed(() => limits.value.maxRamMb);
+const recommendedRamMb = computed(() => limits.value.recommendedRamMb);
 
 const disksList = computed(() => discoveryReport.value?.disks || []);
 
-const selectedDiskInfo = computed(() => {
-  const current = (targetDiskDrive.value || '').toLowerCase();
-  return disksList.value.find((d) => d.mount_point.toLowerCase() === current)
-    || disksList.value[0]
-    || null;
-});
+const selectedDiskInfo = computed(() =>
+  NodeSizingPolicy.pickTargetDisk(disksList.value, targetDiskDrive.value)
+);
 
-const diskUsedPercent = computed(() => {
-  if (!selectedDiskInfo.value || selectedDiskInfo.value.total_space_gb <= 0) return 0;
-  const used = selectedDiskInfo.value.total_space_gb - selectedDiskInfo.value.available_space_gb;
-  return Math.min(100, Math.max(0, Math.round((used / selectedDiskInfo.value.total_space_gb) * 100)));
-});
+const diskUsedPercent = computed(() => NodeSizingPolicy.diskUsedPercent(selectedDiskInfo.value as DiskFacts | null));
 
-const vhdxFullPath = computed(() => {
-  const letter = (targetDiskDrive.value || 'C:').replace(/[\\\/]+$/, '');
-  return `${letter}\\FastFree\\Disks\\fastfree_${selectedClientId.value || 'client1'}.vhdx`;
-});
+const vhdxFullPath = computed(() =>
+  NodeSizingPolicy.vhdxPath(targetDiskDrive.value, selectedClientId.value)
+);
 
-const cpuHostPercent = computed(() => {
-  if (totalHostCores.value <= 0) return 0;
-  return Math.round((assignedCpuCores.value / totalHostCores.value) * 100);
-});
+const cpuHostPercent = computed(() =>
+  NodeSizingPolicy.hostSharePercent(assignedCpuCores.value, totalHostCores.value)
+);
 
-const cpuSliderFillPercent = computed(() => {
-  const span = maxCores.value - minCores.value;
-  if (span <= 0) return 0;
-  return Math.min(100, Math.max(0, Math.round(((assignedCpuCores.value - minCores.value) / span) * 100)));
-});
+const cpuSliderFillPercent = computed(() =>
+  NodeSizingPolicy.sliderFillPercent(assignedCpuCores.value, minCores.value, maxCores.value)
+);
 
-const ramHostPercent = computed(() => {
-  if (totalHostRamMb.value <= 0) return 0;
-  return Math.round((assignedRamMb.value / totalHostRamMb.value) * 100);
-});
+const ramHostPercent = computed(() =>
+  NodeSizingPolicy.hostSharePercent(assignedRamMb.value, totalHostRamMb.value)
+);
 
-const ramSliderFillPercent = computed(() => {
-  const span = maxRamMb.value - minRamMb.value;
-  if (span <= 0) return 0;
-  return Math.min(100, Math.max(0, Math.round(((assignedRamMb.value - minRamMb.value) / span) * 100)));
-});
+const ramSliderFillPercent = computed(() =>
+  NodeSizingPolicy.sliderFillPercent(assignedRamMb.value, minRamMb.value, maxRamMb.value)
+);
 
-const hasMultipleEligibleNodes = computed(() => {
-  return (licenseState.value?.eligible_clients?.length || 0) > 1;
-});
+const hasMultipleEligibleNodes = computed(() =>
+  presentation.hasMultipleEligibleNodes(licenseState.value?.eligible_clients, licenseState.value?.node_id)
+);
 
-const availableClients = computed(() => {
-  if (licenseState.value && licenseState.value.eligible_clients.length > 0) {
-    return licenseState.value.eligible_clients;
-  }
-  const boundNode = licenseState.value?.node_id || selectedClientId.value;
-  return boundNode ? [boundNode] : ['client2'];
-});
+const availableClients = computed(() =>
+  presentation.getEligibleNodes(
+    licenseState.value?.eligible_clients,
+    licenseState.value?.node_id || selectedClientId.value,
+  )
+);
 </script>
 
 
