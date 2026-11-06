@@ -42,7 +42,7 @@
         <!-- Theme Toggle Button -->
         <button
           class="tool-btn icon-btn theme-btn"
-          title="Toggle Theme"
+          :title="t('app.themeToggle')"
           @click="cycleTheme"
         >
           <!-- Sun icon when dark -->
@@ -66,7 +66,7 @@
         <!-- Language Toggle Button (Pure Code EN / AR) -->
         <button
           class="tool-btn icon-btn lang-btn"
-          title="Switch Language"
+          :title="locale === 'ar' ? 'تبديل اللغة' : 'Switch Language'"
           @click="toggleLocale"
         >
           <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -80,12 +80,12 @@
 
       <!-- Native Windows Fluent Caption Buttons -->
       <div class="window-controls">
-        <button class="win-btn" title="Minimize" @click="minimizeWindow">
+        <button class="win-btn" :title="t('app.minimize')" @click="minimizeWindow">
           <svg class="caption-svg" viewBox="0 0 10 10">
             <line x1="0" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1" />
           </svg>
         </button>
-        <button class="win-btn close" title="Close" @click="closeWindow">
+        <button class="win-btn close" :title="t('app.close')" @click="closeWindow">
           <svg class="caption-svg" viewBox="0 0 10 10">
             <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.1" />
             <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.1" />
@@ -159,7 +159,7 @@ import {
   startAutoUpdatePolling,
 } from './composables/useAutoUpdater';
 
-const { locale, isRtl, toggleLocale, setLocale } = useI18n();
+const { t, locale, isRtl, toggleLocale, setLocale } = useI18n();
 const { theme, cycleTheme } = useTheme();
 const { totalErrors, totalWarnings, logInfo, logWarn } = useDiagnostics();
 

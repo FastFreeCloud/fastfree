@@ -125,13 +125,13 @@
             </svg>
           </span>
           <div class="banner-desc">
-            <strong>{{ isRtl ? 'Ù…Ø­Ø±Ùƒ Hyper-V ØºÙŠØ± Ù…ÙØ¹Ù‘Ù„ Ø¹Ù„Ù‰ Ù‡Ø°Ø§ Ø§Ù„Ù†Ø¸Ø§Ù… Ø­Ø§Ù„ÙŠØ§Ù‹' : 'Hyper-V is not active on this Windows machine' }}</strong>
-            <p>{{ isRtl ? 'Ù„ØªØ´ØºÙŠÙ„ Ø§Ù„Ø¹Ù‚Ø¯Ø©ØŒ ÙŠØ¬Ø¨ ØªÙØ¹ÙŠÙ„ Ù…ÙŠØ²Ø© Hyper-V ÙÙŠ ÙˆÙŠÙ†Ø¯ÙˆØ². ÙŠÙ…ÙƒÙ†Ùƒ ØªØ«Ø¨ÙŠØªÙ‡Ø§ ÙˆØªÙØ¹ÙŠÙ„Ù‡Ø§ Ø§Ù„Ø¢Ù† Ø¨Ù†Ù‚Ø±Ø© ÙˆØ§Ø­Ø¯Ø©.' : 'FastFree node requires Hyper-V feature. Click below to install and enable it automatically.' }}</p>
+            <strong>{{ isRtl ? 'محرك Hyper-V غير مفعّل على هذا النظام حالياً' : 'Hyper-V is not active on this Windows machine' }}</strong>
+            <p>{{ isRtl ? 'لتشغيل العقدة، يجب تفعيل ميزة Hyper-V في ويندوز. يمكنك تثبيتها وتفعيلها الآن بنقرة واحدة.' : 'FastFree node requires Hyper-V feature. Click below to install and enable it automatically.' }}</p>
           </div>
         </div>
         <button class="btn btn-hyperv-act" :disabled="isEnablingHyperV" @click="handleEnableHyperV">
           <span v-if="isEnablingHyperV" class="spinner-sm"></span>
-          <span v-else>{{ isRtl ? 'ØªØ«Ø¨ÙŠØª ÙˆØªÙØ¹ÙŠÙ„ Hyper-V Ø§Ù„Ø¢Ù†' : 'Install & Enable Hyper-V Now' }}</span>
+          <span v-else>{{ isRtl ? 'تثبيت وتفعيل Hyper-V الآن' : 'Install & Enable Hyper-V Now' }}</span>
         </button>
       </div>
 
@@ -207,7 +207,7 @@
                         <bdi>{{ disk.available_space_gb.toFixed(1) }} {{ t('common.gb') }} {{ t('common.free') }}</bdi>
                       </span>
                       <span class="storage-used-hint font-mono bidi-isolate" dir="ltr">
-                        <bdi>{{ getDiskUsedPercent(disk.total_space_gb, disk.available_space_gb) }}%</bdi> {{ isRtl ? 'Ù…Ø³ØªØ®Ø¯Ù…' : 'used' }}
+                        <bdi>{{ getDiskUsedPercent(disk.total_space_gb, disk.available_space_gb) }}%</bdi> {{ isRtl ? 'مستخدم' : 'used' }}
                       </span>
                     </div>
                     <div class="fluent-progress-track">
@@ -225,7 +225,7 @@
                     <span
                       v-if="disk.mount_point === discoveryReport.recommendation.target_disk_drive"
                       class="badge-pill badge-recommended"
-                      :title="isRtl ? 'Ø§Ù„Ù‚Ø±Øµ Ø§Ù„Ø£Ù†Ø³Ø¨ Ù„ØªØ«Ø¨ÙŠØª Ù…Ù„ÙØ§Øª Ø§Ù„Ù†Ø¸Ø§Ù… ÙˆØ§Ù„Ù€ VHDX' : 'Recommended disk for FastFree VHDX'"
+                      :title="isRtl ? 'القرص الأنسب لتثبيت ملفات النظام والـ VHDX' : 'Recommended disk for FastFree VHDX'"
                     >
                       <svg class="badge-icon star-svg" viewBox="0 0 24 24" fill="currentColor">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -239,13 +239,13 @@
                       <svg viewBox="0 0 24 24" class="badge-mini-check" fill="none" stroke="currentColor" stroke-width="2.5">
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
-                      <span>{{ isRtl ? 'Ù…ØªÙˆØ§ÙÙ‚' : 'Compatible' }}</span>
+                      <span>{{ isRtl ? 'متوافق' : 'Compatible' }}</span>
                     </span>
                     <span
                       v-else
                       class="badge-pill badge-tight"
                     >
-                      <span>{{ isRtl ? 'Ù…Ø³Ø§Ø­Ø© Ø­Ø±Ø¬Ø©' : 'Low Space' }}</span>
+                      <span>{{ isRtl ? 'مساحة حرجة' : 'Low Space' }}</span>
                     </span>
                   </div>
                 </td>
@@ -258,7 +258,7 @@
         <div v-if="selectedDiskInfo" class="target-drive-bar">
           <div class="target-bar-left">
             <span class="target-pulse-dot"></span>
-            <span class="target-lead-label">{{ isRtl ? 'Ø§Ù„Ù‚Ø±Øµ Ø§Ù„Ù…Ø¹ØªÙ…Ø¯ Ù„ØªØ«Ø¨ÙŠØª FastOS:' : 'Active Installation Target:' }}</span>
+            <span class="target-lead-label">{{ isRtl ? 'القرص المعتمد لتثبيت FastOS:' : 'Active Installation Target:' }}</span>
             <strong class="target-mount-badge font-mono bidi-isolate" dir="ltr"><bdi>{{ selectedDiskInfo.mount_point }}</bdi></strong>
             <span class="target-name-text bidi-isolate"><bdi>{{ getCleanDriveLabel(selectedDiskInfo) }}</bdi></span>
             <span class="target-space-meta font-mono bidi-isolate" dir="ltr">
@@ -267,13 +267,13 @@
           </div>
           <div class="target-bar-right">
             <span v-if="selectedDiskInfo.mount_point === discoveryReport.recommendation.target_disk_drive" class="target-rec-tag">
-              â˜… {{ isRtl ? 'Ù…ÙˆØµÙ‰ Ø¨Ù‡ Ù…Ù† Ø§Ù„Ù†Ø¸Ø§Ù…' : 'System Recommended' }}
+              ★ {{ isRtl ? 'موصى به من النظام' : 'System Recommended' }}
             </span>
             <span
               class="target-readiness-pill"
               :class="selectedDiskInfo.available_space_gb >= 30 ? 'pill-ready' : 'pill-warn'"
             >
-              {{ selectedDiskInfo.available_space_gb >= 30 ? (isRtl ? 'Ø§Ù„Ù…Ø³Ø§Ø­Ø© Ù…Ø³ØªÙˆÙÙŠØ© Ù„Ù„Ø´Ø±ÙˆØ· âœ“' : 'Requirements Met âœ“') : (isRtl ? 'Ù…Ø³Ø§Ø­Ø© ØªØ®Ø²ÙŠÙ† Ù…Ù†Ø®ÙØ¶Ø© âš ' : 'Low Headroom âš ') }}
+              {{ selectedDiskInfo.available_space_gb >= 30 ? (isRtl ? 'المساحة مستوفية للشروط ✓' : 'Requirements Met ✓') : (isRtl ? 'مساحة تخزين منخفضة ⚠' : 'Low Headroom ⚠') }}
             </span>
           </div>
         </div>
@@ -402,7 +402,7 @@ function getCleanDriveLabel(disk: { name?: string; mount_point: string }): strin
   let label = disk.name || '';
   label = label.replace(/\s*\([A-Za-z]:[\\\/]*\)\s*/g, '').trim();
   if (!label || label === mount) {
-    return isRtl.value ? 'Ù‚Ø±Øµ Ù…Ø­Ù„ÙŠ' : 'Local Drive';
+    return isRtl.value ? 'قرص محلي' : 'Local Drive';
   }
   return label;
 }
