@@ -120,3 +120,7 @@ const {
   handleConfirmTransfer,
 } = useLicenseManager();
 </script>
+
+<style scoped>
+@import '../../assets/styles/license-modals.css';
+</style>

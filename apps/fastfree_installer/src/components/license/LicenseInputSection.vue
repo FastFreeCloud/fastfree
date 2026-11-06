@@ -241,3 +241,7 @@ const {
   openTransferModal,
 } = useLicenseManager();
 </script>
+
+<style scoped>
+@import '../../assets/styles/license-input.css';
+</style>

@@ -119,3 +119,7 @@ const {
   handleChangeKeySubmit,
 } = useLicenseManager();
 </script>
+
+<style scoped>
+@import '../../assets/styles/license-modals.css';
+</style>
