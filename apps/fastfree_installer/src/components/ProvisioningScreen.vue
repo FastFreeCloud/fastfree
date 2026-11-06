@@ -71,7 +71,7 @@
         </div>
         <div class="error-banner-content">
           <div class="error-banner-title">
-            {{ isRtl ? 'ØªØ¹Ø°Ø± Ø¥ØªÙ…Ø§Ù… ØªÙ‡ÙŠØ¦Ø© ÙˆØªØ«Ø¨ÙŠØª Ø§Ù„Ø¢Ù„Ø© ÙÙŠ Hyper-V' : 'Hyper-V Appliance Provisioning Failed' }}
+            {{ isRtl ? 'تعذر إتمام تهيئة وتثبيت الآلة في Hyper-V' : 'Hyper-V Appliance Provisioning Failed' }}
           </div>
           <div class="error-banner-msg font-mono text-xs">{{ errorMessage }}</div>
           <div class="error-banner-actions">
@@ -81,7 +81,7 @@
                   <polyline points="23 4 23 10 17 10"></polyline>
                   <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
                 </svg>
-                <span>{{ isRtl ? 'Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø©' : 'Retry Provisioning' }}</span>
+                <span>{{ isRtl ? 'إعادة المحاولة' : 'Retry Provisioning' }}</span>
               </span>
             </button>
             <button class="btn-back-sizing" @click="currentStep = 3">
@@ -90,7 +90,7 @@
                   <circle cx="12" cy="12" r="3"></circle>
                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
-                <span>{{ isRtl ? 'ØªØ¹Ø¯ÙŠÙ„ Ù…ÙˆØ§Ø±Ø¯ Ø§Ù„Ø¹ØªØ§Ø¯ (Ø§Ù„Ø£Ù†ÙˆÙŠØ© ÙˆØ§Ù„Ø±Ø§Ù…)' : 'Adjust Hardware Sizing' }}</span>
+                <span>{{ isRtl ? 'تعديل موارد العتاد (الأنوية والرام)' : 'Adjust Hardware Sizing' }}</span>
               </span>
             </button>
           </div>
@@ -117,7 +117,7 @@
             <button
               type="button"
               class="btn-console-act"
-              :title="isRtl ? 'Ù†Ø³Ø® Ø§Ù„Ø³Ø¬Ù„Ø§Øª' : 'Copy Logs'"
+              :title="isRtl ? 'نسخ السجلات' : 'Copy Logs'"
               @click="copyAllLogs"
             >
               <svg v-if="!isLogsCopied" class="copy-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -127,19 +127,19 @@
               <svg v-else class="copy-svg-mini text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
-              <span>{{ isLogsCopied ? (isRtl ? 'ØªÙ… Ø§Ù„Ù†Ø³Ø®!' : 'Copied!') : (isRtl ? 'Ù†Ø³Ø®' : 'Copy') }}</span>
+              <span>{{ isLogsCopied ? (isRtl ? 'تم النسخ!' : 'Copied!') : (isRtl ? 'نسخ' : 'Copy') }}</span>
             </button>
             <button
               type="button"
               class="btn-console-act"
-              :title="isRtl ? 'Ù…Ø³Ø­ Ø§Ù„Ø·Ø±ÙÙŠØ©' : 'Clear Terminal'"
+              :title="isRtl ? 'مسح الطرفية' : 'Clear Terminal'"
               @click="logs = []"
             >
               <svg class="copy-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="3 6 5 6 21 6"></polyline>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
               </svg>
-              <span>{{ isRtl ? 'Ù…Ø³Ø­' : 'Clear' }}</span>
+              <span>{{ isRtl ? 'مسح' : 'Clear' }}</span>
             </button>
           </div>
         </div>
@@ -168,7 +168,7 @@
             <svg class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline :points="isRtl ? '9 18 15 12 9 6' : '15 18 9 12 15 6'"></polyline>
             </svg>
-            <span>{{ isRtl ? 'Ø§Ù„Ø¹ÙˆØ¯Ø© Ù„Ù€ FastFree VPN' : 'Back to FastFree VPN' }}</span>
+            <span>{{ isRtl ? 'العودة لـ FastFree VPN' : 'Back to FastFree VPN' }}</span>
           </span>
         </button>
         <div v-else class="status-summary">
@@ -234,8 +234,8 @@ const isFailed = ref(false);
 const errorMessage = ref('');
 const currentPhaseText = ref(
   isProvisioningDone.value
-    ? (isRtl.value ? 'ØªÙ… Ø§Ù„ØªØ«Ø¨ÙŠØª ÙˆØ§Ù„ØªØ­Ù‚Ù‚ Ø¨Ù†Ø¬Ø§Ø­!' : 'Provisioning Completed & Verified!')
-    : (isRtl.value ? 'Ø¨Ø¯Ø¡ ØªØ¬Ù‡ÙŠØ² Ø§Ù„Ø¨ÙŠØ¦Ø©...' : 'Initializing environment...')
+    ? (isRtl.value ? 'تم التثبيت والتحقق بنجاح!' : 'Provisioning Completed & Verified!')
+    : (isRtl.value ? 'بدء تجهيز البيئة...' : 'Initializing environment...')
 );
 const logs = provisioningLogs;
 const logContainer = ref<HTMLElement | null>(null);
@@ -282,7 +282,7 @@ const parsedLogs = computed<ParsedLog[]>(() => {
     let phaseClass = 'phase-default';
 
     const lower = (phase + ' ' + rest).toLowerCase();
-    if (lower.includes('error') || lower.includes('fail') || lower.includes('ÙØ´Ù„')) {
+    if (lower.includes('error') || lower.includes('fail') || lower.includes('فشل')) {
       levelClass = 'level-error';
       phaseClass = 'phase-error';
     } else if (
@@ -291,11 +291,11 @@ const parsedLogs = computed<ParsedLog[]>(() => {
       lower.includes('done') ||
       lower.includes('ready') ||
       lower.includes('running') ||
-      lower.includes('Ø¨Ù†Ø¬Ø§Ø­')
+      lower.includes('بنجاح')
     ) {
       levelClass = 'level-success';
       phaseClass = 'phase-success';
-    } else if (lower.includes('warn') || lower.includes('notice') || lower.includes('ØªÙ†Ø¨ÙŠÙ‡')) {
+    } else if (lower.includes('warn') || lower.includes('notice') || lower.includes('تنبيه')) {
       levelClass = 'level-warn';
       phaseClass = 'phase-warn';
     } else if (phase) {
@@ -315,11 +315,11 @@ const parsedLogs = computed<ParsedLog[]>(() => {
 });
 
 const pipelineStages = [
-  { id: 'storage', titleEn: 'VHDX Disk', titleAr: 'Ù‚Ø±Øµ VHDX' },
-  { id: 'image', titleEn: 'NixOS Clan 26.05', titleAr: 'Ù†Ø¸Ø§Ù… Clan 26.05' },
-  { id: 'vm', titleEn: 'Gen-2 Hyper-V', titleAr: 'Ø¨ÙŠØ¦Ø© Hyper-V' },
-  { id: 'mesh', titleEn: 'FastFree VPN Mesh', titleAr: 'Ø´Ø¨ÙƒØ© FastFree VPN' },
-  { id: 'boot', titleEn: 'Frappe ERP Active', titleAr: 'Ø®Ø¯Ù…Ø§Øª ERP' },
+  { id: 'storage', titleEn: 'VHDX Disk', titleAr: 'قرص VHDX' },
+  { id: 'image', titleEn: 'NixOS Clan 26.05', titleAr: 'نظام Clan 26.05' },
+  { id: 'vm', titleEn: 'Gen-2 Hyper-V', titleAr: 'بيئة Hyper-V' },
+  { id: 'mesh', titleEn: 'FastFree VPN Mesh', titleAr: 'شبكة FastFree VPN' },
+  { id: 'boot', titleEn: 'Frappe ERP Active', titleAr: 'خدمات ERP' },
 ];
 
 const currentStageNumber = computed(() => {
@@ -357,7 +357,7 @@ onMounted(async () => {
   if (isProvisioningDone.value) {
     progress.value = 100;
     isDone.value = true;
-    currentPhaseText.value = isRtl.value ? 'ØªÙ… Ø§Ù„ØªØ«Ø¨ÙŠØª ÙˆØ§Ù„ØªØ­Ù‚Ù‚ Ø¨Ù†Ø¬Ø§Ø­!' : 'Provisioning Completed & Verified!';
+    currentPhaseText.value = isRtl.value ? 'تم التثبيت والتحقق بنجاح!' : 'Provisioning Completed & Verified!';
     return;
   }
 
@@ -402,7 +402,7 @@ async function setupEventListeners() {
       isProvisioningDone.value = false;
       isProvisioningRunning.value = false;
       errorMessage.value = event.payload;
-      currentPhaseText.value = isRtl.value ? 'ÙØ´Ù„ Ø§Ù„ØªØ«Ø¨ÙŠØª ÙÙŠ Hyper-V' : 'Hyper-V Provisioning Failed';
+      currentPhaseText.value = isRtl.value ? 'فشل التثبيت في Hyper-V' : 'Hyper-V Provisioning Failed';
       await addLog(`[ERROR] ${event.payload}`);
     });
   } catch (err) {
@@ -465,7 +465,7 @@ async function runProvisioning(forceRetry: boolean = false) {
         progress.value = 100;
         isDone.value = true;
         isProvisioningDone.value = true;
-        currentPhaseText.value = isRtl.value ? 'Ø§Ù„Ø¢Ù„Ø© Ù‚ÙŠØ¯ Ø§Ù„ØªØ´ØºÙŠÙ„ ÙˆØ§Ù„ØªØ­Ù‚Ù‚ Ø¬Ø§Ù‡Ø²' : 'Appliance is Running and verified';
+        currentPhaseText.value = isRtl.value ? 'الآلة قيد التشغيل والتحقق جاهز' : 'Appliance is Running and verified';
         await addLog(`[Hyper-V] Appliance FastFree-${selectedClientId.value} is already active and Running.`);
         await addLog('Provisioning verified. Virtual machine is Running and ready.');
         return;
@@ -486,7 +486,7 @@ async function runProvisioning(forceRetry: boolean = false) {
   logInfo('Provisioning', `Starting deployment for ${selectedClientId.value}...`);
   await addLog(`Starting automated deployment pipeline for ${selectedClientId.value}...`);
   await addLog(`Selected Drive: ${targetDiskDrive.value} | Cores: ${assignedCpuCores.value} | Aligned RAM: ${safeAlignedRam} MB`);
-  currentPhaseText.value = isRtl.value ? 'Ø¬Ø§Ø±Ù ØªÙ‡ÙŠØ¦Ø© Ù‚Ø±Øµ Ø§Ù„ØªØ®Ø²ÙŠÙ† ÙˆÙ…Ø­ÙˆÙ„ Ø§Ù„Ø´Ø¨ÙƒØ©...' : 'Configuring storage and virtual switch...';
+  currentPhaseText.value = isRtl.value ? 'جارٍ تهيئة قرص التخزين ومحول الشبكة...' : 'Configuring storage and virtual switch...';
 
   try {
     const realLogs = await invoke<Array<{ step: number; phase: string; message: string; success: boolean }>>(
@@ -511,7 +511,7 @@ async function runProvisioning(forceRetry: boolean = false) {
     progress.value = 100;
     isDone.value = true;
     isProvisioningDone.value = true;
-    currentPhaseText.value = isRtl.value ? 'ØªÙ… Ø§Ù„ØªØ«Ø¨ÙŠØª ÙˆØ§Ù„ØªØ­Ù‚Ù‚ Ø¨Ù†Ø¬Ø§Ø­!' : 'Provisioning Completed & Verified!';
+    currentPhaseText.value = isRtl.value ? 'تم التثبيت والتحقق بنجاح!' : 'Provisioning Completed & Verified!';
 
     try {
       localStorage.setItem('fastfree_provisioned', 'true');
@@ -527,7 +527,7 @@ async function runProvisioning(forceRetry: boolean = false) {
     isDone.value = false;
     isProvisioningDone.value = false;
     errorMessage.value = msg;
-    currentPhaseText.value = isRtl.value ? 'ÙØ´Ù„ Ø§Ù„ØªØ«Ø¨ÙŠØª ÙÙŠ Hyper-V' : 'Hyper-V Provisioning Failed';
+    currentPhaseText.value = isRtl.value ? 'فشل التثبيت في Hyper-V' : 'Hyper-V Provisioning Failed';
     logError('Provisioning', `Failed to deploy appliance ${selectedClientId.value}`, msg);
     await addLog(`[ERROR] Hyper-V Provisioning Error: ${msg}`);
   } finally {

@@ -226,6 +226,8 @@ function handleStepClick(target: number) {
 .step-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .step-title {
@@ -233,12 +235,16 @@ function handleStepClick(target: number) {
   font-weight: 700;
   color: var(--text-main, #F4F4F5);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .step-subtitle {
   font-size: 9.5px;
   color: var(--text-muted, #A1A1AA);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .step-line {

@@ -146,7 +146,7 @@
               </div>
               <div class="disk-gauge-meta">
                 <span class="disk-meta-text">
-                  {{ isRtl ? 'Ø§Ù„Ù…Ø³Ø§Ø­Ø© Ø§Ù„Ù…ØªÙˆÙØ±Ø©:' : 'Free Space:' }}
+                  {{ isRtl ? 'المساحة المتوفرة:' : 'Free Space:' }}
                   <strong class="text-emerald">{{ selectedDiskInfo.available_space_gb.toFixed(1) }} {{ t('common.gb') }}</strong>
                   <span class="text-muted"> / {{ selectedDiskInfo.total_space_gb.toFixed(0) }} {{ t('common.gb') }}</span>
                 </span>
@@ -160,7 +160,7 @@
               <button
                 type="button"
                 class="btn-copy-path"
-                :title="isRtl ? 'Ù†Ø³Ø® Ù…Ø³Ø§Ø± Ø§Ù„Ù‚Ø±Øµ' : 'Copy VHDX Path'"
+                :title="isRtl ? 'نسخ مسار القرص' : 'Copy VHDX Path'"
                 @click="copyVhdxPath"
               >
                 <svg v-if="!isPathCopied" class="copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -170,7 +170,7 @@
                 <svg v-else class="copy-svg text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span>{{ isPathCopied ? (isRtl ? 'ØªÙ… Ø§Ù„Ù†Ø³Ø®!' : 'Copied!') : (isRtl ? 'Ù†Ø³Ø®' : 'Copy') }}</span>
+                <span>{{ isPathCopied ? (isRtl ? 'تم النسخ!' : 'Copied!') : (isRtl ? 'نسخ' : 'Copy') }}</span>
               </button>
             </div>
           </div>
@@ -194,11 +194,11 @@
               </div>
               <div class="locked-node-info">
                 <span class="locked-node-title font-mono">FastFree-{{ selectedClientId }}</span>
-                <span class="locked-node-sub">{{ isRtl ? 'Ø¹Ù‚Ø¯Ø© Ø³ÙŠØ§Ø¯ÙŠØ© Ù…Ø¹ØªÙ…Ø¯Ø© ÙˆÙ…Ù‚ØªØ±Ù†Ø© Ø¨Ø§Ù„ØªØ±Ø®ÙŠØµ Ø§Ù„Ø±Ù‚Ù…ÙŠ' : 'Licensed & cryptographically bound appliance node' }}</span>
+                <span class="locked-node-sub">{{ isRtl ? 'عقدة سيادية معتمدة ومقترنة بالترخيص الرقمي' : 'Licensed & cryptographically bound appliance node' }}</span>
               </div>
               <span class="locked-status-pill">
                 <span class="dot-green"></span>
-                {{ isRtl ? 'Ù…Ø±Ø®Øµ' : 'Licensed' }}
+                {{ isRtl ? 'مرخص' : 'Licensed' }}
               </span>
             </div>
             <select
@@ -256,7 +256,7 @@
                   <line x1="6" y1="6" x2="6.01" y2="6"/>
                   <line x1="6" y1="18" x2="6.01" y2="18"/>
                 </svg>
-                <span class="config-label">{{ isRtl ? 'Ù…ÙˆØ§ØµÙØ§Øª FastOS ÙˆØªÙˆØ²ÙŠØ¹ Ø§Ù„Ù…ÙˆØ§Ø±Ø¯ Ø§Ù„Ø­ÙŠØ©' : 'FastOS Architecture & Live Telemetry' }}</span>
+                <span class="config-label">{{ isRtl ? 'مواصفات FastOS وتوزيع الموارد الحية' : 'FastOS Architecture & Live Telemetry' }}</span>
               </div>
               <span class="gen2-badge">Gen 2 UEFI</span>
             </div>
@@ -267,7 +267,7 @@
                 <span class="bento-val text-emerald font-semibold">{{ ((totalHostRamMb - assignedRamMb) / 1024).toFixed(1) }} {{ t('common.gb') }}</span>
               </div>
               <div class="bento-cell">
-                <span class="bento-key">{{ isRtl ? 'Ø§Ù„Ø£Ù…Ø§Ù† ÙˆØªØ´ÙÙŠØ± TPM' : 'Firmware Security' }}</span>
+                <span class="bento-key">{{ isRtl ? 'الأمان وتشفير TPM' : 'Firmware Security' }}</span>
                 <span class="bento-val text-emerald">
                   <span class="dot-green-micro"></span>
                   UEFI + TPM 2.0
@@ -280,7 +280,7 @@
                 </span>
               </div>
               <div class="bento-cell">
-                <span class="bento-key">{{ isRtl ? 'Ù†Ø¸Ø§Ù… Ø§Ù„ØªØ´ØºÙŠÙ„ Ø§Ù„Ø³ÙŠØ§Ø¯ÙŠ' : 'Sovereign OS' }}</span>
+                <span class="bento-key">{{ isRtl ? 'نظام التشغيل السيادي' : 'Sovereign OS' }}</span>
                 <span class="bento-val font-mono text-cyan">NixOS Clan 26.05</span>
               </div>
               <div class="bento-cell span-2">
@@ -366,7 +366,7 @@ function formatDiskOption(disk: { name?: string; mount_point: string; available_
   let label = disk.name || '';
   label = label.replace(/\s*\([A-Za-z]:[\\\/]*\)\s*/g, '').trim();
   if (!label || label === disk.mount_point) {
-    label = isRtl.value ? 'Ù‚Ø±Øµ Ù…Ø­Ù„ÙŠ' : 'Local Disk';
+    label = isRtl.value ? 'قرص محلي' : 'Local Disk';
   }
   const freeText = `${disk.available_space_gb.toFixed(1)} ${t('common.gb')} ${t('common.free')}`;
   return `${mountLetter} [${label}] â€” ${freeText} (${disk.file_system})`;
