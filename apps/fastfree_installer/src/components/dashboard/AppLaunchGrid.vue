@@ -120,10 +120,10 @@
 
         <!-- Label Column -->
         <div class="app-label-column">
-          <span class="app-title-text">{{ app.getName(isRtl) }}</span>
-          <span class="app-port-badge">
+          <span class="app-title-text bidi-isolate"><bdi>{{ app.getName(isRtl) }}</bdi></span>
+          <span class="app-port-badge bidi-isolate" dir="ltr">
             <span class="app-dot-active"></span>
-            {{ formatPort(app) }}
+            <bdi>{{ formatPort(app) }}</bdi>
           </span>
         </div>
       </div>
@@ -194,6 +194,21 @@ function formatPort(app: SovereignApp): string {
   flex-direction: column;
   gap: 20px;
   width: 100%;
+  unicode-bidi: isolate;
+}
+
+.app-grid-container bdi,
+.app-grid-container .bidi-isolate {
+  unicode-bidi: isolate;
+}
+
+.app-grid-container [dir='ltr'] {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.is-rtl .app-grid-container {
+  font-family: 'Cairo', 'Segoe UI', Tahoma, 'Noto Sans Arabic', system-ui, sans-serif;
 }
 
 .grid-header-row {

@@ -27,11 +27,11 @@
             </span>
             <span class="label">{{ t('discovery.hostIdentity') }}</span>
           </div>
-          <div class="metric-value text-accent font-mono" dir="ltr">{{ discoveryReport.host_name }}</div>
+          <div class="metric-value text-accent font-mono bidi-isolate" dir="ltr"><bdi>{{ discoveryReport.host_name }}</bdi></div>
           <div class="card-meta-line">
-            <span class="meta-label">{{ isRtl ? 'Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…:' : 'User:' }}</span>
-            <span class="meta-user font-mono" dir="ltr">{{ discoveryReport.user_name }}</span>
-            <span class="meta-badge-admin">{{ isRtl ? 'Ù…Ø³Ø¤ÙˆÙ„' : 'Admin' }}</span>
+            <span class="meta-label">{{ t('discovery.loggedUser') }}:</span>
+            <span class="meta-user font-mono bidi-isolate" dir="ltr"><bdi>{{ discoveryReport.user_name }}</bdi></span>
+            <span class="meta-badge-admin">{{ t('discovery.adminPriv') }}</span>
           </div>
         </div>
 
@@ -54,9 +54,9 @@
             </span>
             <span class="label">{{ t('discovery.processorTopology') }}</span>
           </div>
-          <div class="metric-value font-mono">{{ t('discovery.logicalCores', { count: discoveryReport.cpu_count }) }}</div>
+          <div class="metric-value font-mono bidi-isolate">{{ t('discovery.logicalCores', { count: discoveryReport.cpu_count }) }}</div>
           <div class="card-meta-line truncate" :title="discoveryReport.cpu_brand">
-            <span class="meta-cpu-brand" dir="ltr">{{ discoveryReport.cpu_brand }}</span>
+            <span class="meta-cpu-brand bidi-isolate" dir="ltr"><bdi>{{ discoveryReport.cpu_brand }}</bdi></span>
           </div>
         </div>
 
@@ -77,10 +77,10 @@
             </span>
             <span class="label">{{ t('discovery.physicalMemory') }}</span>
           </div>
-          <div class="metric-value font-mono">{{ (discoveryReport.total_memory_mb / 1024).toFixed(1) }} <span class="metric-unit font-mono">{{ t('common.gb') }}</span></div>
+          <div class="metric-value font-mono bidi-isolate" dir="ltr"><bdi>{{ (discoveryReport.total_memory_mb / 1024).toFixed(1) }}</bdi> <span class="metric-unit font-mono">{{ t('common.gb') }}</span></div>
           <div class="card-meta-line">
-            <span class="meta-label">{{ isRtl ? 'Ø§Ù„Ù…ØªØ§Ø­:' : 'Free:' }}</span>
-            <strong class="text-emerald font-mono">{{ (discoveryReport.available_memory_mb / 1024).toFixed(1) }} {{ t('common.gb') }}</strong>
+            <span class="meta-label">{{ t('common.free') }}:</span>
+            <strong class="text-emerald font-mono bidi-isolate" dir="ltr"><bdi>{{ (discoveryReport.available_memory_mb / 1024).toFixed(1) }} {{ t('common.gb') }}</bdi></strong>
           </div>
         </div>
 
@@ -101,11 +101,11 @@
             <span class="label">{{ t('discovery.hypervEngine') }}</span>
           </div>
           <div
-            class="metric-value metric-hyperv-row"
+            class="metric-value metric-hyperv-row bidi-isolate"
             :class="discoveryReport.hyperv.ready_for_hyperv ? 'text-emerald' : 'text-amber'"
           >
             <span class="status-dot-mini" :class="discoveryReport.hyperv.ready_for_hyperv ? 'dot-emerald' : 'dot-amber'"></span>
-            <span>{{ discoveryReport.hyperv.ready_for_hyperv ? (isRtl ? 'Ø¬Ø§Ù‡Ø² ÙˆÙŠØ¹Ù…Ù„' : 'Operational') : (isRtl ? 'ØªÙ†Ø¨ÙŠÙ‡ Ø§Ù„ØªÙƒÙˆÙŠÙ†' : 'Config Required') }}</span>
+            <span>{{ discoveryReport.hyperv.ready_for_hyperv ? t('common.operational') : t('discovery.hypervNotice') }}</span>
           </div>
           <div class="card-meta-line truncate" :title="discoveryReport.hyperv.status_reason">
             <span class="meta-desc">{{ discoveryReport.hyperv.status_reason }}</span>
@@ -180,7 +180,7 @@
                 </td>
                 <!-- 1. Drive Letter / Mount Point -->
                 <td class="td-drive-mount">
-                  <span class="drive-badge-letter font-mono" dir="ltr">{{ getDriveLetter(disk.mount_point) }}</span>
+                  <span class="drive-badge-letter font-mono bidi-isolate" dir="ltr"><bdi>{{ getDriveLetter(disk.mount_point) }}</bdi></span>
                 </td>
                 <!-- 2. Disk Volume Name -->
                 <td class="td-drive-name">
@@ -190,24 +190,24 @@
                       <line x1="6" y1="15" x2="6.01" y2="15"></line>
                       <line x1="10" y1="15" x2="10.01" y2="15"></line>
                     </svg>
-                    <span class="drive-name">{{ getCleanDriveLabel(disk) }}</span>
+                    <span class="drive-name bidi-isolate"><bdi>{{ getCleanDriveLabel(disk) }}</bdi></span>
                   </div>
                 </td>
                 <td class="td-drive-fs">
-                  <span class="fs-badge">{{ disk.file_system }}</span>
+                  <span class="fs-badge bidi-isolate" dir="ltr"><bdi>{{ disk.file_system }}</bdi></span>
                 </td>
                 <td class="td-drive-total">
-                  <span class="font-mono text-secondary">{{ disk.total_space_gb.toFixed(1) }} {{ t('common.gb') }}</span>
+                  <span class="font-mono text-secondary bidi-isolate" dir="ltr"><bdi>{{ disk.total_space_gb.toFixed(1) }} {{ t('common.gb') }}</bdi></span>
                 </td>
                 <td class="td-drive-free">
                   <!-- Storage Space with Visual Progress Bar -->
                   <div class="storage-meter-cell">
                     <div class="storage-text-row">
-                      <span :class="disk.available_space_gb >= 30 ? 'text-emerald' : 'text-amber'" class="font-semibold font-mono">
-                        {{ disk.available_space_gb.toFixed(1) }} {{ t('common.gb') }} {{ t('common.free') }}
+                      <span :class="disk.available_space_gb >= 30 ? 'text-emerald' : 'text-amber'" class="font-semibold font-mono bidi-isolate" dir="ltr">
+                        <bdi>{{ disk.available_space_gb.toFixed(1) }} {{ t('common.gb') }} {{ t('common.free') }}</bdi>
                       </span>
-                      <span class="storage-used-hint font-mono">
-                        {{ getDiskUsedPercent(disk.total_space_gb, disk.available_space_gb) }}% {{ isRtl ? 'Ù…Ø³ØªØ®Ø¯Ù…' : 'used' }}
+                      <span class="storage-used-hint font-mono bidi-isolate" dir="ltr">
+                        <bdi>{{ getDiskUsedPercent(disk.total_space_gb, disk.available_space_gb) }}%</bdi> {{ isRtl ? 'Ù…Ø³ØªØ®Ø¯Ù…' : 'used' }}
                       </span>
                     </div>
                     <div class="fluent-progress-track">
@@ -230,7 +230,7 @@
                       <svg class="badge-icon star-svg" viewBox="0 0 24 24" fill="currentColor">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                       </svg>
-                      <span>{{ isRtl ? 'Ù…ÙˆØµÙ‰ Ø¨Ù‡' : 'Recommended' }}</span>
+                      <span>{{ t('common.recommended') }}</span>
                     </span>
                     <span
                       v-else-if="disk.available_space_gb >= 30"
@@ -259,10 +259,10 @@
           <div class="target-bar-left">
             <span class="target-pulse-dot"></span>
             <span class="target-lead-label">{{ isRtl ? 'Ø§Ù„Ù‚Ø±Øµ Ø§Ù„Ù…Ø¹ØªÙ…Ø¯ Ù„ØªØ«Ø¨ÙŠØª FastOS:' : 'Active Installation Target:' }}</span>
-            <strong class="target-mount-badge font-mono" dir="ltr">{{ selectedDiskInfo.mount_point }}</strong>
-            <span class="target-name-text">{{ getCleanDriveLabel(selectedDiskInfo) }}</span>
-            <span class="target-space-meta font-mono">
-              ({{ selectedDiskInfo.available_space_gb.toFixed(1) }} {{ t('common.gb') }} {{ t('common.free') }})
+            <strong class="target-mount-badge font-mono bidi-isolate" dir="ltr"><bdi>{{ selectedDiskInfo.mount_point }}</bdi></strong>
+            <span class="target-name-text bidi-isolate"><bdi>{{ getCleanDriveLabel(selectedDiskInfo) }}</bdi></span>
+            <span class="target-space-meta font-mono bidi-isolate" dir="ltr">
+              (<bdi>{{ selectedDiskInfo.available_space_gb.toFixed(1) }} {{ t('common.gb') }} {{ t('common.free') }}</bdi>)
             </span>
           </div>
           <div class="target-bar-right">

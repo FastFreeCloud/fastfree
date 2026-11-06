@@ -5,7 +5,7 @@
         <div class="status-indicator-dot"></div>
         <span class="card-title">{{ isRtl ? 'حالة العتاد والموارد الحية' : 'Live Appliance Telemetry' }}</span>
       </div>
-      <span class="host-pill font-mono">{{ nodeName || 'client2.fastfree' }}</span>
+      <span class="host-pill font-mono bidi-isolate" dir="ltr"><bdi>{{ nodeName || 'client2.fastfree' }}</bdi></span>
     </div>
 
     <!-- Dials Row: vCPU & RAM -->
@@ -30,7 +30,7 @@
         </div>
         <div class="dial-info">
           <span class="info-k">{{ isRtl ? 'المعالج (vCPU)' : 'vCPU Pressure' }}</span>
-          <span class="info-v font-mono">{{ telemetry.cpuCores }} {{ isRtl ? 'أنوية' : 'Cores' }}</span>
+          <span class="info-v font-mono bidi-isolate" dir="ltr"><bdi>{{ telemetry.cpuCores }} {{ t('common.cores') }}</bdi></span>
         </div>
       </div>
 
@@ -54,7 +54,7 @@
         </div>
         <div class="dial-info">
           <span class="info-k">{{ isRtl ? 'الذاكرة (RAM)' : 'Memory (RAM)' }}</span>
-          <span class="info-v font-mono">{{ (telemetry.memoryTotalMb / 1024).toFixed(0) }} GB Total</span>
+          <span class="info-v font-mono bidi-isolate" dir="ltr"><bdi>{{ (telemetry.memoryTotalMb / 1024).toFixed(0) }} {{ t('common.gb') }} {{ t('common.total') }}</bdi></span>
         </div>
       </div>
     </div>
@@ -62,8 +62,8 @@
     <!-- Disk Storage Horizontal Bar -->
     <div class="storage-section">
       <div class="storage-labels">
-        <span class="storage-k">{{ isRtl ? 'التخزين' : 'Storage' }} ({{ telemetry.diskPath }})</span>
-        <span class="storage-v font-mono">{{ telemetry.diskFreeGbFormatted }} {{ isRtl ? 'متاح' : 'free' }}</span>
+        <span class="storage-k bidi-isolate">{{ isRtl ? 'التخزين' : 'Storage' }} (<bdi>{{ telemetry.diskPath }}</bdi>)</span>
+        <span class="storage-v font-mono bidi-isolate" dir="ltr"><bdi>{{ telemetry.diskFreeGbFormatted }} {{ t('common.free') }}</bdi></span>
       </div>
       <div class="storage-progress-track">
         <div class="storage-progress-fill" :style="{ width: `${telemetry.diskUsagePercent}%` }"></div>
@@ -73,14 +73,14 @@
     <!-- Network Live Speeds Row -->
     <div class="network-speeds-row">
       <div class="speed-box up">
-        <span class="speed-arrow">↑</span>
+        <span class="speed-arrow" aria-hidden="true">↑</span>
         <span class="speed-k">{{ isRtl ? 'رفع:' : 'Upload:' }}</span>
-        <span class="speed-v font-mono">{{ telemetry.networkUpFormatted }}</span>
+        <span class="speed-v font-mono bidi-isolate" dir="ltr"><bdi>{{ telemetry.networkUpFormatted }}</bdi></span>
       </div>
       <div class="speed-box down">
-        <span class="speed-arrow">↓</span>
+        <span class="speed-arrow" aria-hidden="true">↓</span>
         <span class="speed-k">{{ isRtl ? 'تحميل:' : 'Download:' }}</span>
-        <span class="speed-v font-mono">{{ telemetry.networkDownFormatted }}</span>
+        <span class="speed-v font-mono bidi-isolate" dir="ltr"><bdi>{{ telemetry.networkDownFormatted }}</bdi></span>
       </div>
     </div>
   </div>
@@ -88,6 +88,9 @@
 
 <script setup lang="ts">
 import type { IApplianceTelemetry } from '../../domain/models/ApplianceTelemetry';
+import { useI18n } from '../../composables/useI18n';
+
+const { t } = useI18n();
 
 defineProps<{
   telemetry: IApplianceTelemetry;
@@ -104,6 +107,21 @@ defineProps<{
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding: 16px;
+  unicode-bidi: isolate;
+}
+
+.telemetry-card-root bdi,
+.telemetry-card-root .bidi-isolate {
+  unicode-bidi: isolate;
+}
+
+.telemetry-card-root [dir='ltr'] {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.is-rtl .telemetry-card-root {
+  font-family: 'Cairo', 'Segoe UI', Tahoma, 'Noto Sans Arabic', system-ui, sans-serif;
 }
 
 .card-header {
