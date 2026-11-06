@@ -68,6 +68,12 @@ bdi[dir='ltr'],
   max-width: 560px;
 }
 
+.info-msg-sub {
+  margin-top: 0;
+  font-size: 11.5px;
+  color: var(--text-muted, #94A3B8);
+}
+
 .error-msg {
   color: #EF869B;
   font-size: 12.5px;
