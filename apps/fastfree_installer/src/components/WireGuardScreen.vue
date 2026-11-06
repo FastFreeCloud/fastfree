@@ -22,6 +22,36 @@
       <WireGuardAdvancedBanner />
     </div>
 
+    <!-- 3b. Failure State (desktop window or preview) -->
+    <div v-else class="content-fallback">
+      <div class="fallback-card">
+        <svg class="fallback-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <div class="fallback-body">
+          <strong>
+            {{
+              isRtl
+                ? 'تعذر تحميل إعدادات شبكة النفق المشفر'
+                : 'WireGuard configuration unavailable'
+            }}
+          </strong>
+          <span>
+            {{
+              isRtl
+                ? (browserPreviewMode ? 'قراءة إعدادات الشبكة الحية تعمل من نافذة سطح المكتب فقط. افتح نافذة التطبيق ثم استخدم زر إعادة المحاولة.' : 'واجه الاتصال من نافذة سطح المكتب. تفاصيل الخطأ مسجلة في سجل التشخيص.')
+                : (browserPreviewMode ? 'Live network configuration reads run inside the desktop window only. Open the desktop app and press Retry.' : 'The connection service could not be read. Details are recorded in the diagnostics log.')
+            }}
+          </span>
+          <button type="button" class="btn btn-secondary fallback-retry" @click="retryLoadConfig">
+            {{ isRtl ? 'إعادة المحاولة' : 'Retry' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- 4. Modals -->
     <WireGuardPasswordModal />
     <WireGuardEndpointModal />
@@ -83,6 +113,8 @@ const {
   isLoadingConfig,
   isApplyingConfig,
   wireGuardConfig,
+  browserPreviewMode,
+  retryLoadConfig,
   handleDeploy,
   initWireGuardScreen,
 } = useWireGuardScreen();
