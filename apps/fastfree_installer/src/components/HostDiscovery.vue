@@ -280,7 +280,12 @@
       </div>
     </div>
 
-    <!-- Error or Fallback -->
+    <!-- Browser Preview State: no Tauri IPC bridge, hardware invoke unreachable -->
+    <div v-else-if="browserPreviewMode" class="error-state preview-state">
+      <p class="info-msg">{{ t('discovery.previewMode') }}</p>
+    </div>
+
+    <!-- Error or Fallback (real failure inside the desktop runtime) -->
     <div v-else class="error-state">
       <p class="error-msg">{{ t('discovery.errorReport') }}</p>
       <button class="btn btn-secondary" @click="fetchSystemDiscovery">{{ t('discovery.retryDiscovery') }}</button>
@@ -325,6 +330,7 @@ import {
   currentStep,
   loadingDiscovery,
   discoveryReport,
+  browserPreviewMode,
   fetchSystemDiscovery,
   targetDiskDrive,
   saveUserPreferences,
