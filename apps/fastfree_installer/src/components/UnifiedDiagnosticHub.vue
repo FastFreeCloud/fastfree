@@ -109,6 +109,19 @@
           <p>{{ isRtl ? 'فحص خدمات Hyper-V، الأقراص، التراخيص، وإعدادات الشبكة السيادية' : 'Auditing Hyper-V VMMS, VHDX partition validity, licenses, and WireGuard' }}</p>
         </div>
 
+        <!-- Browser Preview Note (deep audit pipeline is desktop-only) -->
+        <div v-else-if="auditUnavailable" class="hub-preview-note">
+          <svg class="status-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <div class="err-text">
+            <strong>{{ isRtl ? 'وضع معاينة داخل المتصفح' : 'Browser preview mode' }}</strong>
+            <span>{{ isRtl ? 'الفحص العميق وأدوات الإصلاح تعمل من نافذة سطح المكتب فقط. تبقى سجلات التشغيل المحلية هنا قابلة للنسخ والتصدير.' : 'Deep audit and self-healing run inside the desktop window only. Local runtime logs below remain copy- and export-ready.' }}</span>
+          </div>
+        </div>
+
         <!-- Error State -->
         <div v-else-if="auditError" class="hub-error-banner">
           <svg class="status-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -148,7 +161,8 @@
           <button
             type="button"
             class="btn-footer-action btn-refresh"
-            :disabled="isLoadingAudit || isAutoFixing"
+            :disabled="isLoadingAudit || isAutoFixing || browserPreviewMode"
+            :title="browserPreviewMode ? (isRtl ? 'متاحة داخل نافذة سطح المكتب فقط' : 'Available inside the desktop window only') : ''"
             @click="runAudit"
           >
             <svg class="footer-btn-svg" :class="{ 'spin-anim': isLoadingAudit }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -201,7 +215,8 @@
             v-if="report && report.total_errors > 0"
             type="button"
             class="btn-footer-action btn-master-fix"
-            :disabled="isAutoFixing || isLoadingAudit"
+            :disabled="isAutoFixing || isLoadingAudit || browserPreviewMode"
+            :title="browserPreviewMode ? (isRtl ? 'متاحة داخل نافذة سطح المكتب فقط' : 'Available inside the desktop window only') : ''"
             @click="handleAutoFixAll"
           >
             <span v-if="isAutoFixing" class="spinner-sm"></span>
@@ -256,6 +271,8 @@ const {
   report,
   copyNotice,
   headerBadgeClass,
+  auditUnavailable,
+  browserPreviewMode,
   setupEventListeners,
   cleanupEventListeners,
   runAudit,

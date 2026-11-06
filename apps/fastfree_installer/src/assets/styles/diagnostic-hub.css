@@ -293,6 +293,130 @@
   gap: 14px;
 }
 
+/* Loading State (Tab 1) */
+.hub-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 10px;
+  text-align: center;
+  padding: 40px 0;
+}
+
+.hub-loading-state h5 {
+  color: var(--text-main, #F8FAFC);
+  font-size: 13.5px;
+  margin: 0;
+}
+
+.hub-loading-state p {
+  color: var(--text-muted, #94A3B8);
+  font-size: 11.5px;
+  margin: 0;
+}
+
+.spinner-large {
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #1976D2;
+  border-radius: 50%;
+  animation: hub-spin 0.9s infinite linear;
+}
+
+@keyframes hub-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error Banner (Tab 1) */
+.hub-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.hub-error-banner .status-svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: #EF869B;
+}
+
+.err-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.err-text strong {
+  color: #F1A2B0;
+  font-size: 12.5px;
+}
+
+.err-text span {
+  color: rgba(239, 134, 155, 0.85);
+  font-size: 11.5px;
+  word-break: break-word;
+}
+
+.btn-retry-audit {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.16);
+  color: #F1A2B0;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease;
+  flex-shrink: 0;
+}
+
+.btn-retry-audit:hover {
+  background: rgba(239, 68, 68, 0.28);
+}
+
+/* Neutral Preview Note (Tab 1, browser-only runtime) */
+.hub-preview-note {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.hub-preview-note .status-svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: var(--accent-sky, #38BDF8);
+}
+
+.hub-preview-note .err-text {
+  color: var(--accent-sky, #38BDF8);
+}
+
+.hub-preview-note .err-text strong {
+  color: #7DD3FC;
+}
+
+.hub-preview-note .err-text span {
+  color: rgba(125, 211, 252, 0.85);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
 .overall-summary-card {
   display: flex;
   align-items: center;
