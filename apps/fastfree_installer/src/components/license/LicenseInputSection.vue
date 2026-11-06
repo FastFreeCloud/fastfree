@@ -53,7 +53,7 @@
             v-else
             type="button"
             class="btn-clear"
-            title="Clear"
+            :title="isRtl ? 'مسح' : 'Clear'"
             @click="licenseInput = ''"
           >
             <svg class="btn-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -77,7 +77,7 @@
       <div class="hwid-card">
         <div class="hwid-info">
           <span class="hwid-label">{{ t('license.hwidLabel') }}</span>
-          <code class="hwid-val font-mono" dir="ltr">{{ machineHwid || 'Loading HWID...' }}</code>
+          <code class="hwid-val font-mono" dir="ltr">{{ machineHwid || (isRtl ? 'جارٍ قراءة معرف العتاد...' : 'Loading HWID...') }}</code>
         </div>
         <button
           type="button"
