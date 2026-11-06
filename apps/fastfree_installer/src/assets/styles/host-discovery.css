@@ -6,6 +6,17 @@
   height: 100%;
   overflow: hidden;
   box-sizing: border-box;
+  unicode-bidi: isolate;
+}
+
+bdi,
+.bidi-isolate {
+  unicode-bidi: isolate;
+}
+bdi[dir='ltr'],
+.bidi-isolate[dir='ltr'] {
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .header-box {
@@ -98,6 +109,7 @@
   box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(10px);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  unicode-bidi: isolate;
 }
 
 .diag-card:hover {
@@ -154,6 +166,7 @@
   justify-content: center;
   text-align: center;
   width: 100%;
+  unicode-bidi: isolate;
 }
 
 .metric-hyperv-row {
@@ -173,6 +186,7 @@
 
 .text-emerald {
   color: #10B981;
+  unicode-bidi: isolate;
 }
 
 .text-amber {

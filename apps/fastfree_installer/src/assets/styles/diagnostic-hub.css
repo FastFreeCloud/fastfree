@@ -11,6 +11,22 @@
   border-radius: 16px;
   overflow: hidden;
   color: #FAFAFA;
+  unicode-bidi: isolate;
+}
+
+.unified-hub-card bdi,
+.unified-hub-card .bidi-isolate {
+  unicode-bidi: isolate;
+}
+
+.unified-hub-card [dir='ltr'] {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.is-rtl.unified-hub-card,
+.unified-hub-card.is-rtl {
+  font-family: 'Cairo', 'Segoe UI', Tahoma, 'Noto Sans Arabic', system-ui, sans-serif;
 }
 
 /* Header */

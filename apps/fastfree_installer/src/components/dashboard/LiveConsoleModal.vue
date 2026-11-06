@@ -42,9 +42,9 @@
           class="log-row"
           :class="`level-${entry.level}`"
         >
-          <span class="log-time">{{ entry.formattedTime }}</span>
-          <span class="log-source" :class="`source-${entry.source.toLowerCase()}`">[{{ entry.source }}]</span>
-          <span class="log-msg">{{ entry.message }}</span>
+          <span class="log-time bidi-isolate" dir="ltr"><bdi>{{ entry.formattedTime }}</bdi></span>
+          <span class="log-source bidi-isolate" :class="`source-${entry.source.toLowerCase()}`" dir="ltr">[<bdi>{{ entry.source }}</bdi>]</span>
+          <span class="log-msg bidi-isolate"><bdi>{{ entry.message }}</bdi></span>
         </div>
       </div>
     </div>
@@ -203,6 +203,21 @@ function handleCopy() {
   font-size: 12px;
   line-height: 1.6;
   max-height: 300px;
+  unicode-bidi: isolate;
+}
+
+.log-row bdi,
+.log-row .bidi-isolate {
+  unicode-bidi: isolate;
+}
+
+.log-row [dir='ltr'] {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.is-rtl .console-drawer {
+  font-family: 'Cairo', 'Segoe UI', Tahoma, 'Noto Sans Arabic', system-ui, sans-serif;
 }
 
 .log-row {

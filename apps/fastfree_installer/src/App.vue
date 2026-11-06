@@ -372,11 +372,71 @@ body, html {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: 'Segoe UI Variable Text', 'Segoe UI Variable Display', 'IBM Plex Sans Arabic', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Segoe UI Variable Text', 'Segoe UI Variable Display', 'Cairo', 'Segoe UI', Tahoma, 'Noto Sans Arabic', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-app);
   color: var(--text-main);
   user-select: none;
   overflow: hidden;
+  unicode-bidi: isolate;
+}
+
+/* RTL font fix: 'Segoe UI Variable' has no Arabic glyphs, so Arabic in
+   emerald/telemetry fell back to tofu boxes. Force an Arabic-capable stack
+   first in RTL/LTR bidi contexts without bundling offline binaries. */
+@font-face {
+  font-family: 'Cairo';
+  src: local('Cairo'), local('Segoe UI'), local('Tahoma');
+  font-weight: 400 900;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+html[lang='ar'] body,
+html[dir='rtl'] body,
+.installer-app.is-rtl,
+.is-rtl .screen-container,
+.is-rtl .casa-card,
+.is-rtl .diag-card,
+.is-rtl .telemetry-card-root,
+.is-rtl .app-card {
+  font-family: 'Cairo', 'Segoe UI', Tahoma, 'Noto Sans Arabic', 'IBM Plex Sans Arabic', 'Segoe UI Variable Text', system-ui, sans-serif;
+}
+
+/* Bidi isolation utilities: Latin/host values must not reorder inside RTL */
+bdi,
+.bidi-isolate,
+.font-mono,
+.metric-value,
+.metric-unit,
+.text-emerald,
+.text-accent,
+.meta-user,
+.drive-badge-letter,
+.drive-name,
+.fs-badge,
+.target-mount-badge,
+.target-name-text,
+.target-space-meta,
+.cred-val,
+.wg-ip,
+.host-pill,
+.status-node-pill,
+.app-port-badge,
+.info-v,
+.storage-v,
+.speed-v,
+.log-time,
+.log-source,
+.log-msg,
+.entry-time,
+.entry-source,
+.entry-msg-line {
+  unicode-bidi: isolate;
+}
+[dir='ltr'] .font-mono,
+[dir='ltr'] .num-ltr,
+.ltr-isolate {
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 /* Custom Scrollbars */

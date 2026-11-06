@@ -62,9 +62,9 @@
             <span>{{ isRtl ? 'الطرفية' : 'Terminal' }}</span>
           </button>
 
-          <span class="status-node-pill font-mono">
+          <span class="status-node-pill font-mono bidi-isolate" dir="ltr">
             <span class="node-status-dot" :class="{ 'is-active': isApplianceActive }"></span>
-            FastFree-{{ selectedClientId }}
+            <bdi>FastFree-{{ selectedClientId }}</bdi>
           </span>
         </div>
       </header>
@@ -96,11 +96,11 @@
             <div class="creds-body">
               <div class="cred-row">
                 <span class="cred-label">{{ isRtl ? 'رابط البوابة:' : 'Portal URL:' }}</span>
-                <span class="cred-val font-mono text-cyan">http://{{ selectedClientId }}.fastfree.local</span>
+                <span class="cred-val font-mono text-cyan bidi-isolate" dir="ltr"><bdi>http://{{ selectedClientId }}.fastfree.local</bdi></span>
               </div>
               <div class="cred-row">
                 <span class="cred-label">{{ isRtl ? 'المستخدم:' : 'Username:' }}</span>
-                <span class="cred-val font-mono text-emerald">Administrator</span>
+                <span class="cred-val font-mono text-emerald bidi-isolate" dir="ltr"><bdi>Administrator</bdi></span>
               </div>
             </div>
           </div>
@@ -116,11 +116,11 @@
           <div class="casa-card widget-wireguard">
             <div class="wg-top-row">
               <span class="wg-label">{{ isRtl ? 'شبكة FastFree VPN المشفرة' : 'FastFree VPN Mesh Network' }}</span>
-              <span class="wg-ip font-mono">{{ wireGuardConfig?.client_tunnel_ip || '10.24.0.2/32' }}</span>
+              <span class="wg-ip font-mono bidi-isolate" dir="ltr"><bdi>{{ wireGuardConfig?.client_tunnel_ip || '10.24.0.2/32' }}</bdi></span>
             </div>
-            <div class="wg-sub-row font-mono">
-              <span>{{ isRtl ? 'المنفذ: ' : 'Port: ' }}UDP {{ wireGuardConfig?.listen_port || 51822 }}</span>
-              <span>client1.fastfree.cloud</span>
+            <div class="wg-sub-row font-mono bidi-isolate" dir="ltr">
+              <span><bdi>{{ isRtl ? 'المنفذ: ' : 'Port: ' }}UDP {{ wireGuardConfig?.listen_port || 51822 }}</bdi></span>
+              <span class="bidi-isolate" dir="ltr"><bdi>client1.fastfree.cloud</bdi></span>
             </div>
           </div>
         </aside>
@@ -146,7 +146,7 @@
         <div class="status-summary">
           <span class="status-live">
             <span :class="isApplianceActive ? 'dot-green' : 'dot-amber'"></span>
-            <span class="font-mono text-xs">FastFree-{{ selectedClientId }} ({{ isApplianceActive ? (isRtl ? 'نشط ويعمل' : 'Running') : (isRtl ? 'جاهز' : 'Ready') }})</span>
+            <span class="font-mono text-xs bidi-isolate" dir="ltr"><bdi>FastFree-{{ selectedClientId }} ({{ isApplianceActive ? t('common.active') : (isRtl ? 'جاهز' : 'Ready') }})</bdi></span>
           </span>
           <button
             type="button"
@@ -219,7 +219,7 @@ import TelemetryDialCard from './dashboard/TelemetryDialCard.vue';
 import AppLaunchGrid from './dashboard/AppLaunchGrid.vue';
 import LiveConsoleModal from './dashboard/LiveConsoleModal.vue';
 
-const { isRtl } = useI18n();
+const { t, isRtl } = useI18n();
 
 // Domain Services
 const telemetryService = TelemetryService.getInstance();
@@ -367,7 +367,31 @@ onUnmounted(() => {
   box-sizing: border-box;
   position: relative;
   color: #F8FAFC;
-  font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Segoe UI Variable Display', 'Cairo', 'Segoe UI', Tahoma, system-ui, -apple-system, sans-serif;
+  unicode-bidi: isolate;
+}
+
+.screen-container bdi,
+.screen-container .bidi-isolate {
+  unicode-bidi: isolate;
+}
+
+.is-rtl .screen-container {
+  font-family: 'Cairo', 'Segoe UI', Tahoma, 'Noto Sans Arabic', system-ui, sans-serif;
+}
+
+.cred-val,
+.wg-ip,
+.status-node-pill,
+.font-mono {
+  unicode-bidi: isolate;
+}
+
+.cred-val[dir='ltr'],
+.wg-ip[dir='ltr'],
+.status-node-pill[dir='ltr'] {
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .content-body {
