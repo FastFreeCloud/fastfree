@@ -310,3 +310,7 @@ const {
   formatFeatureName,
 } = useLicenseManager();
 </script>
+
+<style scoped>
+@import '../../assets/styles/license-card.css';
+</style>
