@@ -50,11 +50,13 @@ providers:
 
   # Anthropic First-Party
   anthropic:
-    kind: first-party
-    api_key: ${ANTHROPIC_API_KEY}
-    models:
-      - claude-3-7-sonnet
-      - claude-3-5-haiku
+    kind: key
+    anthropic:
+      base_url: https://api.anthropic.com/v1
+      api_key: ${ANTHROPIC_API_KEY}
+      models:
+        - id: claude-sonnet-4-5
+        - id: claude-haiku-4-5
 
 harnesses:
   claude-sdk:
