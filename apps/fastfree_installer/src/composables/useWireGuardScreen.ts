@@ -11,7 +11,10 @@ import {
   fetchFirewallStatus,
   enableFirewallRule,
   probeWireguardEndpoint,
+  classifyRuntime,
+  browserPreviewMode,
 } from './useDiscovery';
+import { logWarn, logError, copyTextToClipboard } from './useDiagnostics';
 import { useI18n } from './useI18n';
 
 // Module-level shared singleton reactive state
@@ -33,6 +36,8 @@ const manualTunnelIp = ref<string>('10.24.0.2/32');
 const manualEndpoint = ref<string>('client1.fastfree.cloud:51822');
 const manualConf = ref<string>('');
 const confCopied = ref(false);
+/** null = ok / still loading; empty string = browser preview failure; otherwise the raw error message */
+const configError = ref<string | null>(null);
 
 export function useWireGuardScreen() {
   const { t, isRtl } = useI18n();
@@ -117,6 +122,7 @@ PersistentKeepalive = 25
 
   async function loadConfigForNode(nodeId: string) {
     isLoadingConfig.value = true;
+    configError.value = null;
     try {
       const config = await fetchWireGuardConfig(nodeId);
       manualPort.value = config.listen_port;
@@ -126,6 +132,13 @@ PersistentKeepalive = 25
         : `${config.controller_endpoint}:${config.listen_port}`;
       syncManualConf();
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      configError.value = classifyRuntime() === 'browser-preview' ? '' : msg;
+      logWarn(
+        'WireGuard',
+        'Failed to load WireGuard configuration for ' + nodeId,
+        browserPreviewMode.value ? 'Browser preview: deep config reads run inside the desktop window only.' : msg,
+      );
       console.error('Failed to load wireguard config:', err);
     } finally {
       isLoadingConfig.value = false;
@@ -142,35 +155,38 @@ PersistentKeepalive = 25
   }
 
   async function copyConf() {
-    try {
-      await navigator.clipboard.writeText(manualConf.value);
-      confCopied.value = true;
+    confCopied.value = await copyTextToClipboard(manualConf.value);
+    if (confCopied.value) {
       setTimeout(() => {
         confCopied.value = false;
       }, 2000);
-    } catch (err) {
-      console.warn('Clipboard write failed:', err);
     }
   }
 
   async function handleDeploy() {
     isApplyingConfig.value = true;
     try {
-      if (isAdvancedUnlocked.value) {
-        await applyWireGuardConfig(selectedClientId.value, {
-          customPort: manualPort.value,
-          customIp: manualTunnelIp.value,
-          customEndpoint: manualEndpoint.value,
-          customConf: manualConf.value,
-        });
-      } else {
-        await applyWireGuardConfig(selectedClientId.value);
+      const result = isAdvancedUnlocked.value
+        ? await applyWireGuardConfig(selectedClientId.value, {
+            customPort: manualPort.value,
+            customIp: manualTunnelIp.value,
+            customEndpoint: manualEndpoint.value,
+            customConf: manualConf.value,
+          })
+        : await applyWireGuardConfig(selectedClientId.value);
+
+      if (result.success) {
+        currentStep.value = 5;
+        return;
       }
+      // Honest failure: log visibly into the diagnostics store and stay put.
+      logError('WireGuard', 'WireGuard configuration apply reported failure', result.message);
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logError('WireGuard', 'WireGuard config apply threw', msg);
       console.warn('WireGuard config apply warning:', err);
     } finally {
       isApplyingConfig.value = false;
-      currentStep.value = 5;
     }
   }
 
@@ -212,6 +228,10 @@ PersistentKeepalive = 25
     }
   }
 
+  function retryLoadConfig() {
+    void loadConfigForNode(selectedClientId.value);
+  }
+
   return {
     t,
     isRtl,
@@ -222,6 +242,8 @@ PersistentKeepalive = 25
     isTestingPing,
     isApplyingConfig,
     wireGuardConfig,
+    configError,
+    browserPreviewMode,
     firewallStatus,
     isAdvancedUnlocked,
     showPasswordModal,
@@ -247,5 +269,6 @@ PersistentKeepalive = 25
     testHandshake,
     initWireGuardScreen,
     syncManualConf,
+    retryLoadConfig,
   };
 }
