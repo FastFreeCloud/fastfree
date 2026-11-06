@@ -14,7 +14,7 @@
           @click="copyHwid"
         >
           <span class="hwid-tag">HWID</span>
-          <code class="hwid-code-text font-mono">{{ machineHwid || 'Loading HWID...' }}</code>
+          <code class="hwid-code-text font-mono">{{ machineHwid || (isRtl ? 'جارٍ قراءة معرف العتاد...' : 'Loading HWID...') }}</code>
           <button
             type="button"
             class="btn-copy-interactive"

@@ -11,7 +11,7 @@
         </div>
         <div class="modal-title-group">
           <h3 class="modal-title">
-            {{ isRtl ? 'تحديث أو تغيير مفتاح ترخيص فاست فري' : 'Update FastFree License Key' }}
+            {{ isRtl ? 'تحديث أو تغيير مفتاح ترخيص FastFree' : 'Update FastFree License Key' }}
           </h3>
           <p class="modal-subtitle">
             {{ isRtl
@@ -61,7 +61,7 @@
             v-else
             type="button"
             class="btn-clear"
-            title="Clear"
+            :title="isRtl ? 'مسح' : 'Clear'"
             @click="newLicenseInput = ''"
           >
             <svg class="btn-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

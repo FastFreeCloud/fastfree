@@ -9,6 +9,7 @@ import {
   type LicenseVerificationResult,
 } from './useDiscovery';
 import { useI18n } from './useI18n';
+import { LicensePresentationService } from '../domain/services/LicensePresentationService';
 
 // Shared Singleton Reactive State across all decomposed subcomponents
 const licenseInput = ref('');
@@ -41,6 +42,7 @@ const syncFeedback = ref<{ type: 'success' | 'error'; message: string } | null>(
 
 export function useLicenseManager() {
   const { t, isRtl } = useI18n();
+  const presentation = LicensePresentationService.getInstance();
 
   function openChangeKeyModal() {
     newLicenseInput.value = '';
@@ -121,90 +123,28 @@ export function useLicenseManager() {
     }
   }
 
-  const conciseCompanyName = computed(() => {
-    const name = licenseState.value?.company_name?.trim();
-    if (!name || name.toLowerCase().includes('enterprise client')) {
-      return isRtl.value ? 'عميل فاست فري' : 'FastFree Client';
-    }
-    if (name.length > 28) {
-      return `${name.slice(0, 26)}...`;
-    }
-    return name;
-  });
+  const conciseCompanyName = computed(() =>
+    presentation.getCompanyView(isRtl.value, licenseState.value?.company_name)
+  );
 
-  const localizedTierName = computed(() => {
-    const tVal = licenseState.value?.tier?.toLowerCase() || '';
-    if (tVal.includes('ent')) {
-      return isRtl.value ? 'ترخيص مؤسسي سيادي' : 'Sovereign Enterprise';
-    }
-    if (tVal.includes('std') || tVal.includes('standard')) {
-      return isRtl.value ? 'ترخيص قياسي' : 'Standard License';
-    }
-    if (tVal.includes('trial')) {
-      return isRtl.value ? 'ترخيص تجريبي' : 'Trial License';
-    }
-    return licenseState.value?.tier_name || (isRtl.value ? 'ترخيص معتمد' : 'Verified License');
-  });
+  const localizedTierName = computed(() =>
+    presentation.getTierView(isRtl.value, licenseState.value?.tier, licenseState.value?.tier_name)
+  );
 
-  const formattedExpiryDate = computed(() => {
-    if (!licenseState.value?.expires_at) {
-      return isRtl.value ? 'ترخيص دائم' : 'Perpetual';
-    }
-    const raw = licenseState.value.expires_at.trim();
-    try {
-      const d = new Date(raw);
-      if (!isNaN(d.getTime())) {
-        const year = d.getFullYear();
-        if (year >= 2099) {
-          return isRtl.value ? 'ترخيص دائم' : 'Perpetual';
-        }
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      }
-    } catch {
-      // fallback
-    }
-    return raw.split('T')[0] || raw;
-  });
+  const expiryView = computed(() =>
+    presentation.getExpiryView(isRtl.value, licenseState.value?.expires_at)
+  );
 
-  const expiryDaysRemaining = computed(() => {
-    if (!licenseState.value?.expires_at) return null;
-    try {
-      const d = new Date(licenseState.value.expires_at);
-      if (isNaN(d.getTime())) return null;
-      const diffMs = d.getTime() - Date.now();
-      return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    } catch {
-      return null;
-    }
-  });
+  const formattedExpiryDate = computed(() => expiryView.value.dateLabel);
 
-  const expiryStatusMeta = computed(() => {
-    const days = expiryDaysRemaining.value;
-    if (days === null) {
-      return {
-        label: isRtl.value ? 'سارٍ ودائم' : 'Perpetual',
-        statusClass: 'pill-active',
-      };
-    }
-    if (days <= 0) {
-      return {
-        label: isRtl.value ? 'منتهي الصلاحية' : 'Expired',
-        statusClass: 'pill-expired',
-      };
-    }
-    if (days < 30) {
-      return {
-        label: isRtl.value ? `باقٍ ${days} يوم` : `${days} days left`,
-        statusClass: 'pill-warn',
-      };
-    }
-    return {
-      label: isRtl.value ? 'سارٍ ونشط' : 'Active',
-      statusClass: 'pill-active',
-    };
-  });
+  const expiryDaysRemaining = computed(() =>
+    presentation.getDaysRemaining(licenseState.value?.expires_at)
+  );
+
+  const expiryStatusMeta = computed(() => ({
+    label: expiryView.value.statusLabel,
+    statusClass: expiryView.value.statusClass,
+  }));
 
   async function handleSyncCloud(silent = false) {
     if (!licenseState.value?.key) return;
@@ -378,32 +318,7 @@ export function useLicenseManager() {
   }
 
   function formatFeatureName(feature: string): string {
-    const mapEn: Record<string, string> = {
-      sovereign_hyperv_appliance: 'Hyper-V Enterprise Appliance',
-      wireguard_mesh_vpn: 'FastFree VPN Encrypted Mesh',
-      accounting_general_ledger: 'General Ledger & Accounts',
-      inventory_warehouse_suite: 'Multi-Warehouse Inventory',
-      sales_and_crm_engine: 'Sales & CRM Invoicing',
-      purchase_and_supply_chain: 'Purchase Orders & Supply Chain',
-      hr_payroll_management: 'HR & Biometric Payroll',
-      fastfree_panel_governance: 'Sovereign Control Panel & Fleet',
-      evaluation_mode: '14-Day Evaluation Sandbox',
-    };
-
-    const mapAr: Record<string, string> = {
-      sovereign_hyperv_appliance: 'بيئة العتاد المؤسسي على Hyper-V',
-      wireguard_mesh_vpn: 'شبكة FastFree VPN المشفرة',
-      accounting_general_ledger: 'دفتر الأستاذ العام والمحاسبة',
-      inventory_warehouse_suite: 'إدارة المخزون والمستودعات',
-      sales_and_crm_engine: 'المبيعات والعملاء والفواتير',
-      purchase_and_supply_chain: 'المشتريات وسلاسل الإمداد',
-      hr_payroll_management: 'الموارد البشرية والرواتب',
-      fastfree_panel_governance: 'لوحة التحكم والإدارة المؤسسية السيادية',
-      evaluation_mode: 'بيئة تجريبية تقييمية (14 يوماً)',
-    };
-
-    const map = isRtl.value ? mapAr : mapEn;
-    return map[feature] || feature.replace(/_/g, ' ');
+    return presentation.getFeatureName(isRtl.value, feature);
   }
 
   onMounted(async () => {
