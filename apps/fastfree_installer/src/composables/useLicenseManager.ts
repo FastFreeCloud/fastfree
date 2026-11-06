@@ -264,17 +264,16 @@ export function useLicenseManager() {
     }
   }
 
-  const hasMultipleEligibleNodes = computed(() => {
-    return (licenseState.value?.eligible_clients?.length || 0) > 1;
-  });
+  const hasMultipleEligibleNodes = computed(() =>
+    presentation.hasMultipleEligibleNodes(licenseState.value?.eligible_clients, licenseState.value?.node_id)
+  );
 
-  const availableNodes = computed(() => {
-    if (licenseState.value && licenseState.value.eligible_clients && licenseState.value.eligible_clients.length > 0) {
-      return licenseState.value.eligible_clients;
-    }
-    const boundNode = licenseState.value?.node_id || selectedClientId.value;
-    return boundNode ? [boundNode] : ['client2'];
-  });
+  const availableNodes = computed(() =>
+    presentation.getEligibleNodes(
+      licenseState.value?.eligible_clients,
+      licenseState.value?.node_id || selectedClientId.value,
+    )
+  );
 
   async function handleVerify() {
     const cleanKey = licenseInput.value.trim().toUpperCase();

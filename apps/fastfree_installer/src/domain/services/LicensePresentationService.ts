@@ -88,6 +88,25 @@ export class LicensePresentationService {
     return new LicenseExpiry(expiresAt, referenceTime).daysRemaining;
   }
 
+  /** Effective list of nodes this license may provision or appear on. */
+  public getEligibleNodes(
+    eligibleClients: ReadonlyArray<string> | null | undefined,
+    boundNode: string | null | undefined,
+  ): string[] {
+    if (eligibleClients && eligibleClients.length > 0) {
+      return Array.from(eligibleClients);
+    }
+    return [boundNode?.trim() || 'client2'];
+  }
+
+  /** Whether the license holder may pick between several nodes. */
+  public hasMultipleEligibleNodes(
+    eligibleClients: ReadonlyArray<string> | null | undefined,
+    boundNode: string | null | undefined,
+  ): boolean {
+    return this.getEligibleNodes(eligibleClients, boundNode).length > 1;
+  }
+
   /** Localized unlocked-feature display name; unknown ids fall back to readable text. */
   public getFeatureName(isRtl: boolean, feature: string): string {
     const mapEn: Readonly<Record<string, string>> = {
