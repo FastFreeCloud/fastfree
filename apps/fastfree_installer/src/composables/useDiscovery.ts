@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { logInfo, logWarn, logError, logSuccess } from './useDiagnostics';
+import { RuntimeEnvironment } from '../domain/models/RuntimeEnvironment';
 
 export interface DiskTelemetry {
   name: string;
@@ -127,6 +128,8 @@ export const liveVmState = ref<VmRealState | null>(null);
 export const currentStep = ref<number>(1);
 export const loadingDiscovery = ref<boolean>(true);
 export const discoveryReport = ref<SystemDiscoveryReport | null>(null);
+/** True when the UI renders outside a Tauri webview (plain browser preview tab). */
+export const browserPreviewMode = ref<boolean>(false);
 
 // Persistent User Preferences Cache (LocalStorage Key)
 const STORAGE_PREF_PREFIX = 'fastfree_wizard_';
@@ -291,6 +294,30 @@ export function navigateToStep(targetStep: number): boolean {
 // Tauri Invocations
 export async function fetchSystemDiscovery(): Promise<SystemDiscoveryReport> {
   logInfo('Discovery', 'Initiating system telemetry and hardware discovery...');
+
+  // Runtime classification: without the Tauri IPC bridge the hardware
+  // report is physically unreachable, so surface the honest mode instead
+  // of masquerading it as a discovery failure.
+  browserPreviewMode.value =
+    RuntimeEnvironment.classify(
+      () =>
+        typeof window !== 'undefined' &&
+        Boolean((window as unknown as Record<string, unknown>)[RuntimeEnvironment.TAURI_BRIDGE_GLOBAL]),
+    ) === 'browser-preview';
+
+  if (browserPreviewMode.value) {
+    logWarn(
+      'Discovery',
+      'No Tauri IPC bridge detected in this runtime.',
+      'Hardware diagnostics run inside the desktop window only; skipping browser preview.',
+    );
+    throw new Error(`${RuntimeEnvironment.TAURI_BRIDGE_GLOBAL} is undefined in this runtime (browser preview)`);
+  }
+
+  // Honest busy feedback: the initial call runs while the splash is still up,
+  // and every later retry flips the step back to its loading state instantly.
+  loadingDiscovery.value = true;
+
   try {
     const result = await invoke<SystemDiscoveryReport>('get_system_discovery_report');
     discoveryReport.value = result;
@@ -319,8 +346,15 @@ export async function fetchSystemDiscovery(): Promise<SystemDiscoveryReport> {
     return result;
   } catch (err: any) {
     const msg = String(err?.message || err);
-    logError('Discovery', 'Hardware discovery failed', msg);
+    if (RuntimeEnvironment.isBridgeMissingError(err)) {
+      browserPreviewMode.value = true;
+      logWarn('Discovery', 'IPC bridge missing at invoke time.', 'Reclassified runtime as browser preview.');
+    } else {
+      logError('Discovery', 'Hardware discovery failed', msg);
+    }
     throw err;
+  } finally {
+    loadingDiscovery.value = false;
   }
 }
 
