@@ -27,6 +27,7 @@ import { mcpRoutes } from './routes/mcp.js';
 import { paseoRoutes } from './routes/paseo.js';
 import { omnigentRoutes } from './routes/omnigent.js';
 import { governanceRoutes } from './routes/governance.js';
+import { studioRoutes } from './routes/studio.js';
 
 const API_PREFIX = '/api/v1';
 
@@ -69,6 +70,10 @@ export function createApp(): Hono<{ Bindings: HttpBindings }> {
   app.route('/api/governance', governanceRoutes);
   app.route(API_PREFIX, governanceRoutes);
   app.route('/api', governanceRoutes);
+
+  // Mount FastFree Design Studio routes
+  app.route(API_PREFIX, studioRoutes);
+  app.route('/api', studioRoutes);
 
   // Mount Web MCP server routes
   app.route('/mcp', mcpRoutes);

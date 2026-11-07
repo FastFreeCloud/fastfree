@@ -1,5 +1,5 @@
 <template>
-  <div class="clan-network-screen q-pa-md">
+  <div class="clan-network-screen q-pa-md" data-source-path="apps/fastfree_panel/src/screens/ClanNetworkScreen.vue" data-studio-screen="true">
     <!-- Header with Mesh Status & Actions -->
     <div class="row items-center q-mb-md q-gutter-sm">
       <div>

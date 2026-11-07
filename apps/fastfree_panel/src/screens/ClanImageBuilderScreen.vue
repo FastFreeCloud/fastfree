@@ -1,5 +1,5 @@
 <template>
-  <div class="clan-builder-screen q-pa-md">
+  <div class="clan-builder-screen q-pa-md" data-source-path="apps/fastfree_panel/src/screens/ClanImageBuilderScreen.vue" data-studio-screen="true">
     <!-- Header Banner -->
     <q-card flat bordered class="q-mb-md header-card">
       <q-card-section class="row items-center justify-between q-py-sm">

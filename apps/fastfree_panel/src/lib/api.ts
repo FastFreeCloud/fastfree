@@ -462,3 +462,91 @@ export function apiHindsightQuery(query: string, bankId = 'fastfree-core-memory'
     body: { query, bankId },
   });
 }
+
+// ---------------------------------------------------------------------------
+// FastFree Design Studio — isolated worktree automation
+// ---------------------------------------------------------------------------
+
+export interface StudioHealthData {
+  opencode: boolean;
+  git: boolean;
+  repoRoot: string;
+  activeTaskId: string | null;
+}
+
+export type StudioTaskStatus = 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
+
+export interface StudioTask {
+  id: string;
+  title: string;
+  prompt: string;
+  target: string | null;
+  status: StudioTaskStatus;
+  phase: string;
+  worktreePath: string;
+  createdAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+  timedOut: boolean;
+  error: string | null;
+  exitCode: number | null;
+}
+
+export interface StudioTaskView extends StudioTask {
+  logTail: string[];
+  diffStat: string;
+  diffShortstat: string;
+  changedFiles: string[];
+}
+
+export interface StudioOmnigentStatus {
+  reachable: boolean;
+  baseUrl: string;
+  serverVersion: string | null;
+  accountsEnabled: boolean | null;
+  singleUser: boolean | null;
+  agentCount: number;
+  harnessCount: number;
+  harnessIds: string[];
+  sessionCount: number | null;
+  usage: { totalCostUsd: number | null; costTodayUsd: number | null } | null;
+  probedAt: string;
+}
+
+export function apiStudioHealth(): Promise<StudioHealthData> {
+  return apiRequest<StudioHealthData>('/studio/health');
+}
+
+export function apiStudioOmnigentStatus(): Promise<StudioOmnigentStatus> {
+  return apiRequest<StudioOmnigentStatus>('/studio/omnigent/status', { timeoutMs: 20_000 });
+}
+
+export function apiStudioDispatch(input: { title?: string; prompt: string; target?: string }): Promise<StudioTaskView> {
+  return apiRequest<StudioTaskView>('/studio/tasks', {
+    method: 'POST',
+    body: input,
+    timeoutMs: 60_000,
+  });
+}
+
+export function apiStudioTasks(): Promise<{ tasks: StudioTaskView[] }> {
+  return apiRequest<{ tasks: StudioTaskView[] }>('/studio/tasks');
+}
+
+export function apiStudioTask(id: string): Promise<StudioTaskView> {
+  return apiRequest<StudioTaskView>(`/studio/tasks/${encodeURIComponent(id)}`);
+}
+
+export function apiStudioCancel(id: string): Promise<{ cancelled: boolean }> {
+  return apiRequest<{ cancelled: boolean }>(`/studio/tasks/${encodeURIComponent(id)}/cancel`, {
+    method: 'POST',
+    body: {},
+  });
+}
+
+export function apiStudioDiscard(id: string): Promise<{ discarded: boolean; residualWorktree: string | null }> {
+  return apiRequest<{ discarded: boolean; residualWorktree: string | null }>(`/studio/tasks/${encodeURIComponent(id)}/discard`, {
+    method: 'POST',
+    body: {},
+  });
+}

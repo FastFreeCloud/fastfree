@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      /* Brand tokens taken from apps/fastfree_installer/src/assets/styles (literal hex in source). */
+      :root {
+        --ground: #09090b;
+        --surface: #18181b;
+        --surface-2: #27272a;
+        --line: #3f3f46;
+        --ink: #f8fafc;
+        --muted: #94a3b8;
+        --primary: #38bdf8;
+        --success: #10b981;
+        --warn: #f59e0b;
+        /* Generic families only: hyperframes check rejects families it cannot resolve
+           without an @font-face, and the renderer must supply Arabic glyphs itself. */
+        --font: sans-serif;
+        --mono: monospace;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--ground);
+        font-family: var(--font);
+        color: var(--ink);
+      }
+      .stage {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background:
+          radial-gradient(1200px 700px at 78% -10%, rgba(56, 189, 248, 0.16), transparent 60%),
+          radial-gradient(900px 600px at 10% 110%, rgba(16, 185, 129, 0.1), transparent 60%),
+          var(--ground);
+      }
+      .grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+        background-size: 96px 96px;
+        opacity: 0.55;
+      }
+
+      /* ---------- persistent chrome ---------- */
+      .chrome {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+      }
+      .topbar {
+        position: absolute;
+        top: 56px;
+        right: 88px;
+        left: 88px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .brand img {
+        width: 56px;
+        height: 56px;
+      }
+      .brand-name {
+        font-size: 30px;
+        font-weight: 650;
+        letter-spacing: 0.02em;
+      }
+      .brand-sub {
+        font-size: 19px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .top-meta {
+        font-family: var(--mono);
+        font-size: 18px;
+        color: var(--muted);
+        direction: ltr;
+      }
+
+      .rail {
+        position: absolute;
+        bottom: 74px;
+        right: 88px;
+        left: 88px;
+      }
+      .rail-track {
+        position: relative;
+        height: 2px;
+        background: var(--line);
+        border-radius: 2px;
+      }
+      .rail-progress {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 2px;
+        width: 0%;
+        background: linear-gradient(to left, var(--primary), var(--success));
+      }
+      .rail-steps {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+      .rail-step {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        opacity: 0.42;
+      }
+      .rail-step.is-active {
+        opacity: 1;
+      }
+      .rail-step .num {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        font-size: 17px;
+        color: var(--muted);
+      }
+      .rail-step.is-active .num {
+        border-color: var(--primary);
+        background: rgba(56, 189, 248, 0.14);
+        color: var(--primary);
+      }
+      .rail-step .label {
+        font-size: 19px;
+        color: var(--muted);
+      }
+      .rail-step.is-active .label {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      /* ---------- scene scaffolding ---------- */
+      .scene {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 130px 150px;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        align-self: flex-start;
+        font-size: 20px;
+        color: var(--primary);
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        background: rgba(56, 189, 248, 0.08);
+        border-radius: 999px;
+        padding: 8px 18px;
+      }
+      .eyebrow.dot::before {
+        content: "";
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--primary);
+      }
+      .title {
+        font-size: 96px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-top: 26px;
+        line-height: 1.1;
+      }
+      .subtitle {
+        font-size: 34px;
+        color: var(--muted);
+        margin-top: 18px;
+        max-width: 1200px;
+        line-height: 1.45;
+      }
+      .hero-title {
+        font-size: 104px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.12;
+      }
+      .hero-title .accent {
+        color: var(--primary);
+      }
+      .chips {
+        display: flex;
+        gap: 14px;
+        margin-top: 34px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        font-size: 20px;
+        color: var(--muted);
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 18px;
+      }
+      .chip.mono {
+        font-family: var(--mono);
+        direction: ltr;
+        letter-spacing: 0.04em;
+      }
+      .chip.live {
+        color: var(--success);
+        border-color: rgba(16, 185, 129, 0.45);
+        background: rgba(16, 185, 129, 0.1);
+      }
+
+      .cards {
+        display: flex;
+        flex-direction: row-reverse;
+        gap: 22px;
+        margin-top: 56px;
+      }
+      .card {
+        flex: 1;
+        background: linear-gradient(180deg, var(--surface-2), var(--surface));
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 30px 28px;
+      }
+      .card .k {
+        font-size: 19px;
+        color: var(--muted);
+      }
+      .card .v {
+        font-size: 40px;
+        font-weight: 650;
+        margin-top: 12px;
+      }
+      .card .v small {
+        font-size: 21px;
+        font-weight: 500;
+        color: var(--muted);
+        margin-inline-start: 8px;
+      }
+      .card .ok {
+        color: var(--success);
+      }
+
+      .pulse {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 40px;
+        font-size: 26px;
+        color: var(--ink);
+      }
+      .pulse .dot {
+        position: relative;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+      }
+      .pulse .halo {
+        position: absolute;
+        inset: -10px;
+        border-radius: 50%;
+        border: 2px solid rgba(16, 185, 129, 0.4);
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      class="stage"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="22"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div class="grid"></div>
+
+      <!-- Persistent chrome: brand + wizard rail (mirrors StepProgress.vue) -->
+      <div id="chrome" class="chrome clip" data-start="0" data-duration="22" data-track-index="0">
+        <div class="topbar">
+          <div class="brand">
+            <img src="./assets/logo.svg" alt="FastFree" />
+            <div>
+              <div class="brand-name">FastFree</div>
+              <div class="brand-sub">مثبّت عقدة سيادية</div>
+            </div>
+          </div>
+          <div class="top-meta">windows 11 · fluent 2 · hyper-v gen 2</div>
+        </div>
+
+        <div class="rail">
+          <div class="rail-track"><div class="rail-progress"></div></div>
+          <div class="rail-steps">
+            <div class="rail-step" data-step="1"><span class="num">1</span><span class="label">الفحص</span></div>
+            <div class="rail-step" data-step="2"><span class="num">2</span><span class="label">الترخيص</span></div>
+            <div class="rail-step" data-step="3"><span class="num">3</span><span class="label">إعدادات FastOS</span></div>
+            <div class="rail-step" data-step="4"><span class="num">4</span><span class="label">FastFree VPN</span></div>
+            <div class="rail-step" data-step="5"><span class="num">5</span><span class="label">النشر والتثبيت</span></div>
+            <div class="rail-step" data-step="6"><span class="num">6</span><span class="label">منصة الانطلاق</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scene 1 — identity (0 - 4s) -->
+      <section class="scene clip" data-start="0" data-duration="4" data-track-index="1">
+        <div class="eyebrow dot">عقدة سيادية واحدة، بلا سطر أوامر</div>
+        <h1 class="hero-title" style="margin-top: 30px">
+          من العتاد إلى شبكة<br /><span class="accent">مشفّرة بالكامل.</span>
+        </h1>
+        <p class="subtitle">ست خطوات داخل مثبّت واحد: فحص، ترخيص، تحجيم، نفق، نشر، تشغيل.</p>
+        <div class="chips">
+          <span class="chip">Hyper-V Gen 2</span>
+          <span class="chip">VHDX</span>
+          <span class="chip">WireGuard</span>
+        </div>
+      </section>
+
+      <!-- Scene 2 — step 1: discovery (4 - 8.6s) -->
+      <section class="scene clip" data-start="4" data-duration="4.6" data-track-index="2">
+        <div class="eyebrow">الخطوة 1 من 6</div>
+        <h2 class="title">الفحص</h2>
+        <p class="subtitle">تشخيص مواصفات العتاد مباشرة عبر PowerShell — بلا أرقام تقديرية.</p>
+        <div class="cards">
+          <div class="card">
+            <div class="k">المعالج</div>
+            <div class="v">8<small>نوى منطقية</small></div>
+          </div>
+          <div class="card">
+            <div class="k">الذاكرة الفعلية</div>
+            <div class="v">32<small>GB إجمالي</small></div>
+          </div>
+          <div class="card">
+            <div class="k">Hyper-V</div>
+            <div class="v ok">جاهز</div>
+          </div>
+          <div class="card">
+            <div class="k">أقراص التخزين</div>
+            <div class="v">3<small>أقراص</small></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 3 — step 2: license (8.6 - 13.2s) -->
+      <section class="scene clip" data-start="8.6" data-duration="4.6" data-track-index="3">
+        <div class="eyebrow">الخطوة 2 من 6</div>
+        <h2 class="title">الترخيص</h2>
+        <p class="subtitle">تفعيل الترخيص السحابي وربطه ببصمة العتاد — لا يعمل المفتاح على جهاز آخر.</p>
+        <div class="chips" style="margin-top: 44px">
+          <span class="chip mono">HWID · ••••-••••-••••</span>
+          <span class="chip">تشفير مربوط بالعتاد</span>
+          <span class="chip">حتى 3 عقد</span>
+        </div>
+      </section>
+
+      <!-- Scene 4 — step 4: VPN (13.2 - 17.8s) -->
+      <section class="scene clip" data-start="13.2" data-duration="4.6" data-track-index="4">
+        <div class="eyebrow">الخطوة 4 من 6</div>
+        <h2 class="title">FastFree VPN</h2>
+        <p class="subtitle">إعداد شبكة النفق المشفّر: كل عقدة بنفقها المعزول على منفذ مستقل.</p>
+        <div class="chips" style="margin-top: 44px">
+          <span class="chip mono">wireguard · udp 51820</span>
+          <span class="chip">مفاتيح تُولَّد محليًا</span>
+          <span class="chip">عزل بين الأجهزة</span>
+        </div>
+      </section>
+
+      <!-- Scene 5 — step 6: launchpad (17.8 - 22s) -->
+      <section class="scene clip" data-start="17.8" data-duration="4.2" data-track-index="5">
+        <div class="eyebrow">الخطوة 6 من 6</div>
+        <h2 class="title">منصة الانطلاق</h2>
+        <p class="subtitle">بيئة العقدة تعمل بنجاح. التكوين مقفل لضمان استقرار العتاد.</p>
+        <div class="pulse">
+          <span class="dot"><span class="halo"></span></span>
+          <span>Hyper-V Gen 2 · النفق نشط</span>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Scene 1 — brand reveal
+      tl.fromTo("#chrome .topbar", { opacity: 0, y: -14 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0);
+      tl.fromTo("#chrome .rail", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.15);
+      // The headline is on screen at 0 s (first frame is the social thumbnail).
+      tl.fromTo(
+        '[data-start="0"].scene .hero-title',
+        { scale: 1 },
+        { scale: 1.015, duration: 3.6, ease: "none" },
+        0
+      );
+      tl.fromTo(
+        '[data-start="0"].scene .subtitle',
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
+        0.7
+      );
+      tl.fromTo(
+        '[data-start="0"].scene .chips .chip',
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.4, stagger: 0.09, ease: "power3.out" },
+        0.95
+      );
+
+      // Scene 2 — discovery metrics stagger
+      tl.fromTo('[data-start="4"].scene .eyebrow', { opacity: 0, x: 18 }, { opacity: 1, x: 0, duration: 0.4 }, 4.05);
+      tl.fromTo('[data-start="4"].scene .title', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45 }, 4.12);
+      tl.fromTo('[data-start="4"].scene .subtitle', { opacity: 0 }, { opacity: 1, duration: 0.45 }, 4.24);
+      tl.fromTo(
+        '[data-start="4"].scene .card',
+        { opacity: 0, y: 22 },
+        { opacity: 1, y: 0, duration: 0.45, stagger: 0.1, ease: "power3.out" },
+        4.38
+      );
+
+      // Scene 3 — license
+      tl.fromTo('[data-start="8.6"].scene .eyebrow', { opacity: 0, x: 18 }, { opacity: 1, x: 0, duration: 0.4 }, 8.65);
+      tl.fromTo('[data-start="8.6"].scene .title', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45 }, 8.72);
+      tl.fromTo('[data-start="8.6"].scene .subtitle', { opacity: 0 }, { opacity: 1, duration: 0.45 }, 8.84);
+      tl.fromTo(
+        '[data-start="8.6"].scene .chip',
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.4, stagger: 0.1 },
+        9.0
+      );
+
+      // Scene 4 — VPN
+      tl.fromTo('[data-start="13.2"].scene .eyebrow', { opacity: 0, x: 18 }, { opacity: 1, x: 0, duration: 0.4 }, 13.25);
+      tl.fromTo('[data-start="13.2"].scene .title', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45 }, 13.32);
+      tl.fromTo('[data-start="13.2"].scene .subtitle', { opacity: 0 }, { opacity: 1, duration: 0.45 }, 13.44);
+      tl.fromTo(
+        '[data-start="13.2"].scene .chip',
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.4, stagger: 0.1 },
+        13.6
+      );
+
+      // Scene 5 — launchpad + live pulse
+      tl.fromTo('[data-start="17.8"].scene .eyebrow', { opacity: 0, x: 18 }, { opacity: 1, x: 0, duration: 0.4 }, 17.85);
+      tl.fromTo('[data-start="17.8"].scene .title', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45 }, 17.92);
+      tl.fromTo('[data-start="17.8"].scene .subtitle', { opacity: 0 }, { opacity: 1, duration: 0.45 }, 18.04);
+      tl.fromTo('[data-start="17.8"].scene .pulse', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5 }, 18.2);
+      tl.fromTo(
+        '[data-start="17.8"].scene .halo',
+        { scale: 0.7, opacity: 0.9 },
+        { scale: 1.9, opacity: 0, duration: 1.6, repeat: 1, ease: "power1.out" },
+        18.4
+      );
+
+      // Wizard rail progress: each scene marks its step active
+      tl.to("#chrome .rail-progress", { width: "100%", duration: 22, ease: "none" }, 0);
+      const stepMarks = [
+        [4.0, "1"],
+        [8.6, "2"],
+        [11.4, "3"],
+        [13.2, "4"],
+        [15.4, "5"],
+        [17.8, "6"],
+      ];
+      stepMarks.forEach(([at, step]) => {
+        tl.call(
+          () => {
+            document.querySelectorAll("#chrome .rail-step").forEach((el) => {
+              el.classList.toggle("is-active", el.getAttribute("data-step") === step);
+            });
+          },
+          null,
+          at
+        );
+      });
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
