@@ -1,0 +1,366 @@
+{
+  "version": 1,
+  "historyId": "6213ccf9-339c-434d-a658-906cc02e78cd",
+  "currentRevision": "2d8f069d-79f9-4bb1-9d84-9cd37d717816",
+  "pendingChanges": false,
+  "files": {
+    "AGENTS.md": {
+      "hash": "1a68041fc901ff835682a2a8d6f63c96dbb0b9eef8fb0971e97a79eaf69303d3",
+      "content": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\1a\\1a68041fc901ff835682a2a8d6f63c96dbb0b9eef8fb0971e97a79eaf69303d3"
+    },
+    "CLAUDE.md": {
+      "hash": "1a68041fc901ff835682a2a8d6f63c96dbb0b9eef8fb0971e97a79eaf69303d3",
+      "content": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\1a\\1a68041fc901ff835682a2a8d6f63c96dbb0b9eef8fb0971e97a79eaf69303d3"
+    },
+    "assets/logo.svg": {
+      "hash": "b5e24678978adc7e9ed74abca44e09f9d9e15c0c9be69e3f925d6ade0ac9c92a",
+      "content": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\b5\\b5e24678978adc7e9ed74abca44e09f9d9e15c0c9be69e3f925d6ade0ac9c92a"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "034b674aa3900d3220892624c53c23a88973a07ae67a3c56cf5324aae90e0879",
+      "content": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\03\\034b674aa3900d3220892624c53c23a88973a07ae67a3c56cf5324aae90e0879"
+    },
+    "meta.json": {
+      "hash": "ae3d381265dd1adaa1fb856feb5e58182b9485970c116ef76d7c583f8e80c76e",
+      "content": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\ae\\ae3d381265dd1adaa1fb856feb5e58182b9485970c116ef76d7c583f8e80c76e"
+    },
+    "package.json": {
+      "hash": "67b80eb79a8b7e682d6ccfc831abac169ba1944089c927d9d7ae23cf2637e46c",
+      "content": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\67\\67b80eb79a8b7e682d6ccfc831abac169ba1944089c927d9d7ae23cf2637e46c"
+    },
+    "package-lock.json": {
+      "hash": "da03a08322ad4e6c25bd314ed6393b1fd5fb034270e37950a4b642f549f4d08e",
+      "content": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\da\\da03a08322ad4e6c25bd314ed6393b1fd5fb034270e37950a4b642f549f4d08e"
+    },
+    "README.md": {
+      "hash": "a203c1340e2d7d97f0abb54035bc73bb3d6c68c9eb40db7fd34d7c4ce107dae1",
+      "content": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\a2\\a203c1340e2d7d97f0abb54035bc73bb3d6c68c9eb40db7fd34d7c4ce107dae1"
+    }
+  },
+  "revisions": {
+    "2a42bc65-774f-4851-87e4-65c706032a92": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793997979170,
+      "endedAt": 1793997979174,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\bf\\bf92742ce7a70bfb0711542a429d3e08e8c1b33bd62ff5e02c9f9184fce18ba4",
+          "after": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\03\\034b674aa3900d3220892624c53c23a88973a07ae67a3c56cf5324aae90e0879"
+        }
+      }
+    },
+    "7c109fdd-7c7b-4541-985e-d8417893f18e": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793998272029,
+      "endedAt": 1793998272077,
+      "files": {
+        "package-lock.json": {
+          "before": null,
+          "after": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\da\\da03a08322ad4e6c25bd314ed6393b1fd5fb034270e37950a4b642f549f4d08e"
+        },
+        "package.json": {
+          "before": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\ef\\efe748e75e42c5c744200697723b28d0e9734e7491fb39a708406e9ab5f294e5",
+          "after": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\67\\67b80eb79a8b7e682d6ccfc831abac169ba1944089c927d9d7ae23cf2637e46c"
+        }
+      }
+    },
+    "2d8f069d-79f9-4bb1-9d84-9cd37d717816": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793998451238,
+      "endedAt": 1793998451242,
+      "files": {
+        "README.md": {
+          "before": null,
+          "after": "C:\\Users\\FastFree\\.cache\\hyperframes\\history\\6213ccf9-339c-434d-a658-906cc02e78cd\\blobs\\a2\\a203c1340e2d7d97f0abb54035bc73bb3d6c68c9eb40db7fd34d7c4ce107dae1"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": "2d8f069d-79f9-4bb1-9d84-9cd37d717816",
+      "id": "dcf79a54-db91-4a7d-93fa-c5d7165862c7"
+    },
+    "revisions": {
+      "2a42bc65-774f-4851-87e4-65c706032a92": [
+        {
+          "id": "a39165ff-5617-4254-bf5f-61ea78bada0f",
+          "scope": "project",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 45000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1793997990073,
+          "contentHash": "3262645c5e738d302894ac0a311fe2a3351f91178e98c7c55338c21a6f400a13",
+          "revision": "2a42bc65-774f-4851-87e4-65c706032a92",
+          "inputFingerprint": "27431d3c0dd724587362b9f2de3b4a22ab365e255bc13c54566732afd480dcf7",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "58f11b65-1f7d-42f8-a092-4b40593d8b3e"
+        },
+        {
+          "id": "ea96e011-b8ff-4ef2-a70e-6dd1c010f70e",
+          "scope": "project",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 45000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1793998006760,
+          "contentHash": "3262645c5e738d302894ac0a311fe2a3351f91178e98c7c55338c21a6f400a13",
+          "revision": "2a42bc65-774f-4851-87e4-65c706032a92",
+          "inputFingerprint": "27431d3c0dd724587362b9f2de3b4a22ab365e255bc13c54566732afd480dcf7",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "58f11b65-1f7d-42f8-a092-4b40593d8b3e"
+        }
+      ],
+      "2d8f069d-79f9-4bb1-9d84-9cd37d717816": [
+        {
+          "id": "dcf79a54-db91-4a7d-93fa-c5d7165862c7",
+          "scope": "project",
+          "report": "C:\\Users\\FastFree\\Desktop\\fastfree\\apps\\fastfree_installer\\video\\installer-demo\\.hyperframes\\artifacts\\checks\\dcf79a54-db91-4a7d-93fa-c5d7165862c7.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 45000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1793998464923,
+          "contentHash": "3262645c5e738d302894ac0a311fe2a3351f91178e98c7c55338c21a6f400a13",
+          "revision": "2d8f069d-79f9-4bb1-9d84-9cd37d717816",
+          "inputFingerprint": "818b870d10df8788292f0e98c6f9822c115b8e724d0f5ffd2fdc74c2538b061d",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": [
+      {
+        "id": "c56bd9f5-34b7-4c05-a098-183d85a7bd08",
+        "scope": "project",
+        "report": "C:\\Users\\FastFree\\Desktop\\fastfree\\apps\\fastfree_installer\\video\\installer-demo\\.hyperframes\\artifacts\\checks\\c56bd9f5-34b7-4c05-a098-183d85a7bd08.json",
+        "metadata": {
+          "ok": false,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 45000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793997915957,
+        "contentHash": "bca45fac928b79a82f7b83abafe1b6038735d5e70b9515c74435b4884a5118cf",
+        "revision": null,
+        "inputFingerprint": "75faea93e7f539cd8b41de11cdbbf232fd6fe273b88dd99b254a2fbb783bfded",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": null,
+    "revisions": {
+      "2a42bc65-774f-4851-87e4-65c706032a92": [
+        {
+          "scope": "full",
+          "id": "e08f9f38-a8dd-4805-bfd8-8fa9df06f5a5-0",
+          "time": 1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793998023181,
+          "contentHash": "8a2679c91bb2b0ae32f6cb1ac97b3782fb634a880561094c1ec525eb146db356",
+          "revision": "2a42bc65-774f-4851-87e4-65c706032a92",
+          "inputFingerprint": "27431d3c0dd724587362b9f2de3b4a22ab365e255bc13c54566732afd480dcf7",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "58f11b65-1f7d-42f8-a092-4b40593d8b3e"
+        },
+        {
+          "scope": "full",
+          "id": "e08f9f38-a8dd-4805-bfd8-8fa9df06f5a5-1",
+          "time": 6,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793998023182,
+          "contentHash": "ab03bcfcb58daba1721f0215e4235d9b3a98ad492d5b5bc38f01ff451848ad4c",
+          "revision": "2a42bc65-774f-4851-87e4-65c706032a92",
+          "inputFingerprint": "27431d3c0dd724587362b9f2de3b4a22ab365e255bc13c54566732afd480dcf7",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "58f11b65-1f7d-42f8-a092-4b40593d8b3e"
+        },
+        {
+          "scope": "full",
+          "id": "e08f9f38-a8dd-4805-bfd8-8fa9df06f5a5-2",
+          "time": 11,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793998023182,
+          "contentHash": "22788e90ba02c3e3e73e66907307d52a8969e11016e7568bf5258670f2971b08",
+          "revision": "2a42bc65-774f-4851-87e4-65c706032a92",
+          "inputFingerprint": "27431d3c0dd724587362b9f2de3b4a22ab365e255bc13c54566732afd480dcf7",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "58f11b65-1f7d-42f8-a092-4b40593d8b3e"
+        },
+        {
+          "scope": "full",
+          "id": "e08f9f38-a8dd-4805-bfd8-8fa9df06f5a5-3",
+          "time": 15,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793998023182,
+          "contentHash": "face7a7224e9e105a75c2a34daa1a7b284191ea00f6c855055a85296695e2918",
+          "revision": "2a42bc65-774f-4851-87e4-65c706032a92",
+          "inputFingerprint": "27431d3c0dd724587362b9f2de3b4a22ab365e255bc13c54566732afd480dcf7",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "58f11b65-1f7d-42f8-a092-4b40593d8b3e"
+        },
+        {
+          "scope": "full",
+          "id": "e08f9f38-a8dd-4805-bfd8-8fa9df06f5a5-4",
+          "time": 20,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793998023182,
+          "contentHash": "17225b7ee6c1ac5a8b6f2d51aa26666b16ab35ab99aa536249727271851f3ef4",
+          "revision": "2a42bc65-774f-4851-87e4-65c706032a92",
+          "inputFingerprint": "27431d3c0dd724587362b9f2de3b4a22ab365e255bc13c54566732afd480dcf7",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "58f11b65-1f7d-42f8-a092-4b40593d8b3e"
+        },
+        {
+          "scope": "full",
+          "id": "e08f9f38-a8dd-4805-bfd8-8fa9df06f5a5-5",
+          "time": 21.75,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793998023183,
+          "contentHash": "a5ef90c11f771fa50b2d7815f0ea17ad4bb4c814e483a7b0d831a92d6f3b2e0f",
+          "revision": "2a42bc65-774f-4851-87e4-65c706032a92",
+          "inputFingerprint": "27431d3c0dd724587362b9f2de3b4a22ab365e255bc13c54566732afd480dcf7",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "58f11b65-1f7d-42f8-a092-4b40593d8b3e"
+        }
+      ]
+    },
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "58f11b65-1f7d-42f8-a092-4b40593d8b3e",
+      "completedAt": 1793998392826,
+      "output": "C:\\Users\\FastFree\\Desktop\\fastfree\\apps\\fastfree_installer\\video\\installer-demo\\renders\\installer-demo_2026-11-06_22-51-07.mp4",
+      "status": "completed",
+      "revision": "7c109fdd-7c7b-4541-985e-d8417893f18e"
+    },
+    "retainedRevisions": [
+      "7c109fdd-7c7b-4541-985e-d8417893f18e"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

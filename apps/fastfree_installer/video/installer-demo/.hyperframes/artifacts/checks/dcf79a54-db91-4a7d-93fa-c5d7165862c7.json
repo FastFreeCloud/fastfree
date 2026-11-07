@@ -1,0 +1,595 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 7,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "studio_missing_editable_id",
+        "severity": "warning",
+        "message": "<section class=\"scene\" data-start=\"0\" data-track-index=\"1\"> has no id, so Studio cannot use a stable edit target for its timeline and canvas controls.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\FastFree\\Desktop\\fastfree\\apps\\fastfree_installer\\video\\installer-demo\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Add a stable, human-readable id such as id=\"hero-title\" or id=\"scene-1-card\" to every timeline-visible element you want agents or Studio to edit."
+      },
+      {
+        "code": "studio_missing_editable_id",
+        "severity": "warning",
+        "message": "<section class=\"scene\" data-start=\"4\" data-track-index=\"2\"> has no id, so Studio cannot use a stable edit target for its timeline and canvas controls.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\FastFree\\Desktop\\fastfree\\apps\\fastfree_installer\\video\\installer-demo\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Add a stable, human-readable id such as id=\"hero-title\" or id=\"scene-1-card\" to every timeline-visible element you want agents or Studio to edit."
+      },
+      {
+        "code": "studio_missing_editable_id",
+        "severity": "warning",
+        "message": "<section class=\"scene\" data-start=\"8.6\" data-track-index=\"3\"> has no id, so Studio cannot use a stable edit target for its timeline and canvas controls.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\FastFree\\Desktop\\fastfree\\apps\\fastfree_installer\\video\\installer-demo\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Add a stable, human-readable id such as id=\"hero-title\" or id=\"scene-1-card\" to every timeline-visible element you want agents or Studio to edit."
+      },
+      {
+        "code": "studio_missing_editable_id",
+        "severity": "warning",
+        "message": "<section class=\"scene\" data-start=\"13.2\" data-track-index=\"4\"> has no id, so Studio cannot use a stable edit target for its timeline and canvas controls.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\FastFree\\Desktop\\fastfree\\apps\\fastfree_installer\\video\\installer-demo\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Add a stable, human-readable id such as id=\"hero-title\" or id=\"scene-1-card\" to every timeline-visible element you want agents or Studio to edit."
+      },
+      {
+        "code": "studio_missing_editable_id",
+        "severity": "warning",
+        "message": "<section class=\"scene\" data-start=\"17.8\" data-track-index=\"5\"> has no id, so Studio cannot use a stable edit target for its timeline and canvas controls.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\FastFree\\Desktop\\fastfree\\apps\\fastfree_installer\\video\\installer-demo\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Add a stable, human-readable id such as id=\"hero-title\" or id=\"scene-1-card\" to every timeline-visible element you want agents or Studio to edit."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"chrome\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#chrome",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\FastFree\\Desktop\\fastfree\\apps\\fastfree_installer\\video\\installer-demo\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"chrome\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\FastFree\\Desktop\\fastfree\\apps\\fastfree_installer\\video\\installer-demo\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 1,
+    "findings": [
+      {
+        "code": "escaped_container",
+        "severity": "info",
+        "time": 20.778,
+        "selector": "span.halo",
+        "message": "Positioned element renders far outside its offset parent — its coordinates were likely computed in a different frame (canvas/viewport pixels).",
+        "rect": {
+          "left": 1753.66,
+          "top": 576.6,
+          "right": 1810.34,
+          "bottom": 633.28,
+          "width": 56.68,
+          "height": 56.68
+        },
+        "containerSelector": "span.dot",
+        "text": "",
+        "fixHint": "Compute left/top in the offset parent's frame (subtract its rect), or mark intentional placement with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 1774,
+          "top": 596.94,
+          "right": 1790,
+          "bottom": 612.94,
+          "width": 16,
+          "height": 16
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1753.66,
+          "y": 576.6,
+          "width": 56.68,
+          "height": 56.68
+        },
+        "firstSeen": 20.778,
+        "lastSeen": 20.778,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          20.778
+        ]
+      }
+    ],
+    "duration": 22,
+    "samples": [
+      1.222,
+      3.667,
+      6.111,
+      8.556,
+      11,
+      13.444,
+      15.889,
+      18.333,
+      20.778
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 1,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      1.222,
+      6.111,
+      11,
+      15.889,
+      20.778
+    ],
+    "checked": 112,
+    "passed": 112
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 2,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "film_silent",
+        "severity": "warning",
+        "message": "This 22 s film has no sound source (no <audio>, no <video> with sound): add a music bed and sounds on the visible actions unless the person asked for silence; see references/sound.md.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 36 text elements stay under it for 0.5 s or more, the smallest \"1\" at 17 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "1",
+        "selector": "div.rail-step.is-active > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 155.14,
+          "y": 986.72,
+          "width": 9.47,
+          "height": 19
+        },
+        "time": 0.25,
+        "times": [
+          0,
+          0.125,
+          0.125,
+          0.25,
+          0.25,
+          1.125,
+          1.25,
+          1.25,
+          4.25,
+          4.5,
+          4.5,
+          4.625,
+          4.625,
+          4.75,
+          4.875,
+          4.875,
+          8.625,
+          8.625,
+          8.875,
+          9.25,
+          9.25,
+          9.375,
+          11.5,
+          11.5,
+          13.25,
+          13.25,
+          13.375,
+          13.75,
+          13.875,
+          14,
+          15.5,
+          15.5,
+          17.875,
+          17.875,
+          18,
+          18.375
+        ],
+        "fontPx": 17,
+        "floorPx": 28,
+        "seconds": 8.375,
+        "elements": [
+          {
+            "selector": "div.rail-step.is-active > span:nth-of-type(1)",
+            "text": "1",
+            "fontPx": 17,
+            "time": 0.25,
+            "seconds": 8.375
+          },
+          {
+            "selector": "div.rail-steps > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "2",
+            "fontPx": 17,
+            "time": 8.625,
+            "seconds": 2.875
+          },
+          {
+            "selector": "div.rail-steps > div:nth-of-type(3) > span:nth-of-type(1)",
+            "text": "3",
+            "fontPx": 17,
+            "time": 11.5,
+            "seconds": 1.75
+          },
+          {
+            "selector": "div.rail-steps > div:nth-of-type(4) > span:nth-of-type(1)",
+            "text": "4",
+            "fontPx": 17,
+            "time": 13.25,
+            "seconds": 2.25
+          },
+          {
+            "selector": "div.rail-steps > div:nth-of-type(5) > span:nth-of-type(1)",
+            "text": "5",
+            "fontPx": 17,
+            "time": 15.5,
+            "seconds": 2.375
+          },
+          {
+            "selector": "div.rail-steps > div:nth-of-type(6) > span:nth-of-type(1)",
+            "text": "6",
+            "fontPx": 17,
+            "time": 17.875,
+            "seconds": 4.125
+          },
+          {
+            "selector": "div.top-meta",
+            "text": "windows 11 · fluent 2 · hyper-v gen 2",
+            "fontPx": 18,
+            "time": 0.125,
+            "seconds": 21.875
+          },
+          {
+            "selector": "div.brand-sub",
+            "text": "مثبّت عقدة سيادية",
+            "fontPx": 19,
+            "time": 0.125,
+            "seconds": 21.875
+          },
+          {
+            "selector": "div.rail-step.is-active > span:nth-of-type(2)",
+            "text": "الفحص",
+            "fontPx": 19,
+            "time": 0.25,
+            "seconds": 8.375
+          },
+          {
+            "selector": "div.cards > div:nth-of-type(1) > div:nth-of-type(1)",
+            "text": "المعالج",
+            "fontPx": 19,
+            "time": 4.5,
+            "seconds": 4.125
+          },
+          {
+            "selector": "div.cards > div:nth-of-type(2) > div:nth-of-type(1)",
+            "text": "الذاكرة الفعلية",
+            "fontPx": 19,
+            "time": 4.625,
+            "seconds": 4
+          },
+          {
+            "selector": "div.cards > div:nth-of-type(3) > div:nth-of-type(1)",
+            "text": "Hyper-V",
+            "fontPx": 19,
+            "time": 4.75,
+            "seconds": 3.875
+          },
+          {
+            "selector": "div.cards > div:nth-of-type(4) > div:nth-of-type(1)",
+            "text": "أقراص التخزين",
+            "fontPx": 19,
+            "time": 4.875,
+            "seconds": 3.75
+          },
+          {
+            "selector": "div.rail-steps > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "الترخيص",
+            "fontPx": 19,
+            "time": 8.625,
+            "seconds": 2.875
+          },
+          {
+            "selector": "div.rail-steps > div:nth-of-type(3) > span:nth-of-type(2)",
+            "text": "إعدادات FastOS",
+            "fontPx": 19,
+            "time": 11.5,
+            "seconds": 1.75
+          },
+          {
+            "selector": "div.rail-steps > div:nth-of-type(4) > span:nth-of-type(2)",
+            "text": "FastFree VPN",
+            "fontPx": 19,
+            "time": 13.25,
+            "seconds": 2.25
+          },
+          {
+            "selector": "div.rail-steps > div:nth-of-type(5) > span:nth-of-type(2)",
+            "text": "النشر والتثبيت",
+            "fontPx": 19,
+            "time": 15.5,
+            "seconds": 2.375
+          },
+          {
+            "selector": "div.rail-steps > div:nth-of-type(6) > span:nth-of-type(2)",
+            "text": "منصة الانطلاق",
+            "fontPx": 19,
+            "time": 17.875,
+            "seconds": 4.125
+          },
+          {
+            "selector": "div.eyebrow.dot",
+            "text": "عقدة سيادية واحدة، بلا سطر أوامر",
+            "fontPx": 20,
+            "time": 0,
+            "seconds": 4
+          },
+          {
+            "selector": "section[data-start=\"0\"] > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Hyper-V Gen 2",
+            "fontPx": 20,
+            "time": 1.125,
+            "seconds": 2.875
+          },
+          {
+            "selector": "section[data-start=\"0\"] > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "VHDX",
+            "fontPx": 20,
+            "time": 1.25,
+            "seconds": 2.75
+          },
+          {
+            "selector": "section[data-start=\"0\"] > div:nth-of-type(2) > span:nth-of-type(3)",
+            "text": "WireGuard",
+            "fontPx": 20,
+            "time": 1.25,
+            "seconds": 2.75
+          },
+          {
+            "selector": "[data-start=\"4\"] > div:nth-of-type(1)",
+            "text": "الخطوة 1 من 6",
+            "fontPx": 20,
+            "time": 4.25,
+            "seconds": 4.375
+          },
+          {
+            "selector": "[data-start=\"8.6\"] > div:nth-of-type(1)",
+            "text": "الخطوة 2 من 6",
+            "fontPx": 20,
+            "time": 8.875,
+            "seconds": 4.375
+          },
+          {
+            "selector": "[data-start=\"8.6\"] > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "HWID · ••••-••••-••••",
+            "fontPx": 20,
+            "time": 9.25,
+            "seconds": 4
+          },
+          {
+            "selector": "[data-start=\"8.6\"] > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "تشفير مربوط بالعتاد",
+            "fontPx": 20,
+            "time": 9.25,
+            "seconds": 4
+          },
+          {
+            "selector": "[data-start=\"8.6\"] > div:nth-of-type(2) > span:nth-of-type(3)",
+            "text": "حتى 3 عقد",
+            "fontPx": 20,
+            "time": 9.375,
+            "seconds": 3.875
+          },
+          {
+            "selector": "[data-start=\"13.2\"] > div:nth-of-type(1)",
+            "text": "الخطوة 4 من 6",
+            "fontPx": 20,
+            "time": 13.375,
+            "seconds": 4.5
+          },
+          {
+            "selector": "[data-start=\"13.2\"] > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "wireguard · udp 51820",
+            "fontPx": 20,
+            "time": 13.75,
+            "seconds": 4.125
+          },
+          {
+            "selector": "[data-start=\"13.2\"] > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "مفاتيح تُولَّد محليًا",
+            "fontPx": 20,
+            "time": 13.875,
+            "seconds": 4
+          },
+          {
+            "selector": "[data-start=\"13.2\"] > div:nth-of-type(2) > span:nth-of-type(3)",
+            "text": "عزل بين الأجهزة",
+            "fontPx": 20,
+            "time": 14,
+            "seconds": 3.875
+          },
+          {
+            "selector": "[data-start=\"17.8\"] > div:nth-of-type(1)",
+            "text": "الخطوة 6 من 6",
+            "fontPx": 20,
+            "time": 18,
+            "seconds": 4
+          },
+          {
+            "selector": "div.cards > div:nth-of-type(1) > div:nth-of-type(2) > small:nth-of-type(1)",
+            "text": "نوى منطقية",
+            "fontPx": 21,
+            "time": 4.5,
+            "seconds": 4.125
+          },
+          {
+            "selector": "div.cards > div:nth-of-type(2) > div:nth-of-type(2) > small:nth-of-type(1)",
+            "text": "GB إجمالي",
+            "fontPx": 21,
+            "time": 4.625,
+            "seconds": 4
+          },
+          {
+            "selector": "div.cards > div:nth-of-type(4) > div:nth-of-type(2) > small:nth-of-type(1)",
+            "text": "أقراص",
+            "fontPx": 21,
+            "time": 4.875,
+            "seconds": 3.75
+          },
+          {
+            "selector": "div.pulse > span:nth-of-type(2)",
+            "text": "Hyper-V Gen 2 · النفق نشط",
+            "fontPx": 26,
+            "time": 18.375,
+            "seconds": 3.625
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 176
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 1,
+    "findings": [
+      {
+        "code": "audio_none",
+        "severity": "info",
+        "message": "The film has no sound: no clip in it plays audio.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      }
+    ]
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

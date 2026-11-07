@@ -1,5 +1,5 @@
 <template>
-  <div class="clan-services-screen q-pa-md">
+  <div class="clan-services-screen q-pa-md" data-source-path="apps/fastfree_panel/src/screens/ClanServicesScreen.vue" data-studio-screen="true">
     <!-- Header with Quick Filter & Actions -->
     <div class="row items-center q-mb-md q-gutter-sm">
       <div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="clan-agents-hub fit column">
+  <div class="clan-agents-hub fit column" data-source-path="apps/fastfree_panel/src/hubs/ClanAgentsHub.vue" data-studio-screen="true">
     <!-- Hub Top Navigation Bar -->
     <div class="hub-header q-px-md q-py-sm bg-grey-10 text-white row items-center justify-between no-wrap">
       <div class="row items-center q-gutter-x-sm no-wrap">
@@ -25,6 +25,7 @@
         :mobile-arrows="true"
       >
         <q-tab name="omnigent" icon="mdi-sitemap" label="Omnigent Studio · استوديو الوكلاء" />
+        <q-tab name="design" icon="mdi-creation-outline" label="Design Studio · استوديو التصميم" />
       </q-tabs>
     </div>
 
@@ -34,6 +35,9 @@
         <q-tab-panel name="omnigent" class="q-pa-none fit">
           <ClanOmnigentScreen />
         </q-tab-panel>
+        <q-tab-panel name="design" class="q-pa-none fit">
+          <ClanStudioScreen />
+        </q-tab-panel>
       </q-tab-panels>
     </div>
   </div>
@@ -42,8 +46,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import ClanOmnigentScreen from '../screens/ClanOmnigentScreen.vue';
+import ClanStudioScreen from '../screens/ClanStudioScreen.vue';
 
-const activeTab = ref<'omnigent'>('omnigent');
+const activeTab = ref<'omnigent' | 'design'>('omnigent');
 </script>
 
 <style scoped lang="scss">
