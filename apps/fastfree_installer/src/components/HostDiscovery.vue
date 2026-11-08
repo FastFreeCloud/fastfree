@@ -8,7 +8,7 @@
 
     <!-- Loading State -->
     <div v-if="loadingDiscovery" class="loading-state">
-      <div class="spinner"></div>
+      <div class="spinner" role="status" aria-label="Loading"></div>
       <p class="loading-msg">{{ t('discovery.loadingMsg') }}</p>
     </div>
 
@@ -19,7 +19,7 @@
         <div class="diag-card card-identity">
           <div class="card-header">
             <span class="icon">
-              <svg class="card-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg aria-hidden="true" class="card-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                 <line x1="8" y1="21" x2="16" y2="21"></line>
                 <line x1="12" y1="17" x2="12" y2="21"></line>
@@ -39,7 +39,7 @@
         <div class="diag-card card-cpu">
           <div class="card-header">
             <span class="icon">
-              <svg class="card-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg aria-hidden="true" class="card-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="4" y="4" width="16" height="16" rx="2"></rect>
                 <rect x="9" y="9" width="6" height="6"></rect>
                 <line x1="9" y1="1" x2="9" y2="4"></line>
@@ -64,7 +64,7 @@
         <div class="diag-card card-ram">
           <div class="card-header">
             <span class="icon">
-              <svg class="card-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg aria-hidden="true" class="card-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="5" width="20" height="14" rx="2"></rect>
                 <line x1="6" y1="19" x2="6" y2="21"></line>
                 <line x1="10" y1="19" x2="10" y2="21"></line>
@@ -94,7 +94,7 @@
         >
           <div class="card-header">
             <span class="icon">
-              <svg class="card-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg aria-hidden="true" class="card-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
               </svg>
             </span>
@@ -117,7 +117,7 @@
       <div v-if="!discoveryReport.hyperv.ready_for_hyperv" class="hyperv-enable-banner">
         <div class="banner-left">
           <span class="banner-icon">
-            <svg class="banner-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" class="banner-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
               <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
               <line x1="6" y1="6" x2="6.01" y2="6"></line>
@@ -139,7 +139,7 @@
       <div class="disks-section">
         <div class="section-title">
           <div class="title-left">
-            <svg class="section-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="section-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="2" y="3" width="20" height="18" rx="2"></rect>
               <line x1="2" y1="9" x2="22" y2="9"></line>
               <line x1="2" y1="15" x2="22" y2="15"></line>
@@ -166,11 +166,17 @@
                 v-for="disk in suitableDisks"
                 :key="disk.mount_point"
                 class="disk-row-clickable"
+                role="button"
+                tabindex="0"
+                :aria-pressed="disk.mount_point === targetDiskDrive"
+                :aria-label="`${getCleanDriveLabel(disk)} ${disk.mount_point}`"
                 :class="{
                   'selected-target-row': disk.mount_point === targetDiskDrive,
                   'recommended-row': disk.mount_point === discoveryReport.recommendation.target_disk_drive
                 }"
                 @click="selectTargetDrive(disk.mount_point)"
+                @keydown.enter.prevent="selectTargetDrive(disk.mount_point)"
+                @keydown.space.prevent="selectTargetDrive(disk.mount_point)"
               >
                 <!-- Radio Selection Indicator -->
                 <td class="td-drive-radio">
@@ -185,7 +191,7 @@
                 <!-- 2. Disk Volume Name -->
                 <td class="td-drive-name">
                   <div class="drive-name-group">
-                    <svg class="drive-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg aria-hidden="true" class="drive-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="2" y="5" width="20" height="14" rx="2"></rect>
                       <line x1="6" y1="15" x2="6.01" y2="15"></line>
                       <line x1="10" y1="15" x2="10.01" y2="15"></line>
@@ -227,7 +233,7 @@
                       class="badge-pill badge-recommended"
                       :title="isRtl ? 'القرص الأنسب لتثبيت ملفات النظام والـ VHDX' : 'Recommended disk for FastFree VHDX'"
                     >
-                      <svg class="badge-icon star-svg" viewBox="0 0 24 24" fill="currentColor">
+                      <svg aria-hidden="true" class="badge-icon star-svg" viewBox="0 0 24 24" fill="currentColor">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                       </svg>
                       <span>{{ t('common.recommended') }}</span>
@@ -236,7 +242,7 @@
                       v-else-if="disk.available_space_gb >= 30"
                       class="badge-pill badge-compatible"
                     >
-                      <svg viewBox="0 0 24 24" class="badge-mini-check" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <svg aria-hidden="true" viewBox="0 0 24 24" class="badge-mini-check" fill="none" stroke="currentColor" stroke-width="2.5">
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
                       <span>{{ isRtl ? 'متوافق' : 'Compatible' }}</span>
@@ -315,7 +321,7 @@
         >
           <span class="btn-flex">
             <span>{{ t('discovery.proceedToLicense') }}</span>
-            <svg class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline :points="isRtl ? '15 18 9 12 15 6' : '9 18 15 12 9 6'"></polyline>
             </svg>
           </span>

@@ -9,8 +9,8 @@
           <span class="tray-brand-sub">{{ isRtl ? 'مرافق النظام السيادي' : 'Sovereign Node Companion' }}</span>
         </div>
       </div>
-      <button class="tray-close-btn" :title="isRtl ? 'إخفاء' : 'Hide'" @click="hideDialog">
-        <svg viewBox="0 0 10 10" class="btn-svg">
+      <button class="tray-close-btn" :title="isRtl ? 'إخفاء' : 'Hide'" :aria-label="isRtl ? 'إخفاء' : 'Hide'" @click="hideDialog">
+        <svg aria-hidden="true" viewBox="0 0 10 10" class="btn-svg">
           <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.2" />
           <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.2" />
         </svg>
@@ -34,7 +34,7 @@
       <!-- 1. Open ERP Portal -->
       <button class="tray-action-item portal-action" @click="handleOpenPortal">
         <div class="action-icon portal-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="2" y1="12" x2="22" y2="12"></line>
             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
@@ -45,7 +45,7 @@
           <span class="action-desc font-mono">client2.fastfree.local</span>
         </div>
         <span class="action-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline :points="isRtl ? '15 18 9 12 15 6' : '9 18 15 12 9 6'"></polyline>
           </svg>
         </span>
@@ -54,7 +54,7 @@
       <!-- 2. Open Main Control Center -->
       <button class="tray-action-item" @click="handleOpenControlCenter">
         <div class="action-icon control-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="7" height="7"></rect>
             <rect x="14" y="3" width="7" height="7"></rect>
             <rect x="14" y="14" width="7" height="7"></rect>
@@ -71,21 +71,21 @@
       <div class="tray-vm-controls">
         <span class="group-label">{{ isRtl ? 'التحكم بمحرك Hyper-V' : 'Hyper-V VM Controls' }}</span>
         <div class="vm-buttons-row">
-          <button class="vm-btn btn-start" :disabled="vmBusy" @click="handleVmAction('start')" :title="isRtl ? 'تشغيل العقدة' : 'Start VM'">
-            <svg viewBox="0 0 24 24" fill="currentColor">
+          <button class="vm-btn btn-start" :disabled="vmBusy" @click="handleVmAction('start')" :title="isRtl ? 'تشغيل العقدة' : 'Start VM'" :aria-label="isRtl ? 'تشغيل العقدة' : 'Start VM'">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="6 4 20 12 6 20 6 4"></polygon>
             </svg>
             <span>{{ isRtl ? 'تشغيل' : 'Start' }}</span>
           </button>
-          <button class="vm-btn btn-restart" :disabled="vmBusy" @click="handleVmAction('restart')" :title="isRtl ? 'إعادة تشغيل العقدة' : 'Restart VM'">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button class="vm-btn btn-restart" :disabled="vmBusy" @click="handleVmAction('restart')" :title="isRtl ? 'إعادة تشغيل العقدة' : 'Restart VM'" :aria-label="isRtl ? 'إعادة تشغيل العقدة' : 'Restart VM'">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="23 4 23 10 17 10"></polyline>
               <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
             </svg>
             <span>{{ isRtl ? 'إعادة تشغيل' : 'Restart' }}</span>
           </button>
-          <button class="vm-btn btn-stop" :disabled="vmBusy" @click="handleVmAction('stop')" :title="isRtl ? 'إيقاف العقدة' : 'Stop VM'">
-            <svg viewBox="0 0 24 24" fill="currentColor">
+          <button class="vm-btn btn-stop" :disabled="vmBusy" @click="handleVmAction('stop')" :title="isRtl ? 'إيقاف العقدة' : 'Stop VM'" :aria-label="isRtl ? 'إيقاف العقدة' : 'Stop VM'">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
               <rect x="5" y="5" width="14" height="14" rx="2"></rect>
             </svg>
             <span>{{ isRtl ? 'إيقاف' : 'Stop' }}</span>
@@ -96,7 +96,7 @@
       <!-- 4. Check Updates -->
       <button class="tray-action-item" @click="handleCheckUpdates">
         <div class="action-icon update-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 2v6h-6"></path>
             <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
             <path d="M3 22v-6h6"></path>
@@ -111,7 +111,7 @@
       <!-- 5. Exit App -->
       <button class="tray-action-item exit-action" @click="handleExitApp">
         <div class="action-icon exit-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
             <line x1="12" y1="2" x2="12" y2="12"></line>
           </svg>

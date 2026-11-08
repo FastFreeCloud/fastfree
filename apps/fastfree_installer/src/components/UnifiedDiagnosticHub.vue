@@ -5,7 +5,7 @@
       <header class="hub-header">
         <div class="header-main-row">
           <div class="hub-icon-badge" :class="headerBadgeClass">
-            <svg class="hub-shield-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="hub-shield-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               <path d="m9 12 2 2 4-4"/>
             </svg>
@@ -27,8 +27,8 @@
             <p>{{ isRtl ? 'فحص حي لكافة خطوات التثبيت، سجلات الأحداث الجنائية، وأدوات الإصلاح الذاتي الحتمي' : 'Comprehensive step verification, real-time telemetry logs, and automated self-healing' }}</p>
           </div>
 
-          <button class="btn-close-hub" :title="isRtl ? 'إغلاق' : 'Close'" @click="$emit('close')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="close-svg">
+          <button class="btn-close-hub" :title="isRtl ? 'إغلاق' : 'Close'" :aria-label="isRtl ? 'إغلاق' : 'Close'" @click="$emit('close')">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="close-svg">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -42,7 +42,7 @@
             :class="{ active: activeTab === 'audit' }"
             @click="activeTab = 'audit'"
           >
-            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 11l3 3L22 4"></path>
               <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
             </svg>
@@ -60,7 +60,7 @@
             :class="{ active: activeTab === 'logs' }"
             @click="activeTab = 'logs'"
           >
-            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
             </svg>
             <span>{{ isRtl ? 'السجلات الجنائية الحية' : 'Live Forensic Logs' }}</span>
@@ -72,7 +72,7 @@
             :class="{ active: activeTab === 'telemetry' }"
             @click="activeTab = 'telemetry'"
           >
-            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
               <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
               <line x1="6" y1="6" x2="6.01" y2="6"></line>
@@ -111,7 +111,7 @@
 
         <!-- Browser Preview Note (deep audit pipeline is desktop-only) -->
         <div v-else-if="auditUnavailable" class="hub-preview-note">
-          <svg class="status-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="status-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="16" x2="12" y2="12"></line>
             <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -124,7 +124,7 @@
 
         <!-- Error State -->
         <div v-else-if="auditError" class="hub-error-banner">
-          <svg class="status-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="status-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="8" x2="12" y2="12"></line>
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -162,10 +162,10 @@
             type="button"
             class="btn-footer-action btn-refresh"
             :disabled="isLoadingAudit || isAutoFixing || browserPreviewMode"
-            :title="browserPreviewMode ? (isRtl ? 'متاحة داخل نافذة سطح المكتب فقط' : 'Available inside the desktop window only') : ''"
+            :title="browserPreviewMode ? (isRtl ? 'متاحة داخل نافذة سطح المكتب فقط' : 'Available inside the desktop window only') : ''" :aria-label="browserPreviewMode ? (isRtl ? 'متاحة داخل نافذة سطح المكتب فقط' : 'Available inside the desktop window only') : ''"
             @click="runAudit"
           >
-            <svg class="footer-btn-svg" :class="{ 'spin-anim': isLoadingAudit }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="footer-btn-svg" :class="{ 'spin-anim': isLoadingAudit }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="23 4 23 10 17 10"></polyline>
               <polyline points="1 20 1 14 7 14"></polyline>
               <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
@@ -178,7 +178,7 @@
             class="btn-footer-action"
             @click="handleExportLogFile"
           >
-            <svg class="footer-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="footer-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
               <polyline points="13 2 13 9 20 9"></polyline>
             </svg>
@@ -194,11 +194,11 @@
             :class="{ 'btn-copied': copyNotice }"
             @click="handleCopyFullReport"
           >
-            <svg v-if="!copyNotice" class="footer-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-if="!copyNotice" class="footer-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
-            <svg v-else class="footer-btn-svg text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <svg aria-hidden="true" v-else class="footer-btn-svg text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
             <span>
@@ -220,7 +220,7 @@
             @click="handleAutoFixAll"
           >
             <span v-if="isAutoFixing" class="spinner-sm"></span>
-            <svg v-else class="footer-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-else class="footer-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               <path d="m9 12 2 2 4-4"/>
             </svg>
