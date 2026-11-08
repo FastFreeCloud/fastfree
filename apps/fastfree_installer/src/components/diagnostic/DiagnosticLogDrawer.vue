@@ -41,7 +41,7 @@
           :placeholder="isRtl ? 'بحث في السجلات والأكواد...' : 'Search logs, keywords, errors...'"
         />
         <button v-if="logsSearchQuery" class="btn-clear-search" @click="logsSearchQuery = ''">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-svg">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-svg">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>

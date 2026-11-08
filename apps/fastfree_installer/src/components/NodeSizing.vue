@@ -14,7 +14,7 @@
           <div class="config-card">
             <div class="card-title-row">
               <div class="title-with-icon">
-                <svg class="title-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" class="title-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="4" y="4" width="16" height="16" rx="2"/>
                   <rect x="9" y="9" width="6" height="6"/>
                   <line x1="9" y1="1" x2="9" y2="4"/>
@@ -64,7 +64,7 @@
           <div class="config-card">
             <div class="card-title-row">
               <div class="title-with-icon">
-                <svg class="title-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" class="title-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M6 19v-3"/>
                   <path d="M10 19v-3"/>
                   <path d="M14 19v-3"/>
@@ -110,7 +110,7 @@
           <div class="config-card">
             <div class="card-title-row">
               <div class="title-with-icon">
-                <svg class="title-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" class="title-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="22" y1="12" x2="2" y2="12"></line>
                   <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
                   <line x1="6" y1="16" x2="6.01" y2="16"></line>
@@ -160,14 +160,14 @@
               <button
                 type="button"
                 class="btn-copy-path"
-                :title="isRtl ? 'نسخ مسار القرص' : 'Copy VHDX Path'"
+                :title="isRtl ? 'نسخ مسار القرص' : 'Copy VHDX Path'" :aria-label="isRtl ? 'نسخ مسار القرص' : 'Copy VHDX Path'"
                 @click="copyVhdxPath"
               >
-                <svg v-if="!isPathCopied" class="copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" v-if="!isPathCopied" class="copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
-                <svg v-else class="copy-svg text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <svg aria-hidden="true" v-else class="copy-svg text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <span>{{ isPathCopied ? (isRtl ? 'تم النسخ!' : 'Copied!') : (isRtl ? 'نسخ' : 'Copy') }}</span>
@@ -187,7 +187,7 @@
             <!-- Licensed Node Appliance Lock -->
             <div v-if="!hasMultipleEligibleNodes" class="locked-node-card">
               <div class="locked-node-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="locked-svg">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="locked-svg">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
@@ -223,7 +223,7 @@
             <div class="card-title-row">
               <div class="security-title-wrap">
                 <span class="security-icon-shield">
-                  <svg class="sec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg aria-hidden="true" class="sec-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                     <path d="m9 12 2 2 4-4"></path>
                   </svg>
@@ -250,7 +250,7 @@
           <div class="config-card hyperv-firmware-card">
             <div class="card-title-row">
               <div class="title-with-icon">
-                <svg class="title-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" class="title-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
                   <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
                   <line x1="6" y1="6" x2="6.01" y2="6"/>
@@ -298,7 +298,7 @@
       <div class="action-bar-start">
         <button class="btn btn-secondary" @click="currentStep = 2">
           <span class="btn-flex">
-            <svg class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline :points="isRtl ? '9 18 15 12 9 6' : '15 18 9 12 15 6'"></polyline>
             </svg>
             <span>{{ t('sizing.backToLicense') }}</span>
@@ -315,7 +315,7 @@
         <button class="btn btn-primary btn-next" @click="currentStep = 4">
           <span class="btn-flex">
             <span>{{ t('sizing.inspectWireguard') }}</span>
-            <svg class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline :points="isRtl ? '15 18 9 12 15 6' : '9 18 15 12 9 6'"></polyline>
             </svg>
           </span>

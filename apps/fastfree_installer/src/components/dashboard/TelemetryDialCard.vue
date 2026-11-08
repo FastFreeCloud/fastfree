@@ -13,7 +13,7 @@
       <!-- vCPU Dial -->
       <div class="dial-block" :class="{ 'is-warning': telemetry.isCpuUnderPressure }">
         <div class="dial-radial-wrap">
-          <svg class="radial-svg" viewBox="0 0 36 36">
+          <svg aria-hidden="true" class="radial-svg" viewBox="0 0 36 36">
             <path
               class="radial-bg"
               d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -37,7 +37,7 @@
       <!-- RAM Dial -->
       <div class="dial-block" :class="{ 'is-warning': telemetry.isMemoryUnderPressure }">
         <div class="dial-radial-wrap">
-          <svg class="radial-svg" viewBox="0 0 36 36">
+          <svg aria-hidden="true" class="radial-svg" viewBox="0 0 36 36">
             <path
               class="radial-bg"
               d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"

@@ -19,14 +19,14 @@
             type="button"
             class="btn-copy-interactive"
             :class="{ 'is-copied': hwidCopied }"
-            :title="isRtl ? 'نسخ معرف العتاد كاملاً' : 'Copy Full HWID'"
+            :title="isRtl ? 'نسخ معرف العتاد كاملاً' : 'Copy Full HWID'" :aria-label="isRtl ? 'نسخ معرف العتاد كاملاً' : 'Copy Full HWID'"
             @click.stop="copyHwid"
           >
-            <svg v-if="!hwidCopied" class="copy-mini-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-if="!hwidCopied" class="copy-mini-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
             </svg>
-            <svg v-else class="copy-mini-svg text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <svg aria-hidden="true" v-else class="copy-mini-svg text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
             <span class="copy-label">{{ hwidCopied ? (isRtl ? 'تم النسخ!' : 'Copied!') : (isRtl ? 'نسخ' : 'Copy') }}</span>
@@ -48,10 +48,10 @@
           class="btn-sync-cloud"
           :class="{ 'is-syncing': isSyncingCloud }"
           :disabled="isSyncingCloud"
-          :title="isRtl ? 'مزامنة وتحديث بيانات الترخيص والمستخدمين مباشرة من السجل السحابي (Google Sheets)' : 'Sync & refresh license data live from Google Sheets'"
+          :title="isRtl ? 'مزامنة وتحديث بيانات الترخيص والمستخدمين مباشرة من السجل السحابي (Google Sheets)' : 'Sync & refresh license data live from Google Sheets'" :aria-label="isRtl ? 'مزامنة وتحديث بيانات الترخيص والمستخدمين مباشرة من السجل السحابي (Google Sheets)' : 'Sync & refresh license data live from Google Sheets'"
           @click="handleSyncCloud(false)"
         >
-          <svg class="sync-mini-svg" :class="{ 'spin-sync': isSyncingCloud }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="sync-mini-svg" :class="{ 'spin-sync': isSyncingCloud }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
           </svg>
           <span>{{ isSyncingCloud ? t('license.syncingBtn') : t('license.syncBtn') }}</span>
@@ -61,10 +61,10 @@
         <button
           type="button"
           class="btn-change-key"
-          :title="isRtl ? 'تحديث أو إدخال مفتاح ترخيص آخر' : 'Change License Key'"
+          :title="isRtl ? 'تحديث أو إدخال مفتاح ترخيص آخر' : 'Change License Key'" :aria-label="isRtl ? 'تحديث أو إدخال مفتاح ترخيص آخر' : 'Change License Key'"
           @click="openChangeKeyModal"
         >
-          <svg class="key-mini-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="key-mini-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="7.5" cy="15.5" r="5.5"></circle>
             <path d="m21 2-9.6 9.6"></path>
             <path d="m15.5 7.5 3 3L22 7l-3-3"></path>
@@ -76,10 +76,10 @@
 
     <!-- Cloud Sync Feedback Banner -->
     <div v-if="syncFeedback" class="sync-feedback-banner" :class="`feedback-${syncFeedback.type}`">
-      <svg v-if="syncFeedback.type === 'success'" class="feedback-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <svg aria-hidden="true" v-if="syncFeedback.type === 'success'" class="feedback-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
-      <svg v-else class="feedback-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg aria-hidden="true" v-else class="feedback-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"/>
         <line x1="12" y1="8" x2="12" y2="12"/>
         <line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -91,7 +91,7 @@
       <!-- 1. Entity Detail -->
       <div class="detail-item">
         <span class="detail-label">
-          <svg class="detail-label-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="detail-label-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
@@ -103,7 +103,7 @@
       <!-- 2. Assigned Node Detail -->
       <div class="detail-item">
         <span class="detail-label">
-          <svg class="detail-label-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="detail-label-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
             <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
             <line x1="6" y1="6" x2="6.01" y2="6"/>
@@ -127,7 +127,7 @@
       <!-- 3. License Key Detail with Interactive Copy -->
       <div class="detail-item key-detail-item">
         <span class="detail-label">
-          <svg class="detail-label-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="detail-label-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="7.5" cy="15.5" r="5.5"/>
             <path d="m21 2-9.6 9.6"/>
             <path d="m15.5 7.5 3 3L22 7l-3-3"/>
@@ -145,14 +145,14 @@
             type="button"
             class="btn-copy-interactive"
             :class="{ 'is-copied': isKeyCopied }"
-            :title="isRtl ? 'نسخ مفتاح الترخيص' : 'Copy License Key'"
+            :title="isRtl ? 'نسخ مفتاح الترخيص' : 'Copy License Key'" :aria-label="isRtl ? 'نسخ مفتاح الترخيص' : 'Copy License Key'"
             @click.stop="copyKey(licenseState.key)"
           >
-            <svg v-if="!isKeyCopied" class="copy-mini-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-if="!isKeyCopied" class="copy-mini-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
             </svg>
-            <svg v-else class="copy-mini-svg text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <svg aria-hidden="true" v-else class="copy-mini-svg text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
             <span class="copy-label">{{ isKeyCopied ? (isRtl ? 'تم النسخ!' : 'Copied!') : (isRtl ? 'نسخ' : 'Copy') }}</span>
@@ -163,7 +163,7 @@
       <!-- 4. Seat Count Detail -->
       <div class="detail-item">
         <span class="detail-label">
-          <svg class="detail-label-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="detail-label-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
             <circle cx="9" cy="7" r="4"/>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
@@ -179,7 +179,7 @@
       <!-- 5. Expiration Date Detail -->
       <div class="detail-item expiry-detail-item">
         <span class="detail-label">
-          <svg class="detail-label-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="detail-label-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
             <line x1="16" y1="2" x2="16" y2="6"/>
             <line x1="8" y1="2" x2="8" y2="6"/>
@@ -200,7 +200,7 @@
     <div class="unlocked-features-box">
       <div class="features-header-row">
         <div class="features-header-title-box">
-          <svg class="features-header-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="features-header-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
             <line x1="8" y1="21" x2="16" y2="21"/>
             <line x1="12" y1="17" x2="12" y2="21"/>
@@ -220,51 +220,51 @@
           :style="{ animationDelay: `${idx * 35}ms` }"
         >
           <div class="feature-icon-wrapper">
-            <svg v-if="feature.includes('accounting')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-if="feature.includes('accounting')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
               <line x1="9" y1="7" x2="15" y2="7"/>
               <line x1="9" y1="11" x2="13" y2="11"/>
             </svg>
-            <svg v-else-if="feature.includes('inventory')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-else-if="feature.includes('inventory')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
               <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
               <line x1="12" y1="22.08" x2="12" y2="12"/>
             </svg>
-            <svg v-else-if="feature.includes('sales')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-else-if="feature.includes('sales')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="9" cy="21" r="1"/>
               <circle cx="20" cy="21" r="1"/>
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
             </svg>
-            <svg v-else-if="feature.includes('purchase')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-else-if="feature.includes('purchase')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="1" y="3" width="15" height="13"/>
               <polygon points="16 8 20 8 23 11 23 16 16 16 8"/>
               <circle cx="5.5" cy="18.5" r="2.5"/>
               <circle cx="18.5" cy="18.5" r="2.5"/>
             </svg>
-            <svg v-else-if="feature.includes('hr')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-else-if="feature.includes('hr')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
               <circle cx="9" cy="7" r="4"/>
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
-            <svg v-else-if="feature.includes('wireguard')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-else-if="feature.includes('wireguard')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               <path d="m9 12 2 2 4-4"/>
             </svg>
-            <svg v-else-if="feature.includes('hyperv')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-else-if="feature.includes('hyperv')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
               <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
               <line x1="6" y1="6" x2="6.01" y2="6"/>
               <line x1="6" y1="18" x2="6.01" y2="18"/>
             </svg>
-            <svg v-else-if="feature.includes('panel') || feature.includes('governance')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-else-if="feature.includes('panel') || feature.includes('governance')" class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="7" height="9" rx="1"/>
               <rect x="14" y="3" width="7" height="5" rx="1"/>
               <rect x="14" y="12" width="7" height="9" rx="1"/>
               <rect x="3" y="16" width="7" height="5" rx="1"/>
             </svg>
-            <svg v-else class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-else class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               <path d="m9 12 2 2 4-4"/>
             </svg>

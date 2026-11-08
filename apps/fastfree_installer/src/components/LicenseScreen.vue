@@ -21,7 +21,7 @@
       <div class="action-bar-start">
         <button class="btn btn-secondary" @click="currentStep = 1">
           <span class="btn-flex">
-            <svg class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline :points="isRtl ? '9 18 15 12 9 6' : '15 18 9 12 15 6'"></polyline>
             </svg>
             <span>{{ t('license.backToDiscovery') }}</span>
@@ -41,7 +41,7 @@
         >
           <span class="btn-flex">
             <span>{{ t('license.configureSizing') }}</span>
-            <svg class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline :points="isRtl ? '15 18 9 12 15 6' : '9 18 15 12 9 6'"></polyline>
             </svg>
           </span>

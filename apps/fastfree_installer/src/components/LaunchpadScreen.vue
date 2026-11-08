@@ -8,7 +8,7 @@
       <!-- 2. Unprovisioned VM Banner (If VM is not registered in Hyper-V) -->
       <div v-if="vmExists === false" class="unprovisioned-alert-banner">
         <div class="alert-content">
-          <svg class="alert-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="alert-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
             <line x1="12" y1="9" x2="12" y2="13"></line>
             <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -35,7 +35,7 @@
       <!-- 3. Top Header Bar & Search / Diagnostic Bar -->
       <header class="casaos-header-bar">
         <div class="header-search-wrap">
-          <svg class="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
@@ -52,10 +52,10 @@
           <button
             type="button"
             class="btn-header-tool"
-            :title="isRtl ? 'سجل تشخيص النظام' : 'System Terminal Console'"
+            :title="isRtl ? 'سجل تشخيص النظام' : 'System Terminal Console'" :aria-label="isRtl ? 'سجل تشخيص النظام' : 'System Terminal Console'"
             @click="isTerminalOpen = !isTerminalOpen"
           >
-            <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="4 17 10 11 4 5"></polyline>
               <line x1="12" y1="19" x2="20" y2="19"></line>
             </svg>
@@ -80,14 +80,14 @@
               <button
                 type="button"
                 class="btn-copy-creds"
-                :title="isRtl ? 'نسخ بيانات الدخول' : 'Copy Credentials'"
+                :title="isRtl ? 'نسخ بيانات الدخول' : 'Copy Credentials'" :aria-label="isRtl ? 'نسخ بيانات الدخول' : 'Copy Credentials'"
                 @click="copyCredentials"
               >
-                <svg v-if="!isCredsCopied" class="copy-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" v-if="!isCredsCopied" class="copy-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
-                <svg v-else class="copy-svg-mini text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <svg aria-hidden="true" v-else class="copy-svg-mini text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <span>{{ isCredsCopied ? (isRtl ? 'تم النسخ!' : 'Copied!') : (isRtl ? 'نسخ' : 'Copy') }}</span>
@@ -151,10 +151,10 @@
           <button
             type="button"
             class="btn-vm-restart"
-            :title="isRtl ? 'إعادة تشغيل الآلة' : 'Restart Hyper-V VM'"
+            :title="isRtl ? 'إعادة تشغيل الآلة' : 'Restart Hyper-V VM'" :aria-label="isRtl ? 'إعادة تشغيل الآلة' : 'Restart Hyper-V VM'"
             @click="handleVmAction('restart')"
           >
-            <svg class="vm-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="vm-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="23 4 23 10 17 10"></polyline>
               <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
             </svg>
@@ -171,7 +171,7 @@
       <div class="action-bar-end">
         <button class="btn btn-primary btn-portal" @click="launchPortal">
           <span class="btn-flex">
-            <svg class="portal-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="portal-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
               <polyline points="15 3 21 3 21 9"></polyline>
               <line x1="10" y1="14" x2="21" y2="3"></line>

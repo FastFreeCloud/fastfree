@@ -7,7 +7,7 @@
       <div class="input-header-row">
         <label class="input-label" for="license-input">
           <span class="label-icon">
-            <svg class="ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" class="ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="7.5" cy="15.5" r="5.5"></circle>
               <path d="m21 2-9.6 9.6"></path>
               <path d="m15.5 7.5 3 3L22 7l-3-3"></path>
@@ -40,10 +40,10 @@
             v-if="!licenseInput"
             type="button"
             class="btn-paste"
-            :title="t('license.pasteBtn')"
+            :title="t('license.pasteBtn')" :aria-label="t('license.pasteBtn')"
             @click="handlePaste"
           >
-            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
               <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
             </svg>
@@ -53,10 +53,10 @@
             v-else
             type="button"
             class="btn-clear"
-            :title="isRtl ? 'مسح' : 'Clear'"
+            :title="isRtl ? 'مسح' : 'Clear'" :aria-label="isRtl ? 'مسح' : 'Clear'"
             @click="licenseInput = ''"
           >
-            <svg class="btn-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" class="btn-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -86,13 +86,13 @@
           @click="copyHwid"
         >
           <span v-if="hwidCopied" class="btn-content">
-            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
             <span>{{ t('license.hwidCopied') }}</span>
           </span>
           <span v-else class="btn-content">
-            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
@@ -105,7 +105,7 @@
     <!-- Verification Error Banner -->
     <div v-if="errorMessage" class="error-banner">
       <span class="error-icon">
-        <svg class="ui-svg-err" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg aria-hidden="true" class="ui-svg-err" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
           <line x1="12" y1="9" x2="12" y2="13"></line>
           <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -117,14 +117,14 @@
           <button
             type="button"
             class="btn-copy-error-banner"
-            :title="isRtl ? 'نسخ تفاصيل الخطأ' : 'Copy error details'"
+            :title="isRtl ? 'نسخ تفاصيل الخطأ' : 'Copy error details'" :aria-label="isRtl ? 'نسخ تفاصيل الخطأ' : 'Copy error details'"
             @click="copyError(errorMessage, false)"
           >
-            <svg v-if="!isErrorCopied" class="copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" v-if="!isErrorCopied" class="copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
-            <svg v-else class="copy-svg check-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <svg aria-hidden="true" v-else class="copy-svg check-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
             <span>{{ isErrorCopied ? (isRtl ? 'تم النسخ!' : 'Copied!') : (isRtl ? 'نسخ الخطأ' : 'Copy') }}</span>
@@ -146,7 +146,7 @@
             :disabled="isTransferring"
             @click="openTransferModal"
           >
-            <svg class="transfer-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" class="transfer-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="23 4 23 10 17 10"></polyline>
               <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
             </svg>
@@ -164,7 +164,7 @@
     <div class="sovereign-highlights-grid">
       <div class="highlight-tile">
         <div class="tile-icon-box">
-          <svg class="tile-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="tile-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             <circle cx="12" cy="11" r="3"/>
           </svg>
@@ -184,7 +184,7 @@
 
       <div class="highlight-tile">
         <div class="tile-icon-box">
-          <svg class="tile-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="tile-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
             <line x1="12" y1="2" x2="12" y2="12"/>
           </svg>
@@ -202,7 +202,7 @@
 
       <div class="highlight-tile">
         <div class="tile-icon-box">
-          <svg class="tile-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg aria-hidden="true" class="tile-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
             <path d="m4.93 4.93 4.24 4.24"/>
             <path d="m14.83 9.17 4.24-4.24"/>

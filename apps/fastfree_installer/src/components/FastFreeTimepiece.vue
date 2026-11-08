@@ -2,7 +2,7 @@
   <div class="action-center-timepiece" :title="isRtl ? 'ساعة FastFree الملاحية الحية' : 'FastFree Precision Timepiece'">
     <div class="fastfree-timepiece-dial">
       <!-- Precision Vector Dial with Clear Hour Ticks and Markers -->
-      <svg class="clock-dial-svg" viewBox="0 0 100 100">
+      <svg aria-hidden="true" class="clock-dial-svg" viewBox="0 0 100 100">
         <!-- Outer Bezel Ring -->
         <circle cx="50" cy="50" r="48" class="dial-outer-ring" />
         <!-- Major Hour Ticks (12, 3, 6, 9) -->
