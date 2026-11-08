@@ -1,0 +1,11 @@
+# FastFree ERP — Project-local Hermes configuration
+# Skills in .hermes/skills/ are loaded when running Hermes from this project
+# after trust is granted via: hermes skills trust
+
+skills:
+  # Enable project-local skills
+  enabled: true
+
+# Terminal working directory
+terminal:
+  cwd: "C:/Users/FastFree/Desktop/fastfree"
