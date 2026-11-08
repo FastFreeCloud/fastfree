@@ -1,0 +1,123 @@
+{
+  "duplicate_content": {
+    "953eb98e491f0ccfbe82d7c9a9903440": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\icons\\adaptive-erp.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\icons\\adaptive-erp.svg",
+      "apps\\fastfree_erp\\public\\adaptive-icon-fg.svg",
+      "apps\\fastfree_erp\\public\\icons\\adaptive-icon-fg.svg"
+    ],
+    "b86d6fcb38a8cb8b831f655f8f0ffdb4": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\icons\\adaptive-hr.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\icons\\adaptive-hr.svg",
+      "apps\\fastfree_hr\\public\\adaptive-icon-fg.svg",
+      "apps\\fastfree_hr\\public\\icons\\adaptive-icon-fg.svg"
+    ],
+    "78cac33d0eb252c79cddb2dbe33666b1": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\icons\\adaptive-ledger.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\icons\\adaptive-ledger.svg",
+      "apps\\fastfree_ledger\\public\\adaptive-icon-fg.svg",
+      "apps\\fastfree_ledger\\public\\icons\\adaptive-icon-fg.svg"
+    ],
+    "45a3dbdab8d5468cef37c00590995608": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\icons\\adaptive-panel.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\icons\\adaptive-panel.svg",
+      "apps\\fastfree_panel\\public\\adaptive-icon-fg.svg",
+      "apps\\fastfree_panel\\public\\icons\\adaptive-icon-fg.svg"
+    ],
+    "a312897b85a11315c4e7b202561fe22c": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\icons\\adaptive-pos.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\icons\\adaptive-pos.svg",
+      "apps\\fastfree_pos\\public\\adaptive-icon-fg.svg",
+      "apps\\fastfree_pos\\public\\icons\\adaptive-icon-fg.svg"
+    ],
+    "045aab416a7b4de47d3809c61f94eb5e": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\icons\\adaptive-website.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\icons\\adaptive-website.svg",
+      "apps\\fastfree_website\\public\\icons\\adaptive-icon-fg.svg"
+    ],
+    "7790b198be5b68bbfbcde0d4bd95795b": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\icons\\icon-erp.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\icons\\icon-erp.svg"
+    ],
+    "520ede089a57979ed472c580494bc97e": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\icons\\icon-hr.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\icons\\icon-hr.svg"
+    ],
+    "d62335fc99d643d58161bc28c745f3a8": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\icons\\icon-ledger.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\icons\\icon-ledger.svg"
+    ],
+    "0e7d02df5a1d132219119c08c2836222": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\icons\\icon-panel.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\icons\\icon-panel.svg",
+      "apps\\fastfree_panel\\public\\app-icon.svg",
+      "apps\\fastfree_panel\\public\\icons\\app-icon.svg",
+      "apps\\fastfree_website\\public\\assets\\brand-system\\icon-panel.svg"
+    ],
+    "d7e2c3916fb45387c804a12ea275af38": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\icons\\icon-pos.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\icons\\icon-pos.svg"
+    ],
+    "2bdaecb713be4d049268039ccf14daae": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\icons\\icon-website.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\icons\\icon-website.svg",
+      "apps\\fastfree_website\\public\\assets\\brand-system\\icon-website.svg",
+      "apps\\fastfree_website\\public\\icons\\app-icon.svg"
+    ],
+    "cda8ba66ff178c3f8c693748206a758b": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\logo\\fastfree-brand-logo-dark.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\logo\\fastfree-brand-logo-dark.svg",
+      "apps\\fastfree_installer\\public\\logo-full.svg",
+      "apps\\fastfree_installer\\src\\assets\\logo-full.svg",
+      "apps\\fastfree_website\\public\\assets\\brand-system\\fastfree-brand-logo-dark.svg"
+    ],
+    "1a41a967ef5e4dccfd4245f8cd92ddab": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\logo\\fastfree-brand-logo-light.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\logo\\fastfree-brand-logo-light.svg",
+      "apps\\fastfree_website\\public\\assets\\brand-system\\fastfree-brand-logo-light.svg"
+    ],
+    "f6db7f23cc4e9fc25caa1ee5d465ff1a": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\logo\\fastfree-infinity-mark.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\logo\\fastfree-infinity-mark.svg",
+      "apps\\fastfree_website\\public\\assets\\brand-system\\fastfree-infinity-mark.svg"
+    ],
+    "33042c7642a6b0718fda7f035017ca08": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\splash\\splash-erp-1080p.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\splash\\splash-erp-1080p.svg",
+      "apps\\fastfree_erp\\public\\splash-1080p.svg",
+      "apps\\fastfree_website\\public\\assets\\brand-system\\splash-erp-1080p.svg"
+    ],
+    "36f83739198756dcb81abb75a48e40d0": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\splash\\splash-erp-portrait.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\splash\\splash-erp-portrait.svg",
+      "apps\\fastfree_erp\\public\\splash-portrait.svg",
+      "apps\\fastfree_website\\public\\assets\\brand-system\\splash-erp-portrait.svg"
+    ],
+    "a7b356073179edf05071d74b7a2e80f7": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\splash\\splash-hr-1080p.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\splash\\splash-hr-1080p.svg",
+      "apps\\fastfree_hr\\public\\splash-1080p.svg",
+      "apps\\fastfree_website\\public\\assets\\brand-system\\splash-hr-1080p.svg"
+    ],
+    "7f341aa07877f1f574d655db2294ca55": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\splash\\splash-hr-portrait.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\splash\\splash-hr-portrait.svg",
+      "apps\\fastfree_hr\\public\\splash-portrait.svg",
+      "apps\\fastfree_website\\public\\assets\\brand-system\\splash-hr-portrait.svg"
+    ],
+    "b6dfe515a7247388ac83c0bca940bb09": [
+      ".ai-rulez\\domains\\frontend\\skills\\fastfree-brand\\assets\\splash\\splash-ledger-1080p.svg",
+      ".opencode\\skills\\fastfree-brand\\assets\\splash\\splash-ledger-1080p.svg",
+      "apps\\fastfree_ledger\\public\\splash-1080p.svg",
+      "apps\\fastfree_website\\public\\assets\\brand-system\\splash-ledger-1080p.svg"
+    ]
+  },
+  "large_files": [],
+  "gitignore_violations": [
+    "apps\\fastfree_ledger\\.env"
+  ],
+  "empty_dirs": [
+    "apps\\fastfree_installer\\dist"
+  ],
+  "suspicious_packages": []
+}

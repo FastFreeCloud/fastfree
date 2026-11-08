@@ -124,9 +124,7 @@ midscene_run/
 .paseo-web-ui/
 
 # BEGIN ai-rulez (DO NOT EDIT - managed by ai-rulez)
-.ai-rulez/.config.local.*
 .ai-rulez/.generated-manifest.local.json
-.ai-rulez/config.local.*
 .ai-rulez/local/
 # END ai-rulez
 
@@ -139,3 +137,4 @@ apps/fastfree_installer/src-tauri/fastfree_updater.key
 .beads-credential-key
 .beads/proxieddb/
 *.gate.lock*
+apps/fastfree_ledger/.env
