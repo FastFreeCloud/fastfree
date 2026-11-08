@@ -1,9 +1,9 @@
 <template>
-  <q-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" persistent>
-    <q-card style="min-width: 500px">
+  <q-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" persistent role="dialog" aria-modal="true" :aria-label="employee ? t('hr.editEmployee') : t('hr.addEmployee')">
+    <q-card style="min-width: 500px" class="hr-card">
       <q-card-section class="row items-center q-gutter-sm">
-        <q-icon :name="employee ? 'mdi-pencil' : 'mdi-plus'" size="1.5rem" color="primary" />
-        <span class="text-h6">{{ employee ? t('hr.editEmployee') : t('hr.addEmployee') }}</span>
+        <q-icon :name="employee ? 'mdi-pencil' : 'mdi-plus'" size="1.5rem" class="hr-accent" />
+        <span class="text-h6 hr-foreground">{{ employee ? t('hr.editEmployee') : t('hr.addEmployee') }}</span>
         <q-space />
         <q-btn flat round icon="mdi-close" :aria-label="t('common.cancel')" @click="close" />
       </q-card-section>
@@ -16,7 +16,8 @@
               :label="t('hr.employeeName')"
               outlined
               :rules="[val => !!val || t('validation.fieldRequired')]"
-              aria-label="Employee Name"
+              :aria-label="t('hr.employeeName')"
+              aria-required="true"
             />
             <q-select
               v-model="form.department"
@@ -27,6 +28,7 @@
               map-options
               :rules="[val => !!val || t('validation.fieldRequired')]"
               :aria-label="t('hr.selectDepartment')"
+              aria-required="true"
               options-dense
             />
             <q-select
@@ -45,7 +47,8 @@
               outlined
               type="date"
               :rules="[val => !!val || t('validation.fieldRequired')]"
-              aria-label="Date of Joining"
+              :aria-label="t('hr.dateOfJoining')"
+              aria-required="true"
             />
             <q-input
               v-model="form.personal_email"
@@ -53,7 +56,7 @@
               outlined
               type="email"
               :rules="[val => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) || t('validation.fieldRequired')]"
-              aria-label="Personal Email"
+              :aria-label="t('hr.personalEmail')"
             />
             <q-input
               v-model="form.company_email"
@@ -61,13 +64,13 @@
               outlined
               type="email"
               :rules="[val => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) || t('validation.fieldRequired')]"
-              aria-label="Company Email"
+              :aria-label="t('hr.companyEmail')"
             />
             <q-input
               v-model="form.phone"
               :label="t('hr.phone')"
               outlined
-              aria-label="Phone"
+              :aria-label="t('hr.phone')"
             />
             <q-select
               v-model="form.gender"
@@ -88,12 +91,13 @@
               map-options
               :rules="[val => !!val || t('validation.fieldRequired')]"
               :aria-label="t('hr.status')"
+              aria-required="true"
               options-dense
             />
 
             <div class="row justify-end q-gutter-sm q-mt-md">
-              <q-btn flat :label="t('common.cancel')" @click="close" type="button" />
-              <q-btn type="submit" color="primary" :label="t('common.save')" :loading="saving" />
+              <q-btn flat :label="t('common.cancel')" @click="close" type="button" :aria-label="t('common.cancel')" />
+              <q-btn type="submit" color="primary" :label="t('common.save')" :loading="saving" :aria-label="t('common.save')" />
             </div>
           </div>
         </q-form>
@@ -222,3 +226,19 @@ onMounted(() => {
   if (!store.designations.length) store.fetchDesignations()
 })
 </script>
+
+<style scoped>
+.hr-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+.hr-foreground {
+  color: var(--foreground);
+}
+.hr-muted {
+  color: var(--muted-foreground);
+}
+.hr-accent {
+  color: var(--accent);
+}
+</style>
