@@ -3,7 +3,7 @@
 // ============================================================
 
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { Employee, Department, Designation, Attendance, LeaveApplication, SalarySlip } from '../types'
 import {
   getEmployees,
@@ -25,6 +25,10 @@ export const useHrStore = defineStore('fastfree-hr', () => {
 
   const loading = ref(false)
   const error = ref<string | null>(null)
+
+  // ── Computed ──
+  const employeeCount = computed(() => employees.value.length)
+  const activeEmployeeCount = computed(() => employees.value.filter(e => e.status === 'Active').length)
 
   // ── Helpers ──
   function setLoading(val: boolean) { loading.value = val }
@@ -155,6 +159,9 @@ export const useHrStore = defineStore('fastfree-hr', () => {
     salarySlips,
     loading,
     error,
+    // Computed
+    employeeCount,
+    activeEmployeeCount,
     // Actions
     fetchEmployees,
     fetchDepartments,
