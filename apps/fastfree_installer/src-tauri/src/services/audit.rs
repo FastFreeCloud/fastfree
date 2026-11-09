@@ -236,6 +236,7 @@ fn wireguard_or_fastfree_firewall_rule_exists() -> bool {
 #[cfg(windows)]
 fn virtual_switch_name_native() -> Option<String> {
     #[derive(serde::Deserialize)]
+    #[serde(rename = "Msvm_VirtualEthernetSwitchSettingData")]
     #[allow(non_snake_case)]
     struct MsvmVirtualEthernetSwitchSettingData {
         ElementName: String,
@@ -268,6 +269,7 @@ fn probe_vm(vm_name: &str) -> VmNativeProbe {
     };
 
     #[derive(serde::Deserialize)]
+    #[serde(rename = "Msvm_ComputerSystem")]
     #[allow(non_snake_case)]
     struct MsvmComputerSystem {
         Name: String,
@@ -275,12 +277,14 @@ fn probe_vm(vm_name: &str) -> VmNativeProbe {
         EnabledState: u32,
     }
     #[derive(serde::Deserialize)]
+    #[serde(rename = "Msvm_VirtualSystemSettingData")]
     #[allow(non_snake_case)]
     struct MsvmVirtualSystemSettingData {
         VirtualSystemIdentifier: Option<String>,
         SecureBootEnabled: Option<bool>,
     }
     #[derive(serde::Deserialize)]
+    #[serde(rename = "Msvm_StorageAllocationSettingData")]
     #[allow(non_snake_case)]
     struct MsvmStorageAllocationSettingData {
         InstanceID: Option<String>,

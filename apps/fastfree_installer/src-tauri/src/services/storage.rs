@@ -40,6 +40,7 @@ pub(crate) fn is_valid_vhdx(path: &Path) -> bool {
 #[cfg(windows)]
 fn stop_vm_best_effort(client_id: &str) {
     #[derive(serde::Deserialize)]
+    #[serde(rename = "Msvm_ComputerSystem")]
     #[allow(non_snake_case)]
     struct MsvmComputerSystem {
         __Path: String,
