@@ -229,6 +229,9 @@ Project-local skills are shared via `skills.external_dirs` pointing to `fastfree
 - Installer uses Vue 3 + Tauri (Rust), NOT Quasar — separate build process
 - Rust compile: fix undefined params, truncated identifiers, then verify with cargo build
 - Security: never hardcode secrets; use env vars; sanitize PowerShell; canonicalize paths
+- Runtime: VM memory — use available_memory_mb (not total) for RAM recommendations; clamp to available - headroom; min 2048 MB; default 2048 MB in frontend fallbacks
+- OpenCode: use beam-free model (`opencode run -m opencode/beam-free`) when free limit hit; always verify git diff after OpenCode runs; clean up extra files (.hermes/backups, .hermes/bin, .hermes/installs, .hermes/logs, tools/) that may be created in project root
+- OpenCode: .hermes/ in project must only contain config.yaml + skills/ — never copy global Hermes home here (OpenCode may create backups/installs/logs/bin that pollute the project)
 
 ## Verification
 
