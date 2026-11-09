@@ -136,6 +136,9 @@ Constraints: <any constraints>"""
 - CSS: 8 of 9 installer CSS files use hardcoded colors — replace with CSS variables
 - Modals: always add role="dialog", aria-modal="true", aria-labelledby, tabindex="-1", @keydown.esc
 - SVG icons: add aria-hidden="true" on decorative icons
+- Subagent dispatch: 4 parallel tasks completed installer fixes in ~47 min total — CSS (5 min), i18n (9 min), security (12 min), Rust (47 min)
+- Verify .hermes/ structure after subagent runs — subagents may accidentally copy global Hermes home into project .hermes/
+- Git commit after subagent work: review diff carefully, exclude global Hermes files from commit
 
 ## Verification
 

@@ -111,6 +111,14 @@ cargo tauri dev
 - Sanitize PowerShell inputs — command injection risk
 - Canonicalize paths — path traversal risk
 - pnpm may not be in PATH on Windows — use node_modules/.bin/vitest directly
+- Rust compile: `_app` param must be renamed to `app` if referenced in body — prefix `_` means unused in Rust
+- Truncated identifiers in service_account.rs (Buil...idW → BuildTrusteeWithSidW, EXPLI...S_W → EXPLICIT_ACCESS_W) — verify build passes
+- Security: use env vars for secrets (api_secret_token(), master_transfer_secret()), not hardcoded constants
+- Security: add rate limiting (5 attempts/60s) to verify_admin_password
+- CSS: replace hardcoded hex/rgb with CSS variables, add .is-rtl rules and :focus-visible blocks
+- i18n: replace `isRtl ? '...' : '...'` ternaries with `t('auto.<key>')` calls
+- i18n: add `auto` and `telemetry` sections to both en and ar in useI18n.ts
+- Build verification: `cargo tauri build` or `cargo build` in src-tauri/ must pass with 0 errors
 
 ## Verification
 

@@ -60,8 +60,7 @@
           :columns="columns"
           row-key="employee_id"
           :loading="store.loading"
-          :pagination="pagination"
-          v-model:pagination="pagination"
+        >
           flat
           :aria-label="t('hr.employees')"
         >
