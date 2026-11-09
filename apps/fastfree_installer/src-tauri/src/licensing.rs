@@ -290,6 +290,13 @@ impl LicensingManager {
                 err_msg
             })?;
 
+        let token = api_secret_token();
+        if token.is_empty() {
+            let desc = "License API secret token is not configured. Set FASTFREE_API_SECRET_TOKEN environment variable. لم يتم تكوين رمز API للتراخيص. يرجى تعيين متغير البيئة FASTFREE_API_SECRET_TOKEN.".to_string();
+            InstallerLogger::error("LICENSING", &desc);
+            return Err(desc);
+        }
+
         let comp_name = std::env::var("COMPUTERNAME").unwrap_or_else(|_| "Windows-PC".to_string());
         let win_user = std::env::var("USERNAME").unwrap_or_else(|_| "Admin".to_string());
         let user_sid = Self::get_user_sid();
