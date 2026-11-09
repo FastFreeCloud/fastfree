@@ -14,10 +14,10 @@
   --gen-color-12: rgba(255, 255, 255, 0.16);
   --gen-color-13: rgba(255, 255, 255, 0.18);
   --gen-color-14: rgba(255, 255, 255, 0.3);
-  --gen-color-15: rgba(var(--accent-amber-rgb);
-  --gen-color-16: rgba(var(--accent-emerald-rgb);
-  --gen-color-17: rgba(var(--accent-red-rgb);
-  --gen-color-18: rgba(var(--accent-sky-rgb);
+  --gen-color-15: var(--accent-amber-rgb);
+  --gen-color-16: var(--accent-emerald-rgb);
+  --gen-color-17: var(--accent-red-rgb);
+  --gen-color-18: var(--accent-sky-rgb);
 }
 
 :root {
@@ -71,38 +71,38 @@
   --white-30: var(--gen-color-14);
   --black-40: rgba(0, 0, 0, 0.4);
 
-  --accent-sky-faint: var(--gen-color-18), 0.07);
-  --accent-sky-soft: var(--gen-color-18), 0.1);
-  --accent-sky-mid: var(--gen-color-18), 0.15);
-  --accent-sky-strong: var(--gen-color-18), 0.2);
-  --accent-sky-border-soft: var(--gen-color-18), 0.25);
-  --accent-sky-border: var(--gen-color-18), 0.3);
-  --accent-sky-border-strong: var(--gen-color-18), 0.35);
-  --accent-sky-ring: var(--gen-color-18), 0.25);
+  --accent-sky-faint: rgba(var(--gen-color-18), 0.07);
+  --accent-sky-soft: rgba(var(--gen-color-18), 0.1);
+  --accent-sky-mid: rgba(var(--gen-color-18), 0.15);
+  --accent-sky-strong: rgba(var(--gen-color-18), 0.2);
+  --accent-sky-border-soft: rgba(var(--gen-color-18), 0.25);
+  --accent-sky-border: rgba(var(--gen-color-18), 0.3);
+  --accent-sky-border-strong: rgba(var(--gen-color-18), 0.35);
+  --accent-sky-ring: rgba(var(--gen-color-18), 0.25);
   --accent-sky-light-muted: rgba(var(--accent-sky-light-rgb), 0.85);
 
-  --accent-emerald-soft: var(--gen-color-16), 0.12);
-  --accent-emerald-strong: var(--gen-color-16), 0.2);
+  --accent-emerald-soft: rgba(var(--gen-color-16), 0.12);
+  --accent-emerald-strong: rgba(var(--gen-color-16), 0.2);
   --accent-emerald-border: rgba(var(--accent-emerald-border-rgb), 0.3);
   --accent-emerald-border-strong: rgba(var(--accent-emerald-border-rgb), 0.35);
   --accent-emerald-border-hover: rgba(var(--accent-emerald-border-rgb), 0.4);
 
-  --accent-amber-soft: var(--gen-color-15), 0.12);
-  --accent-amber-mid: var(--gen-color-15), 0.15);
-  --accent-amber-border: var(--gen-color-15), 0.25);
-  --accent-amber-border-strong: var(--gen-color-15), 0.3);
-  --accent-amber-border-hover: var(--gen-color-15), 0.35);
-  --accent-amber-ring: var(--gen-color-15), 0.2);
+  --accent-amber-soft: rgba(var(--gen-color-15), 0.12);
+  --accent-amber-mid: rgba(var(--gen-color-15), 0.15);
+  --accent-amber-border: rgba(var(--gen-color-15), 0.25);
+  --accent-amber-border-strong: rgba(var(--gen-color-15), 0.3);
+  --accent-amber-border-hover: rgba(var(--gen-color-15), 0.35);
+  --accent-amber-ring: rgba(var(--gen-color-15), 0.2);
 
-  --accent-red-soft: var(--gen-color-17), 0.1);
-  --accent-red-mid: var(--gen-color-17), 0.12);
-  --accent-red-strong: var(--gen-color-17), 0.2);
-  --accent-red-border: var(--gen-color-17), 0.25);
-  --accent-red-border-strong: var(--gen-color-17), 0.35);
+  --accent-red-soft: rgba(var(--gen-color-17), 0.1);
+  --accent-red-mid: rgba(var(--gen-color-17), 0.12);
+  --accent-red-strong: rgba(var(--gen-color-17), 0.2);
+  --accent-red-border: rgba(var(--gen-color-17), 0.25);
+  --accent-red-border-strong: rgba(var(--gen-color-17), 0.35);
 
   --shadow-card: 0 8px 32px -4px rgba(0, 0, 0, 0.4);
-  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 24px var(--gen-color-15), 0.15);
-  --shadow-modal-wide: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 30px var(--gen-color-18), 0.15);
+  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(var(--gen-color-15), 0.15);
+  --shadow-modal-wide: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(var(--gen-color-18), 0.15);
 
   --focus-ring-color: var(--accent-sky);
 }
@@ -148,21 +148,21 @@
 }
 
 .input-card:hover {
-  border-color: var(--gen-color-18), 0.35);
+  border-color: rgba(var(--gen-color-18), 0.35);
   box-shadow: var(--card-hover-shadow);
 }
 
 .input-card.is-verifying {
-  border-color: var(--gen-color-18), 0.6) !important;
+  border-color: rgba(var(--gen-color-18), 0.6) !important;
   animation: input-verifying-pulse 1.6s infinite ease-in-out;
 }
 
 @keyframes input-verifying-pulse {
   0%, 100% {
-    box-shadow: 0 4px 20px -2px var(--gen-color-4), 0 0 12px var(--gen-color-18), 0.2);
+    box-shadow: 0 4px 20px -2px var(--gen-color-4), 0 0 12px rgba(var(--gen-color-18), 0.2);
   }
   50% {
-    box-shadow: 0 6px 26px -2px var(--gen-color-5), 0 0 24px var(--gen-color-18), 0.45);
+    box-shadow: 0 6px 26px -2px var(--gen-color-5), 0 0 24px rgba(var(--gen-color-18), 0.45);
   }
 }
 
@@ -206,15 +206,15 @@
 }
 
 .highlight-tile:hover {
-  border-color: var(--gen-color-18), 0.35);
+  border-color: rgba(var(--gen-color-18), 0.35);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px -4px var(--gen-color-5), 0 0 14px var(--gen-color-18), 0.15);
+  box-shadow: 0 8px 24px -4px var(--gen-color-5), 0 0 14px rgba(var(--gen-color-18), 0.15);
 }
 
 .tile-icon-box.active-glow {
-  background: var(--gen-color-16), 0.15);
+  background: rgba(var(--gen-color-16), 0.15);
   color: var(--accent-emerald-bright);
-  border: 1px solid var(--gen-color-16), 0.3);
+  border: 1px solid rgba(var(--gen-color-16), 0.3);
 }
 
 .text-emerald {
@@ -222,23 +222,23 @@
 }
 
 .highlight-tile:hover {
-  border-color: var(--gen-color-18), 0.35);
+  border-color: rgba(var(--gen-color-18), 0.35);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px -4px var(--gen-color-5), 0 0 14px var(--gen-color-18), 0.15);
+  box-shadow: 0 8px 24px -4px var(--gen-color-5), 0 0 14px rgba(var(--gen-color-18), 0.15);
 }
 
 .highlight-tile:hover .tile-icon-box {
-  background: var(--gen-color-18), 0.22);
+  background: rgba(var(--gen-color-18), 0.22);
   color: var(--accent-sky);
   transform: scale(1.08);
-  box-shadow: 0 0 10px var(--gen-color-18), 0.3);
+  box-shadow: 0 0 10px rgba(var(--gen-color-18), 0.3);
 }
 
 .tile-icon-box {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: var(--gen-color-18), 0.12);
+  background: rgba(var(--gen-color-18), 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -292,10 +292,10 @@
   gap: 6px;
   font-size: 10px;
   color: var(--accent-sky);
-  background: var(--gen-color-18), 0.1);
+  background: rgba(var(--gen-color-18), 0.1);
   padding: 3px 8px;
   border-radius: 12px;
-  border: 1px solid var(--gen-color-18), 0.2);
+  border: 1px solid rgba(var(--gen-color-18), 0.2);
 }
 
 .status-dot-pulse {
@@ -342,7 +342,7 @@
 
 .text-input:focus {
   border-color: var(--accent-sky);
-  box-shadow: 0 0 0 3px var(--gen-color-18), 0.18);
+  box-shadow: 0 0 0 3px rgba(var(--gen-color-18), 0.18);
 }
 
 .btn-paste {
@@ -505,8 +505,8 @@
 }
 
 .btn-copy-hwid.copied {
-  background: var(--gen-color-16), 0.18);
-  border-color: var(--gen-color-16), 0.5);
+  background: rgba(var(--gen-color-16), 0.18);
+  border-color: rgba(var(--gen-color-16), 0.5);
   color: var(--accent-emerald-bright);
   animation: copy-bounce 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -518,8 +518,8 @@
 }
 
 .error-banner {
-  background: var(--gen-color-17), 0.08);
-  border: 1px solid var(--gen-color-17), 0.3);
+  background: rgba(var(--gen-color-17), 0.08);
+  border: 1px solid rgba(var(--gen-color-17), 0.3);
   border-radius: 10px;
   padding: 14px 16px;
   display: flex;
@@ -568,7 +568,7 @@
 .error-transfer-box {
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px dashed var(--gen-color-17), 0.3);
+  border-top: 1px dashed rgba(var(--gen-color-17), 0.3);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -594,14 +594,14 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px var(--gen-color-15), 0.3);
+  box-shadow: 0 4px 12px rgba(var(--gen-color-15), 0.3);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   width: fit-content;
 }
 
 .btn-transfer-license:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px var(--gen-color-15), 0.45);
+  box-shadow: 0 6px 18px rgba(var(--gen-color-15), 0.45);
   filter: brightness(1.05);
 }
 
@@ -619,7 +619,7 @@
   margin-top: 8px;
   font-size: 11px;
   color: var(--text-muted);
-  border-top: 1px solid var(--gen-color-17), 0.15);
+  border-top: 1px solid rgba(var(--gen-color-17), 0.15);
   padding-top: 6px;
 }
 

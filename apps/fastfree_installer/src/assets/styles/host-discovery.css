@@ -16,10 +16,10 @@
   --gen-color-14: rgba(255, 255, 255, 0.12);
   --gen-color-15: rgba(255, 255, 255, 0.32);
   --gen-color-16: rgba(30, 41, 59, 0.8);
-  --gen-color-17: rgba(var(--accent-amber-rgb);
-  --gen-color-18: rgba(var(--accent-emerald-rgb);
-  --gen-color-19: rgba(var(--accent-red-rgb);
-  --gen-color-20: rgba(var(--accent-sky-rgb);
+  --gen-color-17: var(--accent-amber-rgb);
+  --gen-color-18: var(--accent-emerald-rgb);
+  --gen-color-19: var(--accent-red-rgb);
+  --gen-color-20: var(--accent-sky-rgb);
 }
 
 :root {
@@ -73,38 +73,38 @@
   --white-30: rgba(255, 255, 255, 0.3);
   --black-40: rgba(0, 0, 0, 0.4);
 
-  --accent-sky-faint: var(--gen-color-20), 0.07);
-  --accent-sky-soft: var(--gen-color-20), 0.1);
-  --accent-sky-mid: var(--gen-color-20), 0.15);
-  --accent-sky-strong: var(--gen-color-20), 0.2);
-  --accent-sky-border-soft: var(--gen-color-20), 0.25);
-  --accent-sky-border: var(--gen-color-20), 0.3);
-  --accent-sky-border-strong: var(--gen-color-20), 0.35);
-  --accent-sky-ring: var(--gen-color-20), 0.25);
+  --accent-sky-faint: rgba(var(--gen-color-20), 0.07);
+  --accent-sky-soft: rgba(var(--gen-color-20), 0.1);
+  --accent-sky-mid: rgba(var(--gen-color-20), 0.15);
+  --accent-sky-strong: rgba(var(--gen-color-20), 0.2);
+  --accent-sky-border-soft: rgba(var(--gen-color-20), 0.25);
+  --accent-sky-border: rgba(var(--gen-color-20), 0.3);
+  --accent-sky-border-strong: rgba(var(--gen-color-20), 0.35);
+  --accent-sky-ring: rgba(var(--gen-color-20), 0.25);
   --accent-sky-light-muted: rgba(var(--accent-sky-light-rgb), 0.85);
 
-  --accent-emerald-soft: var(--gen-color-18), 0.12);
-  --accent-emerald-strong: var(--gen-color-18), 0.2);
+  --accent-emerald-soft: rgba(var(--gen-color-18), 0.12);
+  --accent-emerald-strong: rgba(var(--gen-color-18), 0.2);
   --accent-emerald-border: rgba(var(--accent-emerald-border-rgb), 0.3);
   --accent-emerald-border-strong: rgba(var(--accent-emerald-border-rgb), 0.35);
   --accent-emerald-border-hover: rgba(var(--accent-emerald-border-rgb), 0.4);
 
-  --accent-amber-soft: var(--gen-color-17), 0.12);
-  --accent-amber-mid: var(--gen-color-17), 0.15);
-  --accent-amber-border: var(--gen-color-17), 0.25);
-  --accent-amber-border-strong: var(--gen-color-17), 0.3);
-  --accent-amber-border-hover: var(--gen-color-17), 0.35);
-  --accent-amber-ring: var(--gen-color-17), 0.2);
+  --accent-amber-soft: rgba(var(--gen-color-17), 0.12);
+  --accent-amber-mid: rgba(var(--gen-color-17), 0.15);
+  --accent-amber-border: rgba(var(--gen-color-17), 0.25);
+  --accent-amber-border-strong: rgba(var(--gen-color-17), 0.3);
+  --accent-amber-border-hover: rgba(var(--gen-color-17), 0.35);
+  --accent-amber-ring: rgba(var(--gen-color-17), 0.2);
 
-  --accent-red-soft: var(--gen-color-19), 0.1);
-  --accent-red-mid: var(--gen-color-19), 0.12);
-  --accent-red-strong: var(--gen-color-19), 0.2);
-  --accent-red-border: var(--gen-color-19), 0.25);
-  --accent-red-border-strong: var(--gen-color-19), 0.35);
+  --accent-red-soft: rgba(var(--gen-color-19), 0.1);
+  --accent-red-mid: rgba(var(--gen-color-19), 0.12);
+  --accent-red-strong: rgba(var(--gen-color-19), 0.2);
+  --accent-red-border: rgba(var(--gen-color-19), 0.25);
+  --accent-red-border-strong: rgba(var(--gen-color-19), 0.35);
 
   --shadow-card: 0 8px 32px -4px rgba(0, 0, 0, 0.4);
-  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 24px var(--gen-color-17), 0.15);
-  --shadow-modal-wide: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 30px var(--gen-color-20), 0.15);
+  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(var(--gen-color-17), 0.15);
+  --shadow-modal-wide: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(var(--gen-color-20), 0.15);
 
   --focus-ring-color: var(--accent-sky);
 }
@@ -252,8 +252,8 @@ bdi[dir='ltr'],
 
 .diag-card:hover {
   transform: translateY(-2px);
-  border-color: var(--gen-color-20), 0.35);
-  box-shadow: 0 6px 20px -3px var(--gen-color-5), 0 0 12px var(--gen-color-20), 0.12);
+  border-color: rgba(var(--gen-color-20), 0.35);
+  box-shadow: 0 6px 20px -3px var(--gen-color-5), 0 0 12px rgba(var(--gen-color-20), 0.12);
 }
 
 .diag-card.border-ok {
@@ -363,8 +363,8 @@ bdi[dir='ltr'],
 
 .meta-badge-admin {
   color: var(--accent-emerald);
-  background: var(--gen-color-18), 0.12);
-  border: 1px solid var(--gen-color-18), 0.3);
+  background: rgba(var(--gen-color-18), 0.12);
+  border: 1px solid rgba(var(--gen-color-18), 0.3);
   font-size: 9px;
   font-weight: 700;
   padding: 1px 4px;
@@ -408,15 +408,15 @@ bdi[dir='ltr'],
 }
 
 .hyperv-enable-banner {
-  background: linear-gradient(90deg, var(--gen-color-17), 0.14), var(--gen-color-19), 0.08));
-  border: 1px solid var(--gen-color-17), 0.35);
+  background: linear-gradient(90deg, rgba(var(--gen-color-17), 0.14), rgba(var(--gen-color-19), 0.08));
+  border: 1px solid rgba(var(--gen-color-17), 0.35);
   border-radius: var(--radius-card);
   padding: 8px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 4px 14px var(--gen-color-17), 0.12);
+  box-shadow: 0 4px 14px rgba(var(--gen-color-17), 0.12);
 }
 
 .banner-left {
@@ -592,8 +592,8 @@ bdi[dir='ltr'],
 .drive-badge-letter {
   display: inline-block;
   font-family: 'Consolas', 'Cascadia Code', monospace;
-  background: var(--gen-color-18), 0.12);
-  border: 1px solid var(--gen-color-18), 0.28);
+  background: rgba(var(--gen-color-18), 0.12);
+  border: 1px solid rgba(var(--gen-color-18), 0.28);
   color: var(--accent-emerald);
   padding: 1px 6px;
   border-radius: 4px;
@@ -653,17 +653,17 @@ bdi[dir='ltr'],
 
 .progress-emerald {
   background: linear-gradient(90deg, var(--accent-emerald), var(--accent-emerald-bright));
-  box-shadow: 0 0 5px var(--gen-color-18), 0.35);
+  box-shadow: 0 0 5px rgba(var(--gen-color-18), 0.35);
 }
 
 .progress-amber {
   background: linear-gradient(90deg, var(--accent-amber), var(--accent-amber));
-  box-shadow: 0 0 5px var(--gen-color-17), 0.35);
+  box-shadow: 0 0 5px rgba(var(--gen-color-17), 0.35);
 }
 
 .progress-rose {
   background: linear-gradient(90deg, var(--accent-red), var(--accent-red-bright));
-  box-shadow: 0 0 5px var(--gen-color-19), 0.35);
+  box-shadow: 0 0 5px rgba(var(--gen-color-19), 0.35);
 }
 
 /* Interactive Clickable Disk Rows with Staggered Entrance */
@@ -691,7 +691,7 @@ bdi[dir='ltr'],
 }
 
 .disk-row-clickable:hover {
-  background: var(--gen-color-20), 0.06) !important;
+  background: rgba(var(--gen-color-20), 0.06) !important;
 }
 
 /* Windows 11 Fluent 2 Radio Button Component */
@@ -710,13 +710,13 @@ bdi[dir='ltr'],
 
 .disk-row-clickable:hover .fluent-radio-circle {
   border-color: var(--accent-sky);
-  background: var(--gen-color-20), 0.1);
+  background: rgba(var(--gen-color-20), 0.1);
 }
 
 .fluent-radio-circle.is-selected {
   border-color: var(--accent-sky);
-  background: var(--gen-color-20), 0.2);
-  box-shadow: 0 0 6px var(--gen-color-20), 0.4);
+  background: rgba(var(--gen-color-20), 0.2);
+  box-shadow: 0 0 6px rgba(var(--gen-color-20), 0.4);
 }
 
 .fluent-radio-dot {
@@ -734,7 +734,7 @@ bdi[dir='ltr'],
 
 /* Selected row: pure border accent without jarring keyframe pulse */
 .selected-target-row {
-  background: var(--gen-color-20), 0.1) !important;
+  background: rgba(var(--gen-color-20), 0.1) !important;
   border-inline-start: 3px solid var(--accent-sky);
 }
 
@@ -758,15 +758,15 @@ bdi[dir='ltr'],
 }
 
 .badge-recommended {
-  background: var(--gen-color-17), 0.15);
-  border: 1px solid var(--gen-color-17), 0.45);
+  background: rgba(var(--gen-color-17), 0.15);
+  border: 1px solid rgba(var(--gen-color-17), 0.45);
   color: var(--accent-amber);
-  box-shadow: 0 0 6px var(--gen-color-17), 0.18);
+  box-shadow: 0 0 6px rgba(var(--gen-color-17), 0.18);
 }
 
 .badge-compatible {
-  background: var(--gen-color-18), 0.1);
-  border: 1px solid var(--gen-color-18), 0.25);
+  background: rgba(var(--gen-color-18), 0.1);
+  border: 1px solid rgba(var(--gen-color-18), 0.25);
   color: var(--accent-emerald);
 }
 
@@ -777,8 +777,8 @@ bdi[dir='ltr'],
 }
 
 .badge-tight {
-  background: var(--gen-color-19), 0.1);
-  border: 1px solid var(--gen-color-19), 0.3);
+  background: rgba(var(--gen-color-19), 0.1);
+  border: 1px solid rgba(var(--gen-color-19), 0.3);
   color: var(--accent-red-bright);
 }
 
@@ -793,7 +793,7 @@ bdi[dir='ltr'],
 .target-drive-bar {
   margin-top: 8px;
   background: linear-gradient(90deg, var(--gen-color-6) 0%, var(--gen-color-16) 100%);
-  border: 1px solid var(--gen-color-20), 0.3);
+  border: 1px solid rgba(var(--gen-color-20), 0.3);
   border-radius: var(--radius-inner);
   padding: 5px 12px;
   display: flex;
@@ -802,7 +802,7 @@ bdi[dir='ltr'],
   min-height: 34px;
   box-sizing: border-box;
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 14px var(--gen-color-3), inset 0 0 8px var(--gen-color-20), 0.06);
+  box-shadow: 0 4px 14px var(--gen-color-3), inset 0 0 8px rgba(var(--gen-color-20), 0.06);
   animation: bar-reveal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -839,8 +839,8 @@ bdi[dir='ltr'],
 
 .target-mount-badge {
   color: var(--accent-sky);
-  background: var(--gen-color-20), 0.12);
-  border: 1px solid var(--gen-color-20), 0.3);
+  background: rgba(var(--gen-color-20), 0.12);
+  border: 1px solid rgba(var(--gen-color-20), 0.3);
   padding: 1px 5px;
   border-radius: 4px;
   font-size: 11px;
@@ -865,8 +865,8 @@ bdi[dir='ltr'],
 
 .target-rec-tag {
   color: var(--accent-amber);
-  background: var(--gen-color-17), 0.14);
-  border: 1px solid var(--gen-color-17), 0.35);
+  background: rgba(var(--gen-color-17), 0.14);
+  border: 1px solid rgba(var(--gen-color-17), 0.35);
   padding: 1px 6px;
   border-radius: 9999px;
   font-size: 9.5px;
@@ -881,14 +881,14 @@ bdi[dir='ltr'],
 }
 
 .pill-ready {
-  background: var(--gen-color-18), 0.14);
-  border: 1px solid var(--gen-color-18), 0.35);
+  background: rgba(var(--gen-color-18), 0.14);
+  border: 1px solid rgba(var(--gen-color-18), 0.35);
   color: var(--accent-emerald);
 }
 
 .pill-warn {
-  background: var(--gen-color-17), 0.14);
-  border: 1px solid var(--gen-color-17), 0.35);
+  background: rgba(var(--gen-color-17), 0.14);
+  border: 1px solid rgba(var(--gen-color-17), 0.35);
   color: var(--accent-amber);
 }
 

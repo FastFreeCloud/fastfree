@@ -338,7 +338,7 @@ export async function fetchSystemDiscovery(): Promise<SystemDiscoveryReport> {
       targetDiskDrive.value = savedDrive || result.recommendation.target_disk_drive;
       assignedCpuCores.value = savedCores ? Number(savedCores) : result.recommendation.recommended_cores;
       const rawRam = result.recommendation.recommended_ram_mb;
-      assignedRamMb.value = savedRam ? Number(savedRam) : (Math.round(rawRam / 1024) * 1024 || 8192);
+      assignedRamMb.value = savedRam ? Number(savedRam) : (Math.round(rawRam / 1024) * 1024 || 2048);
       
       saveUserPreferences();
     }

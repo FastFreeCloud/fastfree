@@ -265,7 +265,7 @@ const { t } = useI18n();
 const {
   isRtl,
   activeTab,
-  isLoadingAudit,"
+  isLoadingAudit,
   isAutoFixing,
   fixProgressPct,
   currentFixPhase,

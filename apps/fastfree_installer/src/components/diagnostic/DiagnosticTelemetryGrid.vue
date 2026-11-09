@@ -76,9 +76,7 @@
 
 <script setup lang="ts">
 import { useI18n } from '../../composables/useI18n';
-import { useDiagnosticAudit } from '../../composables/useDiagnosticAudit';
 import { selectedClientId, targetDiskDrive } from '../../composables/useDiscovery';
 
-const { isRtl } = useDiagnosticAudit();
 const { t } = useI18n();
 </script>

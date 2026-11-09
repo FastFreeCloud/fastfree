@@ -32,11 +32,11 @@ export interface DiskFacts {
 
 export class NodeSizingPolicy {
   /** RAM always reserved for the Windows host OS while the VM runs. */
-  public static readonly HOST_RAM_RESERVE_MB = 4096;
+  public static readonly HOST_RAM_RESERVE_MB = 2048;
   public static readonly DEFAULT_HOST_CPU_COUNT = 8;
   public static readonly DEFAULT_HOST_RAM_MB = 16_384;
   public static readonly DEFAULT_RECOMMENDED_CORES = 4;
-  public static readonly DEFAULT_RECOMMENDED_RAM_MB = 4096;
+  public static readonly DEFAULT_RECOMMENDED_RAM_MB = 2048;
 
   /** Minimum RAM the appliance itself accepts (hard floor). */
   public static readonly MIN_APPLIANCE_RAM_MB = 2048;
