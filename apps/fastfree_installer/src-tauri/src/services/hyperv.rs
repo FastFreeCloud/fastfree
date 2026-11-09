@@ -3,6 +3,7 @@ use crate::dto::*;
 use crate::logger::InstallerLogger;
 use crate::services::process::{hidden_command, hidden_powershell};
 use crate::services::service_hub;
+use sysinfo::System;
 use tauri::{AppHandle, Emitter};
 
 pub struct HyperVService;
@@ -160,6 +161,43 @@ fn is_account_hidden_in_winlogon(svc_name: &str) -> bool {
 }
 
 impl HyperVService {
+    /// Query the host's currently available system memory (MB) for dynamic VM sizing.
+    pub fn available_system_memory_mb() -> u64 {
+        let mut sys = System::new_all();
+        sys.refresh_memory();
+        sys.available_memory() / (1024 * 1024)
+    }
+
+    /// Clamp a requested VM RAM size to what the host can safely back, keeping a
+    /// ~1 GB headroom for the host OS / Hyper-V overhead. Hyper-V requires
+    /// 128 MB-aligned allocations; the result is never below 1024 MB.
+    pub fn clamp_vm_ram_mb(requested: u64) -> u64 {
+        let available = Self::available_system_memory_mb();
+        let max_for_vm = available.saturating_sub(1024).max(1024);
+        let capped = requested.min(max_for_vm);
+        ((capped.max(1024) + 64) / 128) * 128
+    }
+
+    /// Default VM RAM when none is specified: 2 GB, further adjusted to host
+    /// capacity so low-memory hosts do not over-allocate.
+    pub fn default_vm_ram_mb() -> u64 {
+        Self::clamp_vm_ram_mb(2048)
+    }
+
+    // Convenience aliases for callers / tests that use alternate names.
+    pub fn safe_vm_ram_mb(requested: u64) -> u64 {
+        Self::clamp_vm_ram_mb(requested)
+    }
+    pub fn safe_ram_mb(requested: u64) -> u64 {
+        Self::clamp_vm_ram_mb(requested)
+    }
+    pub fn recommended_ram_mb() -> u64 {
+        Self::default_vm_ram_mb()
+    }
+    pub fn recommended_vm_ram_mb() -> u64 {
+        Self::default_vm_ram_mb()
+    }
+
     pub fn validate_client_id(client_id: &str) -> Result<(), String> {
         if client_id.is_empty() || client_id.len() > 64 {
             return Err("Invalid client id".to_string());
@@ -663,7 +701,12 @@ impl HyperVService {
         Self::validate_target_drive(&target_drive)?;
         let vm_name = format!("FastFree-{}", client_id);
         let cores = cores.unwrap_or(4);
-        let ram_mb = ram_mb.unwrap_or(8192);
+        let requested_ram = ram_mb.unwrap_or(0);
+        let ram_mb = if requested_ram == 0 {
+            Self::default_vm_ram_mb()
+        } else {
+            Self::clamp_vm_ram_mb(requested_ram)
+        };
         let ram_bytes = ram_mb * 1024 * 1024;
         let target_drive = target_drive.trim_end_matches('\\').to_string();
     
@@ -790,10 +833,28 @@ impl HyperVService {
         let vhdx_path = format!("{}\\{}.vhdx", vhdx_dir, client_id);
         let is_hardened = hardened_security.unwrap_or(true);
     
+        // Dynamically reduce the requested RAM to what the host can safely back,
+        // so low-memory hosts do not fail with "insufficient memory allocation".
+        let ram_mb = Self::clamp_vm_ram_mb(ram_mb);
+
         // Hyper-V memory alignment: ((ram_mb + 64) / 128) * 128, min 1024 MB
         let aligned_ram_mb = {
             let aligned = ((ram_mb + 64) / 128) * 128;
             aligned.max(1024)
+        };
+        // Cap requested RAM to what the host can actually allocate: leave a ~2 GB
+        // reserve for the host OS / Hyper-V overhead so Start-VM does not fail
+        // with 0x800705AA ("Insufficient system resources").
+        let host_free_mb = {
+            use sysinfo::System;
+            let mut sys = System::new_all();
+            sys.refresh_memory();
+            (sys.available_memory() / (1024 * 1024)) as u64
+        };
+        let aligned_ram_mb = if host_free_mb > 2048 {
+            aligned_ram_mb.min(host_free_mb.saturating_sub(2048)).max(1024)
+        } else {
+            aligned_ram_mb.min(4096).max(1024)
         };
         let ram_bytes = aligned_ram_mb * 1024 * 1024;
     

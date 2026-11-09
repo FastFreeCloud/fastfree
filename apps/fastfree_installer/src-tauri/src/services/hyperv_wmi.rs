@@ -7,6 +7,7 @@ use crate::logger::InstallerLogger;
 /// Hyper-V virtualization CIM classes are namespace-scoped (`root\virtualization\v2`)
 /// — never on `root\cimv2` like stock WMI.
 #[derive(Deserialize, Debug)]
+#[serde(rename = "Msvm_ComputerSystem")]
 #[allow(non_snake_case)]
 pub struct MsvmComputerSystem {
     #[allow(dead_code)]
@@ -17,6 +18,7 @@ pub struct MsvmComputerSystem {
 }
 
 #[derive(Deserialize, Debug)]
+#[serde(rename = "Msvm_VirtualEthernetSwitchSettingData")]
 #[allow(non_snake_case)]
 pub struct MsvmVirtualEthernetSwitchSettingData {
     pub ElementName: String,
@@ -25,6 +27,7 @@ pub struct MsvmVirtualEthernetSwitchSettingData {
 }
 
 #[derive(Deserialize, Debug)]
+#[serde(rename = "Msvm_ProcessorSettingData")]
 #[allow(non_snake_case)]
 pub struct MsvmProcessorSettingData {
     pub InstanceID: String,
@@ -37,6 +40,7 @@ pub struct MsvmProcessorSettingData {
 }
 
 #[derive(Deserialize, Debug)]
+#[serde(rename = "Msvm_MemorySettingData")]
 #[allow(non_snake_case)]
 pub struct MsvmMemorySettingData {
     pub InstanceID: String,
@@ -47,6 +51,7 @@ pub struct MsvmMemorySettingData {
 }
 
 #[derive(Deserialize, Debug)]
+#[serde(rename = "Msvm_VirtualSystemSettingData")]
 #[allow(non_snake_case)]
 pub struct MsvmVirtualSystemSettingData {
     pub InstanceID: String,
@@ -59,6 +64,7 @@ pub struct MsvmVirtualSystemSettingData {
 }
 
 #[derive(Deserialize, Debug)]
+#[serde(rename = "Msvm_StorageAllocationSettingData")]
 #[allow(non_snake_case)]
 pub struct MsvmStorageAllocationSettingData {
     pub InstanceID: String,
@@ -69,6 +75,7 @@ pub struct MsvmStorageAllocationSettingData {
 }
 
 #[derive(Deserialize, Debug)]
+#[serde(rename = "Msvm_SyntheticEthernetPortSettingData")]
 #[allow(non_snake_case)]
 pub struct MsvmSyntheticEthernetPortSettingData {
     pub InstanceID: String,
@@ -77,6 +84,7 @@ pub struct MsvmSyntheticEthernetPortSettingData {
 }
 
 #[derive(Deserialize, Debug)]
+#[serde(rename = "Msvm_EthernetPortAllocationSettingData")]
 #[allow(non_snake_case)]
 pub struct MsvmSyntheticEthernetAdapterSettingData {
     #[serde(default)]
@@ -84,6 +92,7 @@ pub struct MsvmSyntheticEthernetAdapterSettingData {
 }
 
 #[derive(Deserialize, Debug)]
+#[serde(rename = "Msvm_HeartbeatComponent")]
 #[allow(non_snake_case)]
 pub struct MsvmHeartbeatComponent {
     #[serde(default)]
@@ -97,6 +106,7 @@ pub struct MsvmHeartbeatComponent {
 }
 
 #[derive(Deserialize, Debug)]
+#[serde(rename = "Win32_UserAccount")]
 #[allow(non_snake_case)]
 pub struct Win32UserAccount {
     #[serde(default)]

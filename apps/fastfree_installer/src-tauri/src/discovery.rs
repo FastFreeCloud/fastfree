@@ -63,7 +63,7 @@ impl HostDiscoveryPipeline {
         disks.sort_by(|a, b| b.available_space_gb.partial_cmp(&a.available_space_gb).unwrap());
 
         let hyperv = Self::probe_hyperv_status();
-        let recommendation = Self::calculate_recommendations(total_memory_mb, cpu_count, &disks);
+        let recommendation = Self::calculate_recommendations(available_memory_mb, cpu_count, &disks);
 
         InstallerLogger::info(
             "DISCOVERY",
@@ -186,8 +186,8 @@ impl HostDiscoveryPipeline {
         host_cores: usize,
         disks: &[DiskTelemetry],
     ) -> VmAllocationRecommendation {
-        let min_ram_mb: u64 = 4096;
-        let host_headroom_mb: u64 = 4096;
+        let min_ram_mb: u64 = 2048;
+        let host_headroom_mb: u64 = 1024;
 
         let target_half = host_ram_mb / 2;
         let max_allocatable = ((host_ram_mb.saturating_sub(host_headroom_mb) + 64) / 128) * 128;
