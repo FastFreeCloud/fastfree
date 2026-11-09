@@ -46,12 +46,18 @@ cd C:/Users/FastFree/Desktop/fastfree/apps/fastfree_installer
 npm run build  # vue-tsc + vite build
 ```
 
-### Tauri dev
-
+### Tauri dev (alternative)
 ```bash
 cd C:/Users/FastFree/Desktop/fastfree/apps/fastfree_installer
-cargo tauri dev
+npx tauri dev  # Uses Vite + Rust, shows all errors in terminal
 ```
+
+### Seeing errors in tauri dev
+- **Terminal**: Rust compile errors + Vite build errors
+- **Browser DevTools (F12)**: JS errors, Vue warnings, CSS issues, network errors
+- **IPC tab**: Rust command errors (filter "ipc" in Network tab)
+- **Log file**: C:\Users\FastFree\AppData\Roaming\FastFree\installer.log
+- **TypeScript only**: `npx vue-tsc --noEmit`
 
 ## Architecture
 
@@ -114,11 +120,34 @@ cargo tauri dev
 - Rust compile: `_app` param must be renamed to `app` if referenced in body — prefix `_` means unused in Rust
 - Truncated identifiers in service_account.rs (Buil...idW → BuildTrusteeWithSidW, EXPLI...S_W → EXPLICIT_ACCESS_W) — verify build passes
 - Security: use env vars for secrets (api_secret_token(), master_transfer_secret()), not hardcoded constants
+- Security: when removing hardcoded secrets, create .env.example documenting required env vars
+- Security: when env vars are missing, return clear error message (not empty string that fails silently)
+- Security: add .env file support — read from .env in app directory as fallback when env vars not set
+- Security: when license token missing, fall back to offline mode (WARN, not ERROR) — installer still works with cached license
+- Security: installer log shows "Online network unreachable; validated from local cached cryptographic token" when offline fallback succeeds
+- Build: on Windows, .exe may be locked by running process — rename it (mv target/debug/*.exe *.exe.old) before cargo build
+- Build: cargo build takes 20+ minutes on first run (large dependency tree) — run in background
+- Runtime: Hyper-V virtual switch must be created before VM provisioning (New-VMSwitch -Name "FastFree-Switch" -SwitchType External)
+- Runtime: VM provisioning requires Hyper-V virtual switch to exist first — installer cannot create it automatically
+- Runtime: set env vars in Windows system (Machine level) for installer to work across sessions
+- Runtime: license verification works offline with cached token when FASTFREE_API_SECRET_TOKEN is not set
+- Security: env var names: FASTFREE_API_SECRET_TOKEN, FASTFREE_MASTER_TRANSFER_SECRET
+- Security: license server returns "UNAUTHORIZED" when API secret token is empty/wrong
 - Security: add rate limiting (5 attempts/60s) to verify_admin_password
 - CSS: replace hardcoded hex/rgb with CSS variables, add .is-rtl rules and :focus-visible blocks
 - i18n: replace `isRtl ? '...' : '...'` ternaries with `t('auto.<key>')` calls
 - i18n: add `auto` and `telemetry` sections to both en and ar in useI18n.ts
 - Build verification: `cargo tauri build` or `cargo build` in src-tauri/ must pass with 0 errors
+- Inspection: OpenCode with beam-free model (`opencode run -m opencode/beam-free`) can inspect running Tauri app via dev tools — checks CSS vars, RTL, WireGuard design, console errors, i18n
+- Inspection: OpenCode free usage limit may be hit — use beam-free model as alternative, or wait for reset
+- Inspection: when OpenCode hits free limit, it may leave partially modified files — always verify git diff after OpenCode runs
+- Inspection: WireGuard screen CSS staleness — wireguard-screen.css selectors reference old .wg-* classes but components use .wg-hero-card, .wg-bento-grid, .wg-advanced-banner, .wg-endpoint-modal — regenerate CSS against actual class names
+- Inspection: legacy token inconsistency — var(--primary) vs var(--accent-primary) — standardize on --accent-primary
+- Inspection: physical offsets in RTL — replace `right:` with `inset-inline-end:` for proper mirroring
+- Inspection: i18n verification — 211 keys, 0 missing, full parity en/ar, 0 raw keys, 0 leftover placeholders
+- Inspection: theme swap works (data-theme="light", .theme-light, body rgb(248,250,252))
+- Inspection: RTL no horizontal overflow (scrollWidth == clientWidth) — critical for installer window width 1400px
+- Inspection: locale persists via localStorage.fastfree_installer_locale
 
 ## Verification
 
