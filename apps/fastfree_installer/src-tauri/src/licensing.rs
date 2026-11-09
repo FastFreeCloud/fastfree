@@ -9,14 +9,46 @@ use tauri_plugin_store::StoreExt;
 
 pub const GOOGLE_SHEETS_ENDPOINT: &str =
     "https://script.google.com/macros/s/AKfycbyYqVXCWgZEcEWQQ9PTfChuTryk5N9S91xmSuYxWkAXgViuJr53PzWEJajR4HhHUllVGQ/exec";
-/// Load the API secret token from the environment instead of embedding it.
+/// Load the API secret token from the environment or .env file.
 pub fn api_secret_token() -> String {
-    std::env::var("FASTFREE_API_SECRET_TOKEN").unwrap_or_default()
+    // First try environment variable
+    if let Ok(val) = std::env::var("FASTFREE_API_SECRET_TOKEN") {
+        if !val.is_empty() {
+            return val;
+        }
+    }
+    // Try reading from .env file in app directory
+    if let Ok(contents) = std::fs::read_to_string(".env") {
+        for line in contents.lines() {
+            if let Some(val) = line.strip_prefix("FASTFREE_API_SECRET_TOKEN=") {
+                let val = val.trim().to_string();
+                if !val.is_empty() {
+                    return val;
+                }
+            }
+        }
+    }
+    String::new()
 }
 
-/// Load the master transfer secret from the environment instead of embedding it.
+/// Load the master transfer secret from the environment or .env file.
 pub fn master_transfer_secret() -> String {
-    std::env::var("FASTFREE_MASTER_TRANSFER_SECRET").unwrap_or_default()
+    if let Ok(val) = std::env::var("FASTFREE_MASTER_TRANSFER_SECRET") {
+        if !val.is_empty() {
+            return val;
+        }
+    }
+    if let Ok(contents) = std::fs::read_to_string(".env") {
+        for line in contents.lines() {
+            if let Some(val) = line.strip_prefix("FASTFREE_MASTER_TRANSFER_SECRET=") {
+                let val = val.trim().to_string();
+                if !val.is_empty() {
+                    return val;
+                }
+            }
+        }
+    }
+    String::new()
 }
 
 #[derive(Serialize)]
@@ -292,9 +324,8 @@ impl LicensingManager {
 
         let token = api_secret_token();
         if token.is_empty() {
-            let desc = "License API secret token is not configured. Set FASTFREE_API_SECRET_TOKEN environment variable. لم يتم تكوين رمز API للتراخيص. يرجى تعيين متغير البيئة FASTFREE_API_SECRET_TOKEN.".to_string();
-            InstallerLogger::error("LICENSING", &desc);
-            return Err(desc);
+            // Token not configured — offline mode will be used
+            InstallerLogger::warn("LICENSING", "FASTFREE_API_SECRET_TOKEN not set; running in offline mode. Set the env var or create a .env file for online verification.");
         }
 
         let comp_name = std::env::var("COMPUTERNAME").unwrap_or_else(|_| "Windows-PC".to_string());
