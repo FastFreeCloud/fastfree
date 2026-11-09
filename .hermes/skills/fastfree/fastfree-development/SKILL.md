@@ -224,6 +224,11 @@ Project-local skills are shared via `skills.external_dirs` pointing to `fastfree
 - i18n: verify en.ts and ar.ts have identical key sets
 - Frappe controller: validate() method for required fields, email format, date logic, unique constraints
 - Subagents: don't dispatch multiple for same files; verify results (tests, compile, JSON validity)
+- .hermes/ in project must only contain config.yaml + skills/ — never copy global Hermes home here
+- Git cleanup: after messy operations, verify .hermes/ structure with `find .hermes -type f`
+- Installer uses Vue 3 + Tauri (Rust), NOT Quasar — separate build process
+- Rust compile: fix undefined params, truncated identifiers, then verify with cargo build
+- Security: never hardcode secrets; use env vars; sanitize PowerShell; canonicalize paths
 
 ## Verification
 
