@@ -1,21 +1,21 @@
 <template>
-  <div v-if="allNodes.length > 1" class="node-selector-bar">
-    <div class="selector-meta">
-      <span class="meta-label">{{ t('wireguard.multiNodeNotice') }}</span>
-      <span class="current-node-badge font-mono">FastFree-{{ selectedClientId }}</span>
+  <div v-if="allNodes.length > 1" class="wg-node-selector">
+    <div class="wg-selector-meta">
+      <span class="wg-meta-label">{{ t('wireguard.multiNodeNotice') }}</span>
+      <span class="wg-current-node wg-font-mono">FastFree-{{ selectedClientId }}</span>
     </div>
-    <div class="node-pill-buttons">
+    <div class="wg-node-pills">
       <button
         v-for="nodeId in allNodes"
         :key="nodeId"
         type="button"
-        class="btn-node-pill"
-        :class="{ active: nodeId === selectedClientId }"
+        class="wg-btn-node"
+        :class="{ 'wg-active': nodeId === selectedClientId }"
         :disabled="isLoadingConfig"
         @click="selectTargetNode(nodeId)"
       >
-        <span class="pill-dot"></span>
-        <span class="pill-text font-mono">FastFree-{{ nodeId }}</span>
+        <span class="wg-pill-dot"></span>
+        <span class="wg-pill-text wg-font-mono">FastFree-{{ nodeId }}</span>
       </button>
     </div>
   </div>

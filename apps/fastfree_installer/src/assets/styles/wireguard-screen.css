@@ -1,91 +1,108 @@
-:root {
-  /* WireGuard screen design tokens */
-  --accent-sky: #38BDF8;
-  --accent-sky-rgb: 56, 189, 248;
-  --accent-sky-light: #7DD3FC;
-  --accent-sky-light-rgb: 125, 211, 252;
-  --accent-emerald: #10B981;
-  --accent-emerald-bright: #34D399;
-  --accent-emerald-rgb: 16, 185, 129;
-  --accent-emerald-border-rgb: 52, 211, 153;
-  --accent-amber: #F59E0B;
-  --accent-amber-rgb: 245, 158, 11;
-  --accent-red: #EF4444;
-  --accent-red-bright: #F87171;
-  --accent-red-rgb: 239, 68, 68;
-  --accent-cyan: #22D3EE;
+/* ==========================================================================
+   FastFree Installer — WireGuard screen (step 4)
+   Namespace: all selectors are scoped under .wg-screen and use .wg-* classes.
+   The file is imported by WireGuardScreen.vue as a global stylesheet so the
+   rules can reach the inner markup of the decomposed child components.
+   ========================================================================== */
 
-  --bg-app: #09090B;
-  --bg-card: #18181B;
-  --bg-sub: #27272A;
-  --bg-hover: #3F3F46;
-  --bg-input: #09090B;
-  --surface-overlay: rgba(15, 23, 42, 0.85);
-  --overlay-scrim: rgba(0, 0, 0, 0.78);
-  --hero-gradient: linear-gradient(135deg, rgba(24, 24, 27, 0.85) 0%, rgba(30, 41, 59, 0.5) 100%);
+/* --------------------------------------------------------------------------
+   1. Scoped design tokens
+   -------------------------------------------------------------------------- */
+.wg-screen {
+  /* Accent palette */
+  --wg-sky: var(--accent-sky, #38BDF8);
+  --wg-sky-rgb: 56, 189, 248;
+  --wg-sky-light: #7DD3FC;
+  --wg-sky-light-rgb: 125, 211, 252;
+  --wg-emerald: var(--accent-emerald, #10B981);
+  --wg-emerald-bright: #34D399;
+  --wg-emerald-rgb: 16, 185, 129;
+  --wg-emerald-border-rgb: 52, 211, 153;
+  --wg-amber: #F59E0B;
+  --wg-amber-rgb: 245, 158, 11;
+  --wg-red: #EF4444;
+  --wg-red-bright: #F87171;
+  --wg-red-rgb: 239, 68, 68;
+  --wg-cyan: #22D3EE;
 
-  --text-primary: #FAFAFA;
-  --text-main: #F8FAFC;
-  --text-strong: #FFFFFF;
-  --text-body: #E4E4E7;
-  --text-muted: #94A3B8;
-  --text-subtle: #A1A1AA;
-  --text-dim: #71717A;
-  --text-on-accent: #0F172A;
+  /* Surfaces — inherit the active app theme */
+  --wg-bg-app: var(--bg-app, #09090B);
+  --wg-bg-card: var(--bg-card, #18181B);
+  --wg-bg-sub: var(--bg-sub, #27272A);
+  --wg-bg-hover: var(--bg-hover, #3F3F46);
+  --wg-bg-input: var(--bg-input, var(--bg-app, #09090B));
+  --wg-surface-overlay: rgba(15, 23, 42, 0.85);
+  --wg-overlay: var(--overlay-scrim, rgba(0, 0, 0, 0.78));
+  --wg-hero-gradient: var(
+    --card-glass-bg,
+    linear-gradient(135deg, rgba(24, 24, 27, 0.85) 0%, rgba(30, 41, 59, 0.5) 100%)
+  );
 
-  --border-color: #27272A;
-  --border-strong: #3F3F46;
+  /* Text */
+  --wg-text: var(--text-main, #F8FAFC);
+  --wg-text-strong: var(--text-strong, var(--text-main, #FFFFFF));
+  --wg-text-body: var(--text-secondary, #E4E4E7);
+  --wg-text-muted: var(--text-muted, #94A3B8);
+  --wg-text-subtle: var(--text-subtle, var(--text-muted, #A1A1AA));
+  --wg-text-dim: var(--text-dim, var(--text-muted, #71717A));
+  --wg-text-on-accent: #0F172A;
 
-  --primary: #1976D2;
-  --primary-hover: #1565C0;
-  --primary-rgb: 25, 118, 210;
-  --primary-soft: rgba(var(--primary-rgb), 0.15);
-  --primary-shadow: rgba(var(--primary-rgb), 0.4);
+  /* Borders */
+  --wg-border: var(--border-color, #27272A);
+  --wg-border-strong: var(--border-highlight, var(--border-color, #3F3F46));
 
-  --white-03: rgba(255, 255, 255, 0.03);
-  --white-06: rgba(255, 255, 255, 0.06);
-  --white-08: rgba(255, 255, 255, 0.08);
-  --white-10: rgba(255, 255, 255, 0.1);
-  --white-30: rgba(255, 255, 255, 0.3);
-  --black-40: rgba(0, 0, 0, 0.4);
+  /* Primary accent (uses the app-level token, never --primary) */
+  --wg-primary: var(--accent-primary, #1976D2);
+  --wg-primary-hover: var(--accent-hover, #1565C0);
+  --wg-primary-soft: rgba(25, 118, 210, 0.15);
+  --wg-primary-shadow: rgba(25, 118, 210, 0.4);
 
-  --accent-sky-faint: rgba(var(--accent-sky-rgb), 0.07);
-  --accent-sky-soft: rgba(var(--accent-sky-rgb), 0.1);
-  --accent-sky-mid: rgba(var(--accent-sky-rgb), 0.15);
-  --accent-sky-strong: rgba(var(--accent-sky-rgb), 0.2);
-  --accent-sky-border-soft: rgba(var(--accent-sky-rgb), 0.25);
-  --accent-sky-border: rgba(var(--accent-sky-rgb), 0.3);
-  --accent-sky-border-strong: rgba(var(--accent-sky-rgb), 0.35);
-  --accent-sky-ring: rgba(var(--accent-sky-rgb), 0.25);
-  --accent-sky-light-muted: rgba(var(--accent-sky-light-rgb), 0.85);
+  /* Alpha helpers */
+  --wg-white-03: rgba(255, 255, 255, 0.03);
+  --wg-white-06: rgba(255, 255, 255, 0.06);
+  --wg-white-08: rgba(255, 255, 255, 0.08);
+  --wg-white-10: rgba(255, 255, 255, 0.1);
+  --wg-white-30: rgba(255, 255, 255, 0.3);
+  --wg-black-40: rgba(0, 0, 0, 0.4);
 
-  --accent-emerald-soft: rgba(var(--accent-emerald-rgb), 0.12);
-  --accent-emerald-strong: rgba(var(--accent-emerald-rgb), 0.2);
-  --accent-emerald-border: rgba(var(--accent-emerald-border-rgb), 0.3);
-  --accent-emerald-border-strong: rgba(var(--accent-emerald-border-rgb), 0.35);
-  --accent-emerald-border-hover: rgba(var(--accent-emerald-border-rgb), 0.4);
+  --wg-sky-faint: rgba(var(--wg-sky-rgb), 0.07);
+  --wg-sky-soft: rgba(var(--wg-sky-rgb), 0.1);
+  --wg-sky-mid: rgba(var(--wg-sky-rgb), 0.15);
+  --wg-sky-strong: rgba(var(--wg-sky-rgb), 0.2);
+  --wg-sky-border-soft: rgba(var(--wg-sky-rgb), 0.25);
+  --wg-sky-border: rgba(var(--wg-sky-rgb), 0.3);
+  --wg-sky-border-strong: rgba(var(--wg-sky-rgb), 0.35);
+  --wg-sky-ring: rgba(var(--wg-sky-rgb), 0.25);
+  --wg-sky-light-muted: rgba(var(--wg-sky-light-rgb), 0.85);
 
-  --accent-amber-soft: rgba(var(--accent-amber-rgb), 0.12);
-  --accent-amber-mid: rgba(var(--accent-amber-rgb), 0.15);
-  --accent-amber-border: rgba(var(--accent-amber-rgb), 0.25);
-  --accent-amber-border-strong: rgba(var(--accent-amber-rgb), 0.3);
-  --accent-amber-border-hover: rgba(var(--accent-amber-rgb), 0.35);
-  --accent-amber-ring: rgba(var(--accent-amber-rgb), 0.2);
+  --wg-emerald-soft: rgba(var(--wg-emerald-rgb), 0.12);
+  --wg-emerald-strong: rgba(var(--wg-emerald-rgb), 0.2);
+  --wg-emerald-border: rgba(var(--wg-emerald-border-rgb), 0.3);
+  --wg-emerald-border-strong: rgba(var(--wg-emerald-border-rgb), 0.35);
+  --wg-emerald-border-hover: rgba(var(--wg-emerald-border-rgb), 0.4);
 
-  --accent-red-soft: rgba(var(--accent-red-rgb), 0.1);
-  --accent-red-mid: rgba(var(--accent-red-rgb), 0.12);
-  --accent-red-strong: rgba(var(--accent-red-rgb), 0.2);
-  --accent-red-border: rgba(var(--accent-red-rgb), 0.25);
-  --accent-red-border-strong: rgba(var(--accent-red-rgb), 0.35);
+  --wg-amber-soft: rgba(var(--wg-amber-rgb), 0.12);
+  --wg-amber-mid: rgba(var(--wg-amber-rgb), 0.15);
+  --wg-amber-border: rgba(var(--wg-amber-rgb), 0.25);
+  --wg-amber-border-strong: rgba(var(--wg-amber-rgb), 0.3);
+  --wg-amber-border-hover: rgba(var(--wg-amber-rgb), 0.35);
+  --wg-amber-ring: rgba(var(--wg-amber-rgb), 0.2);
 
-  --shadow-card: 0 8px 32px -4px rgba(0, 0, 0, 0.4);
-  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(var(--accent-amber-rgb), 0.15);
-  --shadow-modal-wide: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(var(--accent-sky-rgb), 0.15);
+  --wg-red-soft: rgba(var(--wg-red-rgb), 0.1);
+  --wg-red-mid: rgba(var(--wg-red-rgb), 0.12);
+  --wg-red-strong: rgba(var(--wg-red-rgb), 0.2);
+  --wg-red-border: rgba(var(--wg-red-rgb), 0.25);
+  --wg-red-border-strong: rgba(var(--wg-red-rgb), 0.35);
 
-  --focus-ring-color: var(--accent-sky);
-}
+  --wg-shadow-card: 0 8px 32px -4px rgba(0, 0, 0, 0.4);
+  --wg-shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(var(--wg-amber-rgb), 0.15);
+  --wg-shadow-modal-wide: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(var(--wg-sky-rgb), 0.15);
 
-.screen-container {
+  --wg-focus-ring: var(--accent-sky, #38BDF8);
+
+  /* Direction multiplier for transform-based motion */
+  --wg-dir: 1;
+
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -93,115 +110,150 @@
   height: 100%;
   overflow: hidden;
   box-sizing: border-box;
+  direction: inherit;
 }
 
-.header-box {
-  margin-bottom: 10px;
+/* RTL mirror: logical properties follow direction automatically, this only
+   flips transform-based motion and explicitly LTR technical strings. */
+.wg-screen.is-rtl {
+  --wg-dir: -1;
+  direction: rtl;
 }
 
-.step-tag {
+.wg-screen.is-rtl .wg-font-mono {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* --------------------------------------------------------------------------
+   2. Screen header
+   -------------------------------------------------------------------------- */
+.wg-screen .wg-header {
+  margin-block-end: 10px;
+}
+
+.wg-screen .wg-step-tag {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: var(--accent-sky);
+  color: var(--wg-sky);
   letter-spacing: 0.8px;
-  margin-bottom: 4px;
+  margin-block-end: 4px;
 }
 
-.header-box h2 {
+.wg-screen .wg-header h2 {
   font-size: 20px;
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--wg-text);
   margin: 0;
 }
 
-.subtitle {
-  color: var(--text-muted);
+.wg-screen .wg-subtitle {
+  color: var(--wg-text-muted);
   font-size: 12px;
-  margin-top: 4px;
-  margin-bottom: 0;
+  margin-block-start: 4px;
+  margin-block-end: 0;
 }
 
-/* Node Selector Ribbon */
-.node-selector-bar {
+/* --------------------------------------------------------------------------
+   3. Node selector ribbon
+   -------------------------------------------------------------------------- */
+.wg-screen .wg-node-selector {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: var(--wg-bg-card);
+  border: 1px solid var(--wg-border);
   border-radius: 10px;
-  padding: 6px 12px;
-  margin-bottom: 10px;
+  padding-block: 6px;
+  padding-inline: 12px;
+  margin-block-end: 10px;
   gap: 12px;
 }
 
-.selector-meta {
+.wg-screen .wg-selector-meta {
   display: flex;
   align-items: center;
   gap: 8px;
   white-space: nowrap;
 }
 
-.selector-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent-sky);
-  box-shadow: 0 0 8px var(--accent-sky);
-}
-
-.selector-label {
+.wg-screen .wg-meta-label {
   font-size: 11.5px;
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--wg-text);
 }
 
-.current-node-badge {
-  background: var(--accent-sky-mid);
-  color: var(--accent-sky);
-  border: 1px solid var(--accent-sky-border-strong);
-  font-family: 'Consolas', 'Courier New', monospace;
+.wg-screen .wg-current-node {
+  background: var(--wg-sky-mid);
+  color: var(--wg-sky);
+  border: 1px solid var(--wg-sky-border-strong);
   font-size: 11px;
   font-weight: 700;
-  padding: 2px 8px;
+  padding-block: 2px;
+  padding-inline: 8px;
   border-radius: 4px;
 }
 
-.node-pill-buttons {
+.wg-screen .wg-node-pills {
   display: flex;
   align-items: center;
   gap: 4px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding-block-end: 2px;
 }
 
-.node-select-btn {
-  background: var(--bg-sub);
-  color: var(--text-muted);
-  border: 1px solid var(--border-strong);
-  padding: 3px 8px;
+.wg-screen .wg-btn-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--wg-bg-sub);
+  color: var(--wg-text-muted);
+  border: 1px solid var(--wg-border-strong);
+  padding-block: 3px;
+  padding-inline: 8px;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
-  font-family: 'Consolas', 'Courier New', monospace;
+  font-family: inherit;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
   white-space: nowrap;
 }
 
-.node-select-btn:hover {
-  background: var(--bg-hover);
-  color: var(--text-strong);
+.wg-screen .wg-btn-node:hover:not(:disabled) {
+  background: var(--wg-bg-hover);
+  color: var(--wg-text-strong);
 }
 
-.node-select-btn.active {
-  background: var(--accent-sky);
-  color: var(--text-on-accent);
-  border-color: var(--accent-sky);
+.wg-screen .wg-btn-node.wg-active {
+  background: var(--wg-sky);
+  color: var(--wg-text-on-accent);
+  border-color: var(--wg-sky);
   font-weight: 700;
 }
 
-.loading-state {
+.wg-screen .wg-btn-node:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.wg-screen .wg-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   4. Loading state
+   -------------------------------------------------------------------------- */
+.wg-screen .wg-loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -210,36 +262,42 @@
   gap: 16px;
 }
 
-.spinner {
+.wg-screen .wg-spinner {
   width: 36px;
   height: 36px;
-  border: 3px solid var(--white-10);
-  border-top-color: var(--primary);
+  border: 3px solid var(--wg-white-10);
+  border-top-color: var(--accent-primary, #1976D2);
   border-radius: 50%;
-  animation: spin 0.9s infinite linear;
+  animation: wg-spin 0.9s infinite linear;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+@keyframes wg-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.loading-msg {
-  color: var(--text-muted);
+.wg-screen .wg-loading-msg {
+  color: var(--wg-text-muted);
   font-size: 13px;
+  margin: 0;
 }
 
-.content-body {
+/* --------------------------------------------------------------------------
+   5. Content shell and fallback
+   -------------------------------------------------------------------------- */
+.wg-screen .wg-content-body {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
   overflow: hidden;
-  padding: 2px 4px;
+  padding-block: 2px;
+  padding-inline: 4px;
 }
 
-/* Failure / Preview Fallback (Tab body) */
-.content-fallback {
+.wg-screen .wg-content-fallback {
   flex: 1;
   display: flex;
   align-items: center;
@@ -247,116 +305,130 @@
   padding: 16px;
 }
 
-.fallback-card {
+.wg-screen .wg-fallback-card {
   max-width: 540px;
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 16px 20px;
+  padding-block: 16px;
+  padding-inline: 20px;
   border-radius: 12px;
-  border: 1px solid var(--accent-sky-border);
-  background: var(--accent-sky-faint);
+  border: 1px solid var(--wg-sky-border);
+  background: var(--wg-sky-faint);
+  text-align: start;
 }
 
-.fallback-svg {
+.wg-screen .wg-fallback-svg {
   width: 26px;
   height: 26px;
   flex-shrink: 0;
-  color: var(--accent-sky);
+  color: var(--wg-sky);
 }
 
-.fallback-body {
+.wg-screen .wg-fallback-body {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 6px;
 }
 
-.fallback-body strong {
-  color: var(--accent-sky-light);
+.wg-screen .wg-fallback-body strong {
+  color: var(--wg-sky-light);
   font-size: 12.5px;
 }
 
-.fallback-body span {
-  color: var(--accent-sky-light-muted);
+.wg-screen .wg-fallback-body span {
+  color: var(--wg-sky-light-muted);
   font-size: 11.5px;
   line-height: 1.65;
 }
 
-.fallback-retry {
+.wg-screen .wg-fallback-retry {
   align-self: flex-start;
-  margin-top: 4px;
-  padding: 6px 14px;
+  margin-block-start: 4px;
+  padding-block: 6px;
+  padding-inline: 14px;
   font-size: 11px;
 }
 
-/* 1. Hero VPN Connection Card */
-.hero-vpn-card {
-  background: var(--hero-gradient);
-  border: 1px solid var(--accent-sky-border-soft);
+/* --------------------------------------------------------------------------
+   6. Hero VPN connection card
+   -------------------------------------------------------------------------- */
+.wg-screen .wg-hero-card {
+  background: var(--wg-hero-gradient);
+  border: 1px solid var(--wg-sky-border-soft);
   border-radius: 16px;
-  padding: 16px 20px;
+  padding-block: 16px;
+  padding-inline: 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
   backdrop-filter: blur(12px);
-  box-shadow: var(--shadow-card);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--wg-shadow-card);
 }
 
-.vpn-topology-flow {
+.wg-screen .wg-topology {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
 }
 
-.endpoint-node {
+.wg-screen .wg-node {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
-.node-icon-box {
+.wg-screen .wg-node-icon {
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background: var(--primary-soft);
-  border: 1px solid var(--accent-sky-border);
+  background: var(--wg-sky-soft);
+  border: 1px solid var(--wg-sky-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent-sky);
+  color: var(--wg-sky);
   flex-shrink: 0;
 }
 
-.node-icon-box.cloud-box {
-  background: var(--accent-emerald-soft);
-  border-color: var(--accent-emerald-border-strong);
-  color: var(--accent-emerald-bright);
+.wg-screen .wg-node-icon.wg-cloud-icon {
+  background: var(--wg-emerald-soft);
+  border-color: var(--wg-emerald-border-strong);
+  color: var(--wg-emerald-bright);
 }
 
-.node-svg {
+.wg-screen .wg-node-svg {
   width: 22px;
   height: 22px;
 }
 
-.node-meta {
+.wg-screen .wg-node-details {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
-.node-name {
+.wg-screen .wg-node-type {
+  font-size: 11px;
+  color: var(--wg-text-muted);
+}
+
+.wg-screen .wg-node-name {
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--wg-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.node-desc {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.tunnel-connector {
+/* Tunnel connector */
+.wg-screen .wg-tunnel-bridge {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -366,505 +438,578 @@
   min-width: 140px;
 }
 
-.tunnel-line {
+.wg-screen .wg-pulse-line {
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, var(--accent-sky) 0%, var(--accent-emerald) 100%);
+  background: linear-gradient(90deg, var(--wg-sky) 0%, var(--wg-emerald) 100%);
   position: relative;
   border-radius: 2px;
+  overflow: hidden;
 }
 
-.tunnel-pulse {
+.wg-screen.is-rtl .wg-pulse-line {
+  background: linear-gradient(270deg, var(--wg-sky) 0%, var(--wg-emerald) 100%);
+}
+
+.wg-screen .wg-pulse-packet {
   position: absolute;
   inset-block-start: 0;
   inset-inline-start: 0;
   width: 24px;
   height: 2px;
   border-radius: 2px;
-  background: var(--text-strong);
-  box-shadow: 0 0 8px var(--accent-sky);
-  animation: pulseSlide 2.5s infinite linear;
+  background: var(--wg-text-strong);
+  box-shadow: 0 0 8px var(--wg-sky);
+  animation: wg-pulse-slide 2.5s infinite linear;
   will-change: inset-inline-start, opacity;
 }
 
-@keyframes pulseSlide {
+.wg-screen .wg-pulse-packet.wg-delayed {
+  animation-delay: 1.25s;
+}
+
+@keyframes wg-pulse-slide {
   0% {
     inset-inline-start: 0;
     opacity: 0;
   }
+
   10% {
     opacity: 1;
   }
+
   90% {
     opacity: 1;
   }
+
   100% {
     inset-inline-start: calc(100% - 24px);
     opacity: 0;
   }
 }
 
-.tunnel-badge {
+.wg-screen .wg-tunnel-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--surface-overlay);
-  border: 1px solid var(--accent-emerald-border);
-  padding: 3px 10px;
+  background: var(--wg-surface-overlay);
+  border: 1px solid var(--wg-emerald-border);
+  padding-block: 3px;
+  padding-inline: 10px;
   border-radius: 9999px;
   font-size: 10.5px;
   font-weight: 600;
-  color: var(--accent-emerald-bright);
+  color: var(--wg-emerald-bright);
 }
 
-.shield-mini-svg {
+.wg-screen .wg-tunnel-svg {
   width: 12px;
   height: 12px;
-  stroke: var(--accent-emerald-bright);
+  stroke: var(--wg-emerald-bright);
 }
 
-.vpn-telemetry-row {
+/* Status bar */
+.wg-screen .wg-status-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 10px;
-  border-top: 1px solid var(--white-06);
+  gap: 12px;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--wg-white-06);
 }
 
-.status-indicator-group {
+.wg-screen .wg-status-indicator {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
+  min-width: 0;
 }
 
-.status-live-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--accent-emerald-soft);
-  border: 1px solid var(--accent-emerald-border);
-  padding: 3px 10px;
-  border-radius: 9999px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--accent-emerald-bright);
+.wg-screen .wg-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--wg-text-dim);
+  flex-shrink: 0;
 }
 
-.latency-metric {
+.wg-screen .wg-status-dot.wg-status-online {
+  background: var(--wg-emerald);
+  box-shadow: 0 0 8px var(--wg-emerald);
+  animation: wg-status-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes wg-status-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.wg-screen .wg-status-text {
   font-size: 11.5px;
+  font-weight: 600;
+  color: var(--wg-text-body);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wg-screen .wg-latency-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--wg-emerald-soft);
+  border: 1px solid var(--wg-emerald-border);
+  color: var(--wg-emerald-bright);
+  padding-block: 2px;
+  padding-inline: 8px;
+  border-radius: 9999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.wg-screen .wg-btn-ping {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-}
-
-.metric-label {
-  color: var(--text-muted);
-}
-
-.btn-ping-live {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--accent-sky-soft);
-  border: 1px solid var(--accent-sky-border-strong);
-  color: var(--accent-sky);
-  padding: 6px 14px;
+  background: var(--wg-sky-soft);
+  border: 1px solid var(--wg-sky-border-strong);
+  color: var(--wg-sky);
+  padding-block: 6px;
+  padding-inline: 14px;
   border-radius: 8px;
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
   font-family: inherit;
+  flex-shrink: 0;
 }
 
-.btn-ping-live:hover:not(:disabled) {
-  background: var(--accent-sky-strong);
-  border-color: var(--accent-sky);
+.wg-screen .wg-btn-ping:hover:not(:disabled) {
+  background: var(--wg-sky-strong);
+  border-color: var(--wg-sky);
 }
 
-.ping-svg {
+.wg-screen .wg-btn-ping:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.wg-screen .wg-ping-svg {
   width: 14px;
   height: 14px;
 }
 
-/* 2. Dual Bento Summary */
-.vpn-bento-grid {
+.wg-screen .wg-ping-svg.wg-spinning {
+  animation: wg-spin 0.9s infinite linear;
+}
+
+/* --------------------------------------------------------------------------
+   7. Bento summary grid
+   -------------------------------------------------------------------------- */
+.wg-screen .wg-bento-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-@media (max-width: 800px) {
-  .vpn-bento-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.bento-tile {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+.wg-screen .wg-bento-card {
+  background: var(--wg-bg-card);
+  border: 1px solid var(--wg-border);
   border-radius: 14px;
-  padding: 12px 16px;
+  padding-block: 12px;
+  padding-inline: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.tile-header {
+.wg-screen .wg-bento-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--accent-sky);
+  color: var(--wg-sky);
 }
 
-.tile-svg {
+.wg-screen .wg-bento-svg {
   width: 16px;
   height: 16px;
 }
 
-.tile-title {
+.wg-screen .wg-bento-title {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-strong);
+  color: var(--wg-text-strong);
 }
 
-.tile-content-list {
+.wg-screen .wg-specs-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.tile-row {
+.wg-screen .wg-spec-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   font-size: 11.5px;
 }
 
-.row-label {
-  color: var(--text-muted);
+.wg-screen .wg-spec-label {
+  color: var(--wg-text-muted);
   font-size: 11px;
 }
 
-.row-code {
-  background: var(--black-40);
-  padding: 2px 8px;
+.wg-screen .wg-spec-val {
+  background: var(--wg-black-40);
+  padding-block: 2px;
+  padding-inline: 8px;
   border-radius: 4px;
   font-size: 11px;
+  color: var(--wg-text-body);
+  overflow-wrap: anywhere;
+  text-align: end;
 }
 
-.row-val {
-  font-size: 11px;
-}
-
-.firewall-auto-badge {
+.wg-screen .wg-spec-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--accent-emerald-soft);
-  border: 1px solid var(--accent-emerald-border);
-  padding: 2px 8px;
+  background: var(--wg-amber-soft);
+  border: 1px solid var(--wg-amber-border);
+  padding-block: 2px;
+  padding-inline: 8px;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
-  color: var(--accent-emerald-bright);
+  color: var(--wg-amber);
 }
 
-/* 3. Advanced Configuration Security Action Bar */
-.advanced-entry-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+.wg-screen .wg-spec-pill.wg-pill-active {
+  background: var(--wg-emerald-soft);
+  border-color: var(--wg-emerald-border);
+  color: var(--wg-emerald-bright);
+}
+
+.wg-screen .wg-dot-green {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--wg-emerald);
+  box-shadow: 0 0 6px var(--wg-emerald);
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   8. Advanced configuration banner
+   -------------------------------------------------------------------------- */
+.wg-screen .wg-advanced-banner {
+  background: var(--wg-bg-card);
+  border: 1px solid var(--wg-border);
   border-radius: 14px;
-  padding: 12px 18px;
+  padding-block: 12px;
+  padding-inline: 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   backdrop-filter: blur(8px);
-  transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
-.advanced-entry-card:hover {
-  border-color: var(--accent-sky-border);
+.wg-screen .wg-advanced-banner:hover {
+  border-color: var(--wg-sky-border);
 }
 
-.advanced-entry-info {
+.wg-screen .wg-advanced-info {
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
 }
 
-.lock-icon-badge {
+.wg-screen .wg-advanced-icon {
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: var(--accent-amber-soft);
-  border: 1px solid var(--accent-amber-border-strong);
+  background: var(--wg-amber-soft);
+  border: 1px solid var(--wg-amber-border-strong);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent-amber);
+  color: var(--wg-amber);
   flex-shrink: 0;
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
 }
 
-.lock-icon-badge.is-unlocked {
-  background: var(--accent-emerald-soft);
-  border-color: var(--accent-emerald-border-strong);
-  color: var(--accent-emerald-bright);
+.wg-screen .wg-advanced-icon.wg-unlocked {
+  background: var(--wg-emerald-soft);
+  border-color: var(--wg-emerald-border-strong);
+  color: var(--wg-emerald-bright);
 }
 
-.lock-svg {
+.wg-screen .wg-adv-svg {
   width: 18px;
   height: 18px;
 }
 
-.entry-meta {
+.wg-screen .wg-advanced-text {
   display: flex;
   flex-direction: column;
   gap: 3px;
+  min-width: 0;
 }
 
-.entry-title-row {
+.wg-screen .wg-advanced-title-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
-.entry-title {
+.wg-screen .wg-advanced-title {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-strong);
+  color: var(--wg-text-strong);
 }
 
-.status-locked-pill {
+.wg-screen .wg-protected-badge,
+.wg-screen .wg-unlocked-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 10px;
   font-weight: 700;
-  background: var(--accent-amber-soft);
-  color: var(--accent-amber);
-  border: 1px solid var(--accent-amber-border);
-  padding: 1px 7px;
+  padding-block: 1px;
+  padding-inline: 7px;
   border-radius: 9999px;
 }
 
-.status-unlocked-pill {
-  font-size: 10px;
-  font-weight: 700;
-  background: var(--accent-emerald-soft);
-  color: var(--accent-emerald-bright);
-  border: 1px solid var(--accent-emerald-border);
-  padding: 1px 7px;
-  border-radius: 9999px;
+.wg-screen .wg-protected-badge {
+  background: var(--wg-amber-soft);
+  color: var(--wg-amber);
+  border: 1px solid var(--wg-amber-border);
 }
 
-.entry-desc {
+.wg-screen .wg-unlocked-badge {
+  background: var(--wg-emerald-soft);
+  color: var(--wg-emerald-bright);
+  border: 1px solid var(--wg-emerald-border);
+}
+
+.wg-screen .wg-advanced-subtitle {
   font-size: 10.5px;
-  color: var(--text-muted);
+  color: var(--wg-text-muted);
   line-height: 1.35;
+  margin: 0;
 }
 
-.btn-open-advanced {
+.wg-screen .wg-btn-advanced {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--accent-sky-soft);
-  border: 1px solid var(--accent-sky-border);
-  color: var(--accent-sky);
-  padding: 7px 16px;
+  background: var(--wg-sky-soft);
+  border: 1px solid var(--wg-sky-border);
+  color: var(--wg-sky);
+  padding-block: 7px;
+  padding-inline: 16px;
   border-radius: 8px;
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
   flex-shrink: 0;
   font-family: inherit;
 }
 
-.btn-open-advanced:hover {
-  background: var(--accent-sky-strong);
-  border-color: var(--accent-sky);
+.wg-screen .wg-btn-advanced:hover {
+  background: var(--wg-sky-strong);
+  border-color: var(--wg-sky);
 }
 
-.btn-open-advanced.btn-unlocked-mode {
-  background: var(--accent-emerald-soft);
-  border-color: var(--accent-emerald-border-hover);
-  color: var(--accent-emerald-bright);
+.wg-screen .wg-btn-advanced.wg-btn-unlocked {
+  background: var(--wg-emerald-soft);
+  border-color: var(--wg-emerald-border-hover);
+  color: var(--wg-emerald-bright);
 }
 
-.btn-open-advanced.btn-unlocked-mode:hover {
-  background: var(--accent-emerald-strong);
-  border-color: var(--accent-emerald-bright);
+.wg-screen .wg-btn-advanced.wg-btn-unlocked:hover {
+  background: var(--wg-emerald-strong);
+  border-color: var(--wg-emerald-bright);
 }
 
-.gear-mini-svg {
+.wg-screen .wg-btn-adv-svg {
   width: 14px;
   height: 14px;
 }
 
-/* 4. Fluent 2 Modal Backdrop & Dialog System */
-.modal-backdrop {
+/* --------------------------------------------------------------------------
+   9. Modal system
+   -------------------------------------------------------------------------- */
+.wg-screen .wg-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: var(--overlay-scrim);
+  background: var(--wg-overlay);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
+  animation: wg-fade-in 0.2s ease-out;
   padding: 20px;
 }
 
-.modal-card {
-  background: var(--bg-card);
-  border: 1px solid var(--accent-amber-border-hover);
-  box-shadow: var(--shadow-modal);
+.wg-screen .wg-modal {
+  background: var(--wg-bg-card);
+  border: 1px solid var(--wg-amber-border-hover);
+  box-shadow: var(--wg-shadow-modal);
   border-radius: 16px;
   width: 100%;
   max-width: 480px;
   padding: 24px;
-  color: var(--text-primary);
+  color: var(--wg-text);
   display: flex;
   flex-direction: column;
   gap: 18px;
-  animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: wg-scale-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
+  text-align: start;
 }
 
-.modal-card.modal-card-wide {
+.wg-screen .wg-modal.wg-endpoint-modal {
   max-width: 680px;
-  border-color: var(--accent-sky-border-strong);
-  box-shadow: var(--shadow-modal-wide);
+  border-color: var(--wg-sky-border-strong);
+  box-shadow: var(--wg-shadow-modal-wide);
 }
 
-.modal-header {
+.wg-screen .wg-modal-header {
   display: flex;
   gap: 14px;
   align-items: flex-start;
   position: relative;
 }
 
-.modal-icon-badge {
+.wg-screen .wg-modal-icon {
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background: var(--accent-amber-mid);
-  border: 1px solid var(--accent-amber-border-strong);
+  background: var(--wg-amber-mid);
+  border: 1px solid var(--wg-amber-border-strong);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: var(--accent-amber);
+  color: var(--wg-amber);
 }
 
-.modal-icon-badge.badge-cyan {
-  background: var(--accent-sky-mid);
-  border-color: var(--accent-sky-border-strong);
-  color: var(--accent-sky);
+.wg-screen .wg-endpoint-modal .wg-modal-icon {
+  background: var(--wg-sky-mid);
+  border-color: var(--wg-sky-border-strong);
+  color: var(--wg-sky);
 }
 
-.modal-shield-svg {
+.wg-screen .wg-modal-icon-svg {
   width: 22px;
   height: 22px;
 }
 
-.modal-title-group {
+.wg-screen .wg-modal-title-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
   flex: 1;
+  min-width: 0;
 }
 
-.modal-title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.modal-title {
+.wg-screen .wg-modal-title {
   margin: 0;
   font-size: 15px;
   font-weight: 700;
-  color: var(--text-strong);
+  color: var(--wg-text-strong);
 }
 
-.badge-unlocked-cyan {
-  font-size: 10px;
-  font-weight: 700;
-  background: var(--accent-sky-mid);
-  color: var(--accent-sky);
-  border: 1px solid var(--accent-sky-border);
-  padding: 1px 7px;
-  border-radius: 9999px;
-}
-
-.modal-subtitle {
+.wg-screen .wg-modal-subtitle {
   margin: 0;
   font-size: 11.5px;
   line-height: 1.5;
-  color: var(--text-subtle);
+  color: var(--wg-text-subtle);
 }
 
-.btn-modal-close {
-  background: transparent;
-  border: none;
-  color: var(--text-dim);
-  font-size: 16px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: background-color 0.15s ease, color 0.15s ease;
+.wg-screen .wg-modal-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--wg-text-body);
 }
 
-.btn-modal-close:hover {
-  background: var(--white-08);
-  color: var(--text-strong);
-}
-
-.modal-body {
+.wg-screen .wg-password-body,
+.wg-screen .wg-endpoint-body {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.modal-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-body);
-}
-
-.password-input-wrapper {
+.wg-screen .wg-password-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.modal-input {
+.wg-screen .wg-modal-input {
   width: 100%;
-  background: var(--bg-app);
-  border: 1px solid var(--border-strong);
+  background: var(--wg-bg-app);
+  border: 1px solid var(--wg-border-strong);
   border-radius: 8px;
-  padding: 10px 42px 10px 14px;
-  color: var(--text-strong);
+  padding-block: 10px;
+  padding-inline: 14px 42px;
+  color: var(--wg-text-strong);
   font-size: 13.5px;
   font-family: inherit;
   outline: none;
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.modal-input:focus {
-  border-color: var(--accent-amber);
-  box-shadow: 0 0 0 3px var(--accent-amber-ring);
+.wg-screen .wg-modal-input:focus {
+  border-color: var(--wg-amber);
+  box-shadow: 0 0 0 3px var(--wg-amber-ring);
 }
 
-.btn-toggle-eye {
+.wg-screen .wg-btn-eye {
   position: absolute;
+  inset-block-start: 50%;
   inset-inline-end: 10px;
+  transform: translateY(-50%);
   background: none;
   border: none;
-  color: var(--text-dim);
+  color: var(--wg-text-dim);
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -873,320 +1018,331 @@
   transition: color 0.15s ease;
 }
 
-.btn-toggle-eye:hover {
-  color: var(--text-body);
+.wg-screen .wg-btn-eye:hover {
+  color: var(--wg-text-body);
 }
 
-.eye-svg {
+.wg-screen .wg-eye-svg {
   width: 18px;
   height: 18px;
 }
 
-.modal-error-box {
+.wg-screen .wg-modal-error {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--accent-red-mid);
-  border: 1px solid var(--accent-red-border-strong);
-  padding: 8px 12px;
+  background: var(--wg-red-mid);
+  border: 1px solid var(--wg-red-border-strong);
+  padding-block: 8px;
+  padding-inline: 12px;
   border-radius: 8px;
   font-size: 11.5px;
-  color: var(--accent-red-bright);
+  color: var(--wg-red-bright);
   line-height: 1.4;
 }
 
-.error-mini-svg {
+.wg-screen .wg-error-svg {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
 }
 
-.modal-actions {
+.wg-screen .wg-modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 4px;
+  margin-block-start: 4px;
 }
 
-.btn-modal-cancel {
-  background: var(--bg-sub);
-  color: var(--text-body);
-  border: 1px solid var(--border-strong);
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-  font-family: inherit;
-}
-
-.btn-modal-cancel:hover {
-  background: var(--bg-hover);
-}
-
-.btn-modal-submit {
-  background: var(--primary);
-  color: var(--text-strong);
-  border: none;
-  padding: 8px 20px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
-  font-family: inherit;
-}
-
-.btn-modal-submit:hover:not(:disabled) {
-  background: var(--primary-hover);
-}
-
-.dialog-body-scroll {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-height: 440px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.modal-actions-dialog {
-  display: flex;
+.wg-screen .wg-modal-actions.wg-endpoint-actions {
   align-items: center;
   justify-content: space-between;
-  padding-top: 10px;
-  border-top: 1px solid var(--white-08);
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--wg-white-08);
 }
 
-.btn-lock-again {
+.wg-screen .wg-btn-cancel {
+  background: var(--wg-bg-sub);
+  color: var(--wg-text-body);
+  border: 1px solid var(--wg-border-strong);
+  padding-block: 8px;
+  padding-inline: 18px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+  font-family: inherit;
+}
+
+.wg-screen .wg-btn-cancel:hover:not(:disabled) {
+  background: var(--wg-bg-hover);
+}
+
+.wg-screen .wg-btn-cancel:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.wg-screen .wg-endpoint-actions .wg-btn-cancel {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--accent-red-soft);
-  border: 1px solid var(--accent-red-border);
-  color: var(--accent-red-bright);
-  padding: 6px 14px;
+  background: var(--wg-red-soft);
+  border-color: var(--wg-red-border);
+  color: var(--wg-red-bright);
+  padding-block: 6px;
+  padding-inline: 14px;
   border-radius: 6px;
   font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-  font-family: inherit;
 }
 
-.btn-lock-again:hover {
-  background: var(--accent-red-strong);
-  border-color: var(--accent-red);
+.wg-screen .wg-endpoint-actions .wg-btn-cancel:hover:not(:disabled) {
+  background: var(--wg-red-strong);
+  border-color: var(--wg-red);
 }
 
-.lock-mini-svg {
+.wg-screen .wg-lock-svg {
   width: 13px;
   height: 13px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.wg-screen .wg-btn-confirm {
+  background: var(--accent-primary, #1976D2);
+  color: var(--wg-text-strong);
+  border: none;
+  padding-block: 8px;
+  padding-inline: 20px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }
 
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+.wg-screen .wg-btn-confirm:hover:not(:disabled) {
+  background: var(--accent-hover, #1565C0);
+  box-shadow: 0 2px 10px rgba(25, 118, 210, 0.4);
 }
 
-.dot-green {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent-emerald);
-  box-shadow: 0 0 6px var(--accent-emerald);
+.wg-screen .wg-btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
-/* Manual Drawer Inputs & Conf Box */
-.manual-inputs-grid {
+
+/* --------------------------------------------------------------------------
+   10. Endpoint editor
+   -------------------------------------------------------------------------- */
+.wg-screen .wg-adv-inputs {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
-@media (max-width: 800px) {
-  .manual-inputs-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.input-card {
+.wg-screen .wg-adv-field {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
-.input-label {
+.wg-screen .wg-adv-label {
   font-size: 10px;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--wg-text-muted);
   font-weight: 700;
   letter-spacing: 0.5px;
 }
 
-.fluent-input {
-  background: var(--bg-input);
-  border: 1px solid var(--border-strong);
-  color: var(--text-main);
-  padding: 6px 10px;
+.wg-screen .wg-adv-input {
+  width: 100%;
+  background: var(--wg-bg-input);
+  border: 1px solid var(--wg-border-strong);
+  color: var(--wg-text);
+  padding-block: 6px;
+  padding-inline: 10px;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   outline: none;
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.fluent-input:focus {
-  border-color: var(--accent-sky);
-  box-shadow: 0 0 8px var(--accent-sky-ring);
+.wg-screen .wg-adv-input:focus {
+  border-color: var(--wg-sky);
+  box-shadow: 0 0 8px var(--wg-sky-ring);
 }
 
-.raw-conf-box {
-  background: var(--bg-app);
-  border: 1px solid var(--border-color);
+.wg-screen .wg-conf-box {
+  background: var(--wg-bg-app);
+  border: 1px solid var(--wg-border);
   border-radius: 8px;
   overflow: hidden;
 }
 
-.raw-conf-head {
+.wg-screen .wg-conf-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 10px;
-  background: var(--white-03);
-  border-bottom: 1px solid var(--border-color);
+  gap: 10px;
+  padding-block: 6px;
+  padding-inline: 10px;
+  background: var(--wg-white-03);
+  border-block-end: 1px solid var(--wg-border);
 }
 
-.raw-conf-title {
+.wg-screen .wg-conf-title {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 11px;
   font-weight: 600;
-  color: var(--text-main);
+  color: var(--wg-text);
 }
 
-.file-svg {
-  width: 12px;
-  height: 12px;
-  stroke: var(--accent-sky);
-}
-
-.raw-conf-actions {
+.wg-screen .wg-conf-actions {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.btn-tool {
-  background: var(--bg-sub);
-  border: 1px solid var(--border-strong);
-  color: var(--text-subtle);
+.wg-screen .wg-btn-conf {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--wg-bg-sub);
+  border: 1px solid var(--wg-border-strong);
+  color: var(--wg-text-subtle);
   border-radius: 4px;
-  padding: 2px 8px;
+  padding-block: 2px;
+  padding-inline: 8px;
   font-size: 10.5px;
+  font-family: inherit;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
-.btn-tool:hover {
-  color: var(--text-strong);
-  border-color: var(--accent-sky);
+.wg-screen .wg-btn-conf:hover {
+  color: var(--wg-text-strong);
+  border-color: var(--wg-sky);
 }
 
-.btn-copy {
-  color: var(--accent-sky);
+.wg-screen .wg-btn-conf.wg-copied {
+  color: var(--wg-emerald-bright);
+  border-color: var(--wg-emerald-border);
 }
 
-.conf-editor {
+.wg-screen .wg-conf-btn-svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+}
+
+.wg-screen .wg-conf-textarea {
   width: 100%;
   box-sizing: border-box;
+  min-height: 180px;
   background: transparent;
-  color: var(--accent-sky);
+  color: var(--wg-sky);
   border: none;
   outline: none;
-  padding: 8px 10px;
+  padding-block: 8px;
+  padding-inline: 10px;
   font-size: 11px;
   line-height: 1.45;
   resize: vertical;
+  /* WireGuard configuration is always LTR, even in an RTL interface */
+  direction: ltr;
+  text-align: start;
+  unicode-bidi: isolate;
+  tab-size: 2;
 }
 
-.text-accent {
-  color: var(--accent-sky);
-}
-
-.text-emerald {
-  color: var(--accent-emerald-bright);
-}
-
-.text-cyan {
-  color: var(--accent-cyan);
-}
-
-.text-muted {
-  color: var(--text-muted);
-}
-
-.text-xs {
-  font-size: 10.5px;
-}
-
-.font-mono {
+/* --------------------------------------------------------------------------
+   11. Utility classes
+   -------------------------------------------------------------------------- */
+.wg-screen .wg-font-mono {
   font-family: 'Consolas', 'Courier New', monospace;
 }
 
-.action-bar {
+.wg-screen .wg-text-cyan {
+  color: var(--wg-cyan);
+}
+
+.wg-screen .wg-text-muted {
+  color: var(--wg-text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   12. Bottom action bar
+   -------------------------------------------------------------------------- */
+.wg-screen .wg-action-bar {
   flex-shrink: 0;
-  margin-top: auto;
+  margin-block-start: auto;
   height: 56px;
   min-height: 56px;
   max-height: 56px;
-  padding: 0 2px;
+  padding-block: 0;
+  padding-inline: 2px;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  border-top: 1px solid var(--border-color);
+  border-block-start: 1px solid var(--wg-border);
   box-sizing: border-box;
-  animation: action-bar-in 0.35s ease backwards;
+  animation: wg-action-bar-in 0.35s ease backwards;
 }
 
-@keyframes action-bar-in {
+@keyframes wg-action-bar-in {
   from {
     opacity: 0;
     transform: translateY(6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.action-bar-start {
+.wg-screen .wg-action-bar-start {
   display: flex;
   align-items: center;
   justify-content: flex-start;
 }
 
-.action-bar-center {
+.wg-screen .wg-action-bar-center {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.action-bar-end {
+.wg-screen .wg-action-bar-end {
   display: flex;
   align-items: center;
   justify-content: flex-end;
 }
 
-.btn {
+.wg-screen .wg-btn {
   height: 36px;
-  padding: 0 20px;
+  padding-block: 0;
+  padding-inline: 20px;
   border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
@@ -1199,114 +1355,160 @@
   line-height: 1;
   white-space: nowrap;
   box-sizing: border-box;
-  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
 }
 
-.btn-secondary {
-  background: var(--bg-card);
-  color: var(--text-body);
-  border: 1px solid var(--border-strong);
+.wg-screen .wg-btn-secondary {
+  background: var(--wg-bg-card);
+  color: var(--wg-text-body);
+  border: 1px solid var(--wg-border-strong);
 }
 
-.btn-secondary:hover {
-  background: var(--bg-hover);
+.wg-screen .wg-btn-secondary:hover {
+  background: var(--wg-bg-hover);
 }
 
-.btn-primary {
-  background: var(--primary);
-  color: var(--text-strong);
+.wg-screen .wg-btn-primary {
+  background: var(--accent-primary, #1976D2);
+  color: var(--wg-text-strong);
   border: none;
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
-  box-shadow: 0 2px 10px var(--primary-shadow);
+.wg-screen .wg-btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover, #1565C0);
+  box-shadow: 0 2px 10px var(--wg-primary-shadow);
 }
 
-.btn-primary:disabled {
+.wg-screen .wg-btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.btn-flex {
+.wg-screen .wg-btn-flex {
   display: inline-flex;
   align-items: center;
   gap: 7px;
 }
 
-.nav-arrow-svg {
+.wg-screen .wg-nav-arrow {
   width: 13px;
   height: 13px;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.btn-next:hover:not(:disabled) .nav-arrow-svg {
-  transform: translateX(3px);
+/* --wg-dir flips automatically to -1 in RTL, mirroring the arrow motion. */
+.wg-screen .wg-btn-next:hover:not(:disabled) .wg-nav-arrow {
+  transform: translateX(calc(3px * var(--wg-dir)));
 }
 
-.is-rtl .btn-next:hover:not(:disabled) .nav-arrow-svg {
-  transform: translateX(-3px);
+.wg-screen .wg-btn-secondary:hover .wg-nav-arrow {
+  transform: translateX(calc(-3px * var(--wg-dir)));
 }
 
-.btn-secondary:hover .nav-arrow-svg {
-  transform: translateX(-3px);
-}
-
-.is-rtl .btn-secondary:hover .nav-arrow-svg {
-  transform: translateX(3px);
-}
-
-.deploy-svg {
+.wg-screen .wg-deploy-svg {
   width: 14px;
   height: 14px;
 }
 
-.spinner-tiny {
+.wg-screen .wg-spinner-tiny {
   width: 14px;
   height: 14px;
-  border: 2px solid var(--white-30);
-  border-top-color: var(--text-strong);
+  border: 2px solid var(--wg-white-30);
+  border-top-color: var(--wg-text-strong);
   border-radius: 50%;
-  animation: spin 0.8s infinite linear;
+  animation: wg-spin 0.8s infinite linear;
 }
 
-/* Keyboard focus */
-.node-select-btn:focus-visible,
-.btn-ping-live:focus-visible,
-.btn-open-advanced:focus-visible,
-.btn-modal-close:focus-visible,
-.btn-toggle-eye:focus-visible,
-.btn-modal-cancel:focus-visible,
-.btn-modal-submit:focus-visible,
-.btn-lock-again:focus-visible,
-.btn-tool:focus-visible,
-.btn:focus-visible {
-  outline: 2px solid var(--focus-ring-color);
+/* --------------------------------------------------------------------------
+   13. Motion keyframes
+   -------------------------------------------------------------------------- */
+@keyframes wg-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes wg-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   14. Keyboard focus
+   -------------------------------------------------------------------------- */
+.wg-screen .wg-btn-node:focus-visible,
+.wg-screen .wg-btn-ping:focus-visible,
+.wg-screen .wg-btn-advanced:focus-visible,
+.wg-screen .wg-btn-eye:focus-visible,
+.wg-screen .wg-btn-cancel:focus-visible,
+.wg-screen .wg-btn-confirm:focus-visible,
+.wg-screen .wg-btn-conf:focus-visible,
+.wg-screen .wg-btn:focus-visible {
+  outline: 2px solid var(--wg-focus-ring);
   outline-offset: 2px;
 }
 
-.fluent-input:focus-visible,
-.modal-input:focus-visible,
-.conf-editor:focus-visible {
-  outline: 2px solid var(--focus-ring-color);
+.wg-screen .wg-adv-input:focus-visible,
+.wg-screen .wg-modal-input:focus-visible,
+.wg-screen .wg-conf-textarea:focus-visible {
+  outline: 2px solid var(--wg-focus-ring);
   outline-offset: 1px;
 }
 
-/* Respect reduced-motion preferences */
+/* --------------------------------------------------------------------------
+   15. Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 800px) {
+  .wg-screen .wg-bento-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wg-screen .wg-adv-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  .wg-screen .wg-status-bar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   16. Reduced motion
+   -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  .wg-screen *,
+  .wg-screen *::before,
+  .wg-screen *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 
-  .tunnel-pulse {
+  .wg-screen .wg-pulse-packet {
     animation: none;
     inset-inline-start: calc(50% - 12px);
     opacity: 1;
+  }
+
+  .wg-screen .wg-status-dot.wg-status-online {
+    animation: none;
   }
 }
