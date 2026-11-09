@@ -77,17 +77,18 @@ pnpm deploy  # Deploy all
 ## Architecture
 
 ### 9 Apps
-| App | Purpose |
-|-----|---------|
-| fastfree_erp | Main ERP shell |
-| fastfree_hr | HR management |
-| fastfree_ledger | Accounting ledger |
-| fastfree_pos | Point of sale |
-| fastfree_panel | Admin panel (Hono backend) |
-| fastfree_website | Marketing website (Next.js) |
-| fastfree_backend | Frappe backend (Python) |
-| fastfree_os | NixOS/Clan infrastructure |
-| fastfree_installer | Desktop installer (Tauri) |
+
+| App | Purpose | Tech |
+|-----|---------|------|
+| fastfree_erp | Main ERP shell | Quasar (Vue 3 + TS) |
+| fastfree_hr | HR management | Quasar (Vue 3 + TS) |
+| fastfree_ledger | Accounting ledger | Quasar (Vue 3 + TS) |
+| fastfree_pos | Point of sale | Quasar (Vue 3 + TS) |
+| fastfree_panel | Admin panel (Hono backend) | Quasar + Hono |
+| fastfree_website | Marketing website | Next.js |
+| fastfree_backend | Frappe backend (Python) | Frappe (Python) |
+| fastfree_os | NixOS/Clan infrastructure | NixOS |
+| fastfree_installer | Desktop installer | Vue 3 + Tauri (Rust) |
 
 ### 9 Packages
 | Package | Purpose |
@@ -160,6 +161,14 @@ python bots/test_runner_bot.py
 python bots/cleanup_bot.py
 python bots/deep_cleanup_bot.py
 ```
+
+## Communication
+
+- **Respond in Arabic only** (Egyptian dialect) — user's standing preference
+- Be direct and concise — no verbose explanations
+- No Russian/English mixing except file names and commands
+- Execute commands, verify, and report what actually returned
+- Use HTML for deliverables with RTL support (dir="rtl") and CSS variables
 
 ## Free-First Policy
 
