@@ -6,6 +6,8 @@ use crate::services::audit::{AuditService, SystemAuditReport};
 use crate::services::hyperv::HyperVService;
 use crate::services::network::NetworkService;
 use crate::services::process;
+use std::sync::Mutex;
+use std::time::{Duration, SystemTime};
 use tauri::{AppHandle, Manager};
 
 // Re-exports for backward compatibility across modules and tests
@@ -61,9 +63,37 @@ pub async fn transfer_license_to_current_device(
     LicensingManager::transfer_license(&app, &key, &admin_password).await
 }
 
+static ADMIN_PASSWORD_RATE_LIMIT: Mutex<(u32, SystemTime)> = Mutex::new((0, SystemTime::UNIX_EPOCH));
+
 #[tauri::command]
 pub async fn verify_admin_password(password: String) -> Result<bool, String> {
-    Ok(password.trim() == crate::licensing::FASTFREE_MASTER_TRANSFER_SECRET)
+    // Rate limiting: max 5 attempts per 60 seconds.
+    {
+        let mut guard = ADMIN_PASSWORD_RATE_LIMIT.lock().unwrap();
+        let now = SystemTime::now();
+        if now.duration_since(guard.1).unwrap_or_default() > Duration::from_secs(60) {
+            *guard = (0, now);
+        }
+        if guard.0 >= 5 {
+            return Err("Too many attempts. Please try again later.".to_string());
+        }
+        guard.0 += 1;
+    }
+
+    if password.len() > 256 {
+        return Ok(false);
+    }
+    let expected = crate::licensing::master_transfer_secret();
+    if expected.is_empty() {
+        return Ok(false);
+    }
+    let ok = password.trim() == expected;
+    if ok {
+        if let Ok(mut guard) = ADMIN_PASSWORD_RATE_LIMIT.lock() {
+            *guard = (0, SystemTime::now());
+        }
+    }
+    Ok(ok)
 }
 
 #[tauri::command]
@@ -177,6 +207,11 @@ pub async fn get_diagnostic_logs() -> Result<String, String> {
 
 #[tauri::command]
 pub async fn export_diagnostic_bundle(target_path: Option<String>) -> Result<String, String> {
+    if let Some(p) = &target_path {
+        if p.contains("..") || p.contains('\0') || p.trim().is_empty() {
+            return Err("Invalid diagnostic bundle target path".to_string());
+        }
+    }
     InstallerLogger::export_bundle(target_path)
 }
 
@@ -243,7 +278,7 @@ pub async fn install_app_update(_app: AppHandle) -> Result<(), String> {
     {
         use tauri_plugin_updater::UpdaterExt;
         InstallerLogger::info("UPDATER", "Starting update download and installation...");
-        let updater = app.updater().map_err(|e| format!("Updater init error: {}", e))?;
+        let updater = _app.updater().map_err(|e| format!("Updater init error: {}", e))?;
         if let Some(update) = updater.check().await.map_err(|e| e.to_string())? {
             let mut downloaded = 0;
             update
@@ -262,7 +297,7 @@ pub async fn install_app_update(_app: AppHandle) -> Result<(), String> {
                 .await
                 .map_err(|e| format!("Failed to install update: {}", e))?;
             InstallerLogger::info("UPDATER", "Update installed. Restarting application...");
-            app.restart();
+            _app.restart();
         }
         Ok(())
     }

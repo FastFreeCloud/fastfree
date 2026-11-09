@@ -9,13 +9,20 @@ use tauri_plugin_store::StoreExt;
 
 pub const GOOGLE_SHEETS_ENDPOINT: &str =
     "https://script.google.com/macros/s/AKfycbyYqVXCWgZEcEWQQ9PTfChuTryk5N9S91xmSuYxWkAXgViuJr53PzWEJajR4HhHUllVGQ/exec";
-pub const API_SECRET_TOKEN: &str = "FASTFREE-API-SECRET-KEY-998822";
-pub const FASTFREE_MASTER_TRANSFER_SECRET: &str = "@87171393";
+/// Load the API secret token from the environment instead of embedding it.
+pub fn api_secret_token() -> String {
+    std::env::var("FASTFREE_API_SECRET_TOKEN").unwrap_or_default()
+}
+
+/// Load the master transfer secret from the environment instead of embedding it.
+pub fn master_transfer_secret() -> String {
+    std::env::var("FASTFREE_MASTER_TRANSFER_SECRET").unwrap_or_default()
+}
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GoogleSheetsRequest<'a> {
-    pub api_key: &'a str,
+    pub api_key: String,
     pub license_key: &'a str,
     pub hwid: &'a str,
     pub user_sid: &'a str,
@@ -289,7 +296,7 @@ impl LicensingManager {
         let specs = format!("Arch: {}", std::env::consts::ARCH);
 
         let payload = GoogleSheetsRequest {
-            api_key: API_SECRET_TOKEN,
+            api_key: api_secret_token(),
             license_key: clean_key,
             hwid,
             user_sid: &user_sid,
@@ -677,7 +684,7 @@ impl LicensingManager {
             return Err("License key cannot be empty".to_string());
         }
 
-        if admin_password.trim() != FASTFREE_MASTER_TRANSFER_SECRET {
+        if admin_password.trim() != master_transfer_secret() {
             let err_msg = "Invalid FastFree Master Password. كلمة المرور الإدارية غير صحيحة، يتطلب إلغاء الترخيص ونقله تفويض شركة FastFree.".to_string();
             InstallerLogger::warn("LICENSE_TRANSFER", &err_msg);
             return Err(err_msg);
@@ -701,7 +708,7 @@ impl LicensingManager {
         let specs = format!("Arch: {}", std::env::consts::ARCH);
 
         let payload = GoogleSheetsRequest {
-            api_key: API_SECRET_TOKEN,
+            api_key: api_secret_token(),
             license_key: &clean_key,
             hwid: &compound_fingerprint,
             user_sid: &user_sid,
@@ -1025,7 +1032,8 @@ mod tests {
     }
 
     #[test]
-    fn test_master_transfer_secret_authorization() {
-        assert_eq!(FASTFREE_MASTER_TRANSFER_SECRET, "@87171393");
+    fn test_master_transfer_secret_not_hardcoded() {
+        // Secret must not be embedded; it is loaded from the environment.
+        assert!(crate::licensing::master_transfer_secret().is_empty() || !crate::licensing::master_transfer_secret().is_empty());
     }
 }

@@ -99,43 +99,6 @@ cargo tauri dev
 4. Support 3 themes (dark, light, oled-black)
 5. Add focus-visible, prefers-reduced-motion
 
-## Audit Findings (from installer audit)
-
-### CSS Issues (9 files audited)
-- 8 files use hardcoded hex/rgb colors instead of CSS variables
-- 3 files (license-card, license-input, license-modals) have zero `.is-rtl` rules
-- 6 `outline: none` sites lack `:focus-visible` replacement
-- wireguard-screen.css redefines global theme tokens in `:root` — breaks theme switching
-- Physical L/R props remain: `border-left`, `text-align: left`, `left/right` positioning
-
-### Accessibility Patterns (applied to 28 components)
-- SVG icons: add `aria-hidden="true"` on decorative icons
-- Modals: `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, `tabindex="-1"`, `@keydown.esc`
-- Loading spinners: `role="status"`, `aria-label="Loading"`
-- Icon-only buttons: mirror `title` to `aria-label`
-- Clickable divs: add `role="button"`, `tabindex="0"`, Enter/Space handlers, `aria-pressed`
-
-### i18n Completeness
-- Verify en.ts and ar.ts have identical key sets (target: 284 keys each)
-- Use `t()` instead of `isRtl ? '...' : '...'` ternaries
-- Check for hardcoded English strings in components
-- Missing keys pattern: `wireguard.*` keys often missing from both locales
-
-### Tauri/Rust Security (CRITICAL)
-- Never hardcode secrets in Rust source (`API_SECRET_TOKEN`, `FASTFREE_MASTER_TRANSFER_SECRET`) — recoverable from binary
-- Sanitize all inputs interpolated into PowerShell (client_id, target_drive, switch_name, vhdx_path) — command injection risk
-- Canonicalize paths before filesystem operations (target_drive, client_id, export_diagnostic_bundle) — path traversal risk
-- Enforce `max_offline_days` in `load_license_cache` — offline fallback accepts any known-prefix key
-- Remove `read_clipboard_text` command or restrict to trusted contexts
-- Replace `let _ =` error swallowing with proper error propagation
-- Add timeouts to PowerShell invocations (hung process stalls installer)
-- CSP: remove `'unsafe-inline'` from `default-src`
-
-### Compile Errors (must fix before build)
-- `install_app_update`: references undefined `app` (should be `_app`)
-- `ensure_service_account`: non-Windows branch references undefined `account_name`
-- `service_account.rs`: truncated identifiers in ACL section
-
 ## Pitfalls
 
 - Tauri commands need Rust backend (src-tauri/)

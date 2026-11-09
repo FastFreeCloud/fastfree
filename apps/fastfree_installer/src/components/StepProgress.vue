@@ -34,11 +34,11 @@
   <div v-else class="appliance-status-bar" :class="{ 'is-rtl': isRtl }">
     <div class="status-left">
       <span class="pulse-live-dot"></span>
-      <span class="status-title">{{ isRtl ? 'بيئة العقدة تعمل بنجاح' : 'FastFree Node Appliance — Fully Operational' }}</span>
+      <span class="status-title">{{ t('auto.fastfree_node_appliance_fully_operational') }}</span>
       <span class="appliance-tag">Hyper-V Gen 2</span>
     </div>
     <div class="status-right">
-      <span class="status-hint">{{ isRtl ? 'الإعداد والتهيئة مكتملان بالكامل • تم قفل التكوين لضمان استقرار العتاد' : 'Configuration locked for system integrity • Live in System Tray' }}</span>
+      <span class="status-hint">{{ t('auto.configuration_locked_for_system_integrity_live_in_system_tray') }}</span>
     </div>
   </div>
 </template>
@@ -103,26 +103,24 @@ function canClickStep(stepNum: number): boolean {
 
 function getStepTooltip(stepNum: number): string {
   if (currentStep.value >= 6) {
-    return isRtl.value ? 'معالج التثبيت مقفل لضمان استقرار العتاد' : 'Wizard locked for system integrity';
+    return t('auto.wizard_locked_for_system_integrity');
   }
   if (currentStep.value === 5 && !isProvisioningDone.value) {
-    return isRtl.value ? 'جارٍ نشر وتثبيت العقدة في Hyper-V...' : 'Provisioning in progress...';
+    return t('auto.provisioning_in_progress');
   }
   if (stepNum === currentStep.value) {
-    return isRtl.value ? 'الخطوة الحالية' : 'Current step';
+    return t('auto.current_step');
   }
   if (stepNum < currentStep.value) {
-    return isRtl.value ? 'العودة لهذه الخطوة المكتملة' : 'Return to this completed step';
+    return t('auto.return_to_this_completed_step');
   }
   if (stepNum > currentStep.value + 1) {
-    return isRtl.value
-      ? 'لا يمكن تخطي الخطوات! يجب إكمال المراحل السابقة بالترتيب لضمان أمان النظام.'
-      : 'Cannot skip steps! Complete previous stages in order.';
+    return t('auto.cannot_skip_steps_complete_previous_stages_in_order');
   }
   const check = canEnterStep(stepNum);
   return check.allowed
-    ? (isRtl.value ? 'المتابعة لهذه الخطوة' : 'Proceed to this step')
-    : (isRtl.value ? `محظور: ${check.reason || 'يجب استيفاء الشروط المسبقة'}` : `Blocked: ${check.reason || 'Prerequisites required'}`);
+    ? (t('auto.proceed_to_this_step'))
+    : t('auto.blocked', { reason: check.reason || t('auto.prerequisites_required') });
 }
 
 function handleStepClick(target: number) {

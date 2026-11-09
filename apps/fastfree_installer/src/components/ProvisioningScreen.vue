@@ -71,7 +71,7 @@
         </div>
         <div class="error-banner-content">
           <div class="error-banner-title">
-            {{ isRtl ? 'تعذر إتمام تهيئة وتثبيت الآلة في Hyper-V' : 'Hyper-V Appliance Provisioning Failed' }}
+            {{ t('auto.hyper_v_appliance_provisioning_failed') }}
           </div>
           <div class="error-banner-msg font-mono text-xs">{{ errorMessage }}</div>
           <div class="error-banner-actions">
@@ -81,7 +81,7 @@
                   <polyline points="23 4 23 10 17 10"></polyline>
                   <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
                 </svg>
-                <span>{{ isRtl ? 'إعادة المحاولة' : 'Retry Provisioning' }}</span>
+                <span>{{ t('auto.retry_provisioning') }}</span>
               </span>
             </button>
             <button class="btn-back-sizing" @click="currentStep = 3">
@@ -90,7 +90,7 @@
                   <circle cx="12" cy="12" r="3"></circle>
                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
-                <span>{{ isRtl ? 'تعديل موارد العتاد (الأنوية والرام)' : 'Adjust Hardware Sizing' }}</span>
+                <span>{{ t('auto.adjust_hardware_sizing') }}</span>
               </span>
             </button>
           </div>
@@ -117,7 +117,7 @@
             <button
               type="button"
               class="btn-console-act"
-              :title="isRtl ? 'نسخ السجلات' : 'Copy Logs'" :aria-label="isRtl ? 'نسخ السجلات' : 'Copy Logs'"
+              :title="t('auto.copy_logs')" :aria-label="t('auto.copy_logs')"
               @click="copyAllLogs"
             >
               <svg aria-hidden="true" v-if="!isLogsCopied" class="copy-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -127,19 +127,19 @@
               <svg aria-hidden="true" v-else class="copy-svg-mini text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
-              <span>{{ isLogsCopied ? (isRtl ? 'تم النسخ!' : 'Copied!') : (isRtl ? 'نسخ' : 'Copy') }}</span>
+              <span>{{ isLogsCopied ? (t('auto.copied')) : (t('auto.copy')) }}</span>
             </button>
             <button
               type="button"
               class="btn-console-act"
-              :title="isRtl ? 'مسح الطرفية' : 'Clear Terminal'" :aria-label="isRtl ? 'مسح الطرفية' : 'Clear Terminal'"
+              :title="t('auto.clear_terminal')" :aria-label="t('auto.clear_terminal')"
               @click="logs = []"
             >
               <svg aria-hidden="true" class="copy-svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="3 6 5 6 21 6"></polyline>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
               </svg>
-              <span>{{ isRtl ? 'مسح' : 'Clear' }}</span>
+              <span>{{ t('auto.clear') }}</span>
             </button>
           </div>
         </div>
@@ -168,7 +168,7 @@
             <svg aria-hidden="true" class="nav-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline :points="isRtl ? '9 18 15 12 9 6' : '15 18 9 12 15 6'"></polyline>
             </svg>
-            <span>{{ isRtl ? 'العودة لـ FastFree VPN' : 'Back to FastFree VPN' }}</span>
+            <span>{{ t('auto.back_to_fastfree_vpn') }}</span>
           </span>
         </button>
         <div v-else class="status-summary">
@@ -234,8 +234,8 @@ const isFailed = ref(false);
 const errorMessage = ref('');
 const currentPhaseText = ref(
   isProvisioningDone.value
-    ? (isRtl.value ? 'تم التثبيت والتحقق بنجاح!' : 'Provisioning Completed & Verified!')
-    : (isRtl.value ? 'بدء تجهيز البيئة...' : 'Initializing environment...')
+    ? (t('auto.provisioning_completed_verified'))
+    : (t('auto.initializing_environment'))
 );
 const logs = provisioningLogs;
 const logContainer = ref<HTMLElement | null>(null);
@@ -357,7 +357,7 @@ onMounted(async () => {
   if (isProvisioningDone.value) {
     progress.value = 100;
     isDone.value = true;
-    currentPhaseText.value = isRtl.value ? 'تم التثبيت والتحقق بنجاح!' : 'Provisioning Completed & Verified!';
+    currentPhaseText.value = t('auto.provisioning_completed_verified');
     return;
   }
 
@@ -402,7 +402,7 @@ async function setupEventListeners() {
       isProvisioningDone.value = false;
       isProvisioningRunning.value = false;
       errorMessage.value = event.payload;
-      currentPhaseText.value = isRtl.value ? 'فشل التثبيت في Hyper-V' : 'Hyper-V Provisioning Failed';
+      currentPhaseText.value = t('auto.hyper_v_provisioning_failed');
       await addLog(`[ERROR] ${event.payload}`);
     });
   } catch (err) {
@@ -465,7 +465,7 @@ async function runProvisioning(forceRetry: boolean = false) {
         progress.value = 100;
         isDone.value = true;
         isProvisioningDone.value = true;
-        currentPhaseText.value = isRtl.value ? 'الآلة قيد التشغيل والتحقق جاهز' : 'Appliance is Running and verified';
+        currentPhaseText.value = t('auto.appliance_is_running_and_verified');
         await addLog(`[Hyper-V] Appliance FastFree-${selectedClientId.value} is already active and Running.`);
         await addLog('Provisioning verified. Virtual machine is Running and ready.');
         return;
@@ -486,7 +486,7 @@ async function runProvisioning(forceRetry: boolean = false) {
   logInfo('Provisioning', `Starting deployment for ${selectedClientId.value}...`);
   await addLog(`Starting automated deployment pipeline for ${selectedClientId.value}...`);
   await addLog(`Selected Drive: ${targetDiskDrive.value} | Cores: ${assignedCpuCores.value} | Aligned RAM: ${safeAlignedRam} MB`);
-  currentPhaseText.value = isRtl.value ? 'جارٍ تهيئة قرص التخزين ومحول الشبكة...' : 'Configuring storage and virtual switch...';
+  currentPhaseText.value = t('auto.configuring_storage_and_virtual_switch');
 
   try {
     const realLogs = await invoke<Array<{ step: number; phase: string; message: string; success: boolean }>>(
@@ -511,7 +511,7 @@ async function runProvisioning(forceRetry: boolean = false) {
     progress.value = 100;
     isDone.value = true;
     isProvisioningDone.value = true;
-    currentPhaseText.value = isRtl.value ? 'تم التثبيت والتحقق بنجاح!' : 'Provisioning Completed & Verified!';
+    currentPhaseText.value = t('auto.provisioning_completed_verified');
 
     try {
       localStorage.setItem('fastfree_provisioned', 'true');
@@ -527,7 +527,7 @@ async function runProvisioning(forceRetry: boolean = false) {
     isDone.value = false;
     isProvisioningDone.value = false;
     errorMessage.value = msg;
-    currentPhaseText.value = isRtl.value ? 'فشل التثبيت في Hyper-V' : 'Hyper-V Provisioning Failed';
+    currentPhaseText.value = t('auto.hyper_v_provisioning_failed');
     logError('Provisioning', `Failed to deploy appliance ${selectedClientId.value}`, msg);
     await addLog(`[ERROR] Hyper-V Provisioning Error: ${msg}`);
   } finally {

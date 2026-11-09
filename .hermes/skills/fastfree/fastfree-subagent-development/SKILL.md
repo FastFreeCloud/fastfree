@@ -106,6 +106,13 @@ Constraints: <any constraints>"""
 ])
 ```
 
+## Communication
+
+- **Respond in Arabic only** (Egyptian dialect) — user's standing preference
+- Be direct and concise — no verbose explanations
+- No Russian/English mixing except file names and commands
+- Execute commands, verify, and report what actually returned
+
 ## Free-First Policy
 
 - Use only free/open-source tools
@@ -125,6 +132,10 @@ Constraints: <any constraints>"""
 - RTL: use CSS variables (--foreground, --muted-foreground, --accent, --border, --card) and logical properties (margin-inline-start, not margin-left)
 - Accessibility: add ARIA labels, roles, aria-modal, aria-required on all interactive elements
 - i18n: verify en.ts and ar.ts have identical key sets (use diff or script)
+- Tauri/Rust: never hardcode secrets in binary, sanitize PowerShell inputs, canonicalize paths
+- CSS: 8 of 9 installer CSS files use hardcoded colors — replace with CSS variables
+- Modals: always add role="dialog", aria-modal="true", aria-labelledby, tabindex="-1", @keydown.esc
+- SVG icons: add aria-hidden="true" on decorative icons
 
 ## Verification
 

@@ -160,6 +160,29 @@ fn is_account_hidden_in_winlogon(svc_name: &str) -> bool {
 }
 
 impl HyperVService {
+    pub fn validate_client_id(client_id: &str) -> Result<(), String> {
+        if client_id.is_empty() || client_id.len() > 64 {
+            return Err("Invalid client id".to_string());
+        }
+        if !client_id.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_') {
+            return Err("Invalid client id".to_string());
+        }
+        Ok(())
+    }
+
+    pub fn validate_target_drive(target_drive: &str) -> Result<(), String> {
+        if target_drive.is_empty() || target_drive.len() > 260 {
+            return Err("Invalid target drive".to_string());
+        }
+        if target_drive.contains("..") || target_drive.contains('\0') || target_drive.contains('\'') || target_drive.contains('"') || target_drive.contains('\n') || target_drive.contains('\r') {
+            return Err("Invalid target drive".to_string());
+        }
+        Ok(())
+    }
+
+    pub fn ps_escape(value: &str) -> String {
+        value.replace('\'', "''")
+    }
     pub fn ensure_hyperv_environment() -> Result<(), String> {
         #[cfg(windows)]
         {
@@ -195,6 +218,7 @@ impl HyperVService {
     }
 
     pub async fn manage_vm(action: String, client_id: String) -> Result<VmActionStatus, String> {
+        Self::validate_client_id(&client_id)?;
         let vm_name = format!("FastFree-{}", client_id);
         let _ = Self::ensure_hyperv_environment();
     
@@ -280,6 +304,7 @@ impl HyperVService {
     }
 
     pub async fn get_vm_real_state(client_id: String) -> Result<VmRealState, String> {
+        Self::validate_client_id(&client_id)?;
         let vm_name = format!("FastFree-{}", client_id);
         InstallerLogger::info("VM_TELEMETRY", &format!("Querying live Hyper-V state for '{}'", vm_name));
     
@@ -453,6 +478,7 @@ impl HyperVService {
     }
 
     pub async fn check_vm_exists(client_id: String) -> Result<bool, String> {
+        Self::validate_client_id(&client_id)?;
         let vm_name = format!("FastFree-{}", client_id);
         InstallerLogger::info(
             "VM_CHECK",
@@ -601,6 +627,8 @@ impl HyperVService {
         client_id: String,
         target_drive: String,
     ) -> Result<ServiceAccountResult, String> {
+        Self::validate_client_id(&client_id)?;
+        Self::validate_target_drive(&target_drive)?;
         InstallerLogger::info(
             "SECURITY",
             &format!("Ensuring sovereign isolated service account for node {}", client_id),
@@ -616,7 +644,7 @@ impl HyperVService {
         #[cfg(not(windows))]
         Ok(ServiceAccountResult {
             success: true,
-            account_name: account_name,
+            account_name: format!("fastfree_{}", client_id),
             sid: "S-1-5-21-SIMULATED".to_string(),
             cloaked: true,
             hyperv_admin: true,
@@ -631,6 +659,8 @@ impl HyperVService {
         cores: Option<u32>,
         ram_mb: Option<u64>,
     ) -> Result<VmRealState, String> {
+        Self::validate_client_id(&client_id)?;
+        Self::validate_target_drive(&target_drive)?;
         let vm_name = format!("FastFree-{}", client_id);
         let cores = cores.unwrap_or(4);
         let ram_mb = ram_mb.unwrap_or(8192);
@@ -718,10 +748,10 @@ impl HyperVService {
         exit 1
     }}
     "#,
-                vm_name = vm_name,
+                vm_name = Self::ps_escape(&vm_name),
                 cores = cores,
                 ram_bytes = ram_bytes,
-                target_drive = target_drive
+                target_drive = Self::ps_escape(&target_drive)
             );
     
             let out = hidden_powershell().args(["-Command", &ps_script]).output();
@@ -753,6 +783,8 @@ impl HyperVService {
         );
     
         let mut step_logs: Vec<ProvisioningStepLog> = Vec::new();
+        Self::validate_client_id(&client_id)?;
+        Self::validate_target_drive(&target_drive)?;
         let vm_name = format!("FastFree-{}", client_id);
         let vhdx_dir = format!("{}\\FastFree\\VMs", target_drive.trim_end_matches('\\'));
         let vhdx_path = format!("{}\\{}.vhdx", vhdx_dir, client_id);
@@ -955,12 +987,12 @@ impl HyperVService {
         exit 1
     }}
     "#,
-                vm_name = vm_name,
+                vm_name = Self::ps_escape(&vm_name),
                 ram_bytes = ram_bytes,
-                vhdx_path = vhdx_path,
+                vhdx_path = Self::ps_escape(&vhdx_path),
                 cores = cores,
-                switch_name = switch_name,
-                target_drive = target_drive_clean
+                switch_name = Self::ps_escape(&switch_name),
+                target_drive = Self::ps_escape(target_drive_clean)
             );
     
             let vm_res = hidden_powershell()

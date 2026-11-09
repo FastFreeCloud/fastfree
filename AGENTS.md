@@ -40,7 +40,12 @@ fastfree/
 - Pinia stores
 - Screen registry (screens.ts)
 
-## Key Files
+## Hermes Project-Local Home
+- `.hermes/` is the official project-local Hermes home (`HERMES_HOME`).
+- Run Hermes inside this project with `scripts/hermes-project.ps1` or set `HERMES_HOME=C:\Users\FastFree\Desktop\fastfree\.hermes`.
+- Project-local skills live in `.hermes/skills/fastfree/`.
+- Project context comes from `AGENTS.md`; agent identity comes from `.hermes/SOUL.md`.
+- Secrets belong in `.hermes/.env` and `.hermes/auth.json`, never in tracked files.
 - `FASTFREE_DEVELOPMENT_GOALS.md` — Development roadmap
 - `PROJECT_KNOWLEDGE_BASE.md` — Project knowledge base
 - `opencode.json` — MCP configuration

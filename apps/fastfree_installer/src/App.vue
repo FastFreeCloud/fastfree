@@ -16,7 +16,7 @@
         <!-- Full System Diagnostics & Step Audit Button -->
         <button
           class="tool-btn icon-btn audit-btn"
-          :title="isRtl ? 'استكشاف المشاكل وتدقيق خطوات التثبيت' : 'Full Diagnostics & Step Audit'"
+          :title="t('auto.full_diagnostics_step_audit')"
           @click="openHub('audit')"
         >
           <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -29,7 +29,7 @@
         <button
           class="tool-btn icon-btn hud-btn"
           :class="{ 'has-errors': totalErrors > 0, 'has-warns': totalWarnings > 0 && totalErrors === 0 }"
-          :title="isRtl ? 'مركز التشخيص والسجلات الجنائية' : 'Live Forensic Diagnostics'"
+          :title="t('auto.live_forensic_diagnostics')"
           @click="openHub('logs')"
         >
           <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

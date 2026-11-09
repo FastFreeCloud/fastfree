@@ -89,7 +89,12 @@ impl InstallerLogger {
 
     /// Export a forensic diagnostic bundle to the specified path or default APPDATA location
     pub fn export_bundle(target_path: Option<String>) -> Result<String, String> {
-        let log_content = Self::read_all_logs()?;
+        if let Some(p) = &target_path {
+            if p.contains("..") || p.contains('\0') || p.trim().is_empty() {
+                return Err("Invalid diagnostic bundle target path".to_string());
+            }
+        }
+let log_content = Self::read_all_logs()?;
         let out_path = if let Some(p) = target_path {
             PathBuf::from(p)
         } else {

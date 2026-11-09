@@ -132,7 +132,9 @@ apps/fastfree_installer/src-tauri/fastfree_updater.key
 *.download.zst
 *.download
 
-# Beads / Dolt files (added by bd init)
+# Hermes project-local secrets
+.hermes/.env
+.hermes/auth.json
 .dolt/
 .beads-credential-key
 .beads/proxieddb/
