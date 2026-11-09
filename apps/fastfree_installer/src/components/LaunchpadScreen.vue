@@ -324,7 +324,7 @@ async function handleInstantProvisioning() {
   if (isProvisioning.value) return;
   isProvisioning.value = true;
   try {
-    const safeRam = Math.max(1024, Math.floor(((assignedRamMb.value || 8192) + 64) / 128) * 128);
+    const safeRam = Math.max(1024, Math.floor(((assignedRamMb.value || 2048) + 64) / 128) * 128);
     await provisionNode(selectedClientId.value, assignedCpuCores.value || 4, safeRam, targetDiskDrive.value || 'C:\\');
     appendTerminalLog('HYPER-V', `VM FastFree-${selectedClientId.value} provisioned and started.`);
     await checkVmStatus();

@@ -19,10 +19,10 @@
   --gen-color-17: rgba(52, 211, 153, 0.25);
   --gen-color-18: rgba(52, 211, 153, 0.45);
   --gen-color-19: rgba(52, 211, 153, 0.8);
-  --gen-color-20: rgba(var(--accent-amber-rgb);
-  --gen-color-21: rgba(var(--accent-emerald-rgb);
-  --gen-color-22: rgba(var(--accent-red-rgb);
-  --gen-color-23: rgba(var(--accent-sky-rgb);
+  --gen-color-20: var(--accent-amber-rgb);
+  --gen-color-21: var(--accent-emerald-rgb);
+  --gen-color-22: var(--accent-red-rgb);
+  --gen-color-23: var(--accent-sky-rgb);
 }
 
 :root {
@@ -76,38 +76,38 @@
   --white-30: rgba(255, 255, 255, 0.3);
   --black-40: rgba(0, 0, 0, 0.4);
 
-  --accent-sky-faint: var(--gen-color-23), 0.07);
-  --accent-sky-soft: var(--gen-color-23), 0.1);
-  --accent-sky-mid: var(--gen-color-23), 0.15);
-  --accent-sky-strong: var(--gen-color-23), 0.2);
-  --accent-sky-border-soft: var(--gen-color-23), 0.25);
-  --accent-sky-border: var(--gen-color-23), 0.3);
-  --accent-sky-border-strong: var(--gen-color-23), 0.35);
-  --accent-sky-ring: var(--gen-color-23), 0.25);
+  --accent-sky-faint: rgba(var(--gen-color-23), 0.07);
+  --accent-sky-soft: rgba(var(--gen-color-23), 0.1);
+  --accent-sky-mid: rgba(var(--gen-color-23), 0.15);
+  --accent-sky-strong: rgba(var(--gen-color-23), 0.2);
+  --accent-sky-border-soft: rgba(var(--gen-color-23), 0.25);
+  --accent-sky-border: rgba(var(--gen-color-23), 0.3);
+  --accent-sky-border-strong: rgba(var(--gen-color-23), 0.35);
+  --accent-sky-ring: rgba(var(--gen-color-23), 0.25);
   --accent-sky-light-muted: rgba(var(--accent-sky-light-rgb), 0.85);
 
-  --accent-emerald-soft: var(--gen-color-21), 0.12);
-  --accent-emerald-strong: var(--gen-color-21), 0.2);
+  --accent-emerald-soft: rgba(var(--gen-color-21), 0.12);
+  --accent-emerald-strong: rgba(var(--gen-color-21), 0.2);
   --accent-emerald-border: rgba(var(--accent-emerald-border-rgb), 0.3);
   --accent-emerald-border-strong: rgba(var(--accent-emerald-border-rgb), 0.35);
   --accent-emerald-border-hover: rgba(var(--accent-emerald-border-rgb), 0.4);
 
-  --accent-amber-soft: var(--gen-color-20), 0.12);
-  --accent-amber-mid: var(--gen-color-20), 0.15);
-  --accent-amber-border: var(--gen-color-20), 0.25);
-  --accent-amber-border-strong: var(--gen-color-20), 0.3);
-  --accent-amber-border-hover: var(--gen-color-20), 0.35);
-  --accent-amber-ring: var(--gen-color-20), 0.2);
+  --accent-amber-soft: rgba(var(--gen-color-20), 0.12);
+  --accent-amber-mid: rgba(var(--gen-color-20), 0.15);
+  --accent-amber-border: rgba(var(--gen-color-20), 0.25);
+  --accent-amber-border-strong: rgba(var(--gen-color-20), 0.3);
+  --accent-amber-border-hover: rgba(var(--gen-color-20), 0.35);
+  --accent-amber-ring: rgba(var(--gen-color-20), 0.2);
 
-  --accent-red-soft: var(--gen-color-22), 0.1);
-  --accent-red-mid: var(--gen-color-22), 0.12);
-  --accent-red-strong: var(--gen-color-22), 0.2);
-  --accent-red-border: var(--gen-color-22), 0.25);
-  --accent-red-border-strong: var(--gen-color-22), 0.35);
+  --accent-red-soft: rgba(var(--gen-color-22), 0.1);
+  --accent-red-mid: rgba(var(--gen-color-22), 0.12);
+  --accent-red-strong: rgba(var(--gen-color-22), 0.2);
+  --accent-red-border: rgba(var(--gen-color-22), 0.25);
+  --accent-red-border-strong: rgba(var(--gen-color-22), 0.35);
 
   --shadow-card: 0 8px 32px -4px rgba(0, 0, 0, 0.4);
-  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 24px var(--gen-color-20), 0.15);
-  --shadow-modal-wide: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 30px var(--gen-color-23), 0.15);
+  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(var(--gen-color-20), 0.15);
+  --shadow-modal-wide: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(var(--gen-color-23), 0.15);
 
   --focus-ring-color: var(--accent-sky);
 }
@@ -118,7 +118,7 @@
 
 .license-credential-card {
   background: var(--card-glass-bg);
-  border: 1px solid var(--gen-color-23), 0.3);
+  border: 1px solid rgba(var(--gen-color-23), 0.3);
   border-radius: var(--radius-card);
   padding: 14px 16px;
   display: flex;
@@ -134,10 +134,10 @@
   0% {
     opacity: 0;
     transform: translateY(12px) scale(0.98);
-    box-shadow: 0 0 0 var(--gen-color-23), 0);
+    box-shadow: 0 0 0 rgba(var(--gen-color-23), 0);
   }
   50% {
-    box-shadow: 0 0 28px var(--gen-color-23), 0.35), 0 8px 30px var(--gen-color-5);
+    box-shadow: 0 0 28px rgba(var(--gen-color-23), 0.35), 0 8px 30px var(--gen-color-5);
   }
   100% {
     opacity: 1;
@@ -147,7 +147,7 @@
 }
 
 .license-credential-card:hover {
-  border-color: var(--gen-color-23), 0.45);
+  border-color: rgba(var(--gen-color-23), 0.45);
   box-shadow: var(--card-hover-shadow);
 }
 
@@ -204,21 +204,21 @@
 }
 
 .hwid-pill-box:hover {
-  border-color: var(--gen-color-23), 0.4);
+  border-color: rgba(var(--gen-color-23), 0.4);
   background: var(--gen-color-6);
 }
 
 .hwid-pill-box.is-copied {
-  border-color: var(--gen-color-21), 0.5);
-  background: var(--gen-color-21), 0.1);
+  border-color: rgba(var(--gen-color-21), 0.5);
+  background: rgba(var(--gen-color-21), 0.1);
 }
 
 .hwid-tag {
   font-size: 9px;
   font-weight: 700;
   color: var(--accent-sky);
-  background: var(--gen-color-23), 0.15);
-  border: 1px solid var(--gen-color-23), 0.3);
+  background: rgba(var(--gen-color-23), 0.15);
+  border: 1px solid rgba(var(--gen-color-23), 0.3);
   padding: 1px 5px;
   border-radius: 4px;
   letter-spacing: 0.5px;
@@ -237,7 +237,7 @@
   justify-content: space-between;
   gap: 8px;
   background: var(--gen-color-4);
-  border: 1px solid var(--gen-color-23), 0.25);
+  border: 1px solid rgba(var(--gen-color-23), 0.25);
   border-radius: 6px;
   padding: 3px 6px 3px 10px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -247,14 +247,14 @@
 }
 
 .code-interactive-pill:hover {
-  border-color: var(--gen-color-23), 0.55);
+  border-color: rgba(var(--gen-color-23), 0.55);
   background: var(--gen-color-7);
-  box-shadow: 0 0 10px var(--gen-color-23), 0.2);
+  box-shadow: 0 0 10px rgba(var(--gen-color-23), 0.2);
 }
 
 .code-interactive-pill.is-copied {
-  border-color: var(--gen-color-21), 0.55);
-  background: var(--gen-color-21), 0.12);
+  border-color: rgba(var(--gen-color-21), 0.55);
+  background: rgba(var(--gen-color-21), 0.12);
 }
 
 .code-text {
@@ -266,8 +266,8 @@
 }
 
 .btn-copy-interactive {
-  background: var(--gen-color-23), 0.1);
-  border: 1px solid var(--gen-color-23), 0.25);
+  background: rgba(var(--gen-color-23), 0.1);
+  border: 1px solid rgba(var(--gen-color-23), 0.25);
   border-radius: 4px;
   color: var(--accent-sky);
   cursor: pointer;
@@ -284,15 +284,15 @@
 }
 
 .btn-copy-interactive:hover {
-  background: var(--gen-color-23), 0.22);
+  background: rgba(var(--gen-color-23), 0.22);
   color: var(--text-strong);
-  border-color: var(--gen-color-23), 0.5);
+  border-color: rgba(var(--gen-color-23), 0.5);
 }
 
 .btn-copy-interactive.is-copied {
-  background: var(--gen-color-21), 0.22);
+  background: rgba(var(--gen-color-21), 0.22);
   color: var(--accent-emerald-bright);
-  border-color: var(--gen-color-21), 0.55);
+  border-color: rgba(var(--gen-color-21), 0.55);
 }
 
 .copy-mini-svg {
@@ -306,8 +306,8 @@
 
 /* Change Key Button in Header */
 .btn-change-key {
-  background: var(--gen-color-23), 0.08);
-  border: 1px solid var(--gen-color-23), 0.25);
+  background: rgba(var(--gen-color-23), 0.08);
+  border: 1px solid rgba(var(--gen-color-23), 0.25);
   border-radius: 6px;
   color: var(--accent-sky);
   cursor: pointer;
@@ -323,10 +323,10 @@
 }
 
 .btn-change-key:hover {
-  background: var(--gen-color-23), 0.18);
+  background: rgba(var(--gen-color-23), 0.18);
   color: var(--text-strong);
   border-color: var(--accent-sky);
-  box-shadow: 0 0 12px var(--gen-color-23), 0.25);
+  box-shadow: 0 0 12px rgba(var(--gen-color-23), 0.25);
   transform: translateY(-1px);
 }
 
@@ -336,8 +336,8 @@
 }
 
 .company-tier-chip {
-  background: var(--gen-color-23), 0.08);
-  border: 1px solid var(--gen-color-23), 0.22);
+  background: rgba(var(--gen-color-23), 0.08);
+  border: 1px solid rgba(var(--gen-color-23), 0.22);
   border-radius: 8px;
   padding: 4px 10px;
   display: inline-flex;
@@ -375,8 +375,8 @@
 
 /* Live Cloud Sync Button */
 .btn-sync-cloud {
-  background: var(--gen-color-21), 0.08);
-  border: 1px solid var(--gen-color-21), 0.25);
+  background: rgba(var(--gen-color-21), 0.08);
+  border: 1px solid rgba(var(--gen-color-21), 0.25);
   border-radius: 6px;
   color: var(--accent-emerald-bright);
   cursor: pointer;
@@ -392,10 +392,10 @@
 }
 
 .btn-sync-cloud:hover:not(:disabled) {
-  background: var(--gen-color-21), 0.18);
+  background: rgba(var(--gen-color-21), 0.18);
   color: var(--text-strong);
   border-color: var(--accent-emerald-bright);
-  box-shadow: 0 0 12px var(--gen-color-21), 0.25);
+  box-shadow: 0 0 12px rgba(var(--gen-color-21), 0.25);
   transform: translateY(-1px);
 }
 
@@ -437,14 +437,14 @@
 }
 
 .feedback-success {
-  background: var(--gen-color-21), 0.12);
-  border: 1px solid var(--gen-color-21), 0.35);
+  background: rgba(var(--gen-color-21), 0.12);
+  border: 1px solid rgba(var(--gen-color-21), 0.35);
   color: var(--accent-emerald-bright);
 }
 
 .feedback-error {
-  background: var(--gen-color-22), 0.12);
-  border: 1px solid var(--gen-color-22), 0.35);
+  background: rgba(var(--gen-color-22), 0.12);
+  border: 1px solid rgba(var(--gen-color-22), 0.35);
   color: var(--gen-color-1);
 }
 
@@ -468,13 +468,13 @@
 .tier-enterprise {
   background: var(--gen-color-10);
   color: var(--accent-sky);
-  border: 1px solid var(--gen-color-23), 0.35);
+  border: 1px solid rgba(var(--gen-color-23), 0.35);
 }
 
 .tier-standard {
-  background: var(--gen-color-21), 0.15);
+  background: rgba(var(--gen-color-21), 0.15);
   color: var(--accent-emerald-bright);
-  border: 1px solid var(--gen-color-21), 0.35);
+  border: 1px solid rgba(var(--gen-color-21), 0.35);
 }
 
 .status-pill {
@@ -484,10 +484,10 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--accent-emerald-bright);
-  background: var(--gen-color-21), 0.1);
+  background: rgba(var(--gen-color-21), 0.1);
   padding: 4px 11px;
   border-radius: 12px;
-  border: 1px solid var(--gen-color-21), 0.25);
+  border: 1px solid rgba(var(--gen-color-21), 0.25);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -544,20 +544,20 @@
 }
 
 .pill-active {
-  background: var(--gen-color-21), 0.15);
-  border: 1px solid var(--gen-color-21), 0.3);
+  background: rgba(var(--gen-color-21), 0.15);
+  border: 1px solid rgba(var(--gen-color-21), 0.3);
   color: var(--accent-emerald-bright);
 }
 
 .pill-warn {
-  background: var(--gen-color-20), 0.15);
-  border: 1px solid var(--gen-color-20), 0.3);
+  background: rgba(var(--gen-color-20), 0.15);
+  border: 1px solid rgba(var(--gen-color-20), 0.3);
   color: var(--accent-amber);
 }
 
 .pill-expired {
-  background: var(--gen-color-22), 0.15);
-  border: 1px solid var(--gen-color-22), 0.3);
+  background: rgba(var(--gen-color-22), 0.15);
+  border: 1px solid rgba(var(--gen-color-22), 0.3);
   color: var(--accent-red-bright);
 }
 
@@ -577,7 +577,7 @@
 
 .detail-item:hover {
   background: var(--gen-color-14);
-  border-color: var(--gen-color-23), 0.3);
+  border-color: rgba(var(--gen-color-23), 0.3);
 }
 
 .detail-label {
@@ -625,8 +625,8 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: var(--gen-color-21), 0.12);
-  border: 1px solid var(--gen-color-21), 0.3);
+  background: rgba(var(--gen-color-21), 0.12);
+  border: 1px solid rgba(var(--gen-color-21), 0.3);
   color: var(--accent-emerald);
   padding: 2px 9px;
   border-radius: 6px;
@@ -645,7 +645,7 @@
 .inline-node-select {
   background: var(--bg-sub);
   color: var(--accent-sky);
-  border: 1px solid var(--gen-color-23), 0.3);
+  border: 1px solid rgba(var(--gen-color-23), 0.3);
   border-radius: 6px;
   padding: 4px 10px;
   font-size: 12px;
@@ -659,7 +659,7 @@
 .inline-node-select:hover,
 .inline-node-select:focus {
   border-color: var(--accent-sky);
-  box-shadow: 0 0 10px var(--gen-color-23), 0.2);
+  box-shadow: 0 0 10px rgba(var(--gen-color-23), 0.2);
 }
 
 .inline-node-select option {
@@ -749,22 +749,22 @@
   transform: translateY(-2px);
   background: var(--gen-color-15);
   border-color: var(--gen-color-18);
-  box-shadow: 0 4px 14px var(--gen-color-21), 0.15);
+  box-shadow: 0 4px 14px rgba(var(--gen-color-21), 0.15);
 }
 
 .feature-card:hover {
   transform: translateY(-2px);
   background: var(--gen-color-15);
   border-color: var(--gen-color-18);
-  box-shadow: 0 4px 14px var(--gen-color-21), 0.15);
+  box-shadow: 0 4px 14px rgba(var(--gen-color-21), 0.15);
 }
 
 .feature-icon-wrapper {
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  background: var(--gen-color-23), 0.1);
-  border: 1px solid var(--gen-color-23), 0.2);
+  background: rgba(var(--gen-color-23), 0.1);
+  border: 1px solid rgba(var(--gen-color-23), 0.2);
   display: flex;
   align-items: center;
   justify-content: center;

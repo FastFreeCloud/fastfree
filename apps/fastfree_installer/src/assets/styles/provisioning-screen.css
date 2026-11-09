@@ -8,10 +8,10 @@
   --gen-color-6: rgba(255, 255, 255, 0.12);
   --gen-color-7: rgba(255, 255, 255, 0.15);
   --gen-color-8: rgba(255, 255, 255, 0.25);
-  --gen-color-9: rgba(var(--accent-amber-rgb);
-  --gen-color-10: rgba(var(--accent-emerald-rgb);
-  --gen-color-11: rgba(var(--accent-red-rgb);
-  --gen-color-12: rgba(var(--accent-sky-rgb);
+  --gen-color-9: var(--accent-amber-rgb);
+  --gen-color-10: var(--accent-emerald-rgb);
+  --gen-color-11: var(--accent-red-rgb);
+  --gen-color-12: var(--accent-sky-rgb);
 }
 
 :root {
@@ -65,38 +65,38 @@
   --white-30: rgba(255, 255, 255, 0.3);
   --black-40: rgba(0, 0, 0, 0.4);
 
-  --accent-sky-faint: var(--gen-color-12), 0.07);
-  --accent-sky-soft: var(--gen-color-12), 0.1);
-  --accent-sky-mid: var(--gen-color-12), 0.15);
-  --accent-sky-strong: var(--gen-color-12), 0.2);
-  --accent-sky-border-soft: var(--gen-color-12), 0.25);
-  --accent-sky-border: var(--gen-color-12), 0.3);
-  --accent-sky-border-strong: var(--gen-color-12), 0.35);
-  --accent-sky-ring: var(--gen-color-12), 0.25);
+  --accent-sky-faint: rgba(var(--gen-color-12), 0.07);
+  --accent-sky-soft: rgba(var(--gen-color-12), 0.1);
+  --accent-sky-mid: rgba(var(--gen-color-12), 0.15);
+  --accent-sky-strong: rgba(var(--gen-color-12), 0.2);
+  --accent-sky-border-soft: rgba(var(--gen-color-12), 0.25);
+  --accent-sky-border: rgba(var(--gen-color-12), 0.3);
+  --accent-sky-border-strong: rgba(var(--gen-color-12), 0.35);
+  --accent-sky-ring: rgba(var(--gen-color-12), 0.25);
   --accent-sky-light-muted: rgba(var(--accent-sky-light-rgb), 0.85);
 
-  --accent-emerald-soft: var(--gen-color-10), 0.12);
-  --accent-emerald-strong: var(--gen-color-10), 0.2);
+  --accent-emerald-soft: rgba(var(--gen-color-10), 0.12);
+  --accent-emerald-strong: rgba(var(--gen-color-10), 0.2);
   --accent-emerald-border: rgba(var(--accent-emerald-border-rgb), 0.3);
   --accent-emerald-border-strong: rgba(var(--accent-emerald-border-rgb), 0.35);
   --accent-emerald-border-hover: rgba(var(--accent-emerald-border-rgb), 0.4);
 
-  --accent-amber-soft: var(--gen-color-9), 0.12);
-  --accent-amber-mid: var(--gen-color-9), 0.15);
-  --accent-amber-border: var(--gen-color-9), 0.25);
-  --accent-amber-border-strong: var(--gen-color-9), 0.3);
-  --accent-amber-border-hover: var(--gen-color-9), 0.35);
-  --accent-amber-ring: var(--gen-color-9), 0.2);
+  --accent-amber-soft: rgba(var(--gen-color-9), 0.12);
+  --accent-amber-mid: rgba(var(--gen-color-9), 0.15);
+  --accent-amber-border: rgba(var(--gen-color-9), 0.25);
+  --accent-amber-border-strong: rgba(var(--gen-color-9), 0.3);
+  --accent-amber-border-hover: rgba(var(--gen-color-9), 0.35);
+  --accent-amber-ring: rgba(var(--gen-color-9), 0.2);
 
-  --accent-red-soft: var(--gen-color-11), 0.1);
-  --accent-red-mid: var(--gen-color-11), 0.12);
-  --accent-red-strong: var(--gen-color-11), 0.2);
-  --accent-red-border: var(--gen-color-11), 0.25);
-  --accent-red-border-strong: var(--gen-color-11), 0.35);
+  --accent-red-soft: rgba(var(--gen-color-11), 0.1);
+  --accent-red-mid: rgba(var(--gen-color-11), 0.12);
+  --accent-red-strong: rgba(var(--gen-color-11), 0.2);
+  --accent-red-border: rgba(var(--gen-color-11), 0.25);
+  --accent-red-border-strong: rgba(var(--gen-color-11), 0.35);
 
   --shadow-card: 0 8px 32px -4px rgba(0, 0, 0, 0.4);
-  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 24px var(--gen-color-9), 0.15);
-  --shadow-modal-wide: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 30px var(--gen-color-12), 0.15);
+  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(var(--gen-color-9), 0.15);
+  --shadow-modal-wide: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(var(--gen-color-12), 0.15);
 
   --focus-ring-color: var(--accent-sky);
 }
@@ -178,7 +178,7 @@
 .spinner-tiny {
   width: 12px;
   height: 12px;
-  border: 2px solid var(--gen-color-12), 0.3);
+  border: 2px solid rgba(var(--gen-color-12), 0.3);
   border-top-color: var(--accent-sky);
   border-radius: 50%;
   animation: spin 0.7s infinite linear;
@@ -258,21 +258,21 @@
 }
 
 .pipeline-pill.is-active {
-  background: var(--gen-color-12), 0.12);
-  border-color: var(--gen-color-12), 0.4);
+  background: rgba(var(--gen-color-12), 0.12);
+  border-color: rgba(var(--gen-color-12), 0.4);
   color: var(--accent-sky);
-  box-shadow: 0 0 10px var(--gen-color-12), 0.15);
+  box-shadow: 0 0 10px rgba(var(--gen-color-12), 0.15);
 }
 
 .pipeline-pill.is-completed {
-  background: var(--gen-color-10), 0.08);
-  border-color: var(--gen-color-10), 0.3);
+  background: rgba(var(--gen-color-10), 0.08);
+  border-color: rgba(var(--gen-color-10), 0.3);
   color: var(--accent-emerald);
 }
 
 .pipeline-pill.is-failed {
-  background: var(--gen-color-11), 0.12);
-  border-color: var(--gen-color-11), 0.4);
+  background: rgba(var(--gen-color-11), 0.12);
+  border-color: rgba(var(--gen-color-11), 0.4);
   color: var(--accent-red);
 }
 
@@ -347,17 +347,17 @@
 
 .dot-red {
   background: var(--accent-red);
-  box-shadow: 0 0 6px var(--gen-color-11), 0.4);
+  box-shadow: 0 0 6px rgba(var(--gen-color-11), 0.4);
 }
 
 .dot-yellow {
   background: var(--accent-amber);
-  box-shadow: 0 0 6px var(--gen-color-9), 0.4);
+  box-shadow: 0 0 6px rgba(var(--gen-color-9), 0.4);
 }
 
 .dot-green {
   background: var(--accent-emerald);
-  box-shadow: 0 0 6px var(--gen-color-10), 0.4);
+  box-shadow: 0 0 6px rgba(var(--gen-color-10), 0.4);
 }
 
 .term-svg-icon {
@@ -402,7 +402,7 @@
 }
 
 .btn-console-act:hover {
-  background: var(--gen-color-12), 0.15);
+  background: rgba(var(--gen-color-12), 0.15);
   border-color: var(--accent-sky);
   color: var(--text-strong);
 }
@@ -492,7 +492,7 @@
   border-radius: 4px;
   background: var(--gen-color-6);
   color: var(--accent-sky);
-  border: 1px solid var(--gen-color-12), 0.3);
+  border: 1px solid rgba(var(--gen-color-12), 0.3);
   margin-inline-start: 6px;
   flex-shrink: 0;
   user-select: text;
@@ -500,27 +500,27 @@
 
 .phase-default,
 .phase-accent {
-  background: var(--gen-color-12), 0.12);
+  background: rgba(var(--gen-color-12), 0.12);
   color: var(--accent-sky);
-  border: 1px solid var(--gen-color-12), 0.25);
+  border: 1px solid rgba(var(--gen-color-12), 0.25);
 }
 
 .phase-success {
-  background: var(--gen-color-10), 0.12);
+  background: rgba(var(--gen-color-10), 0.12);
   color: var(--accent-emerald-bright);
-  border: 1px solid var(--gen-color-10), 0.3);
+  border: 1px solid rgba(var(--gen-color-10), 0.3);
 }
 
 .phase-error {
-  background: var(--gen-color-11), 0.15);
+  background: rgba(var(--gen-color-11), 0.15);
   color: var(--accent-red-bright);
-  border: 1px solid var(--gen-color-11), 0.35);
+  border: 1px solid rgba(var(--gen-color-11), 0.35);
 }
 
 .phase-warn {
-  background: var(--gen-color-9), 0.15);
+  background: rgba(var(--gen-color-9), 0.15);
   color: var(--accent-amber);
-  border: 1px solid var(--gen-color-9), 0.35);
+  border: 1px solid rgba(var(--gen-color-9), 0.35);
 }
 
 .log-line.level-error .log-msg {
@@ -698,12 +698,12 @@
 }
 
 .progress-hero-card.is-failed {
-  border-color: var(--gen-color-11), 0.4);
+  border-color: rgba(var(--gen-color-11), 0.4);
 }
 
 .error-banner {
-  background: var(--gen-color-11), 0.12);
-  border: 1px solid var(--gen-color-11), 0.35);
+  background: rgba(var(--gen-color-11), 0.12);
+  border: 1px solid rgba(var(--gen-color-11), 0.35);
   border-radius: 12px;
   padding: 12px 16px;
   display: flex;
