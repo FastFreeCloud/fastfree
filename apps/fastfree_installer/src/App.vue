@@ -11,34 +11,8 @@
         </div>
       </div>
 
-      <!-- Center Titlebar Tools (Language, Theme, Diagnostic HUD - Clean Icons Only) -->
+      <!-- Center Titlebar Tools (Theme, Language, Settings — Diagnostics & Logs live inside Settings) -->
       <div class="titlebar-tools">
-        <!-- Full System Diagnostics & Step Audit Button -->
-        <button
-          class="tool-btn icon-btn audit-btn"
-          :title="t('auto.full_diagnostics_step_audit')"
-          @click="openHub('audit')"
-        >
-          <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <path d="m9 12 2 2 4-4"/>
-          </svg>
-        </button>
-
-        <!-- Live Diagnostic HUD Icon Button -->
-        <button
-          class="tool-btn icon-btn hud-btn"
-          :class="{ 'has-errors': totalErrors > 0, 'has-warns': totalWarnings > 0 && totalErrors === 0 }"
-          :title="t('auto.live_forensic_diagnostics')"
-          @click="openHub('logs')"
-        >
-          <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-          </svg>
-          <span v-if="totalErrors > 0" class="mini-pill pill-err">{{ totalErrors }}</span>
-          <span v-else-if="totalWarnings > 0" class="mini-pill pill-warn">{{ totalWarnings }}</span>
-        </button>
-
         <!-- Theme Toggle Button -->
         <button
           class="tool-btn icon-btn theme-btn"
@@ -76,6 +50,35 @@
           </svg>
           <span class="lang-code">{{ locale === 'ar' ? 'EN' : 'AR' }}</span>
         </button>
+
+        <!-- SDUI Playground Direct Launch Button -->
+        <button
+          class="tool-btn sdui-tool-btn"
+          :title="locale === 'ar' ? 'محرر ومصمم الشاشات (SDUI Playground)' : 'SDUI Playground (Schema-Driven UI)'"
+          @click="openHub('sdui')"
+        >
+          <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+            <line x1="9" y1="21" x2="9" y2="9"></line>
+          </svg>
+          <span class="sdui-btn-label">{{ locale === 'ar' ? 'محرر الشاشات' : 'Playground' }}</span>
+        </button>
+
+        <!-- Settings Button: one click opens the merged Diagnostic & Self-Healing hub (prod: master-password gate first) -->
+        <button
+          class="tool-btn icon-btn settings-btn"
+          :class="{ 'has-issues': totalErrors > 0 }"
+          :title="t('settings.sheetTitle')"
+          @click="handleSettingsClick"
+        >
+          <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span v-if="totalErrors > 0" class="mini-pill pill-err">{{ totalErrors }}</span>
+          <span v-else-if="totalWarnings > 0" class="mini-pill pill-warn">{{ totalWarnings }}</span>
+        </button>
       </div>
 
       <!-- Native Windows Fluent Caption Buttons -->
@@ -102,15 +105,10 @@
       <!-- Top Step Progress Navigation -->
       <StepProgress />
 
-      <!-- Active Step Content Area -->
+      <!-- Active Step Content Area (100% SDUI Powered) -->
       <main class="content-wrapper">
         <transition name="fade-slide" mode="out-in">
-          <HostDiscovery v-if="currentStep === 1" key="step-1" />
-          <LicenseScreen v-else-if="currentStep === 2" key="step-2" />
-          <NodeSizing v-else-if="currentStep === 3" key="step-3" />
-          <WireGuardScreen v-else-if="currentStep === 4" key="step-4" />
-          <ProvisioningScreen v-else-if="currentStep === 5" key="step-5" />
-          <LaunchpadScreen v-else-if="currentStep === 6" key="step-6" />
+          <SduiStepHost :key="`sdui-step-${currentStep}`" :step="currentStep" @open-hub="openHub" />
         </transition>
       </main>
     </template>
@@ -121,6 +119,13 @@
       :initial-tab="hubInitialTab"
       @close="showHubModal = false"
     />
+
+    <!-- Production master-password gate: unlocks straight into the merged hub -->
+    <SettingsSheet
+      v-if="showSettings"
+      @close="showSettings = false"
+      @unlocked="showSettings = false; openHub('audit')"
+    />
   </div>
 </template>
 
@@ -130,21 +135,18 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import StepProgress from './components/StepProgress.vue';
-import HostDiscovery from './components/HostDiscovery.vue';
-import LicenseScreen from './components/LicenseScreen.vue';
-import NodeSizing from './components/NodeSizing.vue';
-import WireGuardScreen from './components/WireGuardScreen.vue';
-import ProvisioningScreen from './components/ProvisioningScreen.vue';
-import LaunchpadScreen from './components/LaunchpadScreen.vue';
 import UnifiedDiagnosticHub from './components/UnifiedDiagnosticHub.vue';
 import MandatoryUpdateGate from './components/MandatoryUpdateGate.vue';
 import TrayCompanionDialog from './components/TrayCompanionDialog.vue';
+import SduiStepHost from './components/SduiStepHost.vue';
+import SettingsSheet from './components/settings/SettingsSheet.vue';
 import {
   currentStep,
   loadingDiscovery,
   fetchSystemDiscovery,
   dismissSplash,
   minimizeToTray,
+  navigateToStep,
   selectedClientId,
   isProvisioningDone,
 } from './composables/useDiscovery';
@@ -164,11 +166,26 @@ const { theme, cycleTheme } = useTheme();
 const { totalErrors, totalWarnings, logInfo, logWarn } = useDiagnostics();
 
 const showHubModal = ref(false);
-const hubInitialTab = ref<'audit' | 'logs' | 'telemetry'>('audit');
+const showSettings = ref(false);
+const hubInitialTab = ref<'audit' | 'logs' | 'telemetry' | 'sdui'>('audit');
 
-function openHub(tab: 'audit' | 'logs' | 'telemetry' = 'audit') {
+function openHub(tab: 'audit' | 'logs' | 'telemetry' | 'sdui' = 'audit') {
   hubInitialTab.value = tab;
   showHubModal.value = true;
+}
+
+/**
+ * One-click access rule: in dev the gear jumps straight into the merged hub;
+ * in production the compact master-password gate appears first and the hub
+ * opens immediately after a successful unlock (no intermediate screen).
+ */
+const isDevMode = import.meta.env.DEV;
+function handleSettingsClick() {
+  if (isDevMode) {
+    openHub('audit');
+  } else {
+    showSettings.value = true;
+  }
 }
 
 const isTrayView = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'tray';
@@ -271,6 +288,10 @@ onMounted(async () => {
     loadingDiscovery.value = false;
     await dismissSplash();
   }
+
+  // Developer & MCP test bridge for headless step navigation
+  (window as any).__FASTFREE_NAVIGATE_STEP__ = navigateToStep;
+  (window as any).__FASTFREE_CURRENT_STEP__ = currentStep;
 });
 
 function minimizeWindow() {
@@ -542,7 +563,7 @@ bdi,
   font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.2px;
-  background: linear-gradient(135deg, #FFFFFF 40%, #38BDF8 100%);
+  background: linear-gradient(135deg, var(--text-main) 40%, var(--accent-sky) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
@@ -587,6 +608,33 @@ bdi,
   border-color: var(--border-highlight);
   color: var(--text-main);
   transform: translateY(-1px);
+}
+
+.sdui-tool-btn {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.35);
+  color: #38BDF8;
+  padding: 0 10px;
+  gap: 6px;
+}
+
+.sdui-tool-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38BDF8;
+  color: #FFFFFF;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+.sdui-btn-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.settings-btn.has-issues {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.12);
+  color: #F87171;
 }
 
 .tool-icon {
@@ -1085,3 +1133,5 @@ bdi,
   display: inline-block;
 }
 </style>
+
+

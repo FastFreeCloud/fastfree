@@ -2,8 +2,8 @@
   "id": "step6_launchpad",
   "versionHash": "v2.3.0",
   "title": {
-    "ar": "لوحة تشغيل وبوابة العقدة السيادية (Launchpad)",
-    "en": "Sovereign Control Center & Launchpad"
+    "ar": "سطح مكتب وتطبيقات FastFree السيادية (CasaOS Desktop & Launchpad)",
+    "en": "FastFree Sovereign CasaOS Desktop & Launchpad"
   },
   "root": {
     "type": "div",
@@ -143,11 +143,11 @@
         "children": [
           {
             "type": "div",
-            "class": "col-12 col-md-6 col-lg-3",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
             "children": [
               {
                 "type": "card",
-                "class": "diag-card q-pa-md text-center cursor-pointer",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
                 "props": {
                   "flat": true,
                   "bordered": true
@@ -165,7 +165,7 @@
                     "type": "div",
                     "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
                     "text": {
-                      "ar": "نظام ERPNext المحاسبي",
+                      "ar": "نظام ERPNext المتكامل",
                       "en": "ERPNext Core Suite"
                     }
                   },
@@ -173,7 +173,7 @@
                     "type": "div",
                     "class": "text-caption text-muted q-mb-xs",
                     "text": {
-                      "ar": "نظام التخطيط وإدارة العمليات والمالية",
+                      "ar": "نظام التخطيط وإدارة العمليات والمالية الشامل",
                       "en": "Enterprise Resource Planning & Operations"
                     }
                   },
@@ -188,8 +188,8 @@
                           "outline": true
                         },
                         "text": {
-                          "ar": "Operational",
-                          "en": "Operational"
+                          "ar": "Active",
+                          "en": "Active"
                         }
                       },
                       {
@@ -200,7 +200,7 @@
                         },
                         "text": {
                           "ar": "منفذ 8000",
-                          "en": "Port 8000"
+                          "en": "منفذ 8000"
                         }
                       },
                       {
@@ -220,8 +220,8 @@
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "فتح ERPNext (Port 8000)",
-                        "en": "Open ERPNext (Port 8000)"
+                        "ar": "تشغيل نظام ERPNext المتكامل",
+                        "en": "Launch ERPNext Core Suite"
                       },
                       "color": "primary",
                       "outline": true,
@@ -245,11 +245,725 @@
           },
           {
             "type": "div",
-            "class": "col-12 col-md-6 col-lg-3",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
             "children": [
               {
                 "type": "card",
-                "class": "diag-card q-pa-md text-center cursor-pointer",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "account_balance",
+                      "size": "xl",
+                      "color": "secondary"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "FastFree المحاسبة والمالية",
+                      "en": "General Ledger & Accounting"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
+                    "text": {
+                      "ar": "دفتر الأستاذ العام، شجرة الحسابات والقيود المحاسبية",
+                      "en": "General Ledger, Journal Entries & Chart of Accounts"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Active",
+                          "en": "Active"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 9103",
+                          "en": "منفذ 9103"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client3",
+                          "en": "Mesh: client3"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "تشغيل FastFree المحاسبة والمالية",
+                        "en": "Launch General Ledger & Accounting"
+                      },
+                      "color": "secondary",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "launch",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "open_sdui_screen",
+                        "payload": {
+                          "url": "accounting_ledger"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "point_of_sale",
+                      "size": "xl",
+                      "color": "positive"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "FastFree المبيعات والكاشير",
+                      "en": "Sales Invoicing & POS"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
+                    "text": {
+                      "ar": "نقطة البيع اللمسية السريعة والفوترة والباركود",
+                      "en": "Touch POS Terminal, Invoicing & VAT Receipts"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Active",
+                          "en": "Active"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 9102",
+                          "en": "منفذ 9102"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client4",
+                          "en": "Mesh: client4"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "تشغيل FastFree المبيعات والكاشير",
+                        "en": "Launch Sales Invoicing & POS"
+                      },
+                      "color": "positive",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "launch",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "open_sdui_screen",
+                        "payload": {
+                          "url": "sales_pos"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "inventory_2",
+                      "size": "xl",
+                      "color": "accent"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "FastFree إدارة المخازن",
+                      "en": "Inventory & Warehouse Hub"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
+                    "text": {
+                      "ar": "حركات المخزون، التحويلات وقارئ الباركود الذكي",
+                      "en": "Stock Adjustments, Barcode Scanner & Multi-Warehouse"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Active",
+                          "en": "Active"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "accent",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 9104",
+                          "en": "منفذ 9104"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client7",
+                          "en": "Mesh: client7"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "تشغيل FastFree إدارة المخازن",
+                        "en": "Launch Inventory & Warehouse Hub"
+                      },
+                      "color": "accent",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "launch",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "open_sdui_screen",
+                        "payload": {
+                          "url": "inventory_audit"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "badge",
+                      "size": "xl",
+                      "color": "primary"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "FastFree الموارد البشرية",
+                      "en": "HR & Payroll Sovereign"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
+                    "text": {
+                      "ar": "دليل الموظفين، الحضور والانصراف ومسيرات الرواتب",
+                      "en": "Employee Directory, Attendance & Salary Slips"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Active",
+                          "en": "Active"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "primary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 9105",
+                          "en": "منفذ 9105"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client8",
+                          "en": "Mesh: client8"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "تشغيل FastFree الموارد البشرية",
+                        "en": "Launch HR & Payroll Sovereign"
+                      },
+                      "color": "primary",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "launch",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "open_sdui_screen",
+                        "payload": {
+                          "url": "hr_payroll"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "shopping_cart",
+                      "size": "xl",
+                      "color": "deep-purple"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "FastFree المشتريات والموردين",
+                      "en": "Purchase Orders & RFQ"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
+                    "text": {
+                      "ar": "أوامر الشراء، عروض الأسعار واعتماد التوريدات",
+                      "en": "Purchase Orders, Quotations & Vendor Cycles"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Active",
+                          "en": "Active"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "deep-purple",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 9106",
+                          "en": "منفذ 9106"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client9",
+                          "en": "Mesh: client9"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "تشغيل FastFree المشتريات والموردين",
+                        "en": "Launch Purchase Orders & RFQ"
+                      },
+                      "color": "deep-purple",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "launch",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "open_sdui_screen",
+                        "payload": {
+                          "url": "purchase_orders"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "support_agent",
+                      "size": "xl",
+                      "color": "teal"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "FastFree إدارة علاقات العملاء",
+                      "en": "CRM & Pipeline Suite"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
+                    "text": {
+                      "ar": "إدارة العملاء المحتملين والصفقات ومراحل التحويل",
+                      "en": "Lead Funnels, Deal Stages & Contact Timeline"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Active",
+                          "en": "Active"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "teal",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 9107",
+                          "en": "منفذ 9107"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client10",
+                          "en": "Mesh: client10"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "تشغيل FastFree إدارة علاقات العملاء",
+                        "en": "Launch CRM & Pipeline Suite"
+                      },
+                      "color": "teal",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "launch",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "open_sdui_screen",
+                        "payload": {
+                          "url": "crm_pipeline"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "dns",
+                      "size": "xl",
+                      "color": "cyan"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "FastFree أسطول السيرفرات Clan",
+                      "en": "Clan.lol Fleet Monitor"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
+                    "text": {
+                      "ar": "مراقبة وإدارة الـ 11 سيرفر وشبكة WireGuard Mesh",
+                      "en": "11-Node Fleet Control & WireGuard Mesh Status"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Active",
+                          "en": "Active"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "cyan",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 9108",
+                          "en": "منفذ 9108"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client11",
+                          "en": "Mesh: client11"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "تشغيل FastFree أسطول السيرفرات Clan",
+                        "en": "Launch Clan.lol Fleet Monitor"
+                      },
+                      "color": "cyan",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "launch",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "open_sdui_screen",
+                        "payload": {
+                          "url": "fleet_monitor"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
                 "props": {
                   "flat": true,
                   "bordered": true
@@ -260,7 +974,7 @@
                     "props": {
                       "name": "dashboard",
                       "size": "xl",
-                      "color": "secondary"
+                      "color": "warning"
                     }
                   },
                   {
@@ -290,19 +1004,19 @@
                           "outline": true
                         },
                         "text": {
-                          "ar": "Operational",
-                          "en": "Operational"
+                          "ar": "Active",
+                          "en": "Active"
                         }
                       },
                       {
                         "type": "badge",
                         "props": {
-                          "color": "primary",
+                          "color": "warning",
                           "outline": true
                         },
                         "text": {
                           "ar": "منفذ 9090",
-                          "en": "Port 9090"
+                          "en": "منفذ 9090"
                         }
                       },
                       {
@@ -322,10 +1036,10 @@
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "فتح Cockpit (Port 9090)",
-                        "en": "Open Cockpit (Port 9090)"
+                        "ar": "تشغيل لوحة إدارة الخادم Cockpit",
+                        "en": "Launch Cockpit Admin Console"
                       },
-                      "color": "secondary",
+                      "color": "warning",
                       "outline": true,
                       "dense": true,
                       "icon": "launch",
@@ -347,11 +1061,11 @@
           },
           {
             "type": "div",
-            "class": "col-12 col-md-6 col-lg-3",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
             "children": [
               {
                 "type": "card",
-                "class": "diag-card q-pa-md text-center cursor-pointer",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
                 "props": {
                   "flat": true,
                   "bordered": true
@@ -362,7 +1076,7 @@
                     "props": {
                       "name": "storage",
                       "size": "xl",
-                      "color": "accent"
+                      "color": "indigo"
                     }
                   },
                   {
@@ -392,19 +1106,19 @@
                           "outline": true
                         },
                         "text": {
-                          "ar": "Operational",
-                          "en": "Operational"
+                          "ar": "Active",
+                          "en": "Active"
                         }
                       },
                       {
                         "type": "badge",
                         "props": {
-                          "color": "primary",
+                          "color": "indigo",
                           "outline": true
                         },
                         "text": {
                           "ar": "منفذ 3000",
-                          "en": "Port 3000"
+                          "en": "منفذ 3000"
                         }
                       },
                       {
@@ -424,10 +1138,10 @@
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "فتح DbGate (Port 3000)",
-                        "en": "Open DbGate (Port 3000)"
+                        "ar": "تشغيل استوديو البيانات DbGate",
+                        "en": "Launch DbGate Database Studio"
                       },
-                      "color": "accent",
+                      "color": "indigo",
                       "outline": true,
                       "dense": true,
                       "icon": "launch",
@@ -449,11 +1163,11 @@
           },
           {
             "type": "div",
-            "class": "col-12 col-md-6 col-lg-3",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
             "children": [
               {
                 "type": "card",
-                "class": "diag-card q-pa-md text-center cursor-pointer",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
                 "props": {
                   "flat": true,
                   "bordered": true
@@ -494,19 +1208,19 @@
                           "outline": true
                         },
                         "text": {
-                          "ar": "Operational",
-                          "en": "Operational"
+                          "ar": "Active",
+                          "en": "Active"
                         }
                       },
                       {
                         "type": "badge",
                         "props": {
-                          "color": "primary",
+                          "color": "positive",
                           "outline": true
                         },
                         "text": {
                           "ar": "منفذ 80/443",
-                          "en": "Port 80/443"
+                          "en": "منفذ 80/443"
                         }
                       },
                       {
@@ -526,13 +1240,13 @@
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "فحص البوابة (Port 80/443)",
-                        "en": "Check Gateway (Port 80/443)"
+                        "ar": "تشغيل بوابة Caddy Edge والتشفير",
+                        "en": "Launch Caddy Secure Edge Gateway"
                       },
                       "color": "positive",
                       "outline": true,
                       "dense": true,
-                      "icon": "lock",
+                      "icon": "launch",
                       "class": "full-width q-mt-sm"
                     },
                     "events": {
