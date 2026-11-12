@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+﻿import { ref, computed } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { useI18n } from './useI18n';
@@ -47,7 +47,7 @@ export interface SystemAuditReport {
 }
 
 // Module-level shared singleton reactive state
-const activeTab = ref<'audit' | 'logs' | 'telemetry'>('audit');
+const activeTab = ref<'audit' | 'logs' | 'telemetry' | 'sdui'>('audit');
 const isLoadingAudit = ref(true);
 const isAutoFixing = ref(false);
 const fixProgressPct = ref(0);
@@ -222,7 +222,13 @@ export function useDiagnosticAudit() {
     }
   }
 
+  let copyInFlight = false;
+
   async function handleCopyFullReport() {
+    // Single-flight: refuse a second copy while one is running (prevents
+    // racing clipboard writes that interleave output).
+    if (copyInFlight) return;
+    copyInFlight = true;
     let hwid = '';
     if (classifyRuntime() !== 'browser-preview') {
       try {
@@ -232,16 +238,20 @@ export function useDiagnosticAudit() {
       }
     }
 
-    const fullReport = buildUnifiedDiagnosticReport(report.value, hwid);
-    const copied = await copyTextToClipboard(fullReport);
-    if (copied) {
-      copyNotice.value = true;
-      logSuccess('Copy', 'Unified diagnostic bundle copied to the clipboard.');
-      setTimeout(() => {
-        copyNotice.value = false;
-      }, 2800);
-    } else {
-      logError('Copy', 'Clipboard copy failed', 'Clipboard access was refused in this environment.');
+    try {
+      const fullReport = buildUnifiedDiagnosticReport(report.value, hwid);
+      const copied = await copyTextToClipboard(fullReport);
+      if (copied) {
+        copyNotice.value = true;
+        logSuccess('Copy', 'Unified diagnostic bundle copied to the clipboard.');
+        setTimeout(() => {
+          copyNotice.value = false;
+        }, 2800);
+      } else {
+        logError('Copy', 'Clipboard copy failed', 'Clipboard access was refused in this environment.');
+      }
+    } finally {
+      copyInFlight = false;
     }
   }
 
@@ -274,3 +284,4 @@ export function useDiagnosticAudit() {
     browserPreviewMode,
   };
 }
+

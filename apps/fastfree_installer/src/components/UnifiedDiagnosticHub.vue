@@ -1,6 +1,6 @@
-<template>
+﻿<template>
   <div class="modal-backdrop" @click.self="$emit('close')">
-    <div class="modal-card unified-hub-card" :class="{ 'is-rtl': isRtl }">
+    <div class="modal-card unified-hub-card" :class="{ 'is-rtl': isRtl, 'is-sdui-mode': activeTab === 'sdui' }">
       <!-- Hub Header -->
       <header class="hub-header">
         <div class="header-main-row">
@@ -17,7 +17,7 @@
               <span v-if="report" class="badge-status-top font-mono" :class="`top-${report.overall_status}`">
                 {{
                   report.overall_status === 'healthy'
-                    ? (t('auto.healthy_100'))
+                    ? `${report.total_passed}/${report.total_passed + report.total_warnings + report.total_errors} ${isRtl ? 'خطوات ناجحة' : 'steps passed'}`
                     : report.overall_status === 'warning'
                     ? (t('auto.warnings'))
                     : (t('auto.action_required'))
@@ -79,6 +79,20 @@
               <line x1="6" y1="18" x2="6.01" y2="18"></line>
             </svg>
             <span>{{ t('auto.host_hyper_v') }}</span>
+          </button>
+
+          <button
+            class="hub-tab-btn hub-tab-sdui"
+            :class="{ active: activeTab === 'sdui' }"
+            @click="activeTab = 'sdui'"
+          >
+            <svg aria-hidden="true" class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+            <span>{{ isRtl ? 'محرر الشاشات الذكي' : 'SDUI Playground' }}</span>
+            <span class="tab-badge tab-badge-sdui font-mono">LIVE</span>
           </button>
         </nav>
       </header>
@@ -154,6 +168,12 @@
       <main v-else-if="activeTab === 'telemetry'" class="hub-tab-body">
         <DiagnosticTelemetryGrid />
       </main>
+
+      <!-- TAB 4: SDUI PLAYGROUND -->
+      <main v-else-if="activeTab === 'sdui'" class="hub-tab-body sdui-tab-body">
+        <SduiPlayground />
+      </main>
+
 
       <!-- Persistent Footer (Actions & Copy) -->
       <footer class="hub-footer">
@@ -247,19 +267,19 @@ import DiagnosticSummaryBadge from './diagnostic/DiagnosticSummaryBadge.vue';
 import AuditStepCard from './diagnostic/AuditStepCard.vue';
 import DiagnosticLogDrawer from './diagnostic/DiagnosticLogDrawer.vue';
 import DiagnosticTelemetryGrid from './diagnostic/DiagnosticTelemetryGrid.vue';
+import { SduiPlayground } from '@fastfree/lowcode/sdui';
+
+interface Props {
+  initialTab?: 'audit' | 'logs' | 'telemetry' | 'sdui';
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  initialTab: 'audit',
+});
 
 const emit = defineEmits<{
   (e: 'close'): void;
 }>();
-
-const props = withDefaults(
-  defineProps<{
-    initialTab?: 'audit' | 'logs' | 'telemetry';
-  }>(),
-  {
-    initialTab: 'audit',
-  }
-);
 
 const { t } = useI18n();
 const {
@@ -283,16 +303,15 @@ const {
   handleExportLogFile,
 } = useDiagnosticAudit();
 
-if (props.initialTab) {
-  activeTab.value = props.initialTab;
-}
-
 function handleJump(stepNum: number) {
   emit('close');
   navigateToStep(stepNum);
 }
 
 onMounted(() => {
+  if (props.initialTab) {
+    activeTab.value = props.initialTab;
+  }
   setupEventListeners();
   runAudit();
 });
@@ -302,6 +321,46 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped>
+<style>
+/* Global (unscoped): diagnostic-hub.css is shared by the hub shell AND its
+   child components (AuditStepCard / LogDrawer / TelemetryGrid). Importing it
+   inside <style scoped> would pin every selector to the hub's data-v scope,
+   leaving the children served with UA-default styling (white buttons). */
 @import '../assets/styles/diagnostic-hub.css';
+
+/* SDUI Playground Expansion Styles in Diagnostic Hub */
+.unified-hub-card.is-sdui-mode {
+  max-width: 1280px !important;
+  width: 96vw !important;
+  height: 90vh !important;
+  max-height: 90vh !important;
+}
+
+.sdui-tab-body {
+  padding: 0 !important;
+  height: 100%;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.sdui-tab-body .sdui-playground {
+  height: 100%;
+  flex: 1;
+}
+
+.hub-tab-sdui {
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.tab-badge-sdui {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
 </style>

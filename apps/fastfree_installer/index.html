@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FastFree Node Installer</title>
+    <title>FastFree Node Setup & Companion</title>
     <style>
       :root {
         --primary: #1976D2;
@@ -20,11 +20,37 @@
       body {
         background-color: var(--bg-dark);
         color: var(--text);
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        font-family: 'IBM Plex Sans Arabic', 'Segoe UI', system-ui, -apple-system, sans-serif;
         overflow: hidden;
         height: 100vh;
       }
+      /* Saved light theme: never flash dark before Vue mounts. */
+      html[data-theme="light"] body {
+        background-color: #F8FAFC;
+        color: #0F172A;
+      }
+      html[data-theme="oled-black"] body {
+        background-color: #000000;
+        color: #F8FAFC;
+      }
     </style>
+    <script>
+      // Pre-paint theme & locale mirror: apply persisted settings on <html> before first render
+      try {
+        var t = localStorage.getItem('fastfree_installer_theme');
+        if (t === 'light' || t === 'oled-black') {
+          document.documentElement.setAttribute('data-theme', t);
+        }
+        var loc = localStorage.getItem('fastfree_installer_locale');
+        if (loc === 'en') {
+          document.documentElement.setAttribute('lang', 'en');
+          document.documentElement.setAttribute('dir', 'ltr');
+        } else {
+          document.documentElement.setAttribute('lang', 'ar');
+          document.documentElement.setAttribute('dir', 'rtl');
+        }
+      } catch (e) { /* storage unavailable */ }
+    </script>
   </head>
   <body>
     <div id="app"></div>
