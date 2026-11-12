@@ -108,11 +108,11 @@
         "nixpkgs-unstable": "nixpkgs-unstable"
       },
       "locked": {
-        "path": "./apps/fastfree_os",
+        "path": "./packages/fastfree_os",
         "type": "path"
       },
       "original": {
-        "path": "./apps/fastfree_os",
+        "path": "./packages/fastfree_os",
         "type": "path"
       },
       "parent": []

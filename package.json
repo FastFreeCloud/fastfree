@@ -1,11 +1,14 @@
 {
   "name": "fastfree",
   "version": "1.0.0",
-  "description": "",
+  "description": "FastFree ERP monorepo — 3 core apps (installer, backend, website) + 10 modular packages (accounting, auth, crm, hr, inventory, lowcode, os, panel, purchase, sales)",
   "main": "index.js",
   "scripts": {
     "installer:dev": "bun --cwd apps/fastfree_installer run tauri dev",
     "installer:web": "bun --cwd apps/fastfree_installer run dev",
+    "panel:dev": "bun --cwd packages/fastfree_panel run dev",
+    "panel:build": "bun --cwd packages/fastfree_panel run build",
+    "panel:backend:dev": "bun --cwd packages/fastfree_panel/backend run dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

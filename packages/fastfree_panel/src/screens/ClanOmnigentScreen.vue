@@ -1,5 +1,5 @@
 <template>
-  <div class="clan-omnigent-screen q-pa-md" data-source-path="apps/fastfree_panel/src/screens/ClanOmnigentScreen.vue" data-studio-screen="true">
+  <div class="clan-omnigent-screen q-pa-md" data-source-path="packages/fastfree_panel/src/screens/ClanOmnigentScreen.vue" data-studio-screen="true">
     <!-- Header with Live Omnigent Status & Actions -->
     <div class="row items-center justify-between q-mb-md">
       <div>

@@ -8,7 +8,7 @@ let
   tarball = "/tmp/${assetName}";
   staging = "/tmp/fastfree-panel-bundle.new";
   stagingRoot = "/srv/.fastfree-panel-staging";
-  sourceDir = "/root/fastfree-source/apps/fastfree_panel";
+  sourceDir = "/root/fastfree-source/packages/fastfree_panel";
 in
 {
   config = lib.mkIf config.fastfree.apps.fastfree_panel {
@@ -187,7 +187,7 @@ in
         NODE_ENV = "production";
         CLAN_PANEL_API_HOST = "127.0.0.1";
         CLAN_PANEL_API_PORT = "9099";
-        CLAN_DIR = "/root/fastfree-source/apps/fastfree_os";
+        CLAN_DIR = "/root/fastfree-source/packages/fastfree_os";
       };
       serviceConfig = {
         Restart = "on-failure";

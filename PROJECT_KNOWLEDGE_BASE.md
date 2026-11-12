@@ -5,23 +5,20 @@
 - **Type:** Full Enterprise Resource Planning (ERP) system
 - **Path:** `C:\Users\FastFree\Desktop\fastfree`
 - **Backend:** Frappe (Python) — `apps/fastfree_backend/`
-- **Frontend:** Quasar (Vue 3 + TypeScript) — `apps/fastfree_erp/`
-- **Architecture:** Monorepo with apps + packages
+- **Frontend:** Quasar (Vue 3 + TypeScript) — `packages/` modular packages (installer shell in `apps/fastfree_installer/`)
+- **Architecture:** Monorepo with 3 core apps + 10 modular packages
 
-## 📁 Apps (9 applications)
+## 📁 Apps (3 core apps)
 | App | Name | Description | Scripts |
 |-----|------|-------------|---------|
 | fastfree_backend | Frappe app | Custom Frappe application for FastFree Cloud | Python (bench) |
-| fastfree_erp | FastFree ERP | Full Enterprise Resource Planning | dev, build, typecheck, lint |
-| fastfree_hr | FastFree HR | Human Resources + CRM | dev, build, typecheck, lint |
 | fastfree_installer | @fastfree/installer | Tauri desktop installer | dev, build, tauri |
-| fastfree_ledger | FastFree Ledger | Accounting + Sales + Inventory | dev, build, typecheck, lint |
-| fastfree_os | (no pkg.json) | NixOS configuration for deployment | CLI scripts |
-| fastfree_panel | fastfree | Quasar SPA + Node backend for Clan CLI | dev, build, test:e2e |
-| fastfree_pos | FastFree POS | Point of Sale | dev, build, typecheck, lint |
-| fastfree_website | fastfree | Next.js website | dev, build, start |
+| fastfree_website | @fastfree/website | Next.js website | dev, build, start |
 
-## 📦 Packages (9 reusable packages)
+> Decommissioned (now modular packages): `fastfree_erp`, `fastfree_ledger`,
+> `fastfree_hr`, `fastfree_pos` → superseded by `packages/fastfree_*`.
+
+## 📦 Packages (10 modular packages)
 | Package | Name | Description |
 |---------|------|-------------|
 | fastfree_accounting | fastfree-accounting | Chart of Accounts, Journal Entries, Payments, Ledger, Cost Centers, Fiscal Years, Financial Reports |
@@ -30,9 +27,10 @@
 | fastfree_hr | fastfree-hr | HR module |
 | fastfree_inventory | fastfree-inventory | Products, Categories, Warehouses, Stock Entries, Suppliers |
 | fastfree_lowcode | quasar-app-extension-fastfree-lowcode | Low-code engine: Window Manager, CRUD Table, Dynamic Form |
+| fastfree_os | (no pkg.json) | NixOS/Clan deployment flake (11 nodes) |
+| fastfree_panel | @fastfree/panel | Quasar SPA + Node backend for the Clan CLI (SDUI JSON schemas) |
 | fastfree_purchase | fastfree-purchase | Purchase Management |
 | fastfree_sales | fastfree-sales | Sales module |
-| fastfree_update | quasar-app-extension | Quasar App Extension |
 
 ## 🤖 5 Bots for Project Understanding
 

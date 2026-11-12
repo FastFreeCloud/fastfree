@@ -159,7 +159,7 @@ fastfree_os /
 ### Quick validation
 
 ```bash
-cd apps/fastfree_os
+cd packages/fastfree_os
 nix-instantiate --parse flake.nix clan.nix machines/*/configuration.nix   # syntax
 nix eval .#clan.inventory.machines.client3  # evaluate (Clan inventory — canonical)
 ```
@@ -167,7 +167,7 @@ nix eval .#clan.inventory.machines.client3  # evaluate (Clan inventory — canon
 ### Build client1 (Hyper-V VHDX)
 
 ```bash
-cd apps/fastfree_os
+cd packages/fastfree_os
 nix build .#packages.x86_64-linux.client1   # → result/fastfree_client1.vhdx.7z (password: FastOS@2026)
 ```
 
@@ -187,7 +187,7 @@ gh workflow run 10-client2.yaml --ref master   # deploy (or install via nixos-an
 ### Switch client3 (local machine, on the machine itself)
 
 ```bash
-cd ~/Desktop/fastfree/apps/fastfree_os
+cd ~/Desktop/fastfree/packages/fastfree_os
 sudo nixos-rebuild switch --flake .#client3
 ```
 
@@ -229,9 +229,9 @@ The workflow runs when you push to `main` or `master` or open a PR, and any of t
 
 | Path | Why |
 |:-----|:----|
-| `apps/fastfree_os/{modules,machines}/**` | NixOS modules or client configs changed |
-| `apps/fastfree_os/flake.nix` | Flake structure changed |
-| `apps/fastfree_os/flake.lock` | Dependencies updated |
+| `packages/fastfree_os/{modules,machines}/**` | NixOS modules or client configs changed |
+| `packages/fastfree_os/flake.nix` | Flake structure changed |
+| `packages/fastfree_os/flake.lock` | Dependencies updated |
 | `.github/workflows/09-client1.yaml` | client1 build workflow itself changed |
 | `.github/workflows/10-client2.yaml` | client2 deploy workflow itself changed |
 
@@ -320,7 +320,7 @@ Rebuilds your current machine in place. Disk layout and desktop are preserved
 #### Step 1: Validate
 
 ```bash
-cd ~/Desktop/fastfree/apps/fastfree_os
+cd ~/Desktop/fastfree/packages/fastfree_os
 nix-instantiate --parse flake.nix machines/client3/configuration.nix
 nix eval .#clan.inventory.machines.client3
 ```
@@ -351,7 +351,7 @@ fastfree update
 #### Step 1: Validate
 
 ```bash
-cd apps/fastfree_os
+cd packages/fastfree_os
 nix eval .#clan.inventory.machines.client1
 ```
 

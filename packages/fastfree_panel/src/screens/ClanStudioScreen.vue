@@ -1,5 +1,5 @@
 <template>
-  <div class="design-studio-screen fit column q-pa-md overflow-hidden" data-source-path="apps/fastfree_panel/src/screens/ClanStudioScreen.vue" data-studio-screen="true">    <!-- Header -->
+  <div class="design-studio-screen fit column q-pa-md overflow-hidden" data-source-path="packages/fastfree_panel/src/screens/ClanStudioScreen.vue" data-studio-screen="true">    <!-- Header -->
     <div class="row items-center justify-between q-mb-md no-wrap">
       <div>
         <div class="text-h6 text-weight-bold text-white row items-center q-gutter-sm no-wrap">
