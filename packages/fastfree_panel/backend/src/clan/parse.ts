@@ -2,7 +2,7 @@
  * Parsers for the allowlisted `clan` commands.
  *
  * Every shape below was captured from clan-core 26.05 on this machine
- * (CLAN_DIR=apps/fastfree_os). Verified raw output:
+ * (CLAN_DIR=packages/fastfree_os). Verified raw output:
  *
  *   $ clan machines list
  *   client1

@@ -1,5 +1,5 @@
 <template>
-  <div class="clan-agents-hub fit column" data-source-path="apps/fastfree_panel/src/hubs/ClanAgentsHub.vue" data-studio-screen="true">
+  <div class="clan-agents-hub fit column" data-source-path="packages/fastfree_panel/src/hubs/ClanAgentsHub.vue" data-studio-screen="true">
     <!-- Hub Top Navigation Bar -->
     <div class="hub-header q-px-md q-py-sm bg-grey-10 text-white row items-center justify-between no-wrap">
       <div class="row items-center q-gutter-x-sm no-wrap">

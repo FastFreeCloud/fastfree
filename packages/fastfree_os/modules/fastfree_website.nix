@@ -5,7 +5,7 @@ let
   siteDir = "/srv/fastfree-website";
   assetName = "fastfree-website.tar.gz";
   tarball = "/tmp/${assetName}";
-  sourceDir = "/root/fastfree-source/apps/fastfree_website";
+  sourceDir = "/root/fastfree-source/packages/fastfree_website";
 in
 {
   config = lib.mkIf config.fastfree.apps.fastfree_website {

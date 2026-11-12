@@ -1,4 +1,7 @@
 packages:
+  # 3 core apps (installer, backend, website) + 10 modular packages.
+  # fastfree_os is the NixOS/Clan flake (no package.json); fastfree_panel is
+  # the Clan panel SPA + its private Node backend (packages/*/backend glob).
   - 'packages/*'
   - 'packages/*/backend'
   - 'apps/*'
@@ -14,10 +17,10 @@ allowBuilds:
   bufferutil: true
   core-js: true
   cypress: true
-  # electron arrives only as a transitive dep of @vue/devtools-electron
-  # (fastfree_erp devDep). Its postinstall downloads a ~100 MB binary that
-  # nothing here uses, and @vue/devtools falls back to the browser build, so
-  # deny the build script rather than pay for it on every install.
+  # electron arrives only as a transitive dep of @vue/devtools-electron.
+  # Its postinstall downloads a ~100 MB binary that nothing here uses, and
+  # @vue/devtools falls back to the browser build, so deny the build script
+  # rather than pay for it on every install.
   electron: false
   electron-winstaller: true
   esbuild: true

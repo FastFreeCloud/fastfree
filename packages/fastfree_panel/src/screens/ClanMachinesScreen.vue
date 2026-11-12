@@ -1,5 +1,5 @@
 <template>
-  <div class="clan-machines-screen q-pa-md" data-source-path="apps/fastfree_panel/src/screens/ClanMachinesScreen.vue" data-studio-screen="true">
+  <div class="clan-machines-screen q-pa-md" data-source-path="packages/fastfree_panel/src/screens/ClanMachinesScreen.vue" data-studio-screen="true">
     <!-- Header with Search, View Toggle & Actions -->
     <div class="row items-center q-mb-md q-gutter-sm">
       <div>

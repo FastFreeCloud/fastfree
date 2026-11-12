@@ -54,7 +54,7 @@ function readClanDir(): string | null {
   }
   const candidates = [
     resolve(process.cwd(), '../fastfree_os'),
-    resolve(process.cwd(), 'apps/fastfree_os'),
+    resolve(process.cwd(), 'packages/fastfree_os'),
     '/etc/clan',
   ];
   for (const candidate of candidates) {

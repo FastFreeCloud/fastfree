@@ -1,5 +1,5 @@
 <template>
-  <div class="clan-vars-screen q-pa-md" data-source-path="apps/fastfree_panel/src/screens/ClanVarsScreen.vue" data-studio-screen="true">
+  <div class="clan-vars-screen q-pa-md" data-source-path="packages/fastfree_panel/src/screens/ClanVarsScreen.vue" data-studio-screen="true">
     <!-- Header with Filter & Actions -->
     <div class="row items-center q-mb-md q-gutter-sm">
       <div>
@@ -322,7 +322,7 @@ function refreshVars(): void {
     $q.notify({
       type: 'positive',
       icon: 'mdi-refresh',
-      message: 'Clan vars re-indexed from apps/fastfree_os/vars/!',
+      message: 'Clan vars re-indexed from packages/fastfree_os/vars/!',
     });
   }, 300);
 }

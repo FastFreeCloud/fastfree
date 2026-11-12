@@ -1,5 +1,5 @@
 <template>
-  <div class="clan-paseo-screen q-pa-md" data-source-path="apps/fastfree_panel/src/screens/ClanPaseoScreen.vue" data-studio-screen="true">
+  <div class="clan-paseo-screen q-pa-md" data-source-path="packages/fastfree_panel/src/screens/ClanPaseoScreen.vue" data-studio-screen="true">
     <!-- Header with Live Paseo MCP Status & Actions -->
     <div class="row items-center q-mb-md q-gutter-sm">
       <div>

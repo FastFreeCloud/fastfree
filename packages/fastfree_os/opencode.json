@@ -11,7 +11,7 @@
       "type": "local",
       "command": [
         "node",
-        "C:/Users/FastFree/Desktop/fastfree/apps/fastfree_panel/backend/dist/mcp/stdio.js"
+        "C:/Users/FastFree/Desktop/fastfree/packages/fastfree_panel/backend/dist/mcp/stdio.js"
       ],
       "enabled": true,
       "timeout": 300000,
@@ -40,7 +40,7 @@
         "-y",
         "@modelcontextprotocol/server-sequential-thinking@0.6.2"
       ],
-      "enabled": true,
+      "enabled": false,
       "timeout": 300000,
       "cwd": "."
     },
@@ -59,7 +59,7 @@
       "environment": {
         "MCP_SERVER_REQUEST_TIMEOUT": "600000"
       },
-      "enabled": true,
+      "enabled": false,
       "timeout": 300000,
       "cwd": "."
     },
@@ -73,7 +73,7 @@
         "--user-data-dir=.auth/mcp-profile",
         "--browser=chromium"
       ],
-      "enabled": true,
+      "enabled": false,
       "timeout": 300000,
       "cwd": "."
     },
@@ -87,7 +87,7 @@
       "environment": {
         "FIRECRAWL_API_KEY": ""
       },
-      "enabled": true,
+      "enabled": false,
       "timeout": 300000,
       "cwd": "."
     },
@@ -142,7 +142,7 @@
         "jcodemunch-mcp==1.108.397",
         "serve"
       ],
-      "enabled": true,
+      "enabled": false,
       "timeout": 300000,
       "cwd": "."
     },

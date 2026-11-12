@@ -21,20 +21,20 @@ function withSourceTag(loader: ScreenLoader, sourcePath: string): ScreenLoader {
 }
 
 const SCREEN_SOURCE_PATHS: Record<string, string> = {
-  'clan-machines': 'apps/fastfree_panel/src/screens/ClanMachinesScreen.vue',
-  'clan-services': 'apps/fastfree_panel/src/screens/ClanServicesScreen.vue',
-  'clan-config': 'apps/fastfree_panel/src/hubs/ClanConfigHub.vue',
-  'clan-health': 'apps/fastfree_panel/src/screens/ClanHealthScreen.vue',
-  'clan-deploy': 'apps/fastfree_panel/src/screens/ClanDeployScreen.vue',
-  'clan-build': 'apps/fastfree_panel/src/screens/ClanImageBuilderScreen.vue',
-  'clan-network': 'apps/fastfree_panel/src/screens/ClanNetworkScreen.vue',
-  'clan-backups': 'apps/fastfree_panel/src/screens/ClanBackupsScreen.vue',
-  'clan-secrets': 'apps/fastfree_panel/src/screens/ClanSecretsScreen.vue',
-  'clan-vars': 'apps/fastfree_panel/src/screens/ClanVarsScreen.vue',
-  'clan-omnigent': 'apps/fastfree_panel/src/screens/ClanOmnigentScreen.vue',
-  'clan-paseo': 'apps/fastfree_panel/src/screens/ClanPaseoScreen.vue',
-  'clan-studio': 'apps/fastfree_panel/src/screens/ClanStudioScreen.vue',
-  'clan-agents': 'apps/fastfree_panel/src/hubs/ClanAgentsHub.vue',
+  'clan-machines': 'packages/fastfree_panel/src/screens/ClanMachinesScreen.vue',
+  'clan-services': 'packages/fastfree_panel/src/screens/ClanServicesScreen.vue',
+  'clan-config': 'packages/fastfree_panel/src/hubs/ClanConfigHub.vue',
+  'clan-health': 'packages/fastfree_panel/src/screens/ClanHealthScreen.vue',
+  'clan-deploy': 'packages/fastfree_panel/src/screens/ClanDeployScreen.vue',
+  'clan-build': 'packages/fastfree_panel/src/screens/ClanImageBuilderScreen.vue',
+  'clan-network': 'packages/fastfree_panel/src/screens/ClanNetworkScreen.vue',
+  'clan-backups': 'packages/fastfree_panel/src/screens/ClanBackupsScreen.vue',
+  'clan-secrets': 'packages/fastfree_panel/src/screens/ClanSecretsScreen.vue',
+  'clan-vars': 'packages/fastfree_panel/src/screens/ClanVarsScreen.vue',
+  'clan-omnigent': 'packages/fastfree_panel/src/screens/ClanOmnigentScreen.vue',
+  'clan-paseo': 'packages/fastfree_panel/src/screens/ClanPaseoScreen.vue',
+  'clan-studio': 'packages/fastfree_panel/src/screens/ClanStudioScreen.vue',
+  'clan-agents': 'packages/fastfree_panel/src/hubs/ClanAgentsHub.vue',
 };
 
 export default defineBoot(() => {
@@ -77,7 +77,7 @@ export default defineBoot(() => {
   ];
 
   for (const s of primaryScreens) {
-    const sourcePath = SCREEN_SOURCE_PATHS[s.type] ?? `apps/fastfree_panel/src/screens/${s.type}.vue`;
+    const sourcePath = SCREEN_SOURCE_PATHS[s.type] ?? `packages/fastfree_panel/src/screens/${s.type}.vue`;
     const component = defineAsyncComponent(withSourceTag(s.loader, sourcePath));
     registerScreen(s.type, {
       component,
@@ -109,7 +109,7 @@ export default defineBoot(() => {
   ];
 
   for (const s of legacyScreens) {
-    const sourcePath = SCREEN_SOURCE_PATHS[s.type] ?? `apps/fastfree_panel/src/screens/${s.type}.vue`;
+    const sourcePath = SCREEN_SOURCE_PATHS[s.type] ?? `packages/fastfree_panel/src/screens/${s.type}.vue`;
     const component = defineAsyncComponent(withSourceTag(s.loader, sourcePath));
     registerScreen(s.type, {
       component,

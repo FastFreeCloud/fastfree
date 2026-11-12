@@ -20,7 +20,7 @@ description: Add or fix a screen, service, store, or locale in any fastfree_* do
 6. **Registration**: register screens in the package `init.ts`/`screens.ts`
    (typed `AsyncComponentLoader`), respecting boot order (below).
 
-## Hard invariants (from `packages/fastfree-quasar-architecture.md`)
+## Hard invariants (from `FASTFREE_QUASAR_ARCHITECTURE.md`)
 
 - Boot order: `fastfree-auth-init` → accounting/inventory/sales/purchase/hr/crm-init →
   `i18n` → `register-service-worker`.

@@ -54,7 +54,7 @@ jobs:
               listen_port = 51820 if n == 1 else 51820 + n
               tunnel_ip = f"10.24.0.{n}/32" if n > 1 else "10.24.0.1/16"
               
-              var_dir = f"apps/fastfree_os/vars/per-machine/{node_id}/wireguard-keys-wireguard/publickey"
+              var_dir = f"packages/fastfree_os/vars/per-machine/{node_id}/wireguard-keys-wireguard/publickey"
               pub_file = os.path.join(var_dir, "value")
               
               pubkey = ""
@@ -117,7 +117,7 @@ jobs:
         run: |
           git config user.name "FastFree Fleet Bot"
           git config user.email "bot@fastfree.cloud"
-          git add apps/fastfree_os/vars/
+          git add packages/fastfree_os/vars/
           if ! git diff --staged --quiet; then
             git commit -m "chore(clan): auto-sync fleet wireguard keys (client1..client11)"
             git push origin master

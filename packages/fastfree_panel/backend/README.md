@@ -13,8 +13,8 @@ privileged call goes through this process.
 ## Run (inside the Flox environment — `clan` is only on PATH there)
 
 ```bash
-CLAN_DIR=/home/fastfree/Desktop/fastfree/apps/fastfree_os \
-  pnpm -C /home/fastfree/Desktop/fastfree/apps/fastfree_panel/backend run dev
+CLAN_DIR=/home/fastfree/Desktop/fastfree/packages/fastfree_os \
+  pnpm -C /home/fastfree/Desktop/fastfree/packages/fastfree_panel/backend run dev
 ```
 
 Other scripts: `run build` (tsc → `dist/`), `run start` (node `dist/server.js`),
