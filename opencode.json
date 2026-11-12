@@ -23,7 +23,7 @@
       "type": "local",
       "command": [
         "node",
-        "C:/Users/FastFree/Desktop/fastfree/apps/fastfree_panel/backend/dist/mcp/stdio.js"
+        "C:/Users/FastFree/Desktop/fastfree/packages/fastfree_os/backend/dist/mcp/stdio.js"
       ],
       "enabled": true,
       "timeout": 300000,
@@ -39,6 +39,18 @@
       "enabled": true,
       "timeout": 300000,
       "cwd": "."
+    },
+    "hermes": {
+      "type": "local",
+      "command": [
+        "C:/Users/FastFree/Desktop/fastfree/.hermes/bin/hermes.exe",
+        "mcp-serve"
+      ],
+      "environment": {
+        "HERMES_HOME": "C:/Users/FastFree/Desktop/fastfree/.hermes"
+      },
+      "enabled": true,
+      "timeout": 300000
     },
     "grep": {
       "type": "remote",
@@ -156,6 +168,17 @@
       "enabled": true,
       "timeout": 300000,
       "cwd": "."
+    },
+    "tauri": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@hypothesi/tauri-mcp-server"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
     }
   },
   "permission": {
@@ -205,7 +228,8 @@
   },
   "plugin": [
     "opencode-browser",
-    "opencode-wakatime"
+    "opencode-wakatime",
+    "fastfree_board"
   ],
   "instructions": [
     "AGENTS.local.md"
