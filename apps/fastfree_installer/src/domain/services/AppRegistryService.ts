@@ -2,6 +2,7 @@
  * Domain Service: AppRegistryService
  * Coordinates sovereign applications and portal access.
  */
+import { openUrl } from '@tauri-apps/plugin-opener';
 import { SovereignApp, type AppCategory } from '../models/SovereignApp';
 
 export class AppRegistryService {
@@ -34,10 +35,16 @@ export class AppRegistryService {
   public async launchApp(app: SovereignApp, host: string = 'localhost'): Promise<void> {
     const url = app.getUrl(host);
     try {
-      window.open(url, '_blank', 'noopener,noreferrer');
+      // Tauri native opener routes the link to the OS default browser —
+      // never hijack/navigate the installer webview itself.
+      await openUrl(url);
     } catch {
-      // Fallback
-      window.location.href = url;
+      try {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } catch {
+        // Deliberately no-op: window.location.href fallback would navigate the
+        // installer shell away from the app.
+      }
     }
   }
 }

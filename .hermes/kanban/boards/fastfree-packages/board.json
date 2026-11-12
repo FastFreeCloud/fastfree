@@ -1,0 +1,11 @@
+{
+  "slug": "fastfree-packages",
+  "name": "FastFree Modular Packages",
+  "description": "All 10 ERP & Lowcode packages: Accounting, Sales/POS, HR, Inventory, Lowcode, CRM",
+  "icon": "",
+  "color": "",
+  "default_workdir": "C:\\Users\\FastFree\\Desktop\\fastfree",
+  "project_id": null,
+  "created_at": 1794442790,
+  "archived": false
+}

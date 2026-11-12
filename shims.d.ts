@@ -9,6 +9,11 @@ declare module '*.css'
 
 declare module '@fontsource-variable/cairo/wght.css'
 
+declare module '@tauri-apps/api/core' {
+  export function invoke<T = unknown>(cmd: string, args?: Record<string, unknown>): Promise<T>
+}
+
+
 interface ImportMetaEnv {
   readonly MODE: string
   readonly DEV: boolean

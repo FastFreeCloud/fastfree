@@ -148,10 +148,6 @@ npx tauri dev  # Uses Vite + Rust, shows all errors in terminal
 - Inspection: theme swap works (data-theme="light", .theme-light, body rgb(248,250,252))
 - Inspection: RTL no horizontal overflow (scrollWidth == clientWidth) — critical for installer window width 1400px
 - Inspection: locale persists via localStorage.fastfree_installer_locale
-- Runtime: VM memory allocation — default was 8192 MB (8GB), too high for low-memory systems. Fixed to use available_memory_mb (not total) in discovery.rs, with min_ram 2048, host_headroom 1024. Added clamp_vm_ram_mb() and default_vm_ram_mb() in hyperv.rs for dynamic allocation. Frontend fallbacks changed from 8192 to 2048 in useDiscovery.ts and LaunchpadScreen.vue.
-- Runtime: OpenCode (beam-free model) can inspect running Tauri app via dev tools — checks CSS vars, RTL, WireGuard design, console errors, i18n. Free usage limit may be hit; beam-free is the fallback model.
-- Runtime: when OpenCode hits free limit, it may leave partially modified files — always verify git diff after OpenCode runs
-- Runtime: after messy OpenCode operations, clean up extra files (.hermes/backups, .hermes/bin, .hermes/installs, .hermes/logs, tools/) that may be created in project root
 
 ## Verification
 

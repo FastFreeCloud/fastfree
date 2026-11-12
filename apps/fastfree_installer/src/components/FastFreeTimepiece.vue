@@ -86,8 +86,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle, #0F172A 50%, #090E1A 100%);
-  border: 1.5px solid rgba(56, 189, 248, 0.5);
+  background: radial-gradient(circle, var(--bg-sub) 50%, var(--bg-app) 100%);
+  border: 1.5px solid var(--accent-sky-border-strong);
   box-shadow: 0 3px 14px rgba(0, 0, 0, 0.65), 0 0 10px rgba(56, 189, 248, 0.25);
   user-select: none;
   flex-shrink: 0;
@@ -110,18 +110,18 @@ onUnmounted(() => {
 
 .dial-outer-ring {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.15);
+  stroke: var(--border-highlight);
   stroke-width: 1;
 }
 
 .dial-tick-major {
-  stroke: #38BDF8;
+  stroke: var(--accent-sky);
   stroke-width: 2.5;
   stroke-linecap: round;
 }
 
 .dial-dot {
-  fill: #94A3B8;
+  fill: var(--text-muted);
   opacity: 0.9;
 }
 
@@ -156,7 +156,7 @@ onUnmounted(() => {
 .clock-hand-hour {
   width: 2.2px;
   height: 11px;
-  background: #FFFFFF;
+  background: var(--text-main);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
   z-index: 4;
 }
@@ -164,7 +164,7 @@ onUnmounted(() => {
 .clock-hand-minute {
   width: 1.6px;
   height: 15px;
-  background: #38BDF8;
+  background: var(--accent-sky);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
   z-index: 5;
 }
@@ -172,7 +172,7 @@ onUnmounted(() => {
 .clock-hand-second {
   width: 1px;
   height: 18px;
-  background: #F59E0B;
+  background: var(--accent-amber);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
   z-index: 6;
   transition: transform 0.12s cubic-bezier(0.4, 2.08, 0.55, 0.44);
@@ -183,9 +183,9 @@ onUnmounted(() => {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #38BDF8;
-  border: 1px solid #0F172A;
-  box-shadow: 0 0 4px #38BDF8;
+  background: var(--accent-sky);
+  border: 1px solid var(--bg-app);
+  box-shadow: 0 0 4px var(--accent-sky-mid);
   z-index: 7;
   pointer-events: none;
 }

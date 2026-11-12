@@ -20,7 +20,9 @@
       <h4>
         {{
           report.overall_status === 'healthy'
-            ? (isRtl ? 'جميع الخطوات مكتملة بنجاح والنظام جاهز 100%' : 'All 6 Steps Verified & System 100% Healthy')
+            ? (isRtl
+                ? `جميع الخطوات ${report.total_passed}/${report.total_passed + report.total_warnings + report.total_errors} ناجحة والمنظومة جاهزة`
+                : `All ${report.total_passed}/${report.total_passed + report.total_warnings + report.total_errors} Audit Steps Passed`)
             : report.overall_status === 'warning'
             ? (isRtl ? 'المنظومة تعمل مع وجود ملاحظات غير معطلة' : 'System Operational with Non-Blocking Warnings')
             : (isRtl ? 'تنبيه: تم اكتشاف مشاكل تتطلب الإصلاح' : 'Action Required: Issues Detected in Node Environment')

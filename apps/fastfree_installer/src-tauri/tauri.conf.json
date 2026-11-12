@@ -6,22 +6,23 @@
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
+    "beforeDevCommand": "bun run dev",
+    "beforeBuildCommand": "bun run build"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "label": "main",
-        "title": "FastFree Node Installer",
-        "width": 1060,
-        "height": 700,
-        "resizable": false,
+        "title": "FastFree Node Setup & Companion",
+        "width": 1180,
+        "height": 780,
+        "resizable": true,
         "center": true,
         "decorations": false,
         "shadow": true,
         "dragDropEnabled": false,
-        "visible": false
+        "visible": true
       },
       {
         "label": "splashscreen",

@@ -95,15 +95,15 @@ function handleCopy() {
   width: 100%;
   max-width: 980px;
   max-height: 380px;
-  background: rgba(15, 23, 42, 0.94);
+  background: var(--surface-overlay);
   backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: var(--card-glass-border);
   border-bottom: none;
   border-radius: 20px 20px 0 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-modal);
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -114,7 +114,7 @@ function handleCopy() {
 
 .drawer-header {
   padding: 12px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: var(--card-glass-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -130,22 +130,22 @@ function handleCopy() {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10B981;
-  box-shadow: 0 0 10px #10B981;
+  background: var(--accent-emerald);
+  box-shadow: 0 0 10px var(--accent-emerald-strong);
 }
 
 .drawer-title {
   font-size: 13px;
   font-weight: 700;
-  color: #F8FAFC;
+  color: var(--text-main);
 }
 
 .log-count-pill {
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 8px;
-  background: rgba(56, 189, 248, 0.12);
-  color: #38BDF8;
+  background: var(--accent-sky-soft);
+  color: var(--accent-sky);
 }
 
 .drawer-actions {
@@ -160,18 +160,18 @@ function handleCopy() {
   gap: 6px;
   padding: 4px 10px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(30, 41, 59, 0.6);
-  color: #CBD5E1;
+  border: var(--card-glass-border);
+  background: var(--white-06);
+  color: var(--text-secondary);
   font-size: 11px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn-console-act:hover {
-  background: rgba(56, 189, 248, 0.15);
-  color: #38BDF8;
-  border-color: rgba(56, 189, 248, 0.3);
+  background: var(--accent-sky-soft);
+  color: var(--accent-sky);
+  border-color: var(--accent-sky-border);
 }
 
 .act-svg {
@@ -184,8 +184,8 @@ function handleCopy() {
   height: 28px;
   border-radius: 8px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #94A3B8;
+  border: var(--card-glass-border);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -193,8 +193,8 @@ function handleCopy() {
 }
 
 .btn-console-close:hover {
-  background: rgba(239, 68, 68, 0.2);
-  color: #EF4444;
+  background: var(--accent-red-soft);
+  color: var(--accent-red);
 }
 
 .drawer-body {

@@ -27,7 +27,9 @@ export interface UpdateProgressPayload {
 
 export const isCheckingUpdate = ref(false);
 export const updateAvailable = ref(false);
-export const isMandatoryUpdate = ref(true); // Mandatory by default
+// Aggressiveness is never assumed: an update is only "mandatory" once a real
+// check has confirmed an available update (check_app_update).
+export const isMandatoryUpdate = ref(false);
 export const updateVersion = ref('');
 export const updateNotes = ref('');
 export const isDownloadingUpdate = ref(false);
@@ -54,8 +56,8 @@ let lastNotifiedVersion = '';
 // Background periodic timer
 let autoUpdateTimer: ReturnType<typeof setInterval> | null = null;
 
-// Current local running version (initialized dynamically)
-export const currentAppVersion = ref('26.5.31');
+// Current local running version — renders "—" until getVersion() resolves.
+export const currentAppVersion = ref('—');
 
 export async function initAppVersion(): Promise<string> {
   try {
@@ -128,7 +130,7 @@ export async function checkForUpdates(silent: boolean = true): Promise<boolean> 
       updateAvailable.value = true;
       isMandatoryUpdate.value = true;
       updateVersion.value = update.version;
-      updateNotes.value = update.body || 'FastFree Appliance Mandatory Engine & Security Update';
+      updateNotes.value = update.body || '';
       manualDownloadUrl.value = `https://github.com/FastFreeCloud/fastfree/releases/download/installer-v${update.version}/FastFree-Node-Setup.exe`;
       logSuccess(
         'Updater',

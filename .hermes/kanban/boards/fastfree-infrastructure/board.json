@@ -1,0 +1,11 @@
+{
+  "slug": "fastfree-infrastructure",
+  "name": "FastFree Clan & Infrastructure",
+  "description": "NixOS Flakes, Clan.lol 11 Nodes management, WireGuard Mesh, Hyper-V Appliance",
+  "icon": "",
+  "color": "",
+  "default_workdir": "C:\\Users\\FastFree\\Desktop\\fastfree",
+  "project_id": null,
+  "created_at": 1794442790,
+  "archived": false
+}

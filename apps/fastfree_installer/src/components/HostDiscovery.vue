@@ -31,7 +31,7 @@
           <div class="card-meta-line">
             <span class="meta-label">{{ t('discovery.loggedUser') }}:</span>
             <span class="meta-user font-mono bidi-isolate" dir="ltr"><bdi>{{ discoveryReport.user_name }}</bdi></span>
-            <span class="meta-badge-admin">{{ t('discovery.adminPriv') }}</span>
+            <span class="meta-badge-admin" v-if="isAdminElevated === true">{{ t('discovery.adminPriv') }}</span>
           </div>
         </div>
 
@@ -348,6 +348,13 @@ import { useI18n } from '../composables/useI18n';
 import { BrowserHardwareSignal } from '../domain/models/BrowserHardwareSignal';
 
 const { t, isRtl } = useI18n();
+
+// Admin badge is honest: it only renders when the real elevation check
+// (Windows token, via check_admin_elevation) confirms it. Unknown → hidden.
+const isAdminElevated = ref<boolean | null>(null);
+void invoke<boolean>('check_admin_elevation')
+  .then((v) => { isAdminElevated.value = !!v; })
+  .catch(() => { isAdminElevated.value = null; });
 
 // Permissionless browser-side signal, rendered only in preview mode to
 // make the neutral panel informative instead of a dead end.

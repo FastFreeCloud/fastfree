@@ -1,0 +1,11 @@
+{
+  "slug": "fastfree-erp",
+  "name": "FastFree ERP",
+  "description": "OpenCode <-> fastfree_board linked execution for the FastFree ERP project",
+  "icon": "",
+  "color": "",
+  "default_workdir": "C:\\Users\\FastFree\\Desktop\\fastfree",
+  "project_id": null,
+  "created_at": 1794328864,
+  "archived": false
+}
