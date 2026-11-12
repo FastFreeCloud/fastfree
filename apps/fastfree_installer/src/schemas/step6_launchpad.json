@@ -156,7 +156,7 @@
                   {
                     "type": "icon",
                     "props": {
-                      "name": "store",
+                      "name": "add_circle",
                       "size": "xl",
                       "color": "primary"
                     }
@@ -165,16 +165,16 @@
                     "type": "div",
                     "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
                     "text": {
-                      "ar": "نظام ERPNext المتكامل",
-                      "en": "ERPNext Core Suite"
+                      "ar": "إنشاء وتخصيص عميل Clan",
+                      "en": "Create Sovereign Node"
                     }
                   },
                   {
                     "type": "div",
                     "class": "text-caption text-muted q-mb-xs",
                     "text": {
-                      "ar": "نظام التخطيط وإدارة العمليات والمالية الشامل",
-                      "en": "Enterprise Resource Planning & Operations"
+                      "ar": "معالج تسجيل عميل جديد، تخصيص العتاد، وتحديد التطبيقات",
+                      "en": "Provision new machine, allocate Hyper-V RAM & assign apps"
                     }
                   },
                   {
@@ -199,8 +199,8 @@
                           "outline": true
                         },
                         "text": {
-                          "ar": "منفذ 8000",
-                          "en": "منفذ 8000"
+                          "ar": "منفذ 9101",
+                          "en": "منفذ 9101"
                         }
                       },
                       {
@@ -210,8 +210,8 @@
                           "outline": true
                         },
                         "text": {
-                          "ar": "Mesh: client2",
-                          "en": "Mesh: client2"
+                          "ar": "Mesh: client1",
+                          "en": "Mesh: client1"
                         }
                       }
                     ]
@@ -220,22 +220,19 @@
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "تشغيل نظام ERPNext المتكامل",
-                        "en": "Launch ERPNext Core Suite"
+                        "ar": "فتح إنشاء وتخصيص عميل Clan داخل التطبيق",
+                        "en": "Open Create Sovereign Node In-App"
                       },
                       "color": "primary",
                       "outline": true,
                       "dense": true,
-                      "icon": "launch",
+                      "icon": "open_in_new",
                       "class": "full-width q-mt-sm"
                     },
                     "events": {
                       "click": {
-                        "type": "tauri:invoke",
-                        "command": "open_external_url",
-                        "payload": {
-                          "url": "http://localhost:8000"
-                        }
+                        "type": "open_sdui_screen",
+                        "screen": "client_manager"
                       }
                     }
                   }
@@ -322,22 +319,19 @@
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "تشغيل FastFree المحاسبة والمالية",
-                        "en": "Launch General Ledger & Accounting"
+                        "ar": "فتح FastFree المحاسبة والمالية داخل التطبيق",
+                        "en": "Open General Ledger & Accounting In-App"
                       },
                       "color": "secondary",
                       "outline": true,
                       "dense": true,
-                      "icon": "launch",
+                      "icon": "open_in_new",
                       "class": "full-width q-mt-sm"
                     },
                     "events": {
                       "click": {
-                        "type": "tauri:invoke",
-                        "command": "open_sdui_screen",
-                        "payload": {
-                          "url": "accounting_ledger"
-                        }
+                        "type": "open_sdui_screen",
+                        "screen": "accounting_ledger"
                       }
                     }
                   }
@@ -424,430 +418,19 @@
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "تشغيل FastFree المبيعات والكاشير",
-                        "en": "Launch Sales Invoicing & POS"
+                        "ar": "فتح FastFree المبيعات والكاشير داخل التطبيق",
+                        "en": "Open Sales Invoicing & POS In-App"
                       },
                       "color": "positive",
                       "outline": true,
                       "dense": true,
-                      "icon": "launch",
+                      "icon": "open_in_new",
                       "class": "full-width q-mt-sm"
                     },
                     "events": {
                       "click": {
-                        "type": "tauri:invoke",
-                        "command": "open_sdui_screen",
-                        "payload": {
-                          "url": "sales_pos"
-                        }
-                      }
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "div",
-            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
-            "children": [
-              {
-                "type": "card",
-                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
-                "props": {
-                  "flat": true,
-                  "bordered": true
-                },
-                "children": [
-                  {
-                    "type": "icon",
-                    "props": {
-                      "name": "inventory_2",
-                      "size": "xl",
-                      "color": "accent"
-                    }
-                  },
-                  {
-                    "type": "div",
-                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
-                    "text": {
-                      "ar": "FastFree إدارة المخازن",
-                      "en": "Inventory & Warehouse Hub"
-                    }
-                  },
-                  {
-                    "type": "div",
-                    "class": "text-caption text-muted q-mb-xs",
-                    "text": {
-                      "ar": "حركات المخزون، التحويلات وقارئ الباركود الذكي",
-                      "en": "Stock Adjustments, Barcode Scanner & Multi-Warehouse"
-                    }
-                  },
-                  {
-                    "type": "row",
-                    "class": "row q-gutter-xs justify-center q-mb-xs",
-                    "children": [
-                      {
-                        "type": "badge",
-                        "props": {
-                          "color": "positive",
-                          "outline": true
-                        },
-                        "text": {
-                          "ar": "Active",
-                          "en": "Active"
-                        }
-                      },
-                      {
-                        "type": "badge",
-                        "props": {
-                          "color": "accent",
-                          "outline": true
-                        },
-                        "text": {
-                          "ar": "منفذ 9104",
-                          "en": "منفذ 9104"
-                        }
-                      },
-                      {
-                        "type": "badge",
-                        "props": {
-                          "color": "secondary",
-                          "outline": true
-                        },
-                        "text": {
-                          "ar": "Mesh: client7",
-                          "en": "Mesh: client7"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "type": "button",
-                    "props": {
-                      "label": {
-                        "ar": "تشغيل FastFree إدارة المخازن",
-                        "en": "Launch Inventory & Warehouse Hub"
-                      },
-                      "color": "accent",
-                      "outline": true,
-                      "dense": true,
-                      "icon": "launch",
-                      "class": "full-width q-mt-sm"
-                    },
-                    "events": {
-                      "click": {
-                        "type": "tauri:invoke",
-                        "command": "open_sdui_screen",
-                        "payload": {
-                          "url": "inventory_audit"
-                        }
-                      }
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "div",
-            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
-            "children": [
-              {
-                "type": "card",
-                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
-                "props": {
-                  "flat": true,
-                  "bordered": true
-                },
-                "children": [
-                  {
-                    "type": "icon",
-                    "props": {
-                      "name": "badge",
-                      "size": "xl",
-                      "color": "primary"
-                    }
-                  },
-                  {
-                    "type": "div",
-                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
-                    "text": {
-                      "ar": "FastFree الموارد البشرية",
-                      "en": "HR & Payroll Sovereign"
-                    }
-                  },
-                  {
-                    "type": "div",
-                    "class": "text-caption text-muted q-mb-xs",
-                    "text": {
-                      "ar": "دليل الموظفين، الحضور والانصراف ومسيرات الرواتب",
-                      "en": "Employee Directory, Attendance & Salary Slips"
-                    }
-                  },
-                  {
-                    "type": "row",
-                    "class": "row q-gutter-xs justify-center q-mb-xs",
-                    "children": [
-                      {
-                        "type": "badge",
-                        "props": {
-                          "color": "positive",
-                          "outline": true
-                        },
-                        "text": {
-                          "ar": "Active",
-                          "en": "Active"
-                        }
-                      },
-                      {
-                        "type": "badge",
-                        "props": {
-                          "color": "primary",
-                          "outline": true
-                        },
-                        "text": {
-                          "ar": "منفذ 9105",
-                          "en": "منفذ 9105"
-                        }
-                      },
-                      {
-                        "type": "badge",
-                        "props": {
-                          "color": "secondary",
-                          "outline": true
-                        },
-                        "text": {
-                          "ar": "Mesh: client8",
-                          "en": "Mesh: client8"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "type": "button",
-                    "props": {
-                      "label": {
-                        "ar": "تشغيل FastFree الموارد البشرية",
-                        "en": "Launch HR & Payroll Sovereign"
-                      },
-                      "color": "primary",
-                      "outline": true,
-                      "dense": true,
-                      "icon": "launch",
-                      "class": "full-width q-mt-sm"
-                    },
-                    "events": {
-                      "click": {
-                        "type": "tauri:invoke",
-                        "command": "open_sdui_screen",
-                        "payload": {
-                          "url": "hr_payroll"
-                        }
-                      }
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "div",
-            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
-            "children": [
-              {
-                "type": "card",
-                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
-                "props": {
-                  "flat": true,
-                  "bordered": true
-                },
-                "children": [
-                  {
-                    "type": "icon",
-                    "props": {
-                      "name": "shopping_cart",
-                      "size": "xl",
-                      "color": "deep-purple"
-                    }
-                  },
-                  {
-                    "type": "div",
-                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
-                    "text": {
-                      "ar": "FastFree المشتريات والموردين",
-                      "en": "Purchase Orders & RFQ"
-                    }
-                  },
-                  {
-                    "type": "div",
-                    "class": "text-caption text-muted q-mb-xs",
-                    "text": {
-                      "ar": "أوامر الشراء، عروض الأسعار واعتماد التوريدات",
-                      "en": "Purchase Orders, Quotations & Vendor Cycles"
-                    }
-                  },
-                  {
-                    "type": "row",
-                    "class": "row q-gutter-xs justify-center q-mb-xs",
-                    "children": [
-                      {
-                        "type": "badge",
-                        "props": {
-                          "color": "positive",
-                          "outline": true
-                        },
-                        "text": {
-                          "ar": "Active",
-                          "en": "Active"
-                        }
-                      },
-                      {
-                        "type": "badge",
-                        "props": {
-                          "color": "deep-purple",
-                          "outline": true
-                        },
-                        "text": {
-                          "ar": "منفذ 9106",
-                          "en": "منفذ 9106"
-                        }
-                      },
-                      {
-                        "type": "badge",
-                        "props": {
-                          "color": "secondary",
-                          "outline": true
-                        },
-                        "text": {
-                          "ar": "Mesh: client9",
-                          "en": "Mesh: client9"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "type": "button",
-                    "props": {
-                      "label": {
-                        "ar": "تشغيل FastFree المشتريات والموردين",
-                        "en": "Launch Purchase Orders & RFQ"
-                      },
-                      "color": "deep-purple",
-                      "outline": true,
-                      "dense": true,
-                      "icon": "launch",
-                      "class": "full-width q-mt-sm"
-                    },
-                    "events": {
-                      "click": {
-                        "type": "tauri:invoke",
-                        "command": "open_sdui_screen",
-                        "payload": {
-                          "url": "purchase_orders"
-                        }
-                      }
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "div",
-            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
-            "children": [
-              {
-                "type": "card",
-                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
-                "props": {
-                  "flat": true,
-                  "bordered": true
-                },
-                "children": [
-                  {
-                    "type": "icon",
-                    "props": {
-                      "name": "support_agent",
-                      "size": "xl",
-                      "color": "teal"
-                    }
-                  },
-                  {
-                    "type": "div",
-                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
-                    "text": {
-                      "ar": "FastFree إدارة علاقات العملاء",
-                      "en": "CRM & Pipeline Suite"
-                    }
-                  },
-                  {
-                    "type": "div",
-                    "class": "text-caption text-muted q-mb-xs",
-                    "text": {
-                      "ar": "إدارة العملاء المحتملين والصفقات ومراحل التحويل",
-                      "en": "Lead Funnels, Deal Stages & Contact Timeline"
-                    }
-                  },
-                  {
-                    "type": "row",
-                    "class": "row q-gutter-xs justify-center q-mb-xs",
-                    "children": [
-                      {
-                        "type": "badge",
-                        "props": {
-                          "color": "positive",
-                          "outline": true
-                        },
-                        "text": {
-                          "ar": "Active",
-                          "en": "Active"
-                        }
-                      },
-                      {
-                        "type": "badge",
-                        "props": {
-                          "color": "teal",
-                          "outline": true
-                        },
-                        "text": {
-                          "ar": "منفذ 9107",
-                          "en": "منفذ 9107"
-                        }
-                      },
-                      {
-                        "type": "badge",
-                        "props": {
-                          "color": "secondary",
-                          "outline": true
-                        },
-                        "text": {
-                          "ar": "Mesh: client10",
-                          "en": "Mesh: client10"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "type": "button",
-                    "props": {
-                      "label": {
-                        "ar": "تشغيل FastFree إدارة علاقات العملاء",
-                        "en": "Launch CRM & Pipeline Suite"
-                      },
-                      "color": "teal",
-                      "outline": true,
-                      "dense": true,
-                      "icon": "launch",
-                      "class": "full-width q-mt-sm"
-                    },
-                    "events": {
-                      "click": {
-                        "type": "tauri:invoke",
-                        "command": "open_sdui_screen",
-                        "payload": {
-                          "url": "crm_pipeline"
-                        }
+                        "type": "open_sdui_screen",
+                        "screen": "sales_pos"
                       }
                     }
                   }
@@ -934,10 +517,505 @@
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "تشغيل FastFree أسطول السيرفرات Clan",
-                        "en": "Launch Clan.lol Fleet Monitor"
+                        "ar": "فتح FastFree أسطول السيرفرات Clan داخل التطبيق",
+                        "en": "Open Clan.lol Fleet Monitor In-App"
                       },
                       "color": "cyan",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "open_in_new",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "open_sdui_screen",
+                        "screen": "fleet_monitor"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "inventory_2",
+                      "size": "xl",
+                      "color": "accent"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "FastFree إدارة المخازن",
+                      "en": "Inventory & Warehouse Hub"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
+                    "text": {
+                      "ar": "حركات المخزون، التحويلات وقارئ الباركود الذكي",
+                      "en": "Stock Adjustments, Barcode Scanner & Multi-Warehouse"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Active",
+                          "en": "Active"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "accent",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 9104",
+                          "en": "منفذ 9104"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client7",
+                          "en": "Mesh: client7"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "فتح FastFree إدارة المخازن داخل التطبيق",
+                        "en": "Open Inventory & Warehouse Hub In-App"
+                      },
+                      "color": "accent",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "open_in_new",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "open_sdui_screen",
+                        "screen": "sales_pos"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "badge",
+                      "size": "xl",
+                      "color": "primary"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "FastFree الموارد البشرية",
+                      "en": "HR & Payroll Sovereign"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
+                    "text": {
+                      "ar": "دليل الموظفين، الحضور والانصراف ومسيرات الرواتب",
+                      "en": "Employee Directory, Attendance & Salary Slips"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Active",
+                          "en": "Active"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "primary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 9105",
+                          "en": "منفذ 9105"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client8",
+                          "en": "Mesh: client8"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "فتح FastFree الموارد البشرية داخل التطبيق",
+                        "en": "Open HR & Payroll Sovereign In-App"
+                      },
+                      "color": "primary",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "open_in_new",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "open_sdui_screen",
+                        "screen": "accounting_ledger"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "shopping_cart",
+                      "size": "xl",
+                      "color": "deep-purple"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "FastFree المشتريات والموردين",
+                      "en": "Purchase Orders & RFQ"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
+                    "text": {
+                      "ar": "أوامر الشراء، عروض الأسعار واعتماد التوريدات",
+                      "en": "Purchase Orders, Quotations & Vendor Cycles"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Active",
+                          "en": "Active"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "deep-purple",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 9106",
+                          "en": "منفذ 9106"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client9",
+                          "en": "Mesh: client9"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "فتح FastFree المشتريات والموردين داخل التطبيق",
+                        "en": "Open Purchase Orders & RFQ In-App"
+                      },
+                      "color": "deep-purple",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "open_in_new",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "open_sdui_screen",
+                        "screen": "accounting_ledger"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "support_agent",
+                      "size": "xl",
+                      "color": "teal"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "FastFree إدارة علاقات العملاء",
+                      "en": "CRM & Pipeline Suite"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
+                    "text": {
+                      "ar": "إدارة العملاء المحتملين والصفقات ومراحل التحويل",
+                      "en": "Lead Funnels, Deal Stages & Contact Timeline"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Active",
+                          "en": "Active"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "teal",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 9107",
+                          "en": "منفذ 9107"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client10",
+                          "en": "Mesh: client10"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "فتح FastFree إدارة علاقات العملاء داخل التطبيق",
+                        "en": "Open CRM & Pipeline Suite In-App"
+                      },
+                      "color": "teal",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "open_in_new",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "open_sdui_screen",
+                        "screen": "sales_pos"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer full-height flex flex-center column justify-between",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "store",
+                      "size": "xl",
+                      "color": "primary"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "نظام ERPNext المتكامل",
+                      "en": "ERPNext Core Suite"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
+                    "text": {
+                      "ar": "نظام التخطيط وإدارة العمليات والمالية الشامل",
+                      "en": "Enterprise Resource Planning & Operations"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Active",
+                          "en": "Active"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "primary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 8000",
+                          "en": "منفذ 8000"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client2",
+                          "en": "Mesh: client2"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "فتح نظام ERPNext المتكامل",
+                        "en": "Open ERPNext Core Suite"
+                      },
+                      "color": "primary",
                       "outline": true,
                       "dense": true,
                       "icon": "launch",
@@ -946,9 +1024,9 @@
                     "events": {
                       "click": {
                         "type": "tauri:invoke",
-                        "command": "open_sdui_screen",
+                        "command": "open_external_url",
                         "payload": {
-                          "url": "fleet_monitor"
+                          "url": "http://localhost:8000"
                         }
                       }
                     }
@@ -1036,8 +1114,8 @@
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "تشغيل لوحة إدارة الخادم Cockpit",
-                        "en": "Launch Cockpit Admin Console"
+                        "ar": "فتح لوحة إدارة الخادم Cockpit",
+                        "en": "Open Cockpit Admin Console"
                       },
                       "color": "warning",
                       "outline": true,
@@ -1138,8 +1216,8 @@
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "تشغيل استوديو البيانات DbGate",
-                        "en": "Launch DbGate Database Studio"
+                        "ar": "فتح استوديو البيانات DbGate",
+                        "en": "Open DbGate Database Studio"
                       },
                       "color": "indigo",
                       "outline": true,
@@ -1240,8 +1318,8 @@
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "تشغيل بوابة Caddy Edge والتشفير",
-                        "en": "Launch Caddy Secure Edge Gateway"
+                        "ar": "فتح بوابة Caddy Edge والتشفير",
+                        "en": "Open Caddy Secure Edge Gateway"
                       },
                       "color": "positive",
                       "outline": true,

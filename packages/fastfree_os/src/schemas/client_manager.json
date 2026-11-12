@@ -1,0 +1,532 @@
+{
+  "id": "client_manager",
+  "versionHash": "v1.0.0",
+  "title": {
+    "ar": "معالج إنشاء وتخصيص عميل سيادي جديد (Create Sovereign Client Node)",
+    "en": "Create & Configure Sovereign Client Node"
+  },
+  "state": {
+    "nodeName": "client12",
+    "domain": "fastfree.local",
+    "nodeIp": "10.111.41.12",
+    "assignedRam": 4096,
+    "assignedCpu": 2,
+    "assignedDiskGb": 50,
+    "appErp": true,
+    "appAccounting": true,
+    "appPos": false,
+    "appInventory": true,
+    "appWireguard": true,
+    "appDbGate": false
+  },
+  "root": {
+    "type": "div",
+    "class": "q-pa-md q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "rounded": true,
+          "dense": true
+        },
+        "children": [
+          {
+            "type": "icon",
+            "props": {
+              "name": "add_circle",
+              "size": "lg",
+              "color": "primary"
+            }
+          },
+          {
+            "type": "div",
+            "class": "q-ml-sm",
+            "children": [
+              {
+                "type": "div",
+                "class": "text-h5 text-weight-bold text-main",
+                "text": {
+                  "ar": "إنشاء وتخصيص عميل جديد في عنقود Clan السيادي",
+                  "en": "Create & Provision New Sovereign Clan Node"
+                }
+              },
+              {
+                "type": "div",
+                "class": "text-caption text-muted",
+                "text": {
+                  "ar": "أدخل مواصفات العميل، حدد العتاد والذاكرة، واختر التطبيقات التي ستعمل عليه ليتم توليد الـ JSON ونشره فورياً",
+                  "en": "Specify client specs, allocate CPU/RAM, and select installed applications for instant JSON declarative provisioning"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "bordered": true
+        },
+        "children": [
+          {
+            "type": "div",
+            "class": "text-subtitle1 text-weight-bold text-main q-mb-sm",
+            "text": {
+              "ar": "١. معلومات وهوية العميل السيادي (Node Identity & Mesh):",
+              "en": "1. Node Identity & Mesh Configuration:"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row q-col-gutter-md q-mb-md",
+            "children": [
+              {
+                "type": "div",
+                "class": "col-12 col-md-6",
+                "children": [
+                  {
+                    "type": "input",
+                    "props": {
+                      "label": {
+                        "ar": "معرف الجهاز / Machine Name",
+                        "en": "Machine Name"
+                      },
+                      "modelValue": "state.nodeName",
+                      "outlined": true,
+                      "dense": true,
+                      "prefix": "FastFree-",
+                      "hint": {
+                        "ar": "مثال: client12 (سيتم إدراجه في inventory.json)",
+                        "en": "e.g. client12 (will be registered in inventory.json)"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6",
+                "children": [
+                  {
+                    "type": "input",
+                    "props": {
+                      "label": {
+                        "ar": "عنوان النطاق السيادي / FQDN",
+                        "en": "Sovereign FQDN"
+                      },
+                      "modelValue": "state.domain",
+                      "outlined": true,
+                      "dense": true,
+                      "suffix": ".fastfree.local",
+                      "hint": {
+                        "ar": "نطاق الشبكة المشفرة المعزولة",
+                        "en": "Isolated sovereign mesh domain"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "text-subtitle1 text-weight-bold text-main q-mb-sm q-mt-lg",
+            "text": {
+              "ar": "٢. تخصيص موارد العتاد في Hyper-V (Hardware Sizing):",
+              "en": "2. Hyper-V Hardware Resource Allocation:"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row q-col-gutter-md",
+            "children": [
+              {
+                "type": "div",
+                "class": "col-12 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm text-center",
+                    "props": { "flat": true },
+                    "children": [
+                      {
+                        "type": "icon",
+                        "props": { "name": "memory", "size": "md", "color": "secondary" }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold q-mt-xs",
+                        "text": { "ar": "الذاكرة العشوائية (RAM)", "en": "RAM Memory" }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-h6 text-primary font-mono",
+                        "text": { "ar": "4,096 ميجابايت (4GB)", "en": "4,096 MB (4GB)" }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm text-center",
+                    "props": { "flat": true },
+                    "children": [
+                      {
+                        "type": "icon",
+                        "props": { "name": "developer_board", "size": "md", "color": "primary" }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold q-mt-xs",
+                        "text": { "ar": "أنوية المعالج (vCPU)", "en": "vCPU Cores" }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-h6 text-secondary font-mono",
+                        "text": { "ar": "2 أنوية افتراضية", "en": "2 vCPU Cores" }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm text-center",
+                    "props": { "flat": true },
+                    "children": [
+                      {
+                        "type": "icon",
+                        "props": { "name": "album", "size": "md", "color": "accent" }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold q-mt-xs",
+                        "text": { "ar": "سعة القرص (NVMe VHDX)", "en": "NVMe VHDX Disk" }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-h6 text-accent font-mono",
+                        "text": { "ar": "50 جيجابايت ديناميكي", "en": "50 GB Dynamic" }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "bordered": true
+        },
+        "children": [
+          {
+            "type": "div",
+            "class": "text-subtitle1 text-weight-bold text-main q-mb-xs",
+            "text": {
+              "ar": "٣. اختيار التطبيقات والموديولات التي ستعمل على هذا العميل:",
+              "en": "3. Select Applications & Modules Installed on This Node:"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted q-mb-md",
+            "text": {
+              "ar": "حدد حزم الـ ERP والخدمات التي ترغب بنشرها في بيئة NixOS المعزولة لهذا العميل:",
+              "en": "Choose ERP packages and system services deployed into this isolated client NixOS sandbox:"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row q-col-gutter-sm",
+            "children": [
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between",
+                        "children": [
+                          {
+                            "type": "row",
+                            "class": "row items-center q-gutter-x-sm",
+                            "children": [
+                              { "type": "icon", "props": { "name": "store", "color": "primary", "size": "sm" } },
+                              { "type": "div", "class": "text-subtitle2 text-weight-bold", "text": { "ar": "ERPNext Core", "en": "ERPNext Core" } }
+                            ]
+                          },
+                          { "type": "toggle", "props": { "modelValue": true, "color": "primary" } }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted q-mt-xs",
+                        "text": { "ar": "نظام تخطيط الموارد والعمليات (منفذ 8000)", "en": "Core ERP Suite (Port 8000)" }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between",
+                        "children": [
+                          {
+                            "type": "row",
+                            "class": "row items-center q-gutter-x-sm",
+                            "children": [
+                              { "type": "icon", "props": { "name": "account_balance", "color": "secondary", "size": "sm" } },
+                              { "type": "div", "class": "text-subtitle2 text-weight-bold", "text": { "ar": "FastFree المحاسبة", "en": "General Ledger" } }
+                            ]
+                          },
+                          { "type": "toggle", "props": { "modelValue": true, "color": "secondary" } }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted q-mt-xs",
+                        "text": { "ar": "دفتر الأستاذ والقوائم المالية (منفذ 9103)", "en": "General Ledger & Accounts (Port 9103)" }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between",
+                        "children": [
+                          {
+                            "type": "row",
+                            "class": "row items-center q-gutter-x-sm",
+                            "children": [
+                              { "type": "icon", "props": { "name": "point_of_sale", "color": "positive", "size": "sm" } },
+                              { "type": "div", "class": "text-subtitle2 text-weight-bold", "text": { "ar": "FastFree المبيعات والكاشير", "en": "Sales & POS" } }
+                            ]
+                          },
+                          { "type": "toggle", "props": { "modelValue": true, "color": "positive" } }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted q-mt-xs",
+                        "text": { "ar": "نقاط البيع والفواتير والباركود (منفذ 9102)", "en": "Touch POS & Invoicing (Port 9102)" }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between",
+                        "children": [
+                          {
+                            "type": "row",
+                            "class": "row items-center q-gutter-x-sm",
+                            "children": [
+                              { "type": "icon", "props": { "name": "inventory_2", "color": "accent", "size": "sm" } },
+                              { "type": "div", "class": "text-subtitle2 text-weight-bold", "text": { "ar": "FastFree المخازن", "en": "Inventory Hub" } }
+                            ]
+                          },
+                          { "type": "toggle", "props": { "modelValue": true, "color": "accent" } }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted q-mt-xs",
+                        "text": { "ar": "حركات الجرد وقارئ الباركود (منفذ 9104)", "en": "Stock movements & scanner (Port 9104)" }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between",
+                        "children": [
+                          {
+                            "type": "row",
+                            "class": "row items-center q-gutter-x-sm",
+                            "children": [
+                              { "type": "icon", "props": { "name": "badge", "color": "primary", "size": "sm" } },
+                              { "type": "div", "class": "text-subtitle2 text-weight-bold", "text": { "ar": "FastFree الموارد البشرية", "en": "HR & Payroll" } }
+                            ]
+                          },
+                          { "type": "toggle", "props": { "modelValue": true, "color": "primary" } }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted q-mt-xs",
+                        "text": { "ar": "شؤون الموظفين والرواتب (منفذ 9105)", "en": "Employees & Salary slips (Port 9105)" }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between",
+                        "children": [
+                          {
+                            "type": "row",
+                            "class": "row items-center q-gutter-x-sm",
+                            "children": [
+                              { "type": "icon", "props": { "name": "vpn_lock", "color": "deep-purple", "size": "sm" } },
+                              { "type": "div", "class": "text-subtitle2 text-weight-bold", "text": { "ar": "شبكة WireGuard Mesh", "en": "WireGuard Mesh" } }
+                            ]
+                          },
+                          { "type": "toggle", "props": { "modelValue": true, "color": "deep-purple" } }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted q-mt-xs",
+                        "text": { "ar": "الربط المشفر التلقائي مع الـ 11 سيرفر", "en": "Encrypted tunnel across all 11 nodes" }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": { "bordered": true },
+        "children": [
+          {
+            "type": "row",
+            "class": "row items-center justify-between",
+            "children": [
+              {
+                "type": "div",
+                "children": [
+                  {
+                    "type": "div",
+                    "class": "text-subtitle2 text-weight-bold text-main",
+                    "text": {
+                      "ar": "تأكيد إدراج العميل وتوليد التكوين في inventory.json",
+                      "en": "Confirm Node Provisioning & inventory.json Entry"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted",
+                    "text": {
+                      "ar": "سيتم كتابة العميل في inventory.json وتوليد مفاتيح WireGuard وبناء قرص VHDX فورياً",
+                      "en": "Will record machine in inventory.json, generate cryptographic keys, and dispatch build"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "row",
+                "class": "row q-gutter-sm",
+                "children": [
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": { "ar": "توليد ملف الـ JSON", "en": "Export JSON" },
+                      "icon": "code",
+                      "color": "secondary",
+                      "outline": true
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "clan:generate_node_json"
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": { "ar": "إنشاء وبناء العميل الآن في Hyper-V", "en": "Build & Provision Client Now" },
+                      "icon": "rocket_launch",
+                      "color": "primary",
+                      "unelevated": true
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "clan:build_and_provision_node",
+                        "payload": { "name": "client12" }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
