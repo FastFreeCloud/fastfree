@@ -1,0 +1,1217 @@
+{
+  "id": "pos_checkout",
+  "versionHash": "v1.0.0",
+  "title": {
+    "ar": "نقطة البيع الكاشير (POS) - غير متصل أولاً",
+    "en": "Offline-First POS Cashier Checkout"
+  },
+  "state": {
+    "cashierName": "أحمد العتيبي",
+    "cashierShift": "الفترة الصباحية (08:00 - 16:00)",
+    "isOnline": false,
+    "searchQuery": "",
+    "selectedCategory": "all",
+    "cartSubtotal": 106.00,
+    "cartTax": 15.90,
+    "cartTotal": 121.90,
+    "cartItemCount": 3
+  },
+  "root": {
+    "type": "div",
+    "class": "q-pa-md q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "rounded": true,
+          "dense": true
+        },
+        "children": [
+          {
+            "type": "icon",
+            "props": {
+              "name": "point_of_sale",
+              "size": "lg",
+              "color": "primary"
+            }
+          },
+          {
+            "type": "div",
+            "class": "q-ml-sm",
+            "children": [
+              {
+                "type": "div",
+                "class": "text-h5 text-weight-bold text-main",
+                "text": {
+                  "ar": "شاشة نقطة البيع والمحاسبة السريعة (POS)",
+                  "en": "Fast Point of Sale (POS) Cashier Screen"
+                }
+              },
+              {
+                "type": "div",
+                "class": "text-caption text-muted",
+                "text": {
+                  "ar": "نظام كاشير سيادي مصمم ليعمل بدون إنترنت (Offline-First) مع قاعدة بيانات SQLite المحلية والمزامنة التلقائية",
+                  "en": "Sovereign offline-first cashier system with local SQLite storage and automated background synchronization"
+                }
+              }
+            ]
+          },
+          {
+            "type": "row",
+            "class": "row items-center q-gutter-x-sm q-mt-sm",
+            "children": [
+              {
+                "type": "chip",
+                "props": {
+                  "icon": "account_circle",
+                  "color": "primary",
+                  "outline": true,
+                  "dense": true
+                },
+                "text": {
+                  "ar": "الكاشير: أحمد العتيبي",
+                  "en": "Cashier: Ahmad Al-Otaibi"
+                }
+              },
+              {
+                "type": "chip",
+                "props": {
+                  "icon": "schedule",
+                  "color": "secondary",
+                  "outline": true,
+                  "dense": true
+                },
+                "text": {
+                  "ar": "وردية العمل: 08:00 - 16:00",
+                  "en": "Shift Time: 08:00 - 16:00"
+                }
+              },
+              {
+                "type": "chip",
+                "props": {
+                  "icon": "cloud_off",
+                  "color": "warning",
+                  "dense": true
+                },
+                "text": {
+                  "ar": "وضع العمل غير المتصل (Offline SQLite)",
+                  "en": "Offline-First Mode (Local SQLite)"
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "مزامنة الطابور المحلي",
+                    "en": "Sync Offline Queue"
+                  },
+                  "icon": "sync",
+                  "color": "primary",
+                  "dense": true,
+                  "unelevated": true
+                },
+                "events": {
+                  "click": {
+                    "type": "tauri:invoke",
+                    "command": "pos:sync_offline_orders"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-sm",
+        "children": [
+          {
+            "type": "row",
+            "class": "row q-col-gutter-sm items-center",
+            "children": [
+              {
+                "type": "div",
+                "class": "col-12 col-md-7",
+                "children": [
+                  {
+                    "type": "input",
+                    "model": "searchQuery",
+                    "props": {
+                      "label": {
+                        "ar": "بحث سريع بالاسم أو الباركود",
+                        "en": "Quick Search by Name or Barcode"
+                      },
+                      "placeholder": {
+                        "ar": "امسح الباركود أو اكتب اسم الصنف للتصفية الفورية...",
+                        "en": "Scan barcode or enter product name for instant filtering..."
+                      },
+                      "outlined": true,
+                      "dense": true
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-5 row items-center justify-end q-gutter-x-xs",
+                "children": [
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "مسح باركود صنف",
+                        "en": "Scan Barcode"
+                      },
+                      "icon": "qr_code_scanner",
+                      "color": "primary",
+                      "unelevated": true
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "pos:scan_barcode"
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "كل الأصناف",
+                        "en": "All Products"
+                      },
+                      "color": "secondary",
+                      "outline": true,
+                      "dense": true
+                    },
+                    "events": {
+                      "click": {
+                        "type": "state:set",
+                        "target": "selectedCategory",
+                        "payload": "all"
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "مشروبات",
+                        "en": "Beverages"
+                      },
+                      "color": "secondary",
+                      "outline": true,
+                      "dense": true
+                    },
+                    "events": {
+                      "click": {
+                        "type": "state:set",
+                        "target": "selectedCategory",
+                        "payload": "beverages"
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "مخبوزات",
+                        "en": "Bakery"
+                      },
+                      "color": "secondary",
+                      "outline": true,
+                      "dense": true
+                    },
+                    "events": {
+                      "click": {
+                        "type": "state:set",
+                        "target": "selectedCategory",
+                        "payload": "bakery"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "row",
+        "class": "row q-col-gutter-md",
+        "children": [
+          {
+            "type": "div",
+            "class": "col-12 col-md-8 q-gutter-y-sm",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "children": [
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold text-main",
+                    "text": {
+                      "ar": "كتالوج المنتجات السريعة",
+                      "en": "Quick Product Catalog Grid"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue",
+                    "text": {
+                      "ar": "اختر المنتجات لإضافتها مباشرة إلى سلة المبيعات الحالية",
+                      "en": "Select products to add directly to the active sales cart"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "row",
+                "class": "row q-col-gutter-sm",
+                "children": [
+                  {
+                    "type": "div",
+                    "class": "col-12 col-sm-6 col-md-4",
+                    "children": [
+                      {
+                        "type": "card",
+                        "class": "diag-card q-pa-sm",
+                        "children": [
+                          {
+                            "type": "row",
+                            "class": "row justify-between items-center q-mb-xs",
+                            "children": [
+                              {
+                                "type": "badge",
+                                "props": {
+                                  "color": "positive",
+                                  "outline": true
+                                },
+                                "text": {
+                                  "ar": "المخزون: 42 قطعة",
+                                  "en": "Stock: 42 in stock"
+                                }
+                              },
+                              {
+                                "type": "div",
+                                "class": "text-caption text-muted",
+                                "text": {
+                                  "ar": "كود: PRD-001",
+                                  "en": "SKU: PRD-001"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-subtitle2 text-weight-bold text-main",
+                            "text": {
+                              "ar": "قهوة إسبريسو ممتازة",
+                              "en": "Premium Espresso Roast"
+                            }
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-h6 text-weight-bold accent-blue q-my-xs",
+                            "text": {
+                              "ar": "18.00 ر.س",
+                              "en": "18.00 SAR"
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "props": {
+                              "label": {
+                                "ar": "إضافة للسلة",
+                                "en": "Add to Cart"
+                              },
+                              "icon": "add_shopping_cart",
+                              "color": "primary",
+                              "unelevated": true,
+                              "class": "full-width"
+                            },
+                            "events": {
+                              "click": {
+                                "type": "tauri:invoke",
+                                "command": "pos:add_to_cart",
+                                "payload": {
+                                  "sku": "PRD-001",
+                                  "name": "Premium Espresso Roast",
+                                  "price": 18.00,
+                                  "qty": 1
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "col-12 col-sm-6 col-md-4",
+                    "children": [
+                      {
+                        "type": "card",
+                        "class": "diag-card q-pa-sm",
+                        "children": [
+                          {
+                            "type": "row",
+                            "class": "row justify-between items-center q-mb-xs",
+                            "children": [
+                              {
+                                "type": "badge",
+                                "props": {
+                                  "color": "positive",
+                                  "outline": true
+                                },
+                                "text": {
+                                  "ar": "المخزون: 15 قطعة",
+                                  "en": "Stock: 15 in stock"
+                                }
+                              },
+                              {
+                                "type": "div",
+                                "class": "text-caption text-muted",
+                                "text": {
+                                  "ar": "كود: PRD-002",
+                                  "en": "SKU: PRD-002"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-subtitle2 text-weight-bold text-main",
+                            "text": {
+                              "ar": "كرواسون فرنسي طازج بالزبدة",
+                              "en": "Fresh Artisan French Croissant"
+                            }
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-h6 text-weight-bold accent-blue q-my-xs",
+                            "text": {
+                              "ar": "12.50 ر.س",
+                              "en": "12.50 SAR"
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "props": {
+                              "label": {
+                                "ar": "إضافة للسلة",
+                                "en": "Add to Cart"
+                              },
+                              "icon": "add_shopping_cart",
+                              "color": "primary",
+                              "unelevated": true,
+                              "class": "full-width"
+                            },
+                            "events": {
+                              "click": {
+                                "type": "tauri:invoke",
+                                "command": "pos:add_to_cart",
+                                "payload": {
+                                  "sku": "PRD-002",
+                                  "name": "Fresh Artisan French Croissant",
+                                  "price": 12.50,
+                                  "qty": 1
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "col-12 col-sm-6 col-md-4",
+                    "children": [
+                      {
+                        "type": "card",
+                        "class": "diag-card q-pa-sm",
+                        "children": [
+                          {
+                            "type": "row",
+                            "class": "row justify-between items-center q-mb-xs",
+                            "children": [
+                              {
+                                "type": "badge",
+                                "props": {
+                                  "color": "positive",
+                                  "outline": true
+                                },
+                                "text": {
+                                  "ar": "المخزون: 120 قطعة",
+                                  "en": "Stock: 120 in stock"
+                                }
+                              },
+                              {
+                                "type": "div",
+                                "class": "text-caption text-muted",
+                                "text": {
+                                  "ar": "كود: PRD-003",
+                                  "en": "SKU: PRD-003"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-subtitle2 text-weight-bold text-main",
+                            "text": {
+                              "ar": "مياه معدنية طبيعية 500 مل",
+                              "en": "Natural Mineral Water 500ml"
+                            }
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-h6 text-weight-bold accent-blue q-my-xs",
+                            "text": {
+                              "ar": "2.00 ر.س",
+                              "en": "2.00 SAR"
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "props": {
+                              "label": {
+                                "ar": "إضافة للسلة",
+                                "en": "Add to Cart"
+                              },
+                              "icon": "add_shopping_cart",
+                              "color": "primary",
+                              "unelevated": true,
+                              "class": "full-width"
+                            },
+                            "events": {
+                              "click": {
+                                "type": "tauri:invoke",
+                                "command": "pos:add_to_cart",
+                                "payload": {
+                                  "sku": "PRD-003",
+                                  "name": "Natural Mineral Water 500ml",
+                                  "price": 2.00,
+                                  "qty": 1
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "col-12 col-sm-6 col-md-4",
+                    "children": [
+                      {
+                        "type": "card",
+                        "class": "diag-card q-pa-sm",
+                        "children": [
+                          {
+                            "type": "row",
+                            "class": "row justify-between items-center q-mb-xs",
+                            "children": [
+                              {
+                                "type": "badge",
+                                "props": {
+                                  "color": "positive",
+                                  "outline": true
+                                },
+                                "text": {
+                                  "ar": "المخزون: 28 علبة",
+                                  "en": "Stock: 28 in stock"
+                                }
+                              },
+                              {
+                                "type": "div",
+                                "class": "text-caption text-muted",
+                                "text": {
+                                  "ar": "كود: PRD-004",
+                                  "en": "SKU: PRD-004"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-subtitle2 text-weight-bold text-main",
+                            "text": {
+                              "ar": "تمر سكري عضوي فاخر 1 كجم",
+                              "en": "Premium Organic Sukari Dates 1kg"
+                            }
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-h6 text-weight-bold accent-blue q-my-xs",
+                            "text": {
+                              "ar": "45.00 ر.س",
+                              "en": "45.00 SAR"
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "props": {
+                              "label": {
+                                "ar": "إضافة للسلة",
+                                "en": "Add to Cart"
+                              },
+                              "icon": "add_shopping_cart",
+                              "color": "primary",
+                              "unelevated": true,
+                              "class": "full-width"
+                            },
+                            "events": {
+                              "click": {
+                                "type": "tauri:invoke",
+                                "command": "pos:add_to_cart",
+                                "payload": {
+                                  "sku": "PRD-004",
+                                  "name": "Premium Organic Sukari Dates 1kg",
+                                  "price": 45.00,
+                                  "qty": 1
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "col-12 col-sm-6 col-md-4",
+                    "children": [
+                      {
+                        "type": "card",
+                        "class": "diag-card q-pa-sm",
+                        "children": [
+                          {
+                            "type": "row",
+                            "class": "row justify-between items-center q-mb-xs",
+                            "children": [
+                              {
+                                "type": "badge",
+                                "props": {
+                                  "color": "positive",
+                                  "outline": true
+                                },
+                                "text": {
+                                  "ar": "المخزون: 65 كوب",
+                                  "en": "Stock: 65 in stock"
+                                }
+                              },
+                              {
+                                "type": "div",
+                                "class": "text-caption text-muted",
+                                "text": {
+                                  "ar": "كود: PRD-005",
+                                  "en": "SKU: PRD-005"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-subtitle2 text-weight-bold text-main",
+                            "text": {
+                              "ar": "شاي كرك بالهيل والزعفران",
+                              "en": "Cardamom & Saffron Karak Tea"
+                            }
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-h6 text-weight-bold accent-blue q-my-xs",
+                            "text": {
+                              "ar": "8.00 ر.س",
+                              "en": "8.00 SAR"
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "props": {
+                              "label": {
+                                "ar": "إضافة للسلة",
+                                "en": "Add to Cart"
+                              },
+                              "icon": "add_shopping_cart",
+                              "color": "primary",
+                              "unelevated": true,
+                              "class": "full-width"
+                            },
+                            "events": {
+                              "click": {
+                                "type": "tauri:invoke",
+                                "command": "pos:add_to_cart",
+                                "payload": {
+                                  "sku": "PRD-005",
+                                  "name": "Cardamom & Saffron Karak Tea",
+                                  "price": 8.00,
+                                  "qty": 1
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "col-12 col-sm-6 col-md-4",
+                    "children": [
+                      {
+                        "type": "card",
+                        "class": "diag-card q-pa-sm",
+                        "children": [
+                          {
+                            "type": "row",
+                            "class": "row justify-between items-center q-mb-xs",
+                            "children": [
+                              {
+                                "type": "badge",
+                                "props": {
+                                  "color": "warning",
+                                  "outline": true
+                                },
+                                "text": {
+                                  "ar": "المخزون: 8 قطع فقط",
+                                  "en": "Stock: 8 left (Low)"
+                                }
+                              },
+                              {
+                                "type": "div",
+                                "class": "text-caption text-muted",
+                                "text": {
+                                  "ar": "كود: PRD-006",
+                                  "en": "SKU: PRD-006"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-subtitle2 text-weight-bold text-main",
+                            "text": {
+                              "ar": "صندوق بقلاوة فاخرة بالفستق",
+                              "en": "Premium Pistachio Baklava Box"
+                            }
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-h6 text-weight-bold accent-blue q-my-xs",
+                            "text": {
+                              "ar": "65.00 ر.س",
+                              "en": "65.00 SAR"
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "props": {
+                              "label": {
+                                "ar": "إضافة للسلة",
+                                "en": "Add to Cart"
+                              },
+                              "icon": "add_shopping_cart",
+                              "color": "primary",
+                              "unelevated": true,
+                              "class": "full-width"
+                            },
+                            "events": {
+                              "click": {
+                                "type": "tauri:invoke",
+                                "command": "pos:add_to_cart",
+                                "payload": {
+                                  "sku": "PRD-006",
+                                  "name": "Premium Pistachio Baklava Box",
+                                  "price": 65.00,
+                                  "qty": 1
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md",
+                "props": {
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-sm",
+                    "children": [
+                      {
+                        "type": "div",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-h6 text-weight-bold text-main",
+                            "text": {
+                              "ar": "ملخص سلة الطلب الحالية",
+                              "en": "Active Order Cart Summary"
+                            }
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-caption accent-blue",
+                            "text": {
+                              "ar": "الفاتورة السريعة رقم: #POS-2026-104",
+                              "en": "Active Order Ref: #POS-2026-104"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "chip",
+                        "props": {
+                          "color": "primary",
+                          "dense": true
+                        },
+                        "text": {
+                          "ar": "3 أصناف",
+                          "en": "3 Items"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "separator",
+                    "props": {
+                      "class": "q-my-sm"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "q-gutter-y-sm q-py-xs",
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row justify-between items-center",
+                        "children": [
+                          {
+                            "type": "div",
+                            "children": [
+                              {
+                                "type": "div",
+                                "class": "text-body2 text-weight-medium text-main",
+                                "text": {
+                                  "ar": "قهوة إسبريسو ممتازة × 2",
+                                  "en": "Premium Espresso Roast x 2"
+                                }
+                              },
+                              {
+                                "type": "div",
+                                "class": "text-caption text-muted",
+                                "text": {
+                                  "ar": "سعر الحبة: 18.00 ر.س",
+                                  "en": "Unit: 18.00 SAR"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "row",
+                            "class": "row items-center q-gutter-x-xs",
+                            "children": [
+                              {
+                                "type": "div",
+                                "class": "text-subtitle2 text-weight-bold text-main",
+                                "text": {
+                                  "ar": "36.00 ر.س",
+                                  "en": "36.00 SAR"
+                                }
+                              },
+                              {
+                                "type": "button",
+                                "props": {
+                                  "icon": "delete_outline",
+                                  "color": "negative",
+                                  "flat": true,
+                                  "round": true,
+                                  "dense": true
+                                },
+                                "events": {
+                                  "click": {
+                                    "type": "tauri:invoke",
+                                    "command": "pos:remove_cart_item",
+                                    "payload": {
+                                      "sku": "PRD-001"
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "row",
+                        "class": "row justify-between items-center",
+                        "children": [
+                          {
+                            "type": "div",
+                            "children": [
+                              {
+                                "type": "div",
+                                "class": "text-body2 text-weight-medium text-main",
+                                "text": {
+                                  "ar": "كرواسون فرنسي طازج × 2",
+                                  "en": "Fresh French Croissant x 2"
+                                }
+                              },
+                              {
+                                "type": "div",
+                                "class": "text-caption text-muted",
+                                "text": {
+                                  "ar": "سعر الحبة: 12.50 ر.س",
+                                  "en": "Unit: 12.50 SAR"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "row",
+                            "class": "row items-center q-gutter-x-xs",
+                            "children": [
+                              {
+                                "type": "div",
+                                "class": "text-subtitle2 text-weight-bold text-main",
+                                "text": {
+                                  "ar": "25.00 ر.س",
+                                  "en": "25.00 SAR"
+                                }
+                              },
+                              {
+                                "type": "button",
+                                "props": {
+                                  "icon": "delete_outline",
+                                  "color": "negative",
+                                  "flat": true,
+                                  "round": true,
+                                  "dense": true
+                                },
+                                "events": {
+                                  "click": {
+                                    "type": "tauri:invoke",
+                                    "command": "pos:remove_cart_item",
+                                    "payload": {
+                                      "sku": "PRD-002"
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "row",
+                        "class": "row justify-between items-center",
+                        "children": [
+                          {
+                            "type": "div",
+                            "children": [
+                              {
+                                "type": "div",
+                                "class": "text-body2 text-weight-medium text-main",
+                                "text": {
+                                  "ar": "تمر سكري عضوي فاخر 1 كجم × 1",
+                                  "en": "Organic Sukari Dates 1kg x 1"
+                                }
+                              },
+                              {
+                                "type": "div",
+                                "class": "text-caption text-muted",
+                                "text": {
+                                  "ar": "سعر الحبة: 45.00 ر.س",
+                                  "en": "Unit: 45.00 SAR"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "row",
+                            "class": "row items-center q-gutter-x-xs",
+                            "children": [
+                              {
+                                "type": "div",
+                                "class": "text-subtitle2 text-weight-bold text-main",
+                                "text": {
+                                  "ar": "45.00 ر.س",
+                                  "en": "45.00 SAR"
+                                }
+                              },
+                              {
+                                "type": "button",
+                                "props": {
+                                  "icon": "delete_outline",
+                                  "color": "negative",
+                                  "flat": true,
+                                  "round": true,
+                                  "dense": true
+                                },
+                                "events": {
+                                  "click": {
+                                    "type": "tauri:invoke",
+                                    "command": "pos:remove_cart_item",
+                                    "payload": {
+                                      "sku": "PRD-002"
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "separator",
+                    "props": {
+                      "class": "q-my-sm"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "q-gutter-y-xs q-py-xs",
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row justify-between text-body2 text-muted",
+                        "children": [
+                          {
+                            "type": "span",
+                            "text": {
+                              "ar": "المجموع الفرعي الخاضع للضريبة:",
+                              "en": "Taxable Subtotal:"
+                            }
+                          },
+                          {
+                            "type": "span",
+                            "class": "text-weight-bold text-main",
+                            "text": {
+                              "ar": "106.00 ر.س",
+                              "en": "106.00 SAR"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "row",
+                        "class": "row justify-between text-body2 text-muted",
+                        "children": [
+                          {
+                            "type": "span",
+                            "text": {
+                              "ar": "ضريبة القيمة المضافة (15% VAT):",
+                              "en": "Value Added Tax (15% VAT):"
+                            }
+                          },
+                          {
+                            "type": "span",
+                            "class": "text-weight-bold accent-blue",
+                            "text": {
+                              "ar": "15.90 ر.س",
+                              "en": "15.90 SAR"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "separator",
+                        "props": {
+                          "class": "q-my-xs"
+                        }
+                      },
+                      {
+                        "type": "row",
+                        "class": "row justify-between items-center",
+                        "children": [
+                          {
+                            "type": "span",
+                            "class": "text-subtitle1 text-weight-bold text-main",
+                            "text": {
+                              "ar": "المجموع الإجمالي المستحق:",
+                              "en": "Total Net Due:"
+                            }
+                          },
+                          {
+                            "type": "span",
+                            "class": "text-h5 text-weight-bold text-main",
+                            "text": {
+                              "ar": "121.90 ر.س",
+                              "en": "121.90 SAR"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "separator",
+                    "props": {
+                      "class": "q-my-sm"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-weight-bold accent-blue q-mb-xs",
+                    "text": {
+                      "ar": "خيارات سداد الفاتورة الفورية:",
+                      "en": "Instant Payment Checkout Options:"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "q-gutter-y-xs",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": {
+                            "ar": "سداد نقدي فوري (Cash)",
+                            "en": "Cash Payment Checkout"
+                          },
+                          "icon": "payments",
+                          "color": "positive",
+                          "unelevated": true,
+                          "class": "full-width"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "pos:process_payment",
+                            "payload": {
+                              "method": "cash",
+                              "amount": 121.90,
+                              "currency": "SAR"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": {
+                            "ar": "سداد بطاقة / مدى (Card / POS)",
+                            "en": "Card / Mada POS Checkout"
+                          },
+                          "icon": "credit_card",
+                          "color": "primary",
+                          "unelevated": true,
+                          "class": "full-width"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "pos:process_payment",
+                            "payload": {
+                              "method": "card",
+                              "amount": 121.90,
+                              "currency": "SAR"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": {
+                            "ar": "دفع آجل للعميل (Deferred / Debt)",
+                            "en": "Deferred / On-Account Credit"
+                          },
+                          "icon": "history_toggle_off",
+                          "color": "secondary",
+                          "outline": true,
+                          "class": "full-width"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "pos:process_payment",
+                            "payload": {
+                              "method": "deferred",
+                              "amount": 121.90,
+                              "currency": "SAR"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "row",
+                    "class": "row justify-between q-mt-sm",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": {
+                            "ar": "تعليق الطلب مؤقتاً",
+                            "en": "Hold Order"
+                          },
+                          "icon": "pause_circle",
+                          "flat": true,
+                          "dense": true,
+                          "color": "warning"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "pos:hold_order",
+                            "payload": {
+                              "orderRef": "POS-2026-104"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": {
+                            "ar": "إلغاء وتفريغ السلة",
+                            "en": "Clear Cart"
+                          },
+                          "icon": "remove_shopping_cart",
+                          "flat": true,
+                          "dense": true,
+                          "color": "negative"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "pos:clear_cart"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

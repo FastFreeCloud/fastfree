@@ -1,9 +1,9 @@
 {
   "id": "step5_provisioning",
-  "versionHash": "v2.2.0",
+  "versionHash": "v2.3.0",
   "title": {
-    "ar": "خط إنتاج ونشر عقدة Clan",
-    "en": "Clan Machine Provisioning & Deployment"
+    "ar": "خط إنتاج ونشر عقدة Clan والعنقود السيادي",
+    "en": "Clan Sovereign Cluster Provisioning & Deployment"
   },
   "root": {
     "type": "div",
@@ -29,16 +29,16 @@
             "type": "div",
             "class": "text-h6 text-weight-bold text-main",
             "text": {
-              "ar": "خط إنتاج ونشر عقدة Clan التلقائي",
-              "en": "Clan Automated Machine Provisioning Pipeline"
+              "ar": "خط إنتاج ونشر عنقود Clan السيادي (11 عقدة)",
+              "en": "Clan Sovereign Cluster Provisioning Pipeline (11 Nodes)"
             }
           },
           {
             "type": "div",
             "class": "text-caption text-muted",
             "text": {
-              "ar": "استنساخ قرص VHDX، بناء حزم Clan Flakes، وبث سجلات النشر الحية في الوقت الفعلي",
-              "en": "VHDX cloning, Clan NixOS Flakes compilation, and real-time installation log streaming"
+              "ar": "استنساخ أقراص VHDX، بناء حزم NixOS Flakes، وتبادل مفاتيح WireGuard لشبكة الـ 11 عقدة في الوقت الفعلي",
+              "en": "Real-time VHDX cloning, Clan NixOS Flakes compilation, and 11-node WireGuard sovereign mesh key exchange"
             }
           }
         ]
@@ -54,8 +54,8 @@
             "type": "div",
             "class": "text-caption accent-blue text-weight-bold q-mb-xs",
             "text": {
-              "ar": "مسار بناء وتوزيع حزم Clan Flakes الآلي",
-              "en": "Automated Clan Flakes Build & Distribution Pipeline"
+              "ar": "مراحل النشر وبناء البنية التحتية السيادية (Deployment Stages)",
+              "en": "Sovereign Deployment Stages & Infrastructure Build"
             }
           },
           {
@@ -66,16 +66,16 @@
                 "type": "div",
                 "class": "text-subtitle1 text-weight-bold text-main",
                 "text": {
-                  "ar": "نسبة إنجاز نشر العقدة:",
-                  "en": "Deployment Progress:"
+                  "ar": "نسبة إنجاز نشر العنقود السيادي الكامل:",
+                  "en": "Full Sovereign Cluster Deployment Progress:"
                 }
               },
               {
                 "type": "div",
                 "class": "text-h6 text-weight-bolder text-primary",
                 "text": {
-                  "ar": "{{ state.installPercent || 65 }}% منجز",
-                  "en": "{{ state.installPercent || 65 }}% Completed"
+                  "ar": "{{ state.installPercent || 92 }}% منجز",
+                  "en": "{{ state.installPercent || 92 }}% Completed"
                 }
               }
             ]
@@ -83,28 +83,28 @@
           {
             "type": "progress",
             "props": {
-              "value": 0.65,
+              "value": 0.92,
               "color": "primary",
               "size": "16px",
               "rounded": true,
               "stripe": true,
-              "class": "q-mb-lg"
+              "class": "q-mb-md"
             }
           },
           {
             "type": "row",
-            "class": "row q-gutter-xs justify-center q-mb-md",
+            "class": "row q-gutter-xs justify-center q-mb-lg",
             "children": [
               {
                 "type": "chip",
                 "props": {
                   "color": "positive",
                   "outline": true,
-                  "icon": "check"
+                  "icon": "check_circle"
                 },
                 "text": {
-                  "ar": "1. استنساخ قرص VHDX",
-                  "en": "1. VHDX Disk Cloning"
+                  "ar": "1. إنشاء بيئة Hyper-V (Gen2)",
+                  "en": "1. Hyper-V VM Creation (Gen2)"
                 }
               },
               {
@@ -112,11 +112,35 @@
                 "props": {
                   "color": "positive",
                   "outline": true,
-                  "icon": "check"
+                  "icon": "check_circle"
                 },
                 "text": {
-                  "ar": "2. بناء حزم Clan Flakes",
-                  "en": "2. Clan Flakes Build"
+                  "ar": "2. استنساخ قرص VHDX السريع",
+                  "en": "2. Fast VHDX Cloning"
+                }
+              },
+              {
+                "type": "chip",
+                "props": {
+                  "color": "positive",
+                  "outline": true,
+                  "icon": "check_circle"
+                },
+                "text": {
+                  "ar": "3. بناء حزم Clan Flakes",
+                  "en": "3. Clan Flakes Compilation"
+                }
+              },
+              {
+                "type": "chip",
+                "props": {
+                  "color": "positive",
+                  "outline": true,
+                  "icon": "check_circle"
+                },
+                "text": {
+                  "ar": "4. تبادل مفاتيح WireGuard Mesh",
+                  "en": "4. WireGuard Keys Exchange"
                 }
               },
               {
@@ -127,75 +151,702 @@
                   "icon": "sync"
                 },
                 "text": {
-                  "ar": "3. تهيئة بيئة NixOS",
-                  "en": "3. NixOS Core Init"
-                }
-              },
-              {
-                "type": "chip",
-                "props": {
-                  "color": "secondary",
-                  "outline": true,
-                  "icon": "hub"
-                },
-                "text": {
-                  "ar": "4. شبكة Mesh & WireGuard",
-                  "en": "4. Mesh & WireGuard Interconnect"
-                }
-              },
-              {
-                "type": "chip",
-                "props": {
-                  "color": "accent",
-                  "outline": true,
-                  "icon": "verified"
-                },
-                "text": {
-                  "ar": "5. فحص الصحة السيادية",
-                  "en": "5. Health Audit"
+                  "ar": "5. فحص الصحة والجاهزية السيادية",
+                  "en": "5. Sovereign Health Audit"
                 }
               }
             ]
           },
           {
             "type": "div",
-            "class": "text-subtitle2 text-weight-bold text-main q-mt-md q-mb-xs",
+            "class": "text-subtitle2 text-weight-bold text-main q-mb-sm",
             "text": {
-              "ar": "بث سجلات النشر الحية (Real-time Deployment Log Stream):",
-              "en": "Real-time Deployment Log Stream:"
+              "ar": "مؤشرات أداء الاستنساخ والنشر المباشرة (Real-time Deployment Metrics):",
+              "en": "Real-time Deployment & Provisioning Metrics:"
             }
           },
           {
+            "type": "row",
+            "class": "row q-col-gutter-sm q-mb-lg",
+            "children": [
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-3",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm text-center",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted",
+                        "text": {
+                          "ar": "سرعة كتابة VHDX",
+                          "en": "VHDX Write Speed"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-subtitle1 text-weight-bold text-positive",
+                        "text": {
+                          "ar": "342 MB/s (NVMe)",
+                          "en": "342 MB/s (NVMe)"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-3",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm text-center",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted",
+                        "text": {
+                          "ar": "سلامة تجزئة الصورة",
+                          "en": "Image Integrity"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-subtitle1 text-weight-bold accent-blue",
+                        "text": {
+                          "ar": "SHA-256 (سليم ومطابق)",
+                          "en": "SHA-256 (Verified)"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-3",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm text-center",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted",
+                        "text": {
+                          "ar": "بناء حزم Flake",
+                          "en": "Flake Derivations"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-subtitle1 text-weight-bold text-positive",
+                        "text": {
+                          "ar": "1,428 / 1,428 حزمة",
+                          "en": "1,428 / 1,428 Built"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-3",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm text-center",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted",
+                        "text": {
+                          "ar": "عقد شبكة WireGuard",
+                          "en": "WireGuard Mesh"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-subtitle1 text-weight-bold text-primary",
+                        "text": {
+                          "ar": "11/11 عقدة متصلة",
+                          "en": "11/11 Nodes Peered"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "type": "div",
-            "class": "bg-card q-pa-sm rounded-borders text-caption text-muted q-mb-md",
-            "style": "font-family: monospace; border: 1px solid var(--border-color); max-height: 120px; overflow-y: auto;",
+            "class": "text-subtitle2 text-weight-bold text-main q-mb-xs",
+            "text": {
+              "ar": "قائمة تحقق جاهزية الـ 11 عقدة السيادية (Clan Sovereign 11-Node Checklist):",
+              "en": "Clan Sovereign 11-Node Provisioning Checklist:"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row q-col-gutter-xs q-mb-lg",
+            "children": [
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-xs",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between no-wrap q-px-xs",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-caption text-weight-bold text-main",
+                            "text": {
+                              "ar": "client1: البوابة والراوتر (Gateway)",
+                              "en": "client1: Edge Gateway Router"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "props": {
+                              "color": "positive",
+                              "outline": true
+                            },
+                            "text": {
+                              "ar": "جاهز (10.0.0.1)",
+                              "en": "Ready (10.0.0.1)"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-xs",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between no-wrap q-px-xs",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-caption text-weight-bold text-main",
+                            "text": {
+                              "ar": "client2: خادم تطبيق ERPNext",
+                              "en": "client2: ERPNext Core Suite"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "props": {
+                              "color": "positive",
+                              "outline": true
+                            },
+                            "text": {
+                              "ar": "جاهز (10.0.0.2)",
+                              "en": "Ready (10.0.0.2)"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-xs",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between no-wrap q-px-xs",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-caption text-weight-bold text-main",
+                            "text": {
+                              "ar": "client3: قاعدة بيانات MariaDB",
+                              "en": "client3: MariaDB Database"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "props": {
+                              "color": "positive",
+                              "outline": true
+                            },
+                            "text": {
+                              "ar": "جاهز (10.0.0.3)",
+                              "en": "Ready (10.0.0.3)"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-xs",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between no-wrap q-px-xs",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-caption text-weight-bold text-main",
+                            "text": {
+                              "ar": "client4: خادم Redis وزمام العمليات",
+                              "en": "client4: Redis & Celery Queue"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "props": {
+                              "color": "positive",
+                              "outline": true
+                            },
+                            "text": {
+                              "ar": "جاهز (10.0.0.4)",
+                              "en": "Ready (10.0.0.4)"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-xs",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between no-wrap q-px-xs",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-caption text-weight-bold text-main",
+                            "text": {
+                              "ar": "client5: لوحة إدارة Cockpit",
+                              "en": "client5: Cockpit Admin Console"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "props": {
+                              "color": "positive",
+                              "outline": true
+                            },
+                            "text": {
+                              "ar": "جاهز (10.0.0.5)",
+                              "en": "Ready (10.0.0.5)"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-xs",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between no-wrap q-px-xs",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-caption text-weight-bold text-main",
+                            "text": {
+                              "ar": "client6: مدير البيانات DbGate",
+                              "en": "client6: DbGate Studio"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "props": {
+                              "color": "positive",
+                              "outline": true
+                            },
+                            "text": {
+                              "ar": "جاهز (10.0.0.6)",
+                              "en": "Ready (10.0.0.6)"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-xs",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between no-wrap q-px-xs",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-caption text-weight-bold text-main",
+                            "text": {
+                              "ar": "client7: خزينة التخزين S3/MinIO",
+                              "en": "client7: S3/MinIO Object Vault"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "props": {
+                              "color": "positive",
+                              "outline": true
+                            },
+                            "text": {
+                              "ar": "نشط (10.0.0.7)",
+                              "en": "Active (10.0.0.7)"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-xs",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between no-wrap q-px-xs",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-caption text-weight-bold text-main",
+                            "text": {
+                              "ar": "client8: محرك عملاء Hermes الذكي",
+                              "en": "client8: Hermes Agentic Node"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "props": {
+                              "color": "positive",
+                              "outline": true
+                            },
+                            "text": {
+                              "ar": "نشط (10.0.0.8)",
+                              "en": "Active (10.0.0.8)"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-xs",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between no-wrap q-px-xs",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-caption text-weight-bold text-main",
+                            "text": {
+                              "ar": "client9: مكرر شبكة WireGuard",
+                              "en": "client9: WireGuard Mesh Relay"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "props": {
+                              "color": "positive",
+                              "outline": true
+                            },
+                            "text": {
+                              "ar": "نشط (10.0.0.9)",
+                              "en": "Active (10.0.0.9)"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-xs",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between no-wrap q-px-xs",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-caption text-weight-bold text-main",
+                            "text": {
+                              "ar": "client10: الرصد والمراقبة Prometheus",
+                              "en": "client10: Metrics & Observability"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "props": {
+                              "color": "positive",
+                              "outline": true
+                            },
+                            "text": {
+                              "ar": "نشط (10.0.0.10)",
+                              "en": "Active (10.0.0.10)"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-xs",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "row",
+                        "class": "row items-center justify-between no-wrap q-px-xs",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-caption text-weight-bold text-main",
+                            "text": {
+                              "ar": "client11: لقطات الاسترجاع والتخزين",
+                              "en": "client11: Snapshot & Cold Recovery"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "props": {
+                              "color": "positive",
+                              "outline": true
+                            },
+                            "text": {
+                              "ar": "متزامن (10.0.0.11)",
+                              "en": "Synced (10.0.0.11)"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "row",
+            "class": "row justify-between items-center q-mb-xs",
+            "children": [
+              {
+                "type": "div",
+                "class": "text-subtitle2 text-weight-bold text-main",
+                "text": {
+                  "ar": "شاشة وسجل النشر المباشر (Simulated Live Terminal & Provisioning Console):",
+                  "en": "Live Terminal & Provisioning Console Log:"
+                }
+              },
+              {
+                "type": "badge",
+                "props": {
+                  "color": "positive",
+                  "outline": true
+                },
+                "text": {
+                  "ar": "بث حي ومباشر",
+                  "en": "LIVE CONSOLE"
+                }
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "bg-card q-pa-md rounded-borders text-caption text-muted q-mb-md",
+            "style": "font-family: 'Consolas', 'Courier New', monospace; border: 1px solid var(--border-color); max-height: 180px; overflow-y: auto; line-height: 1.6;",
             "children": [
               {
                 "type": "div",
                 "text": {
-                  "ar": "[00:01] جاري نسخ صورة VHDX الأساسية لنظام NixOS Clan...",
-                  "en": "[00:01] Cloning base NixOS Clan VHDX image..."
+                  "ar": "[00:01] تهيئة بيئة Hyper-V Generation 2 VM 'fastfree-clan' بتخصيص 16 نواة و 16384 ميغابايت ذاكرة...",
+                  "en": "[00:01] Initializing Hyper-V Gen2 VM 'fastfree-clan' (16 vCPU, 16384 MB vRAM)..."
                 }
               },
               {
                 "type": "div",
                 "text": {
-                  "ar": "[00:02] تم التحقق من سلامة تجزئة SHA256 للقرص المستنسخ بنجاح.",
-                  "en": "[00:02] VHDX SHA256 integrity hash verified successfully."
+                  "ar": "[00:02] استنساخ صورة قرص VHDX لنظام NixOS Clan إلى مسار D:\\FastFree\\vms\\fastfree-clan.vhdx بسرعة 342 MB/s...",
+                  "en": "[00:02] Cloning Sovereign VHDX image to D:\\FastFree\\vms\\fastfree-clan.vhdx at 342 MB/s..."
                 }
               },
               {
                 "type": "div",
                 "text": {
-                  "ar": "[00:03] بناء حزم Clan Flakes وتكوين عقدة NixOS الخاصة...",
-                  "en": "[00:03] Building Clan Flakes nixos-rebuild lock configurations..."
+                  "ar": "[00:03] التحقق بنجاح من سلامة التجزئة الرقمية SHA-256 لصورة القرص المستنسخ.",
+                  "en": "[00:03] VHDX SHA-256 integrity checksum verified successfully (OK)."
                 }
               },
               {
                 "type": "div",
                 "text": {
-                  "ar": "[00:04] ربط واجهة WireGuard Mesh وتوليد المفاتيح السيادية...",
-                  "en": "[00:04] WireGuard mesh interface initialized, sovereign keys generated."
+                  "ar": "[00:04] تنفيذ محرك Clan Flakes وتقييم شجرة البناء لنظام NixOS على 11 عقدة سيادية...",
+                  "en": "[00:04] Invoking Clan Flake compiler: evaluating nixos-rebuild lock graph across 11 nodes..."
+                }
+              },
+              {
+                "type": "div",
+                "text": {
+                  "ar": "[00:05] تم بناء 1,428 / 1,428 حزمة واشتقاق للنظام بنجاح وخلوه من التعارضات.",
+                  "en": "[00:05] Built 1,428 / 1,428 Clan derivations successfully with zero conflicts."
+                }
+              },
+              {
+                "type": "div",
+                "text": {
+                  "ar": "[00:06] توليد أزواج المفاتيح السيادية لتشفير WireGuard Curve25519 على المنفذ 51820...",
+                  "en": "[00:06] Generating WireGuard Curve25519 sovereign keypairs on UDP port 51820..."
+                }
+              },
+              {
+                "type": "div",
+                "text": {
+                  "ar": "[00:07] تبادل مفاتيح المصافحة الشبكية بين العقد (client1 عبر client11) في شبكة Mesh المتداخلة...",
+                  "en": "[00:07] Exchanging public keys across client1 through client11 sovereign mesh topology..."
+                }
+              },
+              {
+                "type": "div",
+                "text": {
+                  "ar": "[00:08] تأكيد الاتصال الآمن والمشفر بين العقد الـ 11 بنجاح مع تفعيل جدار الحماية وعزل الصفرية.",
+                  "en": "[00:08] Peer handshake confirmed: all 11 nodes linked with zero-trust isolation."
+                }
+              },
+              {
+                "type": "div",
+                "text": {
+                  "ar": "[00:09] تشغيل خدمات ERPNext و Cockpit و DbGate وبوابة Caddy Edge التشفيرية بنجاح.",
+                  "en": "[00:09] Core services online: ERPNext, Cockpit, DbGate, and Caddy Edge Gateway listening."
+                }
+              },
+              {
+                "type": "div",
+                "text": {
+                  "ar": "[00:10] تم اكتمال نشر العنقود السيادي بنسبة 100%. النظام جاهز للانتقال للوحة التشغيل الرئيسية.",
+                  "en": "[00:10] Sovereign cluster provisioning 100% verified. System ready for Launchpad transition."
                 }
               }
             ]

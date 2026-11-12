@@ -1,0 +1,1278 @@
+{
+  "id": "fleet_monitor",
+  "versionHash": "v1.0.0",
+  "title": {
+    "ar": "لوحة مراقبة أسطول عقد Clan السيادية (11 عقدة)",
+    "en": "Sovereign 11-Node Clan Fleet Infrastructure Dashboard"
+  },
+  "state": {
+    "clusterName": "fastfree",
+    "domain": "fastfree.local",
+    "meshController": "client1.fastfree.local",
+    "meshPort": 51820,
+    "totalNodes": 11,
+    "healthyNodes": 11,
+    "totalVcpu": 44,
+    "totalRamGb": 128,
+    "meshStatus": "active",
+    "flakeVersion": "flake-v2.2.0-nixos-unstable",
+    "lastAudit": "2026-11-12 11:00 UTC",
+    "auditResult": "PASS"
+  },
+  "root": {
+    "type": "div",
+    "class": "q-pa-md q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "rounded": true,
+          "dense": true
+        },
+        "children": [
+          {
+            "type": "icon",
+            "props": {
+              "name": "hub",
+              "size": "lg",
+              "color": "primary"
+            }
+          },
+          {
+            "type": "div",
+            "class": "q-ml-sm",
+            "children": [
+              {
+                "type": "div",
+                "class": "text-h5 text-weight-bold text-main",
+                "text": {
+                  "ar": "لوحة مراقبة وتحكم أسطول Clan السيادي (11 عقدة)",
+                  "en": "Sovereign Clan 11-Node Fleet Infrastructure Dashboard"
+                }
+              },
+              {
+                "type": "div",
+                "class": "text-caption text-muted",
+                "text": {
+                  "ar": "إدارة شبكة الميش المشفرة WireGuard والتحكم المستقل ببنية NixOS وخدمات الأسطول السيادي",
+                  "en": "Manage sovereign encrypted WireGuard mesh, NixOS configurations, and autonomous cluster services"
+                }
+              }
+            ]
+          },
+          {
+            "type": "row",
+            "class": "row items-center q-gutter-x-sm q-mt-sm",
+            "children": [
+              {
+                "type": "chip",
+                "props": {
+                  "icon": "verified_user",
+                  "color": "positive",
+                  "outline": true,
+                  "dense": true
+                },
+                "text": {
+                  "ar": "حالة الأسطول: 11 / 11 عقدة متصلة ومستقرة",
+                  "en": "Fleet Health: 11 / 11 Nodes Active & Healthy"
+                }
+              },
+              {
+                "type": "chip",
+                "props": {
+                  "icon": "vpn_lock",
+                  "color": "primary",
+                  "outline": true,
+                  "dense": true
+                },
+                "text": {
+                  "ar": "تشفير الشبكة: WireGuard ChaCha20-Poly1305",
+                  "en": "Mesh Cipher: WireGuard ChaCha20-Poly1305"
+                }
+              },
+              {
+                "type": "chip",
+                "props": {
+                  "icon": "speed",
+                  "color": "secondary",
+                  "outline": true,
+                  "dense": true
+                },
+                "text": {
+                  "ar": "متوسط زمن الاستجابة: 1.3 مللي ثانية",
+                  "en": "Average Latency: 1.3 ms"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "bordered": true
+        },
+        "children": [
+          {
+            "type": "div",
+            "class": "text-subtitle1 text-weight-bold text-main q-mb-xs",
+            "text": {
+              "ar": "نظرة عامة على موارد شبكة Clan Mesh والعتاد المخصص",
+              "en": "Clan Mesh Network & Hardware Allocation Overview"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption accent-blue q-mb-md",
+            "text": {
+              "ar": "توزيع الموارد والتحكم المركزي السيادي لأسطول خوادم Hyper-V Gen 2",
+              "en": "Sovereign resource allocation across 11 Hyper-V Gen 2 nodes"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row q-col-gutter-md",
+            "children": [
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-3",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm text-center",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "icon",
+                        "props": {
+                          "name": "security",
+                          "size": "md",
+                          "color": "primary"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted text-weight-bold q-mt-xs",
+                        "text": {
+                          "ar": "متحكم شبكة WireGuard",
+                          "en": "WireGuard Mesh Controller"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold text-main q-my-xs",
+                        "text": {
+                          "ar": "client1.fastfree.local:51820",
+                          "en": "client1.fastfree.local:51820"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive"
+                        },
+                        "text": {
+                          "ar": "المتحكم الأساسي نشط",
+                          "en": "Primary Controller Active"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-3",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm text-center",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "icon",
+                        "props": {
+                          "name": "developer_board",
+                          "size": "md",
+                          "color": "secondary"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted text-weight-bold q-mt-xs",
+                        "text": {
+                          "ar": "إجمالي أنوية المعالج (vCPU)",
+                          "en": "Total vCPU Allocation"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-subtitle1 text-weight-bold text-main q-my-xs",
+                        "text": {
+                          "ar": "44 نواة مخصصة",
+                          "en": "44 Cores Allocated"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "primary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "4 أنوية لكل عقدة",
+                          "en": "4 vCPUs per node"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-3",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm text-center",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "icon",
+                        "props": {
+                          "name": "memory",
+                          "size": "md",
+                          "color": "accent-blue"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted text-weight-bold q-mt-xs",
+                        "text": {
+                          "ar": "إجمالي الذاكرة العشوائية (RAM)",
+                          "en": "Total RAM Allocation"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-subtitle1 text-weight-bold text-main q-my-xs",
+                        "text": {
+                          "ar": "128 جيجابايت DDR5 ECC",
+                          "en": "128 GB DDR5 ECC"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "primary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "ذاكرة آمنة معزولة",
+                          "en": "Isolated Safe Memory"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-sm-6 col-md-3",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm text-center",
+                    "props": {
+                      "flat": true
+                    },
+                    "children": [
+                      {
+                        "type": "icon",
+                        "props": {
+                          "name": "dns",
+                          "size": "md",
+                          "color": "positive"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted text-weight-bold q-mt-xs",
+                        "text": {
+                          "ar": "حالة جاهزية العقد",
+                          "en": "Node Fleet Readiness"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "text-subtitle1 text-weight-bold text-main q-my-xs",
+                        "text": {
+                          "ar": "11 / 11 عقدة متصلة",
+                          "en": "11 / 11 Nodes Online"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive"
+                        },
+                        "text": {
+                          "ar": "جاهزية كاملة 100%",
+                          "en": "100% Operational"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "bordered": true
+        },
+        "children": [
+          {
+            "type": "row",
+            "class": "row justify-between items-center",
+            "children": [
+              {
+                "type": "div",
+                "children": [
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold text-main",
+                    "text": {
+                      "ar": "إجراءات التحكم السريع بالأسطول والشبكة السيادية",
+                      "en": "Sovereign Cluster Fleet Actions"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue",
+                    "text": {
+                      "ar": "تنفيذ أوامر الشبكة وإعادة بناء تكوينات NixOS على كافة العقد الـ 11",
+                      "en": "Execute mesh networking and NixOS rebuilding commands across all 11 nodes"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "row",
+                "class": "row items-center q-gutter-x-sm",
+                "children": [
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "إعادة تشغيل شبكة WireGuard Mesh",
+                        "en": "Restart WireGuard Mesh"
+                      },
+                      "icon": "sync",
+                      "color": "primary",
+                      "unelevated": true
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "clan:mesh:restart",
+                        "payload": {
+                          "scope": "all_nodes"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "سحب تحديثات Clan Flake",
+                        "en": "Pull Flake Update"
+                      },
+                      "icon": "cloud_download",
+                      "color": "secondary",
+                      "unelevated": true
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "clan:flake:pull",
+                        "payload": {
+                          "flake": "packages/fastfree_os"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "تشغيل الفحص الأمني للأسطول",
+                        "en": "Run Cluster Audit"
+                      },
+                      "icon": "security_update_good",
+                      "color": "positive",
+                      "unelevated": true
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "clan:cluster:audit",
+                        "payload": {
+                          "deepScan": true
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-sm",
+        "children": [
+          {
+            "type": "div",
+            "class": "text-h6 text-weight-bold text-main",
+            "text": {
+              "ar": "شبكة عقد Clan الـ 11 السيادية (client1 إلى client11)",
+              "en": "The 11 Sovereign Clan Fleet Nodes (client1 to client11)"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption accent-blue",
+            "text": {
+              "ar": "تفاصيل كل عقدة: الدور الوظيفي، زمن الاستجابة، وحالة خدمة systemd المرتبطة",
+              "en": "Node details: Functional role, ping latency, and systemd service status"
+            }
+          }
+        ]
+      },
+      {
+        "type": "row",
+        "class": "row q-col-gutter-sm",
+        "children": [
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "props": { "bordered": true },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold text-main",
+                        "text": { "ar": "client1.fastfree.local", "en": "client1.fastfree.local" }
+                      },
+                      {
+                        "type": "badge",
+                        "props": { "color": "positive" },
+                        "text": { "ar": "0.8 مللي ثانية", "en": "0.8 ms" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue text-weight-bold",
+                    "text": {
+                      "ar": "الدور: متحكم شبكة Mesh وبوابة SSH الأساسية",
+                      "en": "Role: Mesh Controller & SSH Gateway"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mt-xs",
+                    "text": {
+                      "ar": "الخدمات: wireguard-controller.service, sshd.service",
+                      "en": "Services: wireguard-controller.service, sshd.service"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mt-sm",
+                    "children": [
+                      {
+                        "type": "chip",
+                        "props": { "color": "positive", "dense": true, "outline": true },
+                        "text": { "ar": "systemd: يعمل بنجاح (running)", "en": "systemd: active (running)" }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": { "ar": "فحص العقدة", "en": "Inspect" },
+                          "icon": "visibility",
+                          "dense": true,
+                          "flat": true,
+                          "color": "primary"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "clan:node:inspect",
+                            "payload": { "node": "client1" }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "props": { "bordered": true },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold text-main",
+                        "text": { "ar": "client2.fastfree.local", "en": "client2.fastfree.local" }
+                      },
+                      {
+                        "type": "badge",
+                        "props": { "color": "positive" },
+                        "text": { "ar": "1.2 مللي ثانية", "en": "1.2 ms" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue text-weight-bold",
+                    "text": {
+                      "ar": "الدور: خادم قاعدة البيانات الأساسي (PostgreSQL Cluster)",
+                      "en": "Role: Core Database Server (PostgreSQL)"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mt-xs",
+                    "text": {
+                      "ar": "الخدمات: postgresql.service, patroni.service",
+                      "en": "Services: postgresql.service, patroni.service"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mt-sm",
+                    "children": [
+                      {
+                        "type": "chip",
+                        "props": { "color": "positive", "dense": true, "outline": true },
+                        "text": { "ar": "systemd: يعمل بنجاح (running)", "en": "systemd: active (running)" }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": { "ar": "فحص العقدة", "en": "Inspect" },
+                          "icon": "visibility",
+                          "dense": true,
+                          "flat": true,
+                          "color": "primary"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "clan:node:inspect",
+                            "payload": { "node": "client2" }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "props": { "bordered": true },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold text-main",
+                        "text": { "ar": "client3.fastfree.local", "en": "client3.fastfree.local" }
+                      },
+                      {
+                        "type": "badge",
+                        "props": { "color": "positive" },
+                        "text": { "ar": "1.1 مللي ثانية", "en": "1.1 ms" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue text-weight-bold",
+                    "text": {
+                      "ar": "الدور: خادم تطبيقات ERP الأساسي (Frappe App Core)",
+                      "en": "Role: ERP Core Application Server (Frappe)"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mt-xs",
+                    "text": {
+                      "ar": "الخدمات: frappe-bench-web.service, gunicorn.service",
+                      "en": "Services: frappe-bench-web.service, gunicorn.service"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mt-sm",
+                    "children": [
+                      {
+                        "type": "chip",
+                        "props": { "color": "positive", "dense": true, "outline": true },
+                        "text": { "ar": "systemd: يعمل بنجاح (running)", "en": "systemd: active (running)" }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": { "ar": "فحص العقدة", "en": "Inspect" },
+                          "icon": "visibility",
+                          "dense": true,
+                          "flat": true,
+                          "color": "primary"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "clan:node:inspect",
+                            "payload": { "node": "client3" }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "props": { "bordered": true },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold text-main",
+                        "text": { "ar": "client4.fastfree.local", "en": "client4.fastfree.local" }
+                      },
+                      {
+                        "type": "badge",
+                        "props": { "color": "positive" },
+                        "text": { "ar": "1.4 مللي ثانية", "en": "1.4 ms" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue text-weight-bold",
+                    "text": {
+                      "ar": "الدور: معالج مهام الخلفية وطوابير العمليات (Frappe Worker)",
+                      "en": "Role: Background Worker & Job Queue (Frappe)"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mt-xs",
+                    "text": {
+                      "ar": "الخدمات: frappe-worker-default.service, scheduler.service",
+                      "en": "Services: frappe-worker-default.service, scheduler.service"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mt-sm",
+                    "children": [
+                      {
+                        "type": "chip",
+                        "props": { "color": "positive", "dense": true, "outline": true },
+                        "text": { "ar": "systemd: يعمل بنجاح (running)", "en": "systemd: active (running)" }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": { "ar": "فحص العقدة", "en": "Inspect" },
+                          "icon": "visibility",
+                          "dense": true,
+                          "flat": true,
+                          "color": "primary"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "clan:node:inspect",
+                            "payload": { "node": "client4" }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "props": { "bordered": true },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold text-main",
+                        "text": { "ar": "client5.fastfree.local", "en": "client5.fastfree.local" }
+                      },
+                      {
+                        "type": "badge",
+                        "props": { "color": "positive" },
+                        "text": { "ar": "1.3 مللي ثانية", "en": "1.3 ms" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue text-weight-bold",
+                    "text": {
+                      "ar": "الدور: خادم التراسل الفوري والذاكرة المؤقتة (Redis / Omnigent)",
+                      "en": "Role: Real-Time Messaging & Cache (Redis)"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mt-xs",
+                    "text": {
+                      "ar": "الخدمات: redis-server.service, omnigent-sync.service",
+                      "en": "Services: redis-server.service, omnigent-sync.service"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mt-sm",
+                    "children": [
+                      {
+                        "type": "chip",
+                        "props": { "color": "positive", "dense": true, "outline": true },
+                        "text": { "ar": "systemd: يعمل بنجاح (running)", "en": "systemd: active (running)" }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": { "ar": "فحص العقدة", "en": "Inspect" },
+                          "icon": "visibility",
+                          "dense": true,
+                          "flat": true,
+                          "color": "primary"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "clan:node:inspect",
+                            "payload": { "node": "client5" }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "props": { "bordered": true },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold text-main",
+                        "text": { "ar": "client6.fastfree.local", "en": "client6.fastfree.local" }
+                      },
+                      {
+                        "type": "badge",
+                        "props": { "color": "positive" },
+                        "text": { "ar": "1.8 مللي ثانية", "en": "1.8 ms" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue text-weight-bold",
+                    "text": {
+                      "ar": "الدور: مستودع التخزين السحابي والنسخ الاحتياطي (MinIO S3)",
+                      "en": "Role: Object Storage & Backup Vault (MinIO S3)"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mt-xs",
+                    "text": {
+                      "ar": "الخدمات: minio.service, rustic-backup.service",
+                      "en": "Services: minio.service, rustic-backup.service"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mt-sm",
+                    "children": [
+                      {
+                        "type": "chip",
+                        "props": { "color": "positive", "dense": true, "outline": true },
+                        "text": { "ar": "systemd: يعمل بنجاح (running)", "en": "systemd: active (running)" }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": { "ar": "فحص العقدة", "en": "Inspect" },
+                          "icon": "visibility",
+                          "dense": true,
+                          "flat": true,
+                          "color": "primary"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "clan:node:inspect",
+                            "payload": { "node": "client6" }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "props": { "bordered": true },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold text-main",
+                        "text": { "ar": "client7.fastfree.local", "en": "client7.fastfree.local" }
+                      },
+                      {
+                        "type": "badge",
+                        "props": { "color": "positive" },
+                        "text": { "ar": "1.6 مللي ثانية", "en": "1.6 ms" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue text-weight-bold",
+                    "text": {
+                      "ar": "الدور: محرك المراقبة والتحليلات والسجلات (Prometheus / Mimir)",
+                      "en": "Role: Observability & Search Engine (Prometheus)"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mt-xs",
+                    "text": {
+                      "ar": "الخدمات: prometheus.service, promtail.service",
+                      "en": "Services: prometheus.service, promtail.service"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mt-sm",
+                    "children": [
+                      {
+                        "type": "chip",
+                        "props": { "color": "positive", "dense": true, "outline": true },
+                        "text": { "ar": "systemd: يعمل بنجاح (running)", "en": "systemd: active (running)" }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": { "ar": "فحص العقدة", "en": "Inspect" },
+                          "icon": "visibility",
+                          "dense": true,
+                          "flat": true,
+                          "color": "primary"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "clan:node:inspect",
+                            "payload": { "node": "client7" }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "props": { "bordered": true },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold text-main",
+                        "text": { "ar": "client8.fastfree.local", "en": "client8.fastfree.local" }
+                      },
+                      {
+                        "type": "badge",
+                        "props": { "color": "positive" },
+                        "text": { "ar": "0.9 مللي ثانية", "en": "0.9 ms" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue text-weight-bold",
+                    "text": {
+                      "ar": "الدور: بوابة الدخول العكسية والشهادات (Traefik Ingress)",
+                      "en": "Role: Edge Ingress & Reverse Proxy (Traefik)"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mt-xs",
+                    "text": {
+                      "ar": "الخدمات: traefik.service, acme-renewal.service",
+                      "en": "Services: traefik.service, acme-renewal.service"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mt-sm",
+                    "children": [
+                      {
+                        "type": "chip",
+                        "props": { "color": "positive", "dense": true, "outline": true },
+                        "text": { "ar": "systemd: يعمل بنجاح (running)", "en": "systemd: active (running)" }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": { "ar": "فحص العقدة", "en": "Inspect" },
+                          "icon": "visibility",
+                          "dense": true,
+                          "flat": true,
+                          "color": "primary"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "clan:node:inspect",
+                            "payload": { "node": "client8" }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "props": { "bordered": true },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold text-main",
+                        "text": { "ar": "client9.fastfree.local", "en": "client9.fastfree.local" }
+                      },
+                      {
+                        "type": "badge",
+                        "props": { "color": "positive" },
+                        "text": { "ar": "2.1 مللي ثانية", "en": "2.1 ms" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue text-weight-bold",
+                    "text": {
+                      "ar": "الدور: محرك الاستدلال بالذكاء الاصطناعي (LLM Inference Studio)",
+                      "en": "Role: AI Studio & LLM Inference Worker"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mt-xs",
+                    "text": {
+                      "ar": "الخدمات: llama-cpp.service, ollama-bridge.service",
+                      "en": "Services: llama-cpp.service, ollama-bridge.service"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mt-sm",
+                    "children": [
+                      {
+                        "type": "chip",
+                        "props": { "color": "positive", "dense": true, "outline": true },
+                        "text": { "ar": "systemd: يعمل بنجاح (running)", "en": "systemd: active (running)" }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": { "ar": "فحص العقدة", "en": "Inspect" },
+                          "icon": "visibility",
+                          "dense": true,
+                          "flat": true,
+                          "color": "primary"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "clan:node:inspect",
+                            "payload": { "node": "client9" }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "props": { "bordered": true },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold text-main",
+                        "text": { "ar": "client10.fastfree.local", "en": "client10.fastfree.local" }
+                      },
+                      {
+                        "type": "badge",
+                        "props": { "color": "positive" },
+                        "text": { "ar": "1.5 مللي ثانية", "en": "1.5 ms" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue text-weight-bold",
+                    "text": {
+                      "ar": "الدور: خادم البناء البعيد والتكامل المستمر (Nix Remote Builder)",
+                      "en": "Role: Nix Remote Builder & CI/CD Runner"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mt-xs",
+                    "text": {
+                      "ar": "الخدمات: nix-daemon.service, hydra-queue-runner.service",
+                      "en": "Services: nix-daemon.service, hydra-queue-runner.service"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mt-sm",
+                    "children": [
+                      {
+                        "type": "chip",
+                        "props": { "color": "positive", "dense": true, "outline": true },
+                        "text": { "ar": "systemd: يعمل بنجاح (running)", "en": "systemd: active (running)" }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": { "ar": "فحص العقدة", "en": "Inspect" },
+                          "icon": "visibility",
+                          "dense": true,
+                          "flat": true,
+                          "color": "primary"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "clan:node:inspect",
+                            "payload": { "node": "client10" }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "props": { "bordered": true },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-subtitle2 text-weight-bold text-main",
+                        "text": { "ar": "client11.fastfree.local", "en": "client11.fastfree.local" }
+                      },
+                      {
+                        "type": "badge",
+                        "props": { "color": "positive" },
+                        "text": { "ar": "1.7 مللي ثانية", "en": "1.7 ms" }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue text-weight-bold",
+                    "text": {
+                      "ar": "الدور: شاهد التوافق السيادي والنسخ البارد (Paseo Consensus Witness)",
+                      "en": "Role: Paseo Consensus Witness & Failover"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption text-muted q-mt-xs",
+                    "text": {
+                      "ar": "الخدمات: paseo-witness.service, keepalived.service",
+                      "en": "Services: paseo-witness.service, keepalived.service"
+                    }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mt-sm",
+                    "children": [
+                      {
+                        "type": "chip",
+                        "props": { "color": "positive", "dense": true, "outline": true },
+                        "text": { "ar": "systemd: يعمل بنجاح (running)", "en": "systemd: active (running)" }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "label": { "ar": "فحص العقدة", "en": "Inspect" },
+                          "icon": "visibility",
+                          "dense": true,
+                          "flat": true,
+                          "color": "primary"
+                        },
+                        "events": {
+                          "click": {
+                            "type": "tauri:invoke",
+                            "command": "clan:node:inspect",
+                            "payload": { "node": "client11" }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

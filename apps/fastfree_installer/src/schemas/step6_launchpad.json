@@ -1,6 +1,6 @@
 {
   "id": "step6_launchpad",
-  "versionHash": "v2.2.0",
+  "versionHash": "v2.3.0",
   "title": {
     "ar": "لوحة تشغيل وبوابة العقدة السيادية (Launchpad)",
     "en": "Sovereign Control Center & Launchpad"
@@ -29,17 +29,103 @@
             "type": "div",
             "class": "text-h6 text-weight-bold text-main",
             "text": {
-              "ar": "العقدة السيادية جاهزة وتعمل بكامل طاقتها التشغيلية!",
-              "en": "Sovereign Node Ready & Operating at Full Capacity!"
+              "ar": "العنقود السيادي جاهز ويعمل بكامل طاقته التشغيلية (11 عقدة نشطة)",
+              "en": "Sovereign Cluster Ready & Operating at Full Capacity (11 Nodes Active)"
             }
           },
           {
             "type": "div",
             "class": "text-caption text-muted",
             "text": {
-              "ar": "تم إطلاق خوادم وخدمات FastFree و Clan بنجاح على بيئة Hyper-V السيادية",
-              "en": "FastFree & Clan core services launched successfully on the sovereign Hyper-V environment"
+              "ar": "تم إطلاق خدمات وحزم FastFree و Clan بنجاح مع تفعيل شبكة WireGuard السيادية والتحقق التام من جميع المنافذ",
+              "en": "FastFree & Clan ecosystem services launched successfully with sovereign WireGuard mesh and verified port listeners"
             }
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "flat": true,
+          "bordered": true
+        },
+        "children": [
+          {
+            "type": "row",
+            "class": "row items-center justify-between q-col-gutter-sm",
+            "children": [
+              {
+                "type": "div",
+                "class": "col-12 col-md-4",
+                "children": [
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue text-weight-bold",
+                    "text": {
+                      "ar": "حالة البنية التحتية السيادية الموحدة:",
+                      "en": "Unified Sovereign Mesh Telemetry:"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle2 text-weight-bolder text-main",
+                    "text": {
+                      "ar": "شبكة Clan متزامنة ومحصنة بالكامل",
+                      "en": "Clan Mesh Fully Synced & Hardened"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-8",
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row items-center justify-end q-gutter-xs",
+                    "children": [
+                      {
+                        "type": "chip",
+                        "props": {
+                          "color": "positive",
+                          "outline": true,
+                          "icon": "check_circle"
+                        },
+                        "text": {
+                          "ar": "الحالة التشغيلية: Operational",
+                          "en": "Status: Operational"
+                        }
+                      },
+                      {
+                        "type": "chip",
+                        "props": {
+                          "color": "primary",
+                          "outline": true,
+                          "icon": "cell_tower"
+                        },
+                        "text": {
+                          "ar": "المنافذ نشطة: Port Listening",
+                          "en": "Ports: Port Listening"
+                        }
+                      },
+                      {
+                        "type": "chip",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true,
+                          "icon": "hub"
+                        },
+                        "text": {
+                          "ar": "الربط الشبكي: Mesh Active (11/11)",
+                          "en": "Interconnect: Mesh Active (11/11)"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -47,8 +133,8 @@
         "type": "div",
         "class": "text-caption accent-blue text-weight-bold q-px-sm",
         "text": {
-          "ar": "بوابة النظم والخدمات السيادية المتكاملة",
-          "en": "Unified Sovereign Gateway & Ecosystem"
+          "ar": "بوابة النظم والخدمات السيادية الرئيسية (High-Tech Sovereign Services):",
+          "en": "High-Tech Sovereign Services & Application Gateways:"
         }
       },
       {
@@ -80,28 +166,62 @@
                     "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
                     "text": {
                       "ar": "نظام ERPNext المحاسبي",
-                      "en": "ERPNext Suite"
+                      "en": "ERPNext Core Suite"
                     }
                   },
                   {
-                    "type": "chip",
-                    "props": {
-                      "color": "positive",
-                      "outline": true,
-                      "dense": true,
-                      "class": "q-my-xs"
-                    },
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
                     "text": {
-                      "ar": "متصل (منفذ 8000)",
-                      "en": "Online (Port 8000)"
+                      "ar": "نظام التخطيط وإدارة العمليات والمالية",
+                      "en": "Enterprise Resource Planning & Operations"
                     }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Operational",
+                          "en": "Operational"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "primary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 8000",
+                          "en": "Port 8000"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client2",
+                          "en": "Mesh: client2"
+                        }
+                      }
+                    ]
                   },
                   {
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "فتح ERPNext",
-                        "en": "Open ERPNext"
+                        "ar": "فتح ERPNext (Port 8000)",
+                        "en": "Open ERPNext (Port 8000)"
                       },
                       "color": "primary",
                       "outline": true,
@@ -148,28 +268,62 @@
                     "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
                     "text": {
                       "ar": "لوحة إدارة الخادم Cockpit",
-                      "en": "Cockpit Server Admin"
+                      "en": "Cockpit Admin Console"
                     }
                   },
                   {
-                    "type": "chip",
-                    "props": {
-                      "color": "positive",
-                      "outline": true,
-                      "dense": true,
-                      "class": "q-my-xs"
-                    },
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
                     "text": {
-                      "ar": "متصل (منفذ 9090)",
-                      "en": "Online (Port 9090)"
+                      "ar": "إدارة موارد النواة والنظام وسجلات العقد",
+                      "en": "System metrics, kernel logs, and containers"
                     }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Operational",
+                          "en": "Operational"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "primary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 9090",
+                          "en": "Port 9090"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client5",
+                          "en": "Mesh: client5"
+                        }
+                      }
+                    ]
                   },
                   {
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "فتح Cockpit",
-                        "en": "Open Cockpit"
+                        "ar": "فتح Cockpit (Port 9090)",
+                        "en": "Open Cockpit (Port 9090)"
                       },
                       "color": "secondary",
                       "outline": true,
@@ -215,29 +369,63 @@
                     "type": "div",
                     "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
                     "text": {
-                      "ar": "مدير البيانات DbGate",
-                      "en": "DbGate Client"
+                      "ar": "استوديو البيانات DbGate",
+                      "en": "DbGate Database Studio"
                     }
                   },
                   {
-                    "type": "chip",
-                    "props": {
-                      "color": "positive",
-                      "outline": true,
-                      "dense": true,
-                      "class": "q-my-xs"
-                    },
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
                     "text": {
-                      "ar": "متصل (منفذ 3000)",
-                      "en": "Online (Port 3000)"
+                      "ar": "مدير قواعد بيانات MariaDB واستعلامات SQL",
+                      "en": "MariaDB SQL studio and schema designer"
                     }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Operational",
+                          "en": "Operational"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "primary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 3000",
+                          "en": "Port 3000"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client6",
+                          "en": "Mesh: client6"
+                        }
+                      }
+                    ]
                   },
                   {
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "فتح DbGate",
-                        "en": "Open DbGate"
+                        "ar": "فتح DbGate (Port 3000)",
+                        "en": "Open DbGate (Port 3000)"
                       },
                       "color": "accent",
                       "outline": true,
@@ -274,7 +462,7 @@
                   {
                     "type": "icon",
                     "props": {
-                      "name": "router",
+                      "name": "security",
                       "size": "xl",
                       "color": "positive"
                     }
@@ -283,29 +471,63 @@
                     "type": "div",
                     "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
                     "text": {
-                      "ar": "بوابة Caddy والتشفير",
-                      "en": "Caddy TLS Gateway"
+                      "ar": "بوابة Caddy Edge والتشفير",
+                      "en": "Caddy Secure Edge Gateway"
                     }
                   },
                   {
-                    "type": "chip",
-                    "props": {
-                      "color": "positive",
-                      "outline": true,
-                      "dense": true,
-                      "class": "q-my-xs"
-                    },
+                    "type": "div",
+                    "class": "text-caption text-muted q-mb-xs",
                     "text": {
-                      "ar": "متصل (منفذ 80/443)",
-                      "en": "Online (Ports 80/443)"
+                      "ar": "توجيه TLS الآمن وجدار حماية البوابة السيادية",
+                      "en": "Automated zero-trust TLS reverse proxy"
                     }
+                  },
+                  {
+                    "type": "row",
+                    "class": "row q-gutter-xs justify-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "positive",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Operational",
+                          "en": "Operational"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "primary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "منفذ 80/443",
+                          "en": "Port 80/443"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "props": {
+                          "color": "secondary",
+                          "outline": true
+                        },
+                        "text": {
+                          "ar": "Mesh: client1",
+                          "en": "Mesh: client1"
+                        }
+                      }
+                    ]
                   },
                   {
                     "type": "button",
                     "props": {
                       "label": {
-                        "ar": "فحص البوابة",
-                        "en": "Check Gateway"
+                        "ar": "فحص البوابة (Port 80/443)",
+                        "en": "Check Gateway (Port 80/443)"
                       },
                       "color": "positive",
                       "outline": true,
@@ -337,52 +559,51 @@
         },
         "children": [
           {
-            "type": "div",
-            "class": "text-subtitle1 text-weight-bold text-main",
-            "text": {
-              "ar": "بيانات الدخول الإدارية الأولى والتحكم بالعقدة:",
-              "en": "Initial Administrative Access & Node Control:"
-            }
+            "type": "row",
+            "class": "row items-center justify-between q-mb-sm",
+            "children": [
+              {
+                "type": "div",
+                "class": "text-subtitle1 text-weight-bold text-main",
+                "text": {
+                  "ar": "أزرار التحكم السريع بالعقد والعنقود السيادي (Node Quick-Actions):",
+                  "en": "Sovereign Cluster Node Quick-Actions & Controls:"
+                }
+              },
+              {
+                "type": "badge",
+                "props": {
+                  "color": "secondary",
+                  "outline": true
+                },
+                "text": {
+                  "ar": "إدارة وتحكم متقدم",
+                  "en": "Advanced Control"
+                }
+              }
+            ]
           },
           {
             "type": "div",
-            "class": "text-body2 text-muted q-my-sm",
+            "class": "text-body2 text-muted q-mb-md",
             "text": {
-              "ar": "الرابط السيادي: https://fastfree.local | المستخدم: admin@fastfree.cloud | كلمة المرور في الخزينة المحلية",
-              "en": "Sovereign URL: https://fastfree.local | Username: admin@fastfree.cloud | Password in local vault"
+              "ar": "إجراءات التحكم المباشرة لإعادة تشغيل العنقود، قراءة سجلات النشر، وإجراء تدقيق شامل للصحة السيادية:",
+              "en": "Direct control actions to restart sovereign nodes, view real-time log streams, and run health audits:"
             }
           },
           {
             "type": "row",
-            "class": "row justify-end q-gutter-sm q-mt-md",
+            "class": "row q-gutter-sm justify-end items-center",
             "children": [
               {
                 "type": "button",
                 "props": {
                   "label": {
-                    "ar": "فتح مركز التشخيص",
-                    "en": "Open Diagnostics"
+                    "ar": "إعادة تشغيل العنقود (Restart Cluster)",
+                    "en": "Restart Cluster"
                   },
-                  "color": "secondary",
+                  "color": "warning",
                   "outline": true,
-                  "icon": "medical_services"
-                },
-                "events": {
-                  "click": {
-                    "type": "tauri:invoke",
-                    "command": "open_diagnostic_hub"
-                  }
-                }
-              },
-              {
-                "type": "button",
-                "props": {
-                  "label": {
-                    "ar": "إعادة تشغيل العقدة (Reboot VM)",
-                    "en": "Reboot Sovereign VM"
-                  },
-                  "color": "primary",
-                  "unelevated": true,
                   "icon": "restart_alt"
                 },
                 "events": {
@@ -391,8 +612,87 @@
                     "command": "restart_fastfree_node"
                   }
                 }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "عرض السجلات (View Logs)",
+                    "en": "View Logs"
+                  },
+                  "color": "primary",
+                  "outline": true,
+                  "icon": "terminal"
+                },
+                "events": {
+                  "click": {
+                    "type": "tauri:invoke",
+                    "command": "view_cluster_logs"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "فحص الصحة الشامل (Health Audit)",
+                    "en": "Health Audit"
+                  },
+                  "color": "positive",
+                  "unelevated": true,
+                  "icon": "health_and_safety"
+                },
+                "events": {
+                  "click": {
+                    "type": "tauri:invoke",
+                    "command": "run_health_audit"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "مركز التشخيص المتقدم",
+                    "en": "Diagnostic Hub"
+                  },
+                  "color": "secondary",
+                  "flat": true,
+                  "icon": "medical_services"
+                },
+                "events": {
+                  "click": {
+                    "type": "tauri:invoke",
+                    "command": "open_diagnostic_hub"
+                  }
+                }
               }
             ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "bordered": true
+        },
+        "children": [
+          {
+            "type": "div",
+            "class": "text-subtitle2 text-weight-bold text-main",
+            "text": {
+              "ar": "بيانات الدخول الإدارية الأولى والتحكم بالعقدة:",
+              "en": "Initial Administrative Access & Node Control:"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-body2 text-muted q-my-xs",
+            "text": {
+              "ar": "الرابط السيادي الموحد: https://fastfree.local | اسم المستخدم: admin@fastfree.cloud | كلمة المرور محفوظة في الخزينة المحلية المشفرة",
+              "en": "Unified Sovereign URL: https://fastfree.local | Username: admin@fastfree.cloud | Password in local encrypted vault"
+            }
           }
         ]
       }
