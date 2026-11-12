@@ -1,0 +1,3 @@
+[MCP][ELEMENT_PICKER][INFO] Element picker event listeners registered
+[MCP][PLUGIN][INFO] MCP Bridge plugin initialized for 'FastFree-Node-Setup' (cloud.fastfree.installer) on 0.0.0.0:9223
+[MCP][WS_SERVER][INFO] WebSocket server listening on: 0.0.0.0:9223
