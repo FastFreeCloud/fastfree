@@ -1,0 +1,16 @@
+[2026-11-12 12:44:19.866] [INFO] [BOOT] FastFree Node Setup Companion initializing (v26.5.0)...
+[2026-11-12 12:44:19.866] [INFO] [BOOT] Host Target: windows x86_64
+[2026-11-12 12:44:19.882] [INFO] [BOOT] Forensic Log File: C:\Users\FastFree\AppData\Roaming\FastFree\installer.log
+[2026-11-12 12:44:19.882] [WARN] [ELEVATION] Application running under standard user token (elevation may be required for Hyper-V features).
+[2026-11-12 12:44:20.820] [INFO] [BOOT] Tauri core setup phase completed.
+[2026-11-12 12:44:20.823] [INFO] [TRAY] Configuring Windows Explorer to promote tray icon next to taskbar language and clock...
+[2026-11-12 12:44:21.378] [INFO] [VM_TELEMETRY] Querying live Hyper-V state for 'FastFree-client1'
+[2026-11-12 12:44:21.439] [INFO] [VM_CHECK] Probing existence of Hyper-V VM 'FastFree-client1'...
+[2026-11-12 12:44:21.620] [INFO] [VM_TELEMETRY] Querying live Hyper-V state for 'FastFree-client1'
+[2026-11-12 12:44:21.714] [INFO] [VM_TELEMETRY] Querying live Hyper-V state for 'FastFree-client2'
+[2026-11-12 12:44:21.714] [INFO] [VM_CHECK] Probing existence of Hyper-V VM 'FastFree-client1'...
+[2026-11-12 12:44:21.765] [INFO] [VM_TELEMETRY] Querying live Hyper-V state for 'FastFree-client1'
+[2026-11-12 12:44:22.233] [INFO] [HYPERV_PROBE] Hyper-V Probe: hardware_virt_enabled=false, hypervisor_present=true, vmms_running=true, ready=true, reason='Hyper-V is operational and ready for deployment.'
+[2026-11-12 12:44:22.233] [INFO] [DISCOVERY] Host Discovery: Host=DESKTOP-G16EO78, User=FastFree, Total RAM=16315 MB, Available RAM=3398 MB, CPU=Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz (8 cores), Disks=3
+[2026-11-12 12:44:22.233] [INFO] [HYPERV_PROBE] Hyper-V Probe: hardware_virt_enabled=false, hypervisor_present=true, vmms_running=true, ready=true, reason='Hyper-V is operational and ready for deployment.'
+[2026-11-12 12:44:22.233] [INFO] [DISCOVERY] Host Discovery: Host=DESKTOP-G16EO78, User=FastFree, Total RAM=16315 MB, Available RAM=3398 MB, CPU=Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz (8 cores), Disks=3
