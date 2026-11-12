@@ -1,0 +1,176 @@
+{
+  "id": "step2_license",
+  "versionHash": "v2.2.0",
+  "title": {
+    "ar": "التحقق من الترخيص وتفعيل العقدة",
+    "en": "Sovereign License & Node Activation"
+  },
+  "root": {
+    "type": "div",
+    "class": "q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "rounded": true,
+          "dense": true
+        },
+        "children": [
+          {
+            "type": "icon",
+            "props": {
+              "name": "vpn_key",
+              "size": "md",
+              "color": "secondary"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-h6 text-weight-bold text-main",
+            "text": {
+              "ar": "تفعيل وترخيص عقدة FastFree & Clan السيادية",
+              "en": "Activate Sovereign FastFree & Clan Node License"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted",
+            "text": {
+              "ar": "أدخل مفتاح ترخيص العقدة السيادية أو اعتمد سياسة المصدر المفتوح المجاني بالكامل (Free-First Policy)",
+              "en": "Enter sovereign license key or use community mode with our strict Free-First Open Source Policy"
+            }
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-lg",
+        "props": {
+          "bordered": true
+        },
+        "children": [
+          {
+            "type": "div",
+            "class": "text-caption accent-blue text-weight-bold q-mb-xs",
+            "text": {
+              "ar": "المصادقة السيادية اللامركزية",
+              "en": "Decentralized Sovereign Verification"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-subtitle1 text-weight-bold text-main q-mb-xs",
+            "text": {
+              "ar": "مفتاح ترخيص العقدة (Sovereign License Key)",
+              "en": "Sovereign Node License Key"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted q-mb-md",
+            "text": {
+              "ar": "يتكون المفتاح من 20 رمزاً مقسمة إلى 4 مقاطع، مثال: FAST-FREE-2026-NODE",
+              "en": "The key contains 20 alphanumeric characters in 4 groups, e.g.: FAST-FREE-2026-NODE"
+            }
+          },
+          {
+            "type": "input",
+            "model": "licenseKey",
+            "props": {
+              "placeholder": {
+                "ar": "أدخل مفتاح الترخيص: XXXX-XXXX-XXXX-XXXX",
+                "en": "Enter license key: XXXX-XXXX-XXXX-XXXX"
+              },
+              "outlined": true,
+              "color": "primary",
+              "class": "q-mb-md"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row items-center justify-between q-mt-md",
+            "children": [
+              {
+                "type": "chip",
+                "props": {
+                  "color": "positive",
+                  "outline": true,
+                  "icon": "verified"
+                },
+                "text": {
+                  "ar": "السياسة المجانية السيادية مفتوحة المصدر نشطة (Free-First)",
+                  "en": "Free-First Sovereign Open Source Policy Active"
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "التحقق من المفتاح",
+                    "en": "Verify Key"
+                  },
+                  "color": "secondary",
+                  "unelevated": true,
+                  "icon": "verified_user"
+                },
+                "events": {
+                  "click": {
+                    "type": "tauri:invoke",
+                    "command": "verify_license_key"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "separator",
+            "props": {
+              "class": "q-my-lg"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row justify-between items-center",
+            "children": [
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "← السابق (فحص العتاد)",
+                    "en": "← Previous (Hardware)"
+                  },
+                  "color": "secondary",
+                  "flat": true
+                },
+                "events": {
+                  "click": {
+                    "type": "navigate",
+                    "target": "step1"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "متابعة لتخصيص العتاد والموارد ←",
+                    "en": "Proceed to Resource Sizing →"
+                  },
+                  "color": "primary",
+                  "unelevated": true
+                },
+                "events": {
+                  "click": {
+                    "type": "navigate",
+                    "target": "step3"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

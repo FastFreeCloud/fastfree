@@ -1,0 +1,207 @@
+{
+  "id": "step3_sizing",
+  "versionHash": "v2.2.0",
+  "title": {
+    "ar": "تخصيص الموارد وحجم العقدة الافتراضية",
+    "en": "Sovereign VM Resource Sizing"
+  },
+  "root": {
+    "type": "div",
+    "class": "q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "rounded": true,
+          "dense": true
+        },
+        "children": [
+          {
+            "type": "icon",
+            "props": {
+              "name": "tune",
+              "size": "md",
+              "color": "primary"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-h6 text-weight-bold text-main",
+            "text": {
+              "ar": "تخصيص موارد المعالج والذاكرة وقرص VHDX للعقدة",
+              "en": "Allocate CPU, RAM & VHDX Target Storage for Sovereign VM"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted",
+            "text": {
+              "ar": "حدد قدرات الآلة الافتراضية Hyper-V Gen 2 لتشغيل حزم Clan وتطبيقات ERPNext بسلاسة وسرعة فائقة",
+              "en": "Configure Hyper-V Gen 2 VM resources to smoothly execute Clan packages and ERPNext workloads"
+            }
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "bordered": true
+        },
+        "children": [
+          {
+            "type": "div",
+            "class": "text-caption accent-blue text-weight-bold q-mb-xs",
+            "text": {
+              "ar": "تحسين ديناميكي لموارد Hyper-V Gen 2",
+              "en": "Dynamic Hyper-V Gen 2 Resource Optimization"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-subtitle1 text-weight-bold text-main q-mb-xs",
+            "text": {
+              "ar": "أنوية المعالج الافتراضية المخصصة (vCPU Cores)",
+              "en": "Assigned Virtual CPU Cores (vCPU)"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted q-mb-sm",
+            "text": {
+              "ar": "الأنوية المعينة حالياً: {{ state.assignedCpu || 4 }} أنوية",
+              "en": "Assigned vCPUs: {{ state.assignedCpu || 4 }} Cores"
+            }
+          },
+          {
+            "type": "slider",
+            "model": "assignedCpu",
+            "props": {
+              "min": 1,
+              "max": 16,
+              "step": 1,
+              "label": true,
+              "color": "primary",
+              "class": "q-mb-lg"
+            }
+          },
+          {
+            "type": "separator",
+            "props": {
+              "class": "q-my-md"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-subtitle1 text-weight-bold text-main q-mb-xs",
+            "text": {
+              "ar": "الذاكرة العشوائية المخصصة (RAM MB)",
+              "en": "Assigned Memory Allocation (RAM MB)"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted q-mb-sm",
+            "text": {
+              "ar": "الذاكرة المحددة: {{ state.assignedRam || 4096 }} ميجابايت ({{ (state.assignedRam || 4096) / 1024 }} جيجابايت)",
+              "en": "Assigned RAM: {{ state.assignedRam || 4096 }} MB ({{ (state.assignedRam || 4096) / 1024 }} GB)"
+            }
+          },
+          {
+            "type": "slider",
+            "model": "assignedRam",
+            "props": {
+              "min": 1024,
+              "max": 32768,
+              "step": 1024,
+              "label": true,
+              "color": "secondary",
+              "class": "q-mb-lg"
+            }
+          },
+          {
+            "type": "separator",
+            "props": {
+              "class": "q-my-md"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-subtitle1 text-weight-bold text-main q-mb-xs",
+            "text": {
+              "ar": "قرص التخزين ومسار ملف VHDX المستهدف (Target Drive)",
+              "en": "Target Storage Drive & VHDX Disk Path"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted q-mb-sm",
+            "text": {
+              "ar": "حدد مسار القرص الصلب لتثبيت واستنساخ صورة نظام NixOS Clan VHDX عليه",
+              "en": "Specify destination storage drive and directory to host Clan NixOS VHDX"
+            }
+          },
+          {
+            "type": "input",
+            "model": "targetDisk",
+            "props": {
+              "label": {
+                "ar": "مسار قرص VHDX المستهدف",
+                "en": "Target VHDX Path"
+              },
+              "placeholder": {
+                "ar": "C:\\FastFree\\vms\\fastfree-clan.vhdx",
+                "en": "C:\\FastFree\\vms\\fastfree-clan.vhdx"
+              },
+              "outlined": true,
+              "dense": true,
+              "color": "primary",
+              "class": "q-mb-md"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row justify-between items-center q-mt-lg",
+            "children": [
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "← السابق (الترخيص والتفعيل)",
+                    "en": "← Previous (License)"
+                  },
+                  "color": "secondary",
+                  "flat": true
+                },
+                "events": {
+                  "click": {
+                    "type": "navigate",
+                    "target": "step2"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "متابعة لإعدادات شبكة WireGuard ←",
+                    "en": "Proceed to WireGuard Mesh →"
+                  },
+                  "color": "primary",
+                  "unelevated": true
+                },
+                "events": {
+                  "click": {
+                    "type": "navigate",
+                    "target": "step4"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

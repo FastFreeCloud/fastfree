@@ -1,0 +1,199 @@
+{
+  "id": "step4_wireguard",
+  "versionHash": "v2.2.0",
+  "title": {
+    "ar": "إعدادات شبكة WireGuard والـ Mesh السيادية",
+    "en": "Clan Mesh & WireGuard Network Configuration"
+  },
+  "root": {
+    "type": "div",
+    "class": "q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "rounded": true,
+          "dense": true
+        },
+        "children": [
+          {
+            "type": "icon",
+            "props": {
+              "name": "security",
+              "size": "md",
+              "color": "primary"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-h6 text-weight-bold text-main",
+            "text": {
+              "ar": "تكوين الشبكة المشفرة الآمنة (Clan Mesh WireGuard)",
+              "en": "Sovereign Clan Encrypted Mesh Network (WireGuard)"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted",
+            "text": {
+              "ar": "ربط العقدة بشبكة الأجهزة الـ 11 المشفرة عبر بروتوكول WireGuard عالي السرعة",
+              "en": "Interconnect this node with the 11 Clan nodes over a secure high-performance WireGuard mesh"
+            }
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-lg",
+        "props": {
+          "bordered": true
+        },
+        "children": [
+          {
+            "type": "div",
+            "class": "text-caption accent-blue text-weight-bold q-mb-sm",
+            "text": {
+              "ar": "بروتوكول ChaCha20-Poly1305 عالي الكفاءة",
+              "en": "High-Efficiency ChaCha20-Poly1305 Protocol"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row q-col-gutter-md",
+            "children": [
+              {
+                "type": "div",
+                "class": "col-12 col-md-6",
+                "children": [
+                  {
+                    "type": "input",
+                    "model": "wgEndpoint",
+                    "props": {
+                      "label": {
+                        "ar": "عنوان نقطة النهاية (Endpoint)",
+                        "en": "Controller Endpoint"
+                      },
+                      "placeholder": {
+                        "ar": "mesh.fastfree.internal",
+                        "en": "mesh.fastfree.internal"
+                      },
+                      "outlined": true,
+                      "color": "primary",
+                      "dense": true
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6",
+                "children": [
+                  {
+                    "type": "input",
+                    "model": "wgPort",
+                    "props": {
+                      "label": {
+                        "ar": "منفذ الاتصال (Port)",
+                        "en": "Listening Port"
+                      },
+                      "placeholder": {
+                        "ar": "51820",
+                        "en": "51820"
+                      },
+                      "outlined": true,
+                      "color": "primary",
+                      "dense": true
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "toggle",
+            "model": "wgMeshInterconnect",
+            "props": {
+              "label": {
+                "ar": "ترابط أقران شبكة Clan Mesh التلقائي (Nodes client1..client11)",
+                "en": "Automatic Clan Mesh Peer Interconnect (Nodes client1..client11)"
+              },
+              "color": "primary",
+              "class": "q-mt-md q-mb-xs"
+            }
+          },
+          {
+            "type": "toggle",
+            "model": "wgKillSwitch",
+            "props": {
+              "label": {
+                "ar": "تفعيل جدار الحماية الصارم ومفتاح الإيقاف (Strict Kill-Switch)",
+                "en": "Enable Strict Firewall Kill-Switch (Block Leakage)"
+              },
+              "color": "negative",
+              "class": "q-my-sm"
+            }
+          },
+          {
+            "type": "toggle",
+            "model": "wgHardwareAcceleration",
+            "props": {
+              "label": {
+                "ar": "تسريع التشفير بالعتاد (Hardware Crypto Acceleration)",
+                "en": "Hardware Cryptographic Acceleration (ChaCha20-Poly1305)"
+              },
+              "color": "positive",
+              "class": "q-mb-md"
+            }
+          },
+          {
+            "type": "separator",
+            "props": {
+              "class": "q-my-md"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row justify-between items-center",
+            "children": [
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "← السابق (تخصيص الموارد)",
+                    "en": "← Previous (Sizing)"
+                  },
+                  "color": "secondary",
+                  "flat": true
+                },
+                "events": {
+                  "click": {
+                    "type": "navigate",
+                    "target": "step3"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "متابعة لبدء النشر والتثبيت ←",
+                    "en": "Proceed to Machine Deployment →"
+                  },
+                  "color": "primary",
+                  "unelevated": true
+                },
+                "events": {
+                  "click": {
+                    "type": "navigate",
+                    "target": "step5"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
