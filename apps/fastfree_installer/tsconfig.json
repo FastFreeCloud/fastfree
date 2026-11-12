@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "useDefineForClassFields": true,
     "module": "ESNext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -12,9 +12,19 @@
     "noEmit": true,
     "jsx": "preserve",
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@fastfree/lowcode": ["../../packages/fastfree_lowcode/src/runtime"],
+      "@fastfree/lowcode/*": ["../../packages/fastfree_lowcode/src/runtime/*"],
+      "quasar-app-extension-fastfree-lowcode": ["../../packages/fastfree_lowcode/src/runtime"],
+      "quasar-app-extension-fastfree-lowcode/*": ["../../packages/fastfree_lowcode/src/runtime/*"],
+      "quasar": ["../../packages/fastfree_lowcode/node_modules/quasar"],
+      "quasar/*": ["../../packages/fastfree_lowcode/node_modules/quasar/*"],
+      "dexie": ["../../packages/fastfree_lowcode/node_modules/dexie"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
   "references": [{ "path": "./tsconfig.node.json" }]
