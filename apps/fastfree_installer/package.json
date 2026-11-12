@@ -10,6 +10,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "quasar-app-extension-fastfree-lowcode": "workspace:*",
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-notification": "^2.0.0",
     "@tauri-apps/plugin-opener": "^2.0.0",

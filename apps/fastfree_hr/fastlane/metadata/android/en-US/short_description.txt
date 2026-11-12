@@ -1,1 +1,0 @@
-Employee, payroll, deductions, and tax management per Egyptian rules.

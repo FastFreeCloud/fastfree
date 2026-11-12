@@ -1,7 +1,7 @@
 # FastFree ERP — Project Context for Hermes
 
 ## Project Overview
-FastFree ERP is an Enterprise Resource Planning system with 9 apps and 9 packages.
+FastFree ERP is an Enterprise Resource Planning system unified across modular packages and dedicated core apps.
 - **Frontend:** Quasar (Vue 3 + TypeScript), monorepo (pnpm)
 - **Backend:** Frappe (Python), scaffold only
 - **Infrastructure:** NixOS/Clan (11 nodes)
@@ -11,8 +11,8 @@ FastFree ERP is an Enterprise Resource Planning system with 9 apps and 9 package
 ## Directory Structure
 ```
 fastfree/
-├── apps/           # 9 Quasar apps (ERP, HR, Ledger, POS, Panel, Website, Backend, OS, Installer)
-├── packages/       # 9 shared packages (Auth, CRM, Accounting, Inventory, Sales, Purchase, HR, Lowcode, Update)
+├── apps/           # 3 Core apps (Installer, Backend, Website)
+├── packages/       # 11 Modular packages (Accounting, Auth, CRM, HR, Inventory, Lowcode, OS, Panel, Purchase, Sales, Update)
 ├── bots/           # 10 Python automation bots
 ├── scripts/        # Build/deploy scripts
 ├── .hermes/        # Project-local Hermes skills (10 specialist skills)
