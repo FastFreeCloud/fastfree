@@ -50,7 +50,7 @@ pub struct MsvmMemorySettingData {
     pub VirtualQuantity: u64, // in MB (AllocationUnits = byte * 2^20)
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug)]
 #[serde(rename = "Msvm_VirtualSystemSettingData")]
 #[allow(non_snake_case)]
 pub struct MsvmVirtualSystemSettingData {
@@ -88,6 +88,8 @@ pub struct MsvmSyntheticEthernetPortSettingData {
 #[allow(non_snake_case)]
 pub struct MsvmSyntheticEthernetAdapterSettingData {
     #[serde(default)]
+    pub InstanceID: String,
+    #[serde(default)]
     pub Connection: Vec<String>,
 }
 
@@ -97,6 +99,8 @@ pub struct MsvmSyntheticEthernetAdapterSettingData {
 pub struct MsvmHeartbeatComponent {
     #[serde(default)]
     pub Name: String,
+    #[serde(default)]
+    pub InstanceID: String,
     #[serde(default)]
     pub PrimaryStatus: u16,
     #[serde(default)]
@@ -118,30 +122,56 @@ fn connect_cimv2() -> Result<wmi::WMIConnection, String> {
         .map_err(|e| format!("Failed to open CIMV2 namespace: {}", e))
 }
 
-// Settings are VM-scoped via the `Parent` path (contains the VM's Configuration ID GUID), except
-// VirtualSystemSettingData which scopes on its own VirtualSystemIdentifier.
+// Settings are VM-scoped via the FIRST InstanceID segment: live setting instances are
+// named `Microsoft:<ComputerSystem-GUID>\<definition-guid>...` (verified live on
+// Windows 10/Server). The `Parent` property is EMPTY on many editions, so GUID lookup
+// must key on InstanceID, not Parent.
+fn live_instance_prefix(vm_guid: &str) -> String {
+    let guid = vm_guid.trim().to_ascii_lowercase();
+    format!("microsoft:{}\\", guid)
+}
+
+/// Among rows whose InstanceID starts with `Microsoft:<guid>\`, prefer the one whose
+/// InstanceID ALSO starts with that prefix (the live config) over stale recovered
+/// configs, and never match the generic `Microsoft:Definition\...` template rows.
+fn fmt_is_live(s: &str, prefix: &str) -> bool {
+    let id = s.trim().to_ascii_lowercase();
+    id.starts_with(prefix)
+}
+
 pub fn processor_settings(vm_guid: &str) -> Option<MsvmProcessorSettingData> {
+    let prefix = live_instance_prefix(vm_guid);
     connect_v2()
         .and_then(|con| con.query::<MsvmProcessorSettingData>().map_err(|e| e.to_string()))
         .unwrap_or_default()
         .into_iter()
-        .find(|s| s.Parent.contains(vm_guid))
+        .find(|s| fmt_is_live(&s.InstanceID, &prefix))
 }
 
 pub fn memory_setting(vm_guid: &str) -> Option<MsvmMemorySettingData> {
+    let prefix = live_instance_prefix(vm_guid);
     connect_v2()
         .and_then(|con| con.query::<MsvmMemorySettingData>().map_err(|e| e.to_string()))
         .unwrap_or_default()
         .into_iter()
-        .find(|s| s.Parent.contains(vm_guid))
+        .find(|s| fmt_is_live(&s.InstanceID, &prefix))
 }
 
 pub fn virtual_system_setting(vm_guid: &str) -> Option<MsvmVirtualSystemSettingData> {
-    connect_v2()
+    let prefix = live_instance_prefix(vm_guid);
+    let rows: Vec<MsvmVirtualSystemSettingData> = connect_v2()
         .and_then(|con| con.query::<MsvmVirtualSystemSettingData>().map_err(|e| e.to_string()))
-        .unwrap_or_default()
-        .into_iter()
-        .find(|s| s.VirtualSystemIdentifier.eq_ignore_ascii_case(vm_guid))
+        .unwrap_or_default();
+    // Stale recovered configs can share the same VirtualSystemIdentifier; the live
+    // configuration's InstanceID begins with `Microsoft:<guid>`.
+    rows.iter()
+        .find(|s| fmt_is_live(&s.InstanceID, &prefix))
+        .cloned()
+        .or_else(|| {
+            rows.iter()
+                .find(|s| s.VirtualSystemIdentifier.eq_ignore_ascii_case(vm_guid))
+                .cloned()
+        })
 }
 
 /// CheckpointType (uint32): 0 = Production, 1 = Standard (legacy), anything else gets a
@@ -155,11 +185,12 @@ pub fn checkpoint_type_string(kind: u32) -> &'static str {
 }
 
 pub fn heartbeat_status(vm_guid: &str) -> String {
+    let prefix = live_instance_prefix(vm_guid);
     let found = connect_v2()
         .and_then(|con| con.query::<MsvmHeartbeatComponent>().map_err(|e| e.to_string()))
         .unwrap_or_default()
         .into_iter()
-        .find(|h| h.Parent.contains(vm_guid));
+        .find(|h| fmt_is_live(&h.InstanceID, &prefix));
     match found {
         Some(h) => {
             let desc = h.PrimaryStatusDescription.trim().to_string();
@@ -174,12 +205,13 @@ pub fn heartbeat_status(vm_guid: &str) -> String {
 }
 
 pub fn vhdx_path(vm_guid: &str) -> Option<String> {
+    let prefix = live_instance_prefix(vm_guid);
     connect_v2()
         .and_then(|con| con.query::<MsvmStorageAllocationSettingData>().map_err(|e| e.to_string()))
         .unwrap_or_default()
         .into_iter()
-        .filter(|s| s.InstanceID.contains(vm_guid) || s.VirtualSystemIdentifier.eq_ignore_ascii_case(vm_guid))
-        .find_map(|s| {
+        .find(|s| fmt_is_live(&s.InstanceID, &prefix))
+        .and_then(|s| {
             s.HostResource
                 .iter()
                 .find(|h| h.contains(".vhdx") || h.contains(".vhd"))
@@ -188,16 +220,19 @@ pub fn vhdx_path(vm_guid: &str) -> Option<String> {
 }
 
 /// NIC -> Switch name: the appliance model creates one synthetic adapter per VM; the first
-/// port-allocation setting with a Connection wins (mirror of Get-VM.NetworkAdapters[0].SwitchName).
+/// port-allocation setting of THIS VM (InstanceID prefix) with a Connection wins
+/// (mirror of Get-VM.NetworkAdapters[0].SwitchName).
 /// Falls back to None (caller uses "Default Switch") rather than guessing a wrong NIC.
-pub fn vm_switch_name(_vm_guid: &str) -> Option<String> {
+pub fn vm_switch_name(vm_guid: &str) -> Option<String> {
+    let prefix = live_instance_prefix(vm_guid);
     let con = connect_v2().ok()?;
     let allocations: Vec<MsvmSyntheticEthernetAdapterSettingData> = con
         .query::<MsvmSyntheticEthernetAdapterSettingData>()
         .unwrap_or_default();
     let switch_pid = allocations
         .into_iter()
-        .find_map(|a| a.Connection.into_iter().next())?;
+        .find(|a| fmt_is_live(&a.InstanceID, &prefix))
+        .and_then(|a| a.Connection.into_iter().next())?;
     let needle = switch_pid
         .split("InstanceID=\"")
         .nth(1)

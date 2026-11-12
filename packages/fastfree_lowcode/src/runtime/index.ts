@@ -76,6 +76,28 @@ import './styles/lowcode.scss'
 import './styles/shared-tables.scss'
 
 // ============================================================
+// Server-Driven UI (SDUI)
+// ============================================================
+export {
+  SduiNode,
+  SduiPlayground,
+  SduiCacheManager,
+  SduiRegistry,
+  SduiActionDispatcher,
+} from './sdui'
+export type {
+  SduiActionType,
+  SduiAction,
+  SduiNode as SduiNodeType,
+  SduiScreen,
+  SduiState,
+  SduiCacheEntry,
+  CachedScreenRecord,
+  SduiActionContext,
+  SduiActionHandler,
+} from './sdui'
+
+// ============================================================
 // Types
 // ============================================================
 export type { WindowInfo, DesktopStoreOptions } from './composables/useDesktopStore'

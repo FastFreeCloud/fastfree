@@ -39,3 +39,7 @@ declare module '#q-app' {
   const defineRouter: (fn: (opts: Record<string, unknown>) => unknown) => unknown
   export { defineConfig, defineRouter }
 }
+
+declare module '@tauri-apps/api/core' {
+  export function invoke<T = unknown>(cmd: string, args?: Record<string, unknown>): Promise<T>
+}

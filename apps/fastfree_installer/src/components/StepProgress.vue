@@ -33,8 +33,8 @@
   <!-- Operational Appliance Status Bar: Shown once node is deployed (Step 6 / Launchpad) -->
   <div v-else class="appliance-status-bar" :class="{ 'is-rtl': isRtl }">
     <div class="status-left">
-      <span class="pulse-live-dot"></span>
-      <span class="status-title">{{ t('auto.fastfree_node_appliance_fully_operational') }}</span>
+      <span class="pulse-live-dot" :class="{ 'is-live': liveVmState?.state === 'Running' }"></span>
+      <span class="status-title">{{ launchpadStatusText }}</span>
       <span class="appliance-tag">Hyper-V Gen 2</span>
     </div>
     <div class="status-right">
@@ -44,6 +44,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, onUnmounted } from 'vue';
 import {
   currentStep,
   loadingDiscovery,
@@ -56,10 +57,41 @@ import {
   isProvisioningDone,
   canEnterStep,
   navigateToStep,
+  liveVmState,
+  selectedClientId,
+  getVmRealState,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
 
 const { t, isRtl } = useI18n();
+
+// The status bar binds to the LIVE Hyper-V state probe — "fully operational"
+// is only ever displayed when get_vm_real_state really reports "Running".
+const launchpadStatusText = computed(() => {
+  const s: string | undefined = liveVmState.value?.state;
+  if (!s) return isRtl.value ? 'جارٍ فحص حالة العقدة…' : 'Checking node status…';
+  if (s === 'Running') return t('auto.fastfree_node_appliance_fully_operational');
+  return isRtl.value ? `حالة العقدة: ${s}` : `Node state: ${s}`;
+});
+
+let statusTimer: number | undefined;
+
+async function pollVmState() {
+  try {
+    liveVmState.value = await getVmRealState(selectedClientId.value);
+  } catch {
+    // Keep the last known state; the bar shows the neutral checking text.
+  }
+}
+
+onMounted(() => {
+  void pollVmState();
+  statusTimer = window.setInterval(() => void pollVmState(), 5000);
+});
+
+onUnmounted(() => {
+  if (statusTimer !== undefined) window.clearInterval(statusTimer);
+});
 
 interface StepConfig {
   number: number;
@@ -204,9 +236,9 @@ function handleStepClick(target: number) {
 }
 
 .step-item.completed .step-badge {
-  background: #059669;
+  background: var(--accent-emerald);
   color: #FFFFFF;
-  border-color: #10B981;
+  border-color: var(--accent-emerald-bright);
 }
 
 .check {
@@ -255,7 +287,7 @@ function handleStepClick(target: number) {
 }
 
 .step-item.completed .step-line {
-  background: #059669;
+  background: var(--accent-emerald);
 }
 
 /* Post-Provisioning Appliance Status Bar */
@@ -264,8 +296,8 @@ function handleStepClick(target: number) {
   align-items: center;
   justify-content: space-between;
   padding: 8px clamp(14px, 2vw, 24px);
-  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12), rgba(25, 118, 210, 0.08));
-  border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+  background: linear-gradient(90deg, var(--accent-emerald-soft), var(--accent-sky-faint));
+  border-bottom: 1px solid var(--accent-emerald-border);
   user-select: none;
 }
 
@@ -279,8 +311,13 @@ function handleStepClick(target: number) {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #10B981;
-  box-shadow: 0 0 10px #10B981;
+  background: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.pulse-live-dot.is-live {
+  background: var(--accent-emerald);
+  box-shadow: 0 0 10px var(--accent-emerald-strong);
   animation: pulse-live 2s infinite ease-in-out;
 }
 
@@ -292,17 +329,17 @@ function handleStepClick(target: number) {
 .status-title {
   font-size: 13px;
   font-weight: 700;
-  color: #34D399;
+  color: var(--accent-emerald);
 }
 
 .appliance-tag {
   font-size: 10px;
   font-weight: 700;
-  color: #38BDF8;
-  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent-sky);
+  background: var(--accent-sky-soft);
   padding: 1px 7px;
   border-radius: 4px;
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  border: var(--card-glass-border);
 }
 
 .status-right {

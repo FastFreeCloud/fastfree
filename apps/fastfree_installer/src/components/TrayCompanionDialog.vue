@@ -17,13 +17,13 @@
       </button>
     </div>
 
-    <!-- Live Node Status Indicator Card -->
-    <div class="tray-status-card">
+    <!-- Live Node Status Card — real Hyper-V state only, no synthetic claims -->
+    <div class="tray-status-card" :class="{ 'is-live': vmState === 'Running' }">
       <div class="status-indicator">
-        <span class="pulse-dot"></span>
+        <span class="pulse-dot" :class="{ 'is-live': vmState === 'Running' }"></span>
         <div class="status-texts">
-          <span class="status-title">{{ isRtl ? 'العقدة السيادية جاهزة' : 'Sovereign Node Ready' }}</span>
-          <span class="status-sub font-mono">Hyper-V &bull; FastFree VPN Mesh Active</span>
+          <span class="status-title">{{ vmStateText }}</span>
+          <span class="status-sub font-mono">Hyper-V</span>
         </div>
       </div>
       <span class="version-badge font-mono">v{{ currentAppVersion }}</span>
@@ -125,16 +125,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
+import { getVersion } from '@tauri-apps/api/app';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { exit } from '@tauri-apps/plugin-process';
 import { useI18n } from '../composables/useI18n';
 
 const { isRtl } = useI18n();
-const currentAppVersion = '26.5.33';
+// Real values only: version comes from the Tauri app manifest, node state
+// from a live `get_vm_real_state` probe. Neither is ever fabricated.
+const currentAppVersion = ref('—');
+const vmState = ref<string | null>(null);
 const vmBusy = ref(false);
+
+const vmStateText = computed(() => {
+  if (vmState.value === null) return isRtl.value ? 'جارٍ فحص حالة العقدة…' : 'Checking node status…';
+  if (vmState.value === 'Running') return isRtl.value ? 'العقدة تعمل' : 'Node running';
+  return isRtl.value ? `حالة العقدة: ${vmState.value}` : `Node state: ${vmState.value}`;
+});
 
 async function hideDialog() {
   try {
@@ -199,8 +209,21 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('keydown', handleKeydown);
+  try {
+    currentAppVersion.value = (await getVersion()) || '—';
+  } catch (e) {
+    // Leave the honest placeholder instead of inventing a version.
+    console.error('Failed to read app version:', e);
+  }
+  try {
+    const res = await invoke<{ state: string }>('get_vm_real_state', { clientId: 'client2' });
+    vmState.value = res.state || null;
+  } catch (e) {
+    // Unknown stays unknown — renders the neutral "checking" state.
+    console.error('Failed to read VM state from tray:', e);
+  }
 });
 
 onUnmounted(() => {
@@ -213,12 +236,13 @@ onUnmounted(() => {
   width: 100vw;
   height: 100vh;
   box-sizing: border-box;
-  background: rgba(15, 23, 42, 0.94);
+  background: var(--surface-overlay);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(56, 189, 248, 0.35);
+  border: var(--card-glass-border);
+  border-color: var(--accent-sky-border-strong);
   border-radius: 16px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 25px rgba(56, 189, 248, 0.2);
+  box-shadow: var(--shadow-modal-wide);
   display: flex;
   flex-direction: column;
   padding: 14px 16px;
@@ -298,15 +322,21 @@ onUnmounted(() => {
   height: 10px;
 }
 
-/* Status Card */
+/* Status Card — neutral until the live Hyper-V probe confirms "Running". */
 .tray-status-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: var(--white-06);
+  border: var(--card-glass-border);
   border-radius: 10px;
   padding: 8px 12px;
+}
+
+.tray-status-card.is-live {
+  background: var(--accent-emerald-soft);
+  border: var(--card-glass-border);
+  border-color: var(--accent-emerald-border);
 }
 
 .status-indicator {
@@ -319,10 +349,14 @@ onUnmounted(() => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10B981;
-  box-shadow: 0 0 8px #10B981;
-  animation: pulse-dot-glow 2s ease-in-out infinite;
+  background: var(--text-muted);
   flex-shrink: 0;
+}
+
+.pulse-dot.is-live {
+  background: var(--accent-emerald);
+  box-shadow: 0 0 8px var(--accent-emerald-strong);
+  animation: pulse-dot-glow 2s ease-in-out infinite;
 }
 
 @keyframes pulse-dot-glow {
@@ -344,20 +378,24 @@ onUnmounted(() => {
 .status-title {
   font-size: 11.5px;
   font-weight: 700;
-  color: #10B981;
+  color: var(--text-main);
+}
+
+.tray-status-card.is-live .status-title {
+  color: var(--accent-emerald);
 }
 
 .status-sub {
   font-size: 9px;
-  color: #94A3B8;
+  color: var(--text-muted);
 }
 
 .version-badge {
   font-size: 9.5px;
   font-weight: 700;
-  color: #38BDF8;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: var(--accent-sky);
+  background: var(--accent-sky-soft);
+  border: var(--card-glass-border);
   padding: 1px 6px;
   border-radius: 4px;
 }

@@ -1,0 +1,11 @@
+{
+  "slug": "fastfree-installer",
+  "name": "FastFree Installer & Companion",
+  "description": "Universal client application (Tauri Desktop, Android, iOS, Web) and SDUI setup engine",
+  "icon": "",
+  "color": "",
+  "default_workdir": "C:\\Users\\FastFree\\Desktop\\fastfree",
+  "project_id": null,
+  "created_at": 1794442790,
+  "archived": false
+}

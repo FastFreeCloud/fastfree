@@ -122,7 +122,6 @@
         <div class="app-label-column">
           <span class="app-title-text bidi-isolate"><bdi>{{ app.getName(isRtl) }}</bdi></span>
           <span class="app-port-badge bidi-isolate" dir="ltr">
-            <span class="app-dot-active"></span>
             <bdi>{{ formatPort(app) }}</bdi>
           </span>
         </div>
@@ -139,6 +138,8 @@ const props = defineProps<{
   apps: SovereignApp[];
   isRtl: boolean;
   nodeHost?: string;
+  /** Real WireGuard listen port from the backend config; null renders "—". */
+  wgPort?: number;
 }>();
 
 const emit = defineEmits<{
@@ -183,7 +184,7 @@ function formatPort(app: SovereignApp): string {
   if (app.id === 'hr') return 'Payroll & Staff';
   if (app.id === 'crm') return 'Sales & Leads';
   if (app.id === 'hyperv') return 'NixOS 26.05';
-  if (app.id === 'wireguard') return 'UDP 51822';
+  if (app.id === 'wireguard') return `UDP ${props.wgPort ?? '—'}`;
   return `Port ${app.port}`;
 }
 </script>
@@ -226,16 +227,16 @@ function formatPort(app: SovereignApp): string {
 .grid-heading {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
   letter-spacing: -0.2px;
 }
 
 .grid-count-badge {
   font-size: 11.5px;
   padding: 3px 10px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--white-08);
   border-radius: 9999px;
-  color: var(--text-secondary, #CBD5E1);
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
@@ -254,8 +255,8 @@ function formatPort(app: SovereignApp): string {
 
 .app-card {
   position: relative;
-  background: rgba(21, 31, 50, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--card-glass-bg);
+  border: var(--card-glass-border);
   border-radius: 14px;
   padding: 18px 12px 14px 12px;
   display: flex;
@@ -266,16 +267,16 @@ function formatPort(app: SovereignApp): string {
   cursor: pointer;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--card-shadow);
   transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
 }
 
 .app-card:hover {
   transform: translateY(-5px);
-  background: rgba(30, 41, 59, 0.85);
-  border-color: rgba(56, 189, 248, 0.35);
-  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.15);
+  background: var(--card-glass-bg);
+  border-color: var(--accent-sky-border-strong);
+  box-shadow: var(--card-hover-shadow);
 }
 
 .app-card:active {
@@ -311,8 +312,8 @@ function formatPort(app: SovereignApp): string {
 }
 
 .card-menu-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: var(--white-08);
+  color: var(--text-main);
 }
 
 .card-menu-btn svg {
@@ -352,7 +353,7 @@ function formatPort(app: SovereignApp): string {
 .app-title-text {
   font-size: 13px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -371,7 +372,7 @@ function formatPort(app: SovereignApp): string {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #10B981;
+  background: var(--accent-emerald);
 }
 
 /* 3-Dots Context Menu Popover */
@@ -381,13 +382,13 @@ function formatPort(app: SovereignApp): string {
   left: 8px;
   z-index: 100;
   width: 175px;
-  background: rgba(15, 23, 42, 0.95);
+  background: var(--bg-card);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: var(--card-glass-border);
   border-radius: 14px;
   padding: 6px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65), 0 0 20px rgba(56, 189, 248, 0.15);
+  box-shadow: var(--shadow-modal-wide);
   display: flex;
   flex-direction: column;
   gap: 2px;

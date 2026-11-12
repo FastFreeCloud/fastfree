@@ -140,3 +140,4 @@ apps/fastfree_installer/src-tauri/fastfree_updater.key
 .beads/proxieddb/
 *.gate.lock*
 apps/fastfree_ledger/.env
+scratch/

@@ -195,7 +195,7 @@ onMounted(() => {
   margin: 6px 0 0 0;
   font-size: 20px;
   font-weight: 700;
-  color: #F8FAFC;
+  color: var(--text-main);
 }
 
 .mandatory-badge-tag {
@@ -215,7 +215,7 @@ onMounted(() => {
 .mandatory-sub {
   margin: 6px 0 0 0;
   font-size: 13px;
-  color: #94A3B8;
+  color: var(--text-muted);
   line-height: 1.5;
 }
 
@@ -223,8 +223,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border-color);
+  background: var(--white-06);
+  border: var(--card-glass-border);
   border-radius: 10px;
   padding: 12px 16px;
 }
@@ -238,24 +238,24 @@ onMounted(() => {
 
 .node-label {
   font-size: 11px;
-  color: #64748B;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
 .node-ver {
   font-size: 15px;
   font-weight: 700;
-  color: #F8FAFC;
+  color: var(--text-main);
 }
 
 .bridge-arrow {
   font-size: 18px;
-  color: #38BDF8;
+  color: var(--accent-sky);
 }
 
 .notes-box {
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--white-06);
+  border: var(--card-glass-border);
   border-radius: 8px;
   padding: 12px;
   font-size: 12px;
@@ -263,12 +263,12 @@ onMounted(() => {
 
 .notes-title {
   font-weight: 600;
-  color: #38BDF8;
+  color: var(--accent-sky);
   margin-bottom: 4px;
 }
 
 .notes-content {
-  color: #CBD5E1;
+  color: var(--text-secondary);
   line-height: 1.4;
   white-space: pre-wrap;
   max-height: 80px;
@@ -276,8 +276,9 @@ onMounted(() => {
 }
 
 .download-progress-card {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(56, 189, 248, 0.2);
+  background: var(--white-06);
+  border: var(--card-glass-border);
+  border-color: var(--accent-sky-border-soft);
   border-radius: 8px;
   padding: 12px;
   display: flex;
@@ -292,18 +293,18 @@ onMounted(() => {
 }
 
 .dp-text {
-  color: #F8FAFC;
+  color: var(--text-main);
   font-weight: 600;
 }
 
 .dp-stats {
-  color: #38BDF8;
+  color: var(--accent-sky);
   font-weight: 700;
 }
 
 .progress-track-lg {
   height: 10px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--white-08);
   border-radius: 5px;
   overflow: hidden;
 }

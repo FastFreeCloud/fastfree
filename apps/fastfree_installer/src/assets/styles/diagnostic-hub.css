@@ -1,121 +1,4 @@
-:root {
-  --gen-color-0: #0EA5E9;
-  --gen-color-1: #121215;
-  --gen-color-2: #52525B;
-  --gen-color-3: #7DD3FC;
-  --gen-color-4: #EF869B;
-  --gen-color-5: rgba(0, 0, 0, 0.3);
-  --gen-color-6: rgba(0, 0, 0, 0.35);
-  --gen-color-7: rgba(0, 0, 0, 0.8);
-  --gen-color-8: rgba(125, 211, 252, 0.85);
-  --gen-color-9: rgba(14, 165, 233, 0.12);
-  --gen-color-10: rgba(14, 165, 233, 0.35);
-  --gen-color-11: rgba(14, 165, 233, 0.5);
-  --gen-color-12: rgba(239, 134, 155, 0.85);
-  --gen-color-13: rgba(255, 255, 255, 0.015);
-  --gen-color-14: rgba(255, 255, 255, 0.02);
-  --gen-color-15: rgba(255, 255, 255, 0.035);
-  --gen-color-16: rgba(255, 255, 255, 0.05);
-  --gen-color-17: rgba(255, 255, 255, 0.06);
-  --gen-color-18: rgba(255, 255, 255, 0.07);
-  --gen-color-19: rgba(255, 255, 255, 0.08);
-  --gen-color-20: rgba(255, 255, 255, 0.1);
-  --gen-color-21: rgba(255, 255, 255, 0.12);
-  --gen-color-22: var(--accent-amber-rgb);
-  --gen-color-23: var(--accent-emerald-rgb);
-  --gen-color-24: var(--accent-red-rgb);
-  --gen-color-25: var(--accent-sky-rgb);
-}
-
-:root {
-  /* WireGuard screen design tokens */
-  --accent-sky: #38BDF8;
-  --accent-sky-rgb: 56, 189, 248;
-  --accent-sky-light: var(--gen-color-3);
-  --accent-sky-light-rgb: 125, 211, 252;
-  --accent-emerald: #10B981;
-  --accent-emerald-bright: #34D399;
-  --accent-emerald-rgb: 16, 185, 129;
-  --accent-emerald-border-rgb: 52, 211, 153;
-  --accent-amber: #F59E0B;
-  --accent-amber-rgb: 245, 158, 11;
-  --accent-red: #EF4444;
-  --accent-red-bright: #F87171;
-  --accent-red-rgb: 239, 68, 68;
-  --accent-cyan: #22D3EE;
-
-  --bg-app: #09090B;
-  --bg-card: #18181B;
-  --bg-sub: #27272A;
-  --bg-hover: #3F3F46;
-  --bg-input: #09090B;
-  --surface-overlay: rgba(15, 23, 42, 0.85);
-  --overlay-scrim: rgba(0, 0, 0, 0.78);
-  --hero-gradient: linear-gradient(135deg, rgba(24, 24, 27, 0.85) 0%, rgba(30, 41, 59, 0.5) 100%);
-
-  --text-primary: #FAFAFA;
-  --text-main: #F8FAFC;
-  --text-strong: #FFFFFF;
-  --text-body: #E4E4E7;
-  --text-muted: #94A3B8;
-  --text-subtle: #A1A1AA;
-  --text-dim: #71717A;
-  --text-on-accent: #0F172A;
-
-  --border-color: #27272A;
-  --border-strong: #3F3F46;
-
-  --primary: #1976D2;
-  --primary-hover: #1565C0;
-  --primary-rgb: 25, 118, 210;
-  --primary-soft: rgba(var(--primary-rgb), 0.15);
-  --primary-shadow: rgba(var(--primary-rgb), 0.4);
-
-  --white-03: rgba(255, 255, 255, 0.03);
-  --white-06: var(--gen-color-17);
-  --white-08: var(--gen-color-19);
-  --white-10: var(--gen-color-20);
-  --white-30: rgba(255, 255, 255, 0.3);
-  --black-40: rgba(0, 0, 0, 0.4);
-
-  --accent-sky-faint: rgba(var(--accent-sky-rgb), 0.07);
-  --accent-sky-soft: rgba(var(--accent-sky-rgb), 0.1);
-  --accent-sky-mid: rgba(var(--accent-sky-rgb), 0.15);
-  --accent-sky-strong: rgba(var(--accent-sky-rgb), 0.2);
-  --accent-sky-border-soft: rgba(var(--accent-sky-rgb), 0.25);
-  --accent-sky-border: rgba(var(--accent-sky-rgb), 0.3);
-  --accent-sky-border-strong: rgba(var(--accent-sky-rgb), 0.35);
-  --accent-sky-ring: rgba(var(--accent-sky-rgb), 0.25);
-  --accent-sky-light-muted: rgba(var(--accent-sky-light-rgb), 0.85);
-
-  --accent-emerald-soft: rgba(var(--accent-emerald-rgb), 0.12);
-  --accent-emerald-strong: rgba(var(--accent-emerald-rgb), 0.2);
-  --accent-emerald-border: rgba(var(--accent-emerald-border-rgb), 0.3);
-  --accent-emerald-border-strong: rgba(var(--accent-emerald-border-rgb), 0.35);
-  --accent-emerald-border-hover: rgba(var(--accent-emerald-border-rgb), 0.4);
-
-  --accent-amber-soft: rgba(var(--accent-amber-rgb), 0.12);
-  --accent-amber-mid: rgba(var(--accent-amber-rgb), 0.15);
-  --accent-amber-border: rgba(var(--accent-amber-rgb), 0.25);
-  --accent-amber-border-strong: rgba(var(--accent-amber-rgb), 0.3);
-  --accent-amber-border-hover: rgba(var(--accent-amber-rgb), 0.35);
-  --accent-amber-ring: rgba(var(--accent-amber-rgb), 0.2);
-
-  --accent-red-soft: rgba(var(--accent-red-rgb), 0.1);
-  --accent-red-mid: rgba(var(--accent-red-rgb), 0.12);
-  --accent-red-strong: rgba(var(--accent-red-rgb), 0.2);
-  --accent-red-border: rgba(var(--accent-red-rgb), 0.25);
-  --accent-red-border-strong: rgba(var(--accent-red-rgb), 0.35);
-
-  --shadow-card: 0 8px 32px -4px rgba(0, 0, 0, 0.4);
-  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(var(--accent-amber-rgb), 0.15);
-  --shadow-modal-wide: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(var(--accent-sky-rgb), 0.15);
-
-  --focus-ring-color: var(--accent-sky);
-}
-
-
-.unified-hub-card {
+﻿.unified-hub-card {
   max-width: 860px;
   width: 92vw;
   max-height: 88vh;
@@ -645,6 +528,128 @@
   gap: 10px;
 }
 
+/* â”€â”€ Compact audit variant: slim rows + progress strip â”€â”€ */
+.step-items-list.is-compact {
+  gap: 6px;
+}
+
+.audit-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 9px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  background: var(--gen-color-14);
+  border: 1px solid var(--gen-color-18);
+  flex-shrink: 0;
+}
+
+.strip-track {
+  display: flex;
+  height: 7px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.055);
+  gap: 2px;
+}
+
+.strip-seg {
+  min-width: 6px;
+  transition: flex 0.4s ease;
+}
+
+.seg-pass { background: var(--accent-emerald); }
+.seg-warn { background: var(--accent-amber); }
+.seg-fail { background: var(--accent-red); }
+
+.strip-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 10.5px;
+  color: var(--text-subtle);
+  flex-wrap: wrap;
+}
+
+.strip-legend .lg {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+}
+
+.strip-legend .lg i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.lg-pass i { background: var(--accent-emerald); }
+.lg-pass { color: var(--accent-emerald); }
+.lg-warn i { background: var(--accent-amber); }
+.lg-warn { color: var(--accent-amber); }
+.lg-fail i { background: var(--accent-red); }
+.lg-fail { color: var(--accent-red); }
+
+.lg-exp-hint {
+  margin-inline-start: auto;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+/* Collapsed row toggle button (replaces always-open header) */
+.step-items-list.is-compact .step-item-card {
+  padding: 0;
+  gap: 0;
+}
+
+.step-item-card .row-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: inherit;
+  color: inherit;
+  font: inherit;
+}
+
+.step-item-card:hover {
+  background: var(--gen-color-15);
+}
+
+.step-item-card .row-end {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+}
+
+.step-item-card .row-chevron {
+  width: 13px;
+  height: 13px;
+  color: var(--text-dim);
+  transition: transform 0.18s ease;
+  flex-shrink: 0;
+}
+
+.step-item-card.is-open .row-chevron {
+  transform: rotate(180deg);
+}
+
+.row-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 2px 12px 12px;
+}
+
 .step-item-card {
   background: var(--gen-color-14);
   border: 1px solid var(--gen-color-18);
@@ -825,8 +830,78 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   flex-wrap: wrap;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.toolbar-right .pill-btn {
+  padding: 5px 11px;
+  background: var(--gen-color-17);
+  border-color: var(--gen-color-20);
+  color: var(--text-secondary);
+}
+
+.btn-follow.active {
+  background: rgba(var(--accent-emerald-rgb), 0.18);
+  border-color: var(--accent-emerald);
+  color: var(--accent-emerald);
+}
+
+.btn-clear-logs:not(:disabled) {
+  color: var(--text-secondary);
+}
+
+.btn-clear-logs:not(:disabled):hover {
+  background: rgba(var(--accent-red-rgb), 0.14);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+
+.btn-clear-logs:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.spinner-tiny {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: currentColor;
+  animation: lh-spin 0.7s linear infinite;
+}
+
+@keyframes lh-spin { to { transform: rotate(360deg); } }
+
+.stream-count-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px 7px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.stream-count-line .follow-hint {
+  color: var(--accent-emerald);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Render cap notice inside the stream */
+.render-cap-note {
+  padding: 6px 8px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  text-align: center;
 }
 
 .filter-pills-row {
@@ -1004,6 +1079,139 @@
   white-space: nowrap;
 }
 
+/* â”€â”€ Telemetry toolbar (live status + refresh + auto-poll) â”€â”€ */
+.telemetry-toolbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+@media (max-width: 780px) {
+  .telemetry-grid { grid-template-columns: 1fr !important; }
+  .telemetry-grid > .telem-card { grid-column: 1 / -1; }
+}
+
+.tele-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.tele-live-pill.is-live {
+  color: var(--accent-emerald);
+  background: rgba(var(--accent-emerald-rgb), 0.09);
+  border-color: rgba(var(--accent-emerald-rgb), 0.32);
+}
+
+.tele-live-pill.is-stale {
+  color: var(--text-subtle);
+  background: var(--gen-color-16);
+  border-color: var(--gen-color-20);
+}
+
+.tele-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.tele-live-pill.is-live .tele-dot {
+  animation: tele-pulse 2s ease-in-out infinite;
+}
+
+@keyframes tele-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.tele-updated {
+  color: var(--text-dim);
+  font-size: 10px;
+}
+
+.btn-tele-refresh svg.spin-tele { animation: lh-spin 0.8s linear infinite; }
+
+.btn-tele-refresh.active {
+  background: rgba(var(--accent-sky-rgb), 0.2);
+  border-color: var(--accent-sky);
+  color: var(--accent-sky);
+}
+
+.btn-tele-auto .auto-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  display: inline-block;
+}
+
+.btn-tele-auto.active {
+  background: rgba(var(--accent-emerald-rgb), 0.14);
+  border-color: rgba(var(--accent-emerald-rgb), 0.4);
+  color: var(--accent-emerald);
+}
+
+.btn-tele-auto.active .auto-dot {
+  background: var(--accent-emerald);
+  box-shadow: 0 0 7px rgba(var(--accent-emerald-rgb), 0.8);
+  animation: tele-pulse 2s ease-in-out infinite;
+}
+
+/* Value colors (load states) */
+.t-val-num {
+  font-variant-numeric: tabular-nums;
+  /* keep numeric values readable in RTL (no digit-order flipping) */
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+.text-emerald { color: var(--accent-emerald); }
+.text-sky { color: var(--accent-sky); }
+.text-amber { color: var(--accent-amber); }
+.text-red { color: var(--accent-red); }
+.text-dim-soft { color: var(--text-dim); font-weight: 500; }
+
+.t-static-hint {
+  color: var(--text-dim);
+  font-size: 9.5px;
+  font-weight: 400;
+}
+
+.t-static-val { color: var(--text-subtle); }
+
+/* Mini metric bars */
+.t-bar-row { padding-inline: 1px; }
+
+.t-bar {
+  height: 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.055);
+  overflow: hidden;
+}
+
+.t-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent-sky);
+  transition: width 0.5s ease;
+}
+
+.t-bar i.bar-ok { background: var(--accent-sky); }
+.t-bar i.bar-warn { background: var(--accent-amber); }
+.t-bar i.bar-danger { background: var(--accent-red); }
+
 /* Footer persistent actions */
 .hub-footer {
   display: flex;
@@ -1099,3 +1307,146 @@
 }
 
 *:focus-visible { outline: 2px solid var(--focus-ring-color, var(--accent-sky)); outline-offset: 2px; }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   POLISH PASS â€” spacing, buttons & tabs refinement
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+/* Header + tabs rhythm */
+.hub-header {
+  padding: 20px 24px 0 24px;
+}
+
+.hub-nav-tabs {
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.hub-tab-btn {
+  padding: 9px 16px 11px;
+  border-radius: 10px 10px 0 0;
+  position: relative;
+}
+
+.hub-tab-btn:hover:not(.active) {
+  background: var(--gen-color-14);
+}
+
+.hub-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  inset-inline: 10px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent-sky);
+}
+
+.tab-badge {
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+/* Tab body breathing room */
+.hub-tab-body {
+  padding: 18px 22px 20px;
+  gap: 14px;
+}
+
+/* Footer buttons â€” taller, rounder, clearer hierarchy */
+.hub-footer {
+  padding: 13px 22px;
+  gap: 12px;
+}
+
+.footer-left-group,
+.footer-right-group {
+  gap: 9px;
+}
+
+.btn-footer-action {
+  padding: 9px 16px;
+  border-radius: 10px;
+  height: 36px;
+  box-sizing: border-box;
+  font-size: 12px;
+}
+
+.btn-footer-action:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn-footer-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-close-action {
+  min-width: 64px;
+}
+
+/* Audit: bigger touch targets aligned to content */
+.audit-strip {
+  padding: 11px 14px 10px;
+}
+
+.step-items-list.is-compact {
+  gap: 7px;
+}
+
+.step-item-card .row-toggle {
+  padding: 9px 14px;
+  min-height: 40px;
+}
+
+.step-item-card .row-end {
+  gap: 10px;
+}
+
+.row-body {
+  padding: 2px 14px 14px;
+}
+
+.item-actions-row {
+  padding-top: 2px;
+}
+
+/* Logs: comfortably sized pills & search */
+.pill-btn {
+  padding: 5px 12px;
+  height: 26px;
+  box-sizing: border-box;
+}
+
+.btn-follow,
+.btn-clear-logs {
+  height: 28px;
+}
+
+.search-box-input {
+  min-width: 240px;
+  padding: 6px 12px;
+  height: 28px;
+  box-sizing: border-box;
+}
+
+.logs-stream-container {
+  gap: 6px;
+  padding: 12px;
+  min-height: 240px;
+}
+
+.stream-count-line {
+  padding: 0 2px 8px;
+}
+
+/* Telemetry: keep toolbar + cards airy */
+.telem-card {
+  padding: 15px 16px;
+  gap: 11px;
+}
+
+.telem-rows {
+  gap: 9px;
+}

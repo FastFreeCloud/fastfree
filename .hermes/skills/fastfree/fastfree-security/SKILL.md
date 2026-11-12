@@ -44,6 +44,14 @@ You are the Security Engineer for FastFree ERP. You ensure security through audi
 - Secure headers
 - Dependency vulnerabilities
 
-## Free-First Policy
-- Use only free/open-source security tools
-- Prefer Semgrep (free) over paid SAST tools
+## Security Pitfalls (FastFree Installer)
+- Never hardcode secrets in Rust source — recoverable from binary
+- Use env vars for secrets: FASTFREE_API_SECRET_TOKEN, FASTFREE_MASTER_TRANSFER_SECRET
+- When removing hardcoded secrets, create .env.example documenting required env vars
+- When env vars are missing, return clear error message (not empty string that fails silently)
+- License server returns "UNAUTHORIZED" when API secret token is empty/wrong
+- Sanitize PowerShell inputs — command injection risk (use ps_escape, validate_client_id)
+- Canonicalize paths — path traversal risk
+- Add rate limiting (5 attempts/60s) to verify_admin_password
+- Rust: `_app` param must be renamed to `app` if referenced in body
+- Truncated identifiers in service_account.rs (Buil...idW → BuildTrusteeWithSidW) — verify build passes

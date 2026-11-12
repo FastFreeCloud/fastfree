@@ -116,11 +116,11 @@
           <div class="casa-card widget-wireguard">
             <div class="wg-top-row">
               <span class="wg-label">{{ isRtl ? 'شبكة FastFree VPN المشفرة' : 'FastFree VPN Mesh Network' }}</span>
-              <span class="wg-ip font-mono bidi-isolate" dir="ltr"><bdi>{{ wireGuardConfig?.client_tunnel_ip || '10.24.0.2/32' }}</bdi></span>
+              <span class="wg-ip font-mono bidi-isolate" dir="ltr"><bdi>{{ wireGuardConfig?.client_tunnel_ip || '—' }}</bdi></span>
             </div>
             <div class="wg-sub-row font-mono bidi-isolate" dir="ltr">
-              <span><bdi>{{ isRtl ? 'المنفذ: ' : 'Port: ' }}UDP {{ wireGuardConfig?.listen_port || 51822 }}</bdi></span>
-              <span class="bidi-isolate" dir="ltr"><bdi>client1.fastfree.cloud</bdi></span>
+              <span><bdi>{{ isRtl ? 'المنفذ: ' : 'Port: ' }}UDP {{ wireGuardConfig?.listen_port ?? '—' }}</bdi></span>
+              <span class="bidi-isolate" dir="ltr"><bdi>{{ wireGuardConfig?.controller_endpoint || '—' }}</bdi></span>
             </div>
           </div>
         </aside>
@@ -131,6 +131,7 @@
             :apps="filteredApps"
             :is-rtl="isRtl"
             :node-host="`${selectedClientId}.fastfree.local`"
+            :wg-port="wireGuardConfig?.listen_port"
             @launch="handleAppLaunch"
             @restart="handleAppRestart"
             @logs="handleAppLogs"
@@ -206,6 +207,7 @@ import {
   executeVmCommand,
   getVmRealState,
   provisionNode,
+  fetchWireGuardConfig,
   type VmRealState,
 } from '../composables/useDiscovery';
 import { useI18n } from '../composables/useI18n';
@@ -229,7 +231,9 @@ const appRegistryService = AppRegistryService.getInstance();
 const liveTelemetry = ref<ApplianceTelemetry>(telemetryService.currentTelemetry);
 const allApps = ref<SovereignApp[]>(appRegistryService.getAllApps());
 const searchQuery = ref('');
-const consoleLogs = ref<SystemLogEntry[]>(SystemLogEntry.createDefaultSeed(selectedClientId.value));
+// Honest console: it starts EMPTY and only carries real runtime events
+// appended by actual actions (provisioning, VM checks, WG operations).
+const consoleLogs = ref<SystemLogEntry[]>([]);
 
 const isTerminalOpen = ref(false);
 const isCheckingVm = ref(false);
@@ -341,7 +345,11 @@ onMounted(async () => {
   telemetryService.subscribe((t) => {
     liveTelemetry.value = t;
   });
-  telemetryService.startPolling(selectedClientId.value);
+  // Real VM runtime probe; drive scopes the storage readout to the appliance disk.
+  telemetryService.startPolling(selectedClientId.value, targetDiskDrive.value || null);
+  // Keep the WireGuard tunnel card bound to the REAL computed topology,
+  // never the scoped fallback constants.
+  void fetchWireGuardConfig(selectedClientId.value).catch(() => undefined);
 
   pollTimer = setInterval(async () => {
     if (!isCheckingVm.value && !isProvisioning.value) {
@@ -516,9 +524,9 @@ onUnmounted(() => {
   height: 34px;
   padding: 0 14px 0 34px;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  color: #F8FAFC;
+  border: var(--card-glass-border);
+  background: var(--white-03);
+  color: var(--text-main);
   font-size: 12px;
   font-family: inherit;
   outline: none;
@@ -531,9 +539,9 @@ onUnmounted(() => {
 }
 
 .search-input:focus {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: #38BDF8;
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
+  background: var(--white-08);
+  border-color: var(--accent-sky);
+  box-shadow: 0 0 14px var(--accent-sky-mid);
 }
 
 .search-clear-btn {
@@ -558,9 +566,9 @@ onUnmounted(() => {
 }
 
 .btn-header-tool {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-muted, #94A3B8);
+  background: var(--white-03);
+  border: var(--card-glass-border);
+  color: var(--text-muted);
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -574,9 +582,9 @@ onUnmounted(() => {
 }
 
 .btn-header-tool:hover {
-  background: rgba(56, 189, 248, 0.15);
-  border-color: #38BDF8;
-  color: #FFFFFF;
+  background: var(--accent-sky-soft);
+  border-color: var(--accent-sky);
+  color: var(--text-main);
 }
 
 .tool-svg {
@@ -630,18 +638,18 @@ onUnmounted(() => {
 }
 
 .casa-card {
-  background: rgba(21, 31, 50, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--card-glass-bg);
+  border: var(--card-glass-border);
   border-radius: 12px;
   padding: 12px 14px;
   backdrop-filter: blur(20px);
-  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--card-shadow);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .casa-card:hover {
-  border-color: rgba(56, 189, 248, 0.25);
-  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.55);
+  border-color: var(--accent-sky-border-soft);
+  box-shadow: var(--card-hover-shadow);
 }
 
 /* Credentials Card */
@@ -660,13 +668,13 @@ onUnmounted(() => {
 .creds-title {
   font-size: 11.5px;
   font-weight: 700;
-  color: #F8FAFC;
+  color: var(--text-main);
 }
 
 .btn-copy-creds {
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  color: #38BDF8;
+  background: var(--accent-sky-soft);
+  border: var(--card-glass-border);
+  color: var(--accent-sky);
   font-size: 10px;
   font-weight: 600;
   cursor: pointer;
@@ -680,8 +688,8 @@ onUnmounted(() => {
 }
 
 .btn-copy-creds:hover {
-  background: rgba(56, 189, 248, 0.22);
-  color: #FFFFFF;
+  background: var(--accent-sky-mid);
+  color: var(--text-main);
 }
 
 .copy-svg-mini {
@@ -703,7 +711,7 @@ onUnmounted(() => {
 }
 
 .cred-label {
-  color: #94A3B8;
+  color: var(--text-muted);
   font-size: 10.5px;
 }
 
@@ -712,11 +720,11 @@ onUnmounted(() => {
 }
 
 .text-cyan {
-  color: #06B6D4;
+  color: var(--accent-sky);
 }
 
 .text-emerald {
-  color: #10B981;
+  color: var(--accent-emerald);
 }
 
 /* WireGuard Widget */
@@ -733,11 +741,11 @@ onUnmounted(() => {
 }
 
 .wg-label {
-  color: #94A3B8;
+  color: var(--text-muted);
 }
 
 .wg-ip {
-  color: #10B981;
+  color: var(--accent-emerald);
   font-weight: 700;
 }
 
@@ -745,7 +753,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   font-size: 10.5px;
-  color: #94A3B8;
+  color: var(--text-muted);
 }
 
 /* Right Main Workspace */

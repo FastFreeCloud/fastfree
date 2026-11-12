@@ -50,7 +50,7 @@
           >
             <span class="stage-step-num">{{ sIdx + 1 }}</span>
             <span class="stage-name">{{ isRtl ? stage.titleAr : stage.titleEn }}</span>
-            <span v-if="currentStageNumber > sIdx + 1 || isDone" class="stage-check">âœ“</span>
+            <span v-if="currentStageNumber > sIdx + 1 || isDone" class="stage-check">✓</span>
           </div>
         </div>
 

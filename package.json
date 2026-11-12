@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "installer:dev": "bun --cwd apps/fastfree_installer run tauri dev",
+    "installer:web": "bun --cwd apps/fastfree_installer run dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

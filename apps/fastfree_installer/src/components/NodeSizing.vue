@@ -270,7 +270,7 @@
                 <span class="bento-key">{{ isRtl ? 'الأمان وتشفير TPM' : 'Firmware Security' }}</span>
                 <span class="bento-val text-emerald">
                   <span class="dot-green-micro"></span>
-                  UEFI + TPM 2.0
+                  UEFI (Gen 2)
                 </span>
               </div>
               <div class="bento-cell">

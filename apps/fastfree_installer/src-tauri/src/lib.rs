@@ -1,4 +1,4 @@
-pub mod commands;
+﻿pub mod commands;
 pub mod discovery;
 pub mod dto;
 pub mod licensing;
@@ -74,7 +74,7 @@ pub fn run() {
         }
     }
 
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             InstallerLogger::info("SINGLE_INSTANCE", "Secondary instance launch intercepted; focusing existing window.");
             if let Some(main) = app.get_webview_window("main") {
@@ -88,7 +88,16 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_store::Builder::default().build())
-        .plugin(tauri_plugin_updater::Builder::default().build())
+        .plugin(tauri_plugin_updater::Builder::default().build());
+
+    // MCP Bridge sits behind the default Rust gate so AI assistants can drive
+    // the app in development; it is never compiled into release builds.
+    #[cfg(debug_assertions)]
+    {
+        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
+    }
+
+    builder
         .setup(|app| {
             InstallerLogger::info("BOOT", "Tauri core setup phase completed.");
 
@@ -179,8 +188,11 @@ pub fn run() {
             commands::reconfigure_hyperv_vm,
             commands::ensure_service_account,
             commands::ensure_tray_promoted,
+            commands::probe_host_telemetry,
+            commands::probe_vm_usage,
             commands::audit_system_steps
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
