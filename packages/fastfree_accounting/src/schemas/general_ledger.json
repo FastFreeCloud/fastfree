@@ -1,0 +1,1055 @@
+{
+  "id": "general_ledger",
+  "versionHash": "v1.0.0",
+  "title": {
+    "ar": "دفتر الأستاذ العام ولوحة المؤشرات المالية التنفيذية",
+    "en": "Executive General Ledger & Financial Dashboard"
+  },
+  "state": {
+    "fiscalYear": "2026",
+    "fiscalQuarter": "Q4",
+    "totalRevenue": "1,842,500.00",
+    "totalExpenses": "1,120,300.00",
+    "netProfit": "722,200.00",
+    "unpaidInvoices": "89,450.00",
+    "currency": "SAR",
+    "currencySymbol": "ر.س",
+    "yoyRevenueGrowth": "+14.2%",
+    "expenseRatio": "60.8%",
+    "netMargin": "39.2%",
+    "pendingCount": 14
+  },
+  "root": {
+    "type": "div",
+    "class": "q-pa-md q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "rounded": true,
+          "dense": true
+        },
+        "children": [
+          {
+            "type": "icon",
+            "props": {
+              "name": "account_balance",
+              "size": "lg",
+              "color": "primary"
+            }
+          },
+          {
+            "type": "div",
+            "class": "q-ml-sm",
+            "children": [
+              {
+                "type": "div",
+                "class": "text-h5 text-weight-bold text-main",
+                "text": {
+                  "ar": "لوحة المؤشرات المالية التنفيذية ودفتر الأستاذ العام",
+                  "en": "Executive Financial Dashboard & General Ledger"
+                }
+              },
+              {
+                "type": "div",
+                "class": "text-caption text-muted",
+                "text": {
+                  "ar": "متابعة شاملة لقيود اليومية وفواتير المبيعات ومؤشرات الربحية المعتمدة وفق معايير الهيئة السعودية للمحاسبين (SOCPA) والمعايير الدولية (IFRS)",
+                  "en": "Comprehensive tracking of journal entries, sales invoices, and profitability KPIs compliant with SOCPA and IFRS standards"
+                }
+              }
+            ]
+          },
+          {
+            "type": "row",
+            "class": "row items-center q-gutter-x-sm q-mt-sm",
+            "children": [
+              {
+                "type": "chip",
+                "props": {
+                  "icon": "event",
+                  "color": "primary",
+                  "outline": true,
+                  "dense": true
+                },
+                "text": {
+                  "ar": "السنة المالية النشطة: 2026 (الربع الرابع)",
+                  "en": "Active Fiscal Year: 2026 (Q4)"
+                }
+              },
+              {
+                "type": "chip",
+                "props": {
+                  "icon": "verified",
+                  "color": "positive",
+                  "outline": true,
+                  "dense": true
+                },
+                "text": {
+                  "ar": "مطابقة المعايير: معتمدة بالكامل (SOCPA / IFRS)",
+                  "en": "Compliance: Fully Certified (SOCPA / IFRS)"
+                }
+              },
+              {
+                "type": "chip",
+                "props": {
+                  "icon": "monetization_on",
+                  "color": "secondary",
+                  "outline": true,
+                  "dense": true
+                },
+                "text": {
+                  "ar": "العملة الأساسية: ريال سعودي (SAR)",
+                  "en": "Base Currency: Saudi Riyal (SAR)"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-sm",
+        "children": [
+          {
+            "type": "row",
+            "class": "row justify-between items-center",
+            "children": [
+              {
+                "type": "div",
+                "class": "q-pl-sm",
+                "children": [
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold text-main",
+                    "text": {
+                      "ar": "الإجراءات المالية وإدارة الفواتير السريعة",
+                      "en": "Financial Actions & Quick Invoice Management"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-caption accent-blue",
+                    "text": {
+                      "ar": "إصدار فواتير ضريبية جديدة وتصدير دفتر الأستاذ للتدقيق والمراجعة",
+                      "en": "Issue new tax invoices and export general ledger for audit and compliance"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "row",
+                "class": "row items-center q-gutter-x-sm",
+                "children": [
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "فاتورة جديدة",
+                        "en": "New Invoice"
+                      },
+                      "icon": "add_circle",
+                      "color": "primary",
+                      "unelevated": true
+                    },
+                    "events": {
+                      "click": {
+                        "type": "navigate",
+                        "target": "/accounting/invoices/new"
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "تصدير دفتر الأستاذ (Excel)",
+                        "en": "Export General Ledger (Excel)"
+                      },
+                      "icon": "table_view",
+                      "color": "positive",
+                      "unelevated": true
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "accounting:export_ledger",
+                        "payload": {
+                          "format": "xlsx",
+                          "fiscalYear": "2026"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "تصدير تقرير معتمد (PDF)",
+                        "en": "Export General Ledger (PDF)"
+                      },
+                      "icon": "picture_as_pdf",
+                      "color": "negative",
+                      "unelevated": true
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "accounting:export_ledger",
+                        "payload": {
+                          "format": "pdf",
+                          "fiscalYear": "2026"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "row",
+        "class": "row q-col-gutter-md",
+        "children": [
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md",
+                "props": {
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-caption accent-blue text-weight-bold",
+                        "text": {
+                          "ar": "إجمالي الإيرادات المحققة",
+                          "en": "Total Revenue"
+                        }
+                      },
+                      {
+                        "type": "icon",
+                        "props": {
+                          "name": "trending_up",
+                          "size": "sm",
+                          "color": "positive"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-h5 text-weight-bold text-main q-my-xs",
+                    "text": {
+                      "ar": "1,842,500.00 ر.س",
+                      "en": "SAR 1,842,500.00"
+                    }
+                  },
+                  {
+                    "type": "badge",
+                    "props": {
+                      "color": "positive",
+                      "outline": true
+                    },
+                    "text": {
+                      "ar": "+14.2% نمو مقارنة بالعام السابق",
+                      "en": "+14.2% YoY Growth"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md",
+                "props": {
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted text-weight-bold",
+                        "text": {
+                          "ar": "إجمالي المصروفات التشغيلية",
+                          "en": "Total Expenses"
+                        }
+                      },
+                      {
+                        "type": "icon",
+                        "props": {
+                          "name": "trending_down",
+                          "size": "sm",
+                          "color": "warning"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-h5 text-weight-bold text-main q-my-xs",
+                    "text": {
+                      "ar": "1,120,300.00 ر.س",
+                      "en": "SAR 1,120,300.00"
+                    }
+                  },
+                  {
+                    "type": "badge",
+                    "props": {
+                      "color": "warning",
+                      "outline": true
+                    },
+                    "text": {
+                      "ar": "60.8% نسبة المصروفات للإيراد",
+                      "en": "60.8% Expense Ratio"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md",
+                "props": {
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-caption accent-blue text-weight-bold",
+                        "text": {
+                          "ar": "صافي الربح التشغيلي",
+                          "en": "Net Profit"
+                        }
+                      },
+                      {
+                        "type": "icon",
+                        "props": {
+                          "name": "account_balance_wallet",
+                          "size": "sm",
+                          "color": "primary"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-h5 text-weight-bold text-main q-my-xs",
+                    "text": {
+                      "ar": "722,200.00 ر.س",
+                      "en": "SAR 722,200.00"
+                    }
+                  },
+                  {
+                    "type": "badge",
+                    "props": {
+                      "color": "primary",
+                      "outline": true
+                    },
+                    "text": {
+                      "ar": "39.2% هامش الربح الصافي",
+                      "en": "39.2% Net Margin"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-sm-6 col-md-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md",
+                "props": {
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row justify-between items-center q-mb-xs",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "text-caption text-muted text-weight-bold",
+                        "text": {
+                          "ar": "فواتير مستحقة غير محصلة",
+                          "en": "Unpaid Invoices"
+                        }
+                      },
+                      {
+                        "type": "icon",
+                        "props": {
+                          "name": "pending_actions",
+                          "size": "sm",
+                          "color": "negative"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-h5 text-weight-bold text-main q-my-xs",
+                    "text": {
+                      "ar": "89,450.00 ر.س",
+                      "en": "SAR 89,450.00"
+                    }
+                  },
+                  {
+                    "type": "badge",
+                    "props": {
+                      "color": "negative",
+                      "outline": true
+                    },
+                    "text": {
+                      "ar": "14 فاتورة بانتظار السداد",
+                      "en": "14 Invoices Pending"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "bordered": true
+        },
+        "children": [
+          {
+            "type": "div",
+            "class": "text-h6 text-weight-bold text-main q-mb-xs",
+            "text": {
+              "ar": "جدول أحدث قيود اليومية وفواتير المبيعات",
+              "en": "Recent Journal Entries & Invoices Ledger Table"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption accent-blue q-mb-md",
+            "text": {
+              "ar": "سجل العمليات المحاسبية المقيدة آلياً مع تفاصيل الحسابات وحالات السداد المعتمدة",
+              "en": "Automated posted ledger records with chart accounts and verified payment statuses"
+            }
+          },
+          {
+            "type": "card",
+            "class": "diag-card q-pa-sm q-mb-xs",
+            "props": {
+              "flat": true
+            },
+            "children": [
+              {
+                "type": "row",
+                "class": "row items-center text-caption text-weight-bold text-muted q-py-xs",
+                "children": [
+                  {
+                    "type": "div",
+                    "class": "col-2",
+                    "text": {
+                      "ar": "التاريخ",
+                      "en": "Date"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "col-2",
+                    "text": {
+                      "ar": "رقم القيد / الفاتورة",
+                      "en": "Ref / Entry #"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "col-3",
+                    "text": {
+                      "ar": "الحساب والبيان",
+                      "en": "Account & Description"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "col-2 text-center",
+                    "text": {
+                      "ar": "المبلغ الإجمالي",
+                      "en": "Total Amount"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "col-2 text-center",
+                    "text": {
+                      "ar": "حالة السداد",
+                      "en": "Status"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "col-1 text-center",
+                    "text": {
+                      "ar": "إجراء",
+                      "en": "Action"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "separator",
+            "props": {
+              "class": "q-mb-sm"
+            }
+          },
+          {
+            "type": "div",
+            "class": "q-gutter-y-sm",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row items-center text-body2",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "col-2 text-caption text-muted",
+                        "text": {
+                          "ar": "2026-11-12",
+                          "en": "2026-11-12"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-weight-bold text-main",
+                        "text": {
+                          "ar": "INV-2026-0891",
+                          "en": "INV-2026-0891"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-3",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-weight-medium text-main",
+                            "text": {
+                              "ar": "مؤسسة النور للتجارة",
+                              "en": "Al-Noor Trading Est."
+                            }
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-caption text-muted",
+                            "text": {
+                              "ar": "مبيعات خدمات سحابية واستشارات",
+                              "en": "Cloud Services & Consulting Sales"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-center text-weight-bold text-main",
+                        "text": {
+                          "ar": "24,500.00 ر.س",
+                          "en": "24,500.00 SAR"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-center",
+                        "children": [
+                          {
+                            "type": "chip",
+                            "props": {
+                              "color": "positive",
+                              "dense": true,
+                              "outline": true,
+                              "icon": "check_circle"
+                            },
+                            "text": {
+                              "ar": "مسدد (Paid)",
+                              "en": "Paid"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-1 text-center",
+                        "children": [
+                          {
+                            "type": "button",
+                            "props": {
+                              "icon": "visibility",
+                              "color": "primary",
+                              "flat": true,
+                              "dense": true,
+                              "round": true
+                            },
+                            "events": {
+                              "click": {
+                                "type": "tauri:invoke",
+                                "command": "accounting:entry:view",
+                                "payload": {
+                                  "ref": "INV-2026-0891"
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row items-center text-body2",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "col-2 text-caption text-muted",
+                        "text": {
+                          "ar": "2026-11-11",
+                          "en": "2026-11-11"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-weight-bold text-main",
+                        "text": {
+                          "ar": "INV-2026-0892",
+                          "en": "INV-2026-0892"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-3",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-weight-medium text-main",
+                            "text": {
+                              "ar": "شركة التقنية المتقدمة",
+                              "en": "Advanced Tech Co."
+                            }
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-caption text-muted",
+                            "text": {
+                              "ar": "اشتراك رخصة سنوية لأنظمة ERP",
+                              "en": "Annual ERP System License"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-center text-weight-bold text-main",
+                        "text": {
+                          "ar": "42,000.00 ر.س",
+                          "en": "42,000.00 SAR"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-center",
+                        "children": [
+                          {
+                            "type": "chip",
+                            "props": {
+                              "color": "warning",
+                              "dense": true,
+                              "outline": true,
+                              "icon": "hourglass_empty"
+                            },
+                            "text": {
+                              "ar": "معلق (Pending)",
+                              "en": "Pending"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-1 text-center",
+                        "children": [
+                          {
+                            "type": "button",
+                            "props": {
+                              "icon": "visibility",
+                              "color": "primary",
+                              "flat": true,
+                              "dense": true,
+                              "round": true
+                            },
+                            "events": {
+                              "click": {
+                                "type": "tauri:invoke",
+                                "command": "accounting:entry:view",
+                                "payload": {
+                                  "ref": "INV-2026-0892"
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row items-center text-body2",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "col-2 text-caption text-muted",
+                        "text": {
+                          "ar": "2026-11-10",
+                          "en": "2026-11-10"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-weight-bold text-main",
+                        "text": {
+                          "ar": "JRN-2026-0410",
+                          "en": "JRN-2026-0410"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-3",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-weight-medium text-main",
+                            "text": {
+                              "ar": "مسير رواتب موظفي نوفمبر",
+                              "en": "November Employee Payroll"
+                            }
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-caption text-muted",
+                            "text": {
+                              "ar": "رواتب وبدلات وتأمينات اجتماعية",
+                              "en": "Salaries, allowances & GOSI"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-center text-weight-bold text-main",
+                        "text": {
+                          "ar": "185,000.00 ر.س",
+                          "en": "185,000.00 SAR"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-center",
+                        "children": [
+                          {
+                            "type": "chip",
+                            "props": {
+                              "color": "positive",
+                              "dense": true,
+                              "outline": true,
+                              "icon": "check_circle"
+                            },
+                            "text": {
+                              "ar": "مسدد (Paid)",
+                              "en": "Paid"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-1 text-center",
+                        "children": [
+                          {
+                            "type": "button",
+                            "props": {
+                              "icon": "visibility",
+                              "color": "primary",
+                              "flat": true,
+                              "dense": true,
+                              "round": true
+                            },
+                            "events": {
+                              "click": {
+                                "type": "tauri:invoke",
+                                "command": "accounting:entry:view",
+                                "payload": {
+                                  "ref": "JRN-2026-0410"
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row items-center text-body2",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "col-2 text-caption text-muted",
+                        "text": {
+                          "ar": "2026-11-01",
+                          "en": "2026-11-01"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-weight-bold text-main",
+                        "text": {
+                          "ar": "INV-2026-0875",
+                          "en": "INV-2026-0875"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-3",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-weight-medium text-main",
+                            "text": {
+                              "ar": "الخليج للخدمات اللوجستية",
+                              "en": "Gulf Logistic Services"
+                            }
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-caption text-muted",
+                            "text": {
+                              "ar": "خدمات الشحن والنقل السريع",
+                              "en": "Freight & Express Shipping"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-center text-weight-bold text-main",
+                        "text": {
+                          "ar": "12,950.00 ر.س",
+                          "en": "12,950.00 SAR"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-center",
+                        "children": [
+                          {
+                            "type": "chip",
+                            "props": {
+                              "color": "negative",
+                              "dense": true,
+                              "outline": true,
+                              "icon": "error_outline"
+                            },
+                            "text": {
+                              "ar": "متأخر (Overdue)",
+                              "en": "Overdue"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-1 text-center",
+                        "children": [
+                          {
+                            "type": "button",
+                            "props": {
+                              "icon": "visibility",
+                              "color": "primary",
+                              "flat": true,
+                              "dense": true,
+                              "round": true
+                            },
+                            "events": {
+                              "click": {
+                                "type": "tauri:invoke",
+                                "command": "accounting:entry:view",
+                                "payload": {
+                                  "ref": "INV-2026-0875"
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm",
+                "children": [
+                  {
+                    "type": "row",
+                    "class": "row items-center text-body2",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "col-2 text-caption text-muted",
+                        "text": {
+                          "ar": "2026-11-09",
+                          "en": "2026-11-09"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-weight-bold text-main",
+                        "text": {
+                          "ar": "INV-2026-0895",
+                          "en": "INV-2026-0895"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-3",
+                        "children": [
+                          {
+                            "type": "div",
+                            "class": "text-weight-medium text-main",
+                            "text": {
+                              "ar": "شركة توريدات الرياض",
+                              "en": "Riyadh Supplies Co."
+                            }
+                          },
+                          {
+                            "type": "div",
+                            "class": "text-caption text-muted",
+                            "text": {
+                              "ar": "أجهزة شبكات ومعدات خوادم",
+                              "en": "Networking Hardware & Servers"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-center text-weight-bold text-main",
+                        "text": {
+                          "ar": "10,000.00 ر.س",
+                          "en": "10,000.00 SAR"
+                        }
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-2 text-center",
+                        "children": [
+                          {
+                            "type": "chip",
+                            "props": {
+                              "color": "positive",
+                              "dense": true,
+                              "outline": true,
+                              "icon": "check_circle"
+                            },
+                            "text": {
+                              "ar": "مسدد (Paid)",
+                              "en": "Paid"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "div",
+                        "class": "col-1 text-center",
+                        "children": [
+                          {
+                            "type": "button",
+                            "props": {
+                              "icon": "visibility",
+                              "color": "primary",
+                              "flat": true,
+                              "dense": true,
+                              "round": true
+                            },
+                            "events": {
+                              "click": {
+                                "type": "tauri:invoke",
+                                "command": "accounting:entry:view",
+                                "payload": {
+                                  "ref": "INV-2026-0895"
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
