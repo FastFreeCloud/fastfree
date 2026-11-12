@@ -247,3 +247,23 @@ html[data-theme="oled-black"] {
   box-shadow: 0 8px 24px rgba(var(--accent-sky-rgb, 56, 189, 248), 0.12);
 }
 
+/* ---------------------------------------------------------------------------
+ * 5) Global Arabic Typography & Fluent 2 RTL Isolation
+ * ------------------------------------------------------------------------- */
+body, button, input, select, textarea, .q-btn, .q-card, .q-banner, .q-chip, .q-table {
+  font-family: 'IBM Plex Sans Arabic', -apple-system, 'Segoe UI', system-ui, sans-serif !important;
+}
+
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .bidi-ltr,
+[dir="rtl"] code,
+[dir="rtl"] pre,
+[dir="rtl"] .code-mono {
+  direction: ltr !important;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+

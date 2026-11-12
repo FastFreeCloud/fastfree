@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+﻿import { ref, computed } from 'vue';
 
 export type Locale = 'ar' | 'en';
 
@@ -146,7 +146,7 @@ const messages: Record<Locale, Translations> = {
       prodErp: 'High-Performance Production ERP',
       stdEnterprise: 'Standard Enterprise Edition',
       vswitch: 'Virtual Switch',
-      vswitchName: 'FastFree-Default-Switch (NAT + VPN)',
+      vswitchName: 'Default Switch (Hyper-V)',
       backToLicense: 'Back to License',
       inspectWireguard: 'Configure FastFree VPN',
     },
@@ -235,6 +235,22 @@ const messages: Record<Locale, Translations> = {
       backToSizing: 'Back to FastOS Settings',
       deployVhdx: 'Deploy FastOS Appliance',
     },
+    settings: {
+      gear: 'Settings',
+      sheetTitle: 'System Settings',
+      sheetSubtitle: 'Sovereign node tools & maintenance',
+      diagTitle: 'Diagnostics & Repair Hub',
+      diagDesc: 'Full step audit, self-healing & forensic log review',
+      logsTitle: 'Live Diagnostic Logs',
+      logsDesc: 'Real-time forensic event stream with smart filters',
+      footer: 'Admin tooling â€” all actions are logged & audited',
+      gateTitle: 'Security Verification',
+      gateDesc: 'Access to system settings requires the company master password.',
+      gatePlaceholder: 'Enter master password',
+      gateOk: 'Unlock',
+      gateCancel: 'Cancel',
+      gateWrong: 'Incorrect password. Please try again.',
+    },
     provisioning: {
       stepTag: 'Step 5 of 6',
       title: 'Deploying Appliance: {client}',
@@ -262,7 +278,7 @@ const messages: Record<Locale, Translations> = {
       },
     },
     launchpad: {
-      stepTag: 'Step 6 of 6 — Complete',
+      stepTag: 'Step 6 of 6 â€” Complete',
       title: 'FastFree Node Launchpad & Companion',
       subtitle: 'Your ERP appliance is fully active, encrypted via FastFree VPN mesh, and ready for production use.',
       nodeLive: '{client} Node is Live',
@@ -330,8 +346,8 @@ const messages: Record<Locale, Translations> = {
       hyper_v_provisioning_failed: 'Hyper-V Provisioning Failed',
       appliance_is_running_and_verified: 'Appliance is Running and verified',
       configuring_storage_and_virtual_switch: 'Configuring storage and virtual switch...',
-      fastfree_node_appliance_fully_operational: 'FastFree Node Appliance — Fully Operational',
-      configuration_locked_for_system_integrity_live_in_system_tray: 'Configuration locked for system integrity • Live in System Tray',
+      fastfree_node_appliance_fully_operational: 'FastFree Node Appliance â€” Fully Operational',
+      configuration_locked_for_system_integrity_live_in_system_tray: 'Configuration locked for system integrity â€¢ Live in System Tray',
       wizard_locked_for_system_integrity: 'Wizard locked for system integrity',
       provisioning_in_progress: 'Provisioning in progress...',
       current_step: 'Current step',
@@ -339,7 +355,7 @@ const messages: Record<Locale, Translations> = {
       cannot_skip_steps_complete_previous_stages_in_order: 'Cannot skip steps! Complete previous stages in order.',
       proceed_to_this_step: 'Proceed to this step',
       unified_diagnostic_self_healing_hub: 'Unified Diagnostic & Self-Healing Hub',
-      healthy_100: 'HEALTHY 100%',
+      healthy_100: 'All audit steps passed',
       warnings: 'WARNINGS',
       action_required: 'ACTION REQUIRED',
       comprehensive_step_verification_real_time_telemetry_logs_and_automated_self_healing: 'Comprehensive step verification, real-time telemetry logs, and automated self-healing',
@@ -520,7 +536,7 @@ const messages: Record<Locale, Translations> = {
       prodErp: 'بيئة إنتاجية متقدمة لأداء عالٍ',
       stdEnterprise: 'بيئة مؤسسية قياسية',
       vswitch: 'المحول الافتراضي',
-      vswitchName: 'FastFree-Default-Switch (NAT + VPN)',
+      vswitchName: 'Default Switch (Hyper-V)',
       backToLicense: 'العودة للترخيص',
       inspectWireguard: 'متابعة إعدادات FastFree VPN',
     },
@@ -608,6 +624,22 @@ const messages: Record<Locale, Translations> = {
       authorizeBtn: 'تفويض',
       backToSizing: 'العودة لإعدادات FastOS',
       deployVhdx: 'بدء تثبيت ونشر FastOS',
+    },
+    settings: {
+      gear: 'الإعدادات',
+      sheetTitle: 'إعدادات النظام',
+      sheetSubtitle: 'أدوات العقدة السيادية والصيانة',
+      diagTitle: 'التشخيص والإصلاح الشامل',
+      diagDesc: 'تدقيق كامل للخطوات، إصلاح ذاتي، ومراجعة السجلات الجنائية',
+      logsTitle: 'السجلات التشخيصية الحية',
+      logsDesc: 'بث لحظي للأحداث الجنائية مع فلاتر ذكية',
+      footer: 'أدوات إدارية — جميع الإجراءات مسجلة ومراقبة',
+      gateTitle: 'التحقق الأمني',
+      gateDesc: 'الدخول إلى إعدادات النظام يتطلب كلمة المرور الرئيسية للشركة.',
+      gatePlaceholder: 'أدخل كلمة المرور الرئيسية',
+      gateOk: 'فتح',
+      gateCancel: 'إلغاء',
+      gateWrong: 'كلمة المرور غير صحيحة. حاول مرة أخرى.',
     },
     provisioning: {
       stepTag: 'الخطوة 5 من 6',
@@ -713,7 +745,7 @@ const messages: Record<Locale, Translations> = {
       cannot_skip_steps_complete_previous_stages_in_order: 'لا يمكن تخطي الخطوات! يجب إكمال المراحل السابقة بالترتيب لضمان أمان النظام.',
       proceed_to_this_step: 'المتابعة لهذه الخطوة',
       unified_diagnostic_self_healing_hub: 'مركز التشخيص والتدقيق والإصلاح الموحد',
-      healthy_100: 'نظام سليم 100%',
+      healthy_100: 'كل خطوات الفحص ناجحة',
       warnings: 'تنبيهات غير معطلة',
       action_required: 'يلزم إجراء وإصلاح',
       comprehensive_step_verification_real_time_telemetry_logs_and_automated_self_healing: 'فحص حي لكافة خطوات التثبيت، سجلات الأحداث الجنائية، وأدوات الإصلاح الذاتي الحتمي',
@@ -759,7 +791,7 @@ const messages: Record<Locale, Translations> = {
 
 const LOCALE_STORAGE_KEY = 'fastfree_installer_locale';
 
-export const currentLocale = ref<Locale>('en');
+export const currentLocale = ref<Locale>('ar');
 
 export const isRtl = computed(() => currentLocale.value === 'ar');
 
