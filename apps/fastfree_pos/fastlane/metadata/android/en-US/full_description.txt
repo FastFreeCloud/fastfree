@@ -1,3 +1,0 @@
-FastFree POS Android app with Arabic RTL and touch support, issuing Egyptian VAT invoices and syncing inventory with FastFree Cloud when online.
-
-Privacy Policy: https://fastfree.cloud/privacy-policy.html

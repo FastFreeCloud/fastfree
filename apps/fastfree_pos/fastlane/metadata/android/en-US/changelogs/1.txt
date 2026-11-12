@@ -1,5 +1,0 @@
-Comprehensive POS improvements:
-- Enhanced touch screen and barcode scanner support
-- Instant sales and stock synchronization
-- Faster performance and printing responsiveness
-- Stability fixes and overall usability enhancements

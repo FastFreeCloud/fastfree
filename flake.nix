@@ -6,9 +6,9 @@
 # real definition stays in apps/fastfree_os/ (single source of truth).
 # No pnpm/CI impact: pnpm ignores flake.nix; workflows use explicit dirs.
 {
-  description = "FastFree monorepo root — Clan entry shim for apps/fastfree_os";
+  description = "FastFree monorepo root — Clan entry shim for packages/fastfree_os";
 
-  inputs.fastfree-os.url = "path:./apps/fastfree_os";
+  inputs.fastfree-os.url = "path:./packages/fastfree_os";
 
   outputs = { fastfree-os, ... }:
     {

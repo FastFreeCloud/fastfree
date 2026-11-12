@@ -1,5 +1,5 @@
 {
-  "name": "fastfree",
+  "name": "@fastfree/panel",
   "version": "2.2.0",
   "description": "Fastfree Clan Panel — Quasar SPA. Private Node backend wraps the Clan CLI.",
   "productName": "fastfree_panel",

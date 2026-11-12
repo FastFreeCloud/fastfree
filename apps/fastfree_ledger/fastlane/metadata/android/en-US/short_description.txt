@@ -1,1 +1,0 @@
-FastFree Ledger with Arabic RTL, desktop shell and dynamic tables.
