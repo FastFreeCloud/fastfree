@@ -1,0 +1,254 @@
+{
+  "id": "step5_provisioning",
+  "versionHash": "v2.2.0",
+  "title": {
+    "ar": "خط إنتاج ونشر عقدة Clan",
+    "en": "Clan Machine Provisioning & Deployment"
+  },
+  "root": {
+    "type": "div",
+    "class": "q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "rounded": true,
+          "dense": true
+        },
+        "children": [
+          {
+            "type": "icon",
+            "props": {
+              "name": "rocket_launch",
+              "size": "md",
+              "color": "positive"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-h6 text-weight-bold text-main",
+            "text": {
+              "ar": "خط إنتاج ونشر عقدة Clan التلقائي",
+              "en": "Clan Automated Machine Provisioning Pipeline"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted",
+            "text": {
+              "ar": "استنساخ قرص VHDX، بناء حزم Clan Flakes، وبث سجلات النشر الحية في الوقت الفعلي",
+              "en": "VHDX cloning, Clan NixOS Flakes compilation, and real-time installation log streaming"
+            }
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-lg",
+        "props": {
+          "bordered": true
+        },
+        "children": [
+          {
+            "type": "div",
+            "class": "text-caption accent-blue text-weight-bold q-mb-xs",
+            "text": {
+              "ar": "مسار بناء وتوزيع حزم Clan Flakes الآلي",
+              "en": "Automated Clan Flakes Build & Distribution Pipeline"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row justify-between items-center q-mb-sm",
+            "children": [
+              {
+                "type": "div",
+                "class": "text-subtitle1 text-weight-bold text-main",
+                "text": {
+                  "ar": "نسبة إنجاز نشر العقدة:",
+                  "en": "Deployment Progress:"
+                }
+              },
+              {
+                "type": "div",
+                "class": "text-h6 text-weight-bolder text-primary",
+                "text": {
+                  "ar": "{{ state.installPercent || 65 }}% منجز",
+                  "en": "{{ state.installPercent || 65 }}% Completed"
+                }
+              }
+            ]
+          },
+          {
+            "type": "progress",
+            "props": {
+              "value": 0.65,
+              "color": "primary",
+              "size": "16px",
+              "rounded": true,
+              "stripe": true,
+              "class": "q-mb-lg"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row q-gutter-xs justify-center q-mb-md",
+            "children": [
+              {
+                "type": "chip",
+                "props": {
+                  "color": "positive",
+                  "outline": true,
+                  "icon": "check"
+                },
+                "text": {
+                  "ar": "1. استنساخ قرص VHDX",
+                  "en": "1. VHDX Disk Cloning"
+                }
+              },
+              {
+                "type": "chip",
+                "props": {
+                  "color": "positive",
+                  "outline": true,
+                  "icon": "check"
+                },
+                "text": {
+                  "ar": "2. بناء حزم Clan Flakes",
+                  "en": "2. Clan Flakes Build"
+                }
+              },
+              {
+                "type": "chip",
+                "props": {
+                  "color": "primary",
+                  "outline": true,
+                  "icon": "sync"
+                },
+                "text": {
+                  "ar": "3. تهيئة بيئة NixOS",
+                  "en": "3. NixOS Core Init"
+                }
+              },
+              {
+                "type": "chip",
+                "props": {
+                  "color": "secondary",
+                  "outline": true,
+                  "icon": "hub"
+                },
+                "text": {
+                  "ar": "4. شبكة Mesh & WireGuard",
+                  "en": "4. Mesh & WireGuard Interconnect"
+                }
+              },
+              {
+                "type": "chip",
+                "props": {
+                  "color": "accent",
+                  "outline": true,
+                  "icon": "verified"
+                },
+                "text": {
+                  "ar": "5. فحص الصحة السيادية",
+                  "en": "5. Health Audit"
+                }
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "text-subtitle2 text-weight-bold text-main q-mt-md q-mb-xs",
+            "text": {
+              "ar": "بث سجلات النشر الحية (Real-time Deployment Log Stream):",
+              "en": "Real-time Deployment Log Stream:"
+            }
+          },
+          {
+            "type": "div",
+            "class": "bg-card q-pa-sm rounded-borders text-caption text-muted q-mb-md",
+            "style": "font-family: monospace; border: 1px solid var(--border-color); max-height: 120px; overflow-y: auto;",
+            "children": [
+              {
+                "type": "div",
+                "text": {
+                  "ar": "[00:01] جاري نسخ صورة VHDX الأساسية لنظام NixOS Clan...",
+                  "en": "[00:01] Cloning base NixOS Clan VHDX image..."
+                }
+              },
+              {
+                "type": "div",
+                "text": {
+                  "ar": "[00:02] تم التحقق من سلامة تجزئة SHA256 للقرص المستنسخ بنجاح.",
+                  "en": "[00:02] VHDX SHA256 integrity hash verified successfully."
+                }
+              },
+              {
+                "type": "div",
+                "text": {
+                  "ar": "[00:03] بناء حزم Clan Flakes وتكوين عقدة NixOS الخاصة...",
+                  "en": "[00:03] Building Clan Flakes nixos-rebuild lock configurations..."
+                }
+              },
+              {
+                "type": "div",
+                "text": {
+                  "ar": "[00:04] ربط واجهة WireGuard Mesh وتوليد المفاتيح السيادية...",
+                  "en": "[00:04] WireGuard mesh interface initialized, sovereign keys generated."
+                }
+              }
+            ]
+          },
+          {
+            "type": "separator",
+            "props": {
+              "class": "q-my-md"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row justify-between items-center",
+            "children": [
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "← السابق (إعدادات WireGuard)",
+                    "en": "← Previous (WireGuard)"
+                  },
+                  "color": "secondary",
+                  "flat": true
+                },
+                "events": {
+                  "click": {
+                    "type": "navigate",
+                    "target": "step4"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "إكمال والتنقل للوحة التشغيل (Launchpad) ←",
+                    "en": "Complete & Open Sovereign Launchpad →"
+                  },
+                  "color": "positive",
+                  "unelevated": true,
+                  "icon": "check_circle"
+                },
+                "events": {
+                  "click": {
+                    "type": "navigate",
+                    "target": "step6"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

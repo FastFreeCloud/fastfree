@@ -1,0 +1,336 @@
+{
+  "id": "step1_discovery",
+  "versionHash": "v2.2.0",
+  "title": {
+    "ar": "فحص البيئة والعتاد واكتشاف عقد Clan",
+    "en": "Hardware Discovery & Clan Node Detection"
+  },
+  "root": {
+    "type": "div",
+    "class": "q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "rounded": true,
+          "dense": true
+        },
+        "children": [
+          {
+            "type": "icon",
+            "props": {
+              "name": "memory",
+              "size": "md",
+              "color": "primary"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-h6 text-weight-bold text-main",
+            "text": {
+              "ar": "فحص مواصفات الجهاز والبيئة المحلية لشبكة Clan",
+              "en": "Host Hardware & Clan Network Environment Discovery"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted",
+            "text": {
+              "ar": "التحقق التلقائي من توافق المعالج والذاكرة ومحرك Hyper-V Gen 2 واكتشاف عقد Clan الـ 11",
+              "en": "Automated verification of CPU, RAM, Hyper-V Gen 2 engine, and 11 Clan nodes"
+            }
+          }
+        ]
+      },
+      {
+        "type": "row",
+        "class": "row q-col-gutter-md",
+        "children": [
+          {
+            "type": "div",
+            "class": "col-12 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm text-center",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "developer_board",
+                      "size": "lg",
+                      "color": "primary"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "المعالج (CPU Cores)",
+                      "en": "Processor (CPU Cores)"
+                    }
+                  },
+                  {
+                    "type": "chip",
+                    "props": {
+                      "color": "primary",
+                      "outline": true,
+                      "dense": true
+                    },
+                    "text": {
+                      "ar": "{{ state.cpuCores || 8 }} أنوية متوفرة",
+                      "en": "{{ state.cpuCores || 8 }} Cores Available"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm text-center",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "straighten",
+                      "size": "lg",
+                      "color": "secondary"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "الذاكرة العشوائية (RAM)",
+                      "en": "System Memory (RAM)"
+                    }
+                  },
+                  {
+                    "type": "chip",
+                    "props": {
+                      "color": "secondary",
+                      "outline": true,
+                      "dense": true
+                    },
+                    "text": {
+                      "ar": "{{ state.totalRamGb || 16 }} جيجابايت إجمالي",
+                      "en": "{{ state.totalRamGb || 16 }} GB Total"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm text-center",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "verified",
+                      "size": "lg",
+                      "color": "positive"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "محرك المحاكاة الافتراضية",
+                      "en": "Virtualization Engine"
+                    }
+                  },
+                  {
+                    "type": "chip",
+                    "props": {
+                      "color": "positive",
+                      "outline": true,
+                      "dense": true
+                    },
+                    "text": {
+                      "ar": "Hyper-V Gen 2 جاهز",
+                      "en": "Hyper-V Gen 2 Ready"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "bordered": true
+        },
+        "children": [
+          {
+            "type": "div",
+            "class": "text-caption accent-blue text-weight-bold q-mb-xs",
+            "text": {
+              "ar": "شبكة Clan السيادية المشفرة",
+              "en": "Encrypted Sovereign Clan Mesh"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-subtitle1 text-weight-bold text-main q-mb-xs",
+            "text": {
+              "ar": "اكتشاف عقد شبكة Clan الـ 11 السيادية (client1..client11)",
+              "en": "Discovered 11 Sovereign Clan Nodes (client1..client11)"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted q-mb-md",
+            "text": {
+              "ar": "تم فحص واكتشاف كافة عقد Clan.lol الـ 11 وجاهزيتها للترابط عبر شبكة Mesh",
+              "en": "All 11 Clan.lol mesh client nodes discovered and ready for sovereign interconnect"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row q-gutter-xs justify-center q-mb-md",
+            "children": [
+              {
+                "type": "chip",
+                "props": { "color": "primary", "outline": true, "dense": true, "icon": "hub" },
+                "text": { "ar": "client1: جاهز", "en": "client1: Ready" }
+              },
+              {
+                "type": "chip",
+                "props": { "color": "primary", "outline": true, "dense": true, "icon": "hub" },
+                "text": { "ar": "client2: جاهز", "en": "client2: Ready" }
+              },
+              {
+                "type": "chip",
+                "props": { "color": "primary", "outline": true, "dense": true, "icon": "hub" },
+                "text": { "ar": "client3: جاهز", "en": "client3: Ready" }
+              },
+              {
+                "type": "chip",
+                "props": { "color": "primary", "outline": true, "dense": true, "icon": "hub" },
+                "text": { "ar": "client4: جاهز", "en": "client4: Ready" }
+              },
+              {
+                "type": "chip",
+                "props": { "color": "primary", "outline": true, "dense": true, "icon": "hub" },
+                "text": { "ar": "client5: جاهز", "en": "client5: Ready" }
+              },
+              {
+                "type": "chip",
+                "props": { "color": "primary", "outline": true, "dense": true, "icon": "hub" },
+                "text": { "ar": "client6: جاهز", "en": "client6: Ready" }
+              },
+              {
+                "type": "chip",
+                "props": { "color": "primary", "outline": true, "dense": true, "icon": "hub" },
+                "text": { "ar": "client7: جاهز", "en": "client7: Ready" }
+              },
+              {
+                "type": "chip",
+                "props": { "color": "primary", "outline": true, "dense": true, "icon": "hub" },
+                "text": { "ar": "client8: جاهز", "en": "client8: Ready" }
+              },
+              {
+                "type": "chip",
+                "props": { "color": "primary", "outline": true, "dense": true, "icon": "hub" },
+                "text": { "ar": "client9: جاهز", "en": "client9: Ready" }
+              },
+              {
+                "type": "chip",
+                "props": { "color": "primary", "outline": true, "dense": true, "icon": "hub" },
+                "text": { "ar": "client10: جاهز", "en": "client10: Ready" }
+              },
+              {
+                "type": "chip",
+                "props": { "color": "positive", "outline": true, "dense": true, "icon": "check_circle" },
+                "text": { "ar": "client11: جاهز", "en": "client11: Ready" }
+              }
+            ]
+          },
+          {
+            "type": "separator",
+            "props": {
+              "class": "q-my-md"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-body2 text-muted q-mb-md",
+            "text": {
+              "ar": "تم فحص كافة المتطلبات الأساسية ومطابقة عتاد الجهاز بنجاح. يمكنك الآن الانتقال لتفعيل الترخيص وتخصيص الموارد.",
+              "en": "All core system requirements and hardware specs matched successfully. You can now proceed to sovereign licensing and resource allocation."
+            }
+          },
+          {
+            "type": "row",
+            "class": "row justify-between items-center",
+            "children": [
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "إعادة الفحص الآن",
+                    "en": "Re-scan Hardware"
+                  },
+                  "color": "primary",
+                  "icon": "refresh",
+                  "outline": true
+                },
+                "events": {
+                  "click": {
+                    "type": "tauri:invoke",
+                    "command": "run_hardware_discovery"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "متابعة للترخيص ←",
+                    "en": "Proceed to License →"
+                  },
+                  "color": "primary",
+                  "iconRight": "arrow_forward",
+                  "unelevated": true
+                },
+                "events": {
+                  "click": {
+                    "type": "navigate",
+                    "target": "step2"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

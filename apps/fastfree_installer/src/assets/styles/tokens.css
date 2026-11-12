@@ -1,0 +1,249 @@
+/**
+ * ============================================================================
+ * CANONICAL SCREEN THEME TOKENS — single source of truth.
+ * ============================================================================
+ * History: every screen CSS file (diagnostic-hub, host-discovery, license-*)
+ * used to re-declare its own `:root` block, so the LAST file in the bundle
+ * (diagnostic-hub.css) silently won and every other palette was dead weight.
+ * Worse, under the LIGHT theme all of these stayed dark: white text on white
+ * surfaces, black inputs, invisible white-alpha borders.
+ *
+ * This file holds the merged union with three theme blocks:
+ *   1. `:root`                         — dark. Values are byte-for-byte the
+ *      previously-rendered winners (diagnostic-hub palette), so dark mode
+ *      pixel-preserved.
+ *   2. `html[data-theme="light"]`      — light variants for the tokens that
+ *      App.vue does NOT own. App-owned tokens (--bg-card, --text-main,
+ *      --accent-sky, …) stay themed in App.vue on purpose — do not duplicate
+ *      them here.
+ *   3. `html[data-theme="oled-black"]` — deep-black overrides.
+ * (`html[data-theme=…]` ranks above bare `:root`, so the theme blocks win
+ * regardless of import order.)
+ *
+ * Keep `main.ts` importing App.vue BEFORE this file so the dark `:root`
+ * values keep beating App.vue's `:root`, exactly as the old screen CSS did.
+ * ============================================================================
+ */
+
+/* ---------------------------------------------------------------------------
+ * 1) DARK (default) — preserved from the previously-winning diagnostic-hub.css
+ * ------------------------------------------------------------------------- */
+:root {
+  /* Shared generic palette (previously copied per-file and colliding). */
+  --gen-color-0: #0EA5E9;
+  --gen-color-1: #121215;
+  --gen-color-2: #52525B;
+  --gen-color-3: #7DD3FC;
+  --gen-color-4: #EF869B;
+  --gen-color-5: rgba(0, 0, 0, 0.3);
+  --gen-color-6: rgba(0, 0, 0, 0.35);
+  --gen-color-7: rgba(0, 0, 0, 0.8);
+  --gen-color-8: rgba(125, 211, 252, 0.85);
+  --gen-color-9: rgba(14, 165, 233, 0.12);
+  --gen-color-10: rgba(14, 165, 233, 0.35);
+  --gen-color-11: rgba(14, 165, 233, 0.5);
+  --gen-color-12: rgba(239, 134, 155, 0.85);
+  --gen-color-13: rgba(255, 255, 255, 0.015);
+  --gen-color-14: rgba(255, 255, 255, 0.02);
+  --gen-color-15: rgba(255, 255, 255, 0.035);
+  --gen-color-16: rgba(255, 255, 255, 0.05);
+  --gen-color-17: rgba(255, 255, 255, 0.06);
+  --gen-color-18: rgba(255, 255, 255, 0.07);
+  --gen-color-19: rgba(255, 255, 255, 0.08);
+  --gen-color-20: rgba(255, 255, 255, 0.1);
+  --gen-color-21: rgba(255, 255, 255, 0.12);
+  --gen-color-22: var(--accent-amber-rgb);
+  --gen-color-23: var(--accent-emerald-rgb);
+  --gen-color-24: var(--accent-red-rgb);
+  --gen-color-25: var(--accent-sky-rgb);
+
+  /* Accent channels (screen-unique: App.vue has no *-rgb tokens). */
+  --accent-sky: #38BDF8;
+  --accent-sky-rgb: 56, 189, 248;
+  --accent-sky-light: #7DD3FC;
+  --accent-sky-light-rgb: 125, 211, 252;
+  --accent-emerald: #10B981;
+  --accent-emerald-bright: #34D399;
+  --accent-emerald-rgb: 16, 185, 129;
+  --accent-emerald-border-rgb: 52, 211, 153;
+  --accent-amber: #F59E0B;
+  --accent-amber-rgb: 245, 158, 11;
+  --accent-red: #EF4444;
+  --accent-red-bright: #F87171;
+  --accent-red-rgb: 239, 68, 68;
+  --accent-cyan: #22D3EE;
+
+  /* Surfaces & text (these shadow App.vue's navy tokens exactly as before). */
+  --bg-app: #09090B;
+  --bg-card: #18181B;
+  --bg-sub: #27272A;
+  --bg-hover: #3F3F46;
+  --bg-input: #09090B;
+  --surface-overlay: rgba(15, 23, 42, 0.85);
+  --overlay-scrim: rgba(0, 0, 0, 0.78);
+  --hero-gradient: linear-gradient(135deg, rgba(24, 24, 27, 0.85) 0%, rgba(30, 41, 59, 0.5) 100%);
+
+  --text-primary: #FAFAFA;
+  --text-main: #F8FAFC;
+  --text-strong: #FFFFFF;
+  --text-body: #E4E4E7;
+  --text-muted: #94A3B8;
+  --text-subtle: #A1A1AA;
+  --text-dim: #71717A;
+  --text-on-accent: #0F172A;
+
+  --border-color: #27272A;
+  --border-strong: #3F3F46;
+
+  --primary: #1976D2;
+  --primary-hover: #1565C0;
+  --primary-rgb: 25, 118, 210;
+  --primary-soft: rgba(var(--primary-rgb), 0.15);
+  --primary-shadow: rgba(var(--primary-rgb), 0.4);
+
+  /* White/black alphas: overlays & hairlines on dark surfaces. */
+  --white-03: rgba(255, 255, 255, 0.03);
+  --white-06: rgba(255, 255, 255, 0.06);
+  --white-08: rgba(255, 255, 255, 0.08);
+  --white-10: rgba(255, 255, 255, 0.1);
+  --white-30: rgba(255, 255, 255, 0.3);
+  --black-40: rgba(0, 0, 0, 0.4);
+
+  /* Accent tint ladder (formerly spread over seven indirection systems). */
+  --accent-sky-faint: rgba(var(--accent-sky-rgb), 0.07);
+  --accent-sky-soft: rgba(var(--accent-sky-rgb), 0.1);
+  --accent-sky-mid: rgba(var(--accent-sky-rgb), 0.15);
+  --accent-sky-strong: rgba(var(--accent-sky-rgb), 0.2);
+  --accent-sky-border-soft: rgba(var(--accent-sky-rgb), 0.25);
+  --accent-sky-border: rgba(var(--accent-sky-rgb), 0.3);
+  --accent-sky-border-strong: rgba(var(--accent-sky-rgb), 0.35);
+  --accent-sky-ring: rgba(var(--accent-sky-rgb), 0.25);
+  --accent-sky-light-muted: rgba(var(--accent-sky-light-rgb), 0.85);
+
+  --accent-emerald-soft: rgba(var(--accent-emerald-rgb), 0.12);
+  --accent-emerald-strong: rgba(var(--accent-emerald-rgb), 0.2);
+  --accent-emerald-border: rgba(var(--accent-emerald-border-rgb), 0.3);
+  --accent-emerald-border-strong: rgba(var(--accent-emerald-border-rgb), 0.35);
+  --accent-emerald-border-hover: rgba(var(--accent-emerald-border-rgb), 0.4);
+
+  --accent-amber-soft: rgba(var(--accent-amber-rgb), 0.12);
+  --accent-amber-mid: rgba(var(--accent-amber-rgb), 0.15);
+  --accent-amber-border: rgba(var(--accent-amber-rgb), 0.25);
+  --accent-amber-border-strong: rgba(var(--accent-amber-rgb), 0.3);
+  --accent-amber-border-hover: rgba(var(--accent-amber-rgb), 0.35);
+  --accent-amber-ring: rgba(var(--accent-amber-rgb), 0.2);
+
+  --accent-red-soft: rgba(var(--accent-red-rgb), 0.1);
+  --accent-red-mid: rgba(var(--accent-red-rgb), 0.12);
+  --accent-red-strong: rgba(var(--accent-red-rgb), 0.2);
+  --accent-red-border: rgba(var(--accent-red-rgb), 0.25);
+  --accent-red-border-strong: rgba(var(--accent-red-rgb), 0.35);
+
+  --shadow-card: 0 8px 32px -4px rgba(0, 0, 0, 0.4);
+  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(var(--accent-amber-rgb), 0.15);
+  --shadow-modal-wide: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(var(--accent-sky-rgb), 0.15);
+
+  --focus-ring-color: var(--accent-sky);
+}
+
+/* ---------------------------------------------------------------------------
+ * 2) LIGHT — screen-unique tokens only; App-owned tokens stay in App.vue.
+ *    White-alpha overlays flip to slate-alpha so hairlines stay visible.
+ * ------------------------------------------------------------------------- */
+html[data-theme="light"] {
+  /* Generic palette: dark surfaces/text turn light, accents keep their hues. */
+  --gen-color-1: #F1F5F9;
+  --gen-color-2: #64748B;
+  --gen-color-13: rgba(15, 23, 42, 0.04);
+  --gen-color-14: rgba(15, 23, 42, 0.05);
+  --gen-color-15: rgba(15, 23, 42, 0.06);
+  --gen-color-16: rgba(15, 23, 42, 0.07);
+  --gen-color-17: rgba(15, 23, 42, 0.08);
+  --gen-color-18: rgba(15, 23, 42, 0.09);
+  --gen-color-19: rgba(15, 23, 42, 0.1);
+  --gen-color-20: rgba(15, 23, 42, 0.12);
+  --gen-color-21: rgba(15, 23, 42, 0.14);
+
+  /* Surfaces. */
+  --bg-input: #FFFFFF;
+  --surface-overlay: rgba(255, 255, 255, 0.92);
+  --overlay-scrim: rgba(15, 23, 42, 0.35);
+  --hero-gradient: linear-gradient(135deg, rgba(226, 232, 240, 0.8) 0%, rgba(241, 245, 249, 0.35) 100%);
+
+  /* Text: dark slate on light. */
+  --text-primary: #0F172A;
+  --text-strong: #0F172A;
+  --text-body: #1E293B;
+  --text-subtle: #475569;
+  --text-dim: #64748B;
+
+  --border-strong: #CBD5E1;
+
+  /* White-alpha overlays become slate-alpha equivalents. */
+  --white-03: rgba(15, 23, 42, 0.04);
+  --white-06: rgba(15, 23, 42, 0.07);
+  --white-08: rgba(15, 23, 42, 0.09);
+  --white-10: rgba(15, 23, 42, 0.11);
+  --white-30: rgba(15, 23, 42, 0.2);
+
+  /* Softer, glow-free shadows. */
+  --shadow-card: 0 8px 32px -4px rgba(15, 23, 42, 0.12);
+  --shadow-modal: 0 20px 44px rgba(15, 23, 42, 0.28);
+  --shadow-modal-wide: 0 24px 50px rgba(15, 23, 42, 0.3);
+}
+
+/* ---------------------------------------------------------------------------
+ * 3) OLED BLACK — darker surfaces on the screen-unique tokens only.
+ * ------------------------------------------------------------------------- */
+html[data-theme="oled-black"] {
+  --gen-color-1: #0A0A0A;
+  --bg-input: #000000;
+  --surface-overlay: rgba(0, 0, 0, 0.9);
+  --overlay-scrim: rgba(0, 0, 0, 0.85);
+  --hero-gradient: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(9, 9, 11, 0.55) 100%);
+  --border-color: #1C1C1F;
+  --border-strong: #2A2A2E;
+  --shadow-card: 0 8px 32px -4px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------------------------------------------------------------------------
+ * 4) Utility classes mapped to theme tokens
+ * ------------------------------------------------------------------------- */
+.text-main {
+  color: var(--text-main) !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-primary-token {
+  color: var(--primary) !important;
+}
+
+.accent-blue {
+  color: var(--accent-sky, #38BDF8) !important;
+}
+
+.bg-card {
+  background: var(--bg-card) !important;
+}
+
+.bg-sub {
+  background: var(--bg-sub) !important;
+}
+
+.diag-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 12px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.diag-card:hover {
+  border-color: rgba(var(--accent-sky-rgb, 56, 189, 248), 0.45);
+  box-shadow: 0 8px 24px rgba(var(--accent-sky-rgb, 56, 189, 248), 0.12);
+}
+

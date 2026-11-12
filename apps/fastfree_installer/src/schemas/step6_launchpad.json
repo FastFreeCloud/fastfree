@@ -1,0 +1,401 @@
+{
+  "id": "step6_launchpad",
+  "versionHash": "v2.2.0",
+  "title": {
+    "ar": "لوحة تشغيل وبوابة العقدة السيادية (Launchpad)",
+    "en": "Sovereign Control Center & Launchpad"
+  },
+  "root": {
+    "type": "div",
+    "class": "q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "rounded": true,
+          "dense": true
+        },
+        "children": [
+          {
+            "type": "icon",
+            "props": {
+              "name": "verified",
+              "size": "md",
+              "color": "positive"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-h6 text-weight-bold text-main",
+            "text": {
+              "ar": "العقدة السيادية جاهزة وتعمل بكامل طاقتها التشغيلية!",
+              "en": "Sovereign Node Ready & Operating at Full Capacity!"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted",
+            "text": {
+              "ar": "تم إطلاق خوادم وخدمات FastFree و Clan بنجاح على بيئة Hyper-V السيادية",
+              "en": "FastFree & Clan core services launched successfully on the sovereign Hyper-V environment"
+            }
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "class": "text-caption accent-blue text-weight-bold q-px-sm",
+        "text": {
+          "ar": "بوابة النظم والخدمات السيادية المتكاملة",
+          "en": "Unified Sovereign Gateway & Ecosystem"
+        }
+      },
+      {
+        "type": "row",
+        "class": "row q-col-gutter-md",
+        "children": [
+          {
+            "type": "div",
+            "class": "col-12 col-md-6 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "store",
+                      "size": "xl",
+                      "color": "primary"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "نظام ERPNext المحاسبي",
+                      "en": "ERPNext Suite"
+                    }
+                  },
+                  {
+                    "type": "chip",
+                    "props": {
+                      "color": "positive",
+                      "outline": true,
+                      "dense": true,
+                      "class": "q-my-xs"
+                    },
+                    "text": {
+                      "ar": "متصل (منفذ 8000)",
+                      "en": "Online (Port 8000)"
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "فتح ERPNext",
+                        "en": "Open ERPNext"
+                      },
+                      "color": "primary",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "launch",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "open_external_url",
+                        "payload": {
+                          "url": "http://localhost:8000"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-md-6 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "dashboard",
+                      "size": "xl",
+                      "color": "secondary"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "لوحة إدارة الخادم Cockpit",
+                      "en": "Cockpit Server Admin"
+                    }
+                  },
+                  {
+                    "type": "chip",
+                    "props": {
+                      "color": "positive",
+                      "outline": true,
+                      "dense": true,
+                      "class": "q-my-xs"
+                    },
+                    "text": {
+                      "ar": "متصل (منفذ 9090)",
+                      "en": "Online (Port 9090)"
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "فتح Cockpit",
+                        "en": "Open Cockpit"
+                      },
+                      "color": "secondary",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "launch",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "open_external_url",
+                        "payload": {
+                          "url": "https://localhost:9090"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-md-6 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "storage",
+                      "size": "xl",
+                      "color": "accent"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "مدير البيانات DbGate",
+                      "en": "DbGate Client"
+                    }
+                  },
+                  {
+                    "type": "chip",
+                    "props": {
+                      "color": "positive",
+                      "outline": true,
+                      "dense": true,
+                      "class": "q-my-xs"
+                    },
+                    "text": {
+                      "ar": "متصل (منفذ 3000)",
+                      "en": "Online (Port 3000)"
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "فتح DbGate",
+                        "en": "Open DbGate"
+                      },
+                      "color": "accent",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "launch",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "open_external_url",
+                        "payload": {
+                          "url": "http://localhost:3000"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-md-6 col-lg-3",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center cursor-pointer",
+                "props": {
+                  "flat": true,
+                  "bordered": true
+                },
+                "children": [
+                  {
+                    "type": "icon",
+                    "props": {
+                      "name": "router",
+                      "size": "xl",
+                      "color": "positive"
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "class": "text-subtitle1 text-weight-bold q-mt-sm text-main",
+                    "text": {
+                      "ar": "بوابة Caddy والتشفير",
+                      "en": "Caddy TLS Gateway"
+                    }
+                  },
+                  {
+                    "type": "chip",
+                    "props": {
+                      "color": "positive",
+                      "outline": true,
+                      "dense": true,
+                      "class": "q-my-xs"
+                    },
+                    "text": {
+                      "ar": "متصل (منفذ 80/443)",
+                      "en": "Online (Ports 80/443)"
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "label": {
+                        "ar": "فحص البوابة",
+                        "en": "Check Gateway"
+                      },
+                      "color": "positive",
+                      "outline": true,
+                      "dense": true,
+                      "icon": "lock",
+                      "class": "full-width q-mt-sm"
+                    },
+                    "events": {
+                      "click": {
+                        "type": "tauri:invoke",
+                        "command": "open_external_url",
+                        "payload": {
+                          "url": "https://fastfree.local"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": {
+          "bordered": true
+        },
+        "children": [
+          {
+            "type": "div",
+            "class": "text-subtitle1 text-weight-bold text-main",
+            "text": {
+              "ar": "بيانات الدخول الإدارية الأولى والتحكم بالعقدة:",
+              "en": "Initial Administrative Access & Node Control:"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-body2 text-muted q-my-sm",
+            "text": {
+              "ar": "الرابط السيادي: https://fastfree.local | المستخدم: admin@fastfree.cloud | كلمة المرور في الخزينة المحلية",
+              "en": "Sovereign URL: https://fastfree.local | Username: admin@fastfree.cloud | Password in local vault"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row justify-end q-gutter-sm q-mt-md",
+            "children": [
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "فتح مركز التشخيص",
+                    "en": "Open Diagnostics"
+                  },
+                  "color": "secondary",
+                  "outline": true,
+                  "icon": "medical_services"
+                },
+                "events": {
+                  "click": {
+                    "type": "tauri:invoke",
+                    "command": "open_diagnostic_hub"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "props": {
+                  "label": {
+                    "ar": "إعادة تشغيل العقدة (Reboot VM)",
+                    "en": "Reboot Sovereign VM"
+                  },
+                  "color": "primary",
+                  "unelevated": true,
+                  "icon": "restart_alt"
+                },
+                "events": {
+                  "click": {
+                    "type": "tauri:invoke",
+                    "command": "restart_fastfree_node"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
