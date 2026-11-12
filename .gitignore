@@ -9,10 +9,8 @@ __pycache__/
 *.pyc
 .ruff_cache/
 
-# Android signing (NEVER commit private keys)
-*.jks
+# Android signing
 *.keystore
-signing/
 keystore.properties
 *.aab
 
@@ -38,12 +36,10 @@ yarn-debug.log*
 pnpm-debug.log*
 
 # Environment files
-.env
 .env.local
 .env.*.local
 
 # Databases & Omnigent Worktrees
-*.db
 *.db-wal
 *.db-shm
 .worktrees/
@@ -53,10 +49,6 @@ pnpm-debug.log*
 fastfree-508417-8f88d017a77c.json
 *-service-account*.json
 *-key.json
-
-# Play Console automation session (NEVER commit — live Google cookies/profile)
-.auth/
-*.auth.json
 
 # OS files
 .DS_Store
@@ -128,16 +120,10 @@ midscene_run/
 .ai-rulez/local/
 # END ai-rulez
 
-apps/fastfree_installer/src-tauri/fastfree_updater.key
 *.download.zst
 *.download
 
-# Hermes project-local secrets
-.hermes/.env
-.hermes/auth.json
 .dolt/
 .beads-credential-key
 .beads/proxieddb/
 *.gate.lock*
-apps/fastfree_ledger/.env
-scratch/
