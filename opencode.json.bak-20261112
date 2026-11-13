@@ -1,0 +1,209 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": true,
+  "mcp": {
+    "ai-rulez": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "ai-rulez@latest",
+        "mcp",
+        "--allow-any-dir",
+        "--serve-skills"
+      ],
+      "enabled": true
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
+    },
+
+    "quasar": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@quasar/mcp@latest"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "hermes": {
+      "type": "local",
+      "command": [
+        "C:/Users/FastFree/Desktop/fastfree/.hermes/bin/hermes.exe",
+        "mcp-serve"
+      ],
+      "environment": {
+        "HERMES_HOME": "C:/Users/FastFree/Desktop/fastfree/.hermes"
+      },
+      "enabled": true,
+      "timeout": 300000
+    },
+    "grep": {
+      "type": "remote",
+      "url": "https://mcp.grep.app",
+      "enabled": true
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking@0.6.2"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "exa": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp",
+      "enabled": true
+    },
+    "midscene-web": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@midscene/web-bridge-mcp"
+      ],
+      "environment": {
+        "MCP_SERVER_REQUEST_TIMEOUT": "600000"
+      },
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp@latest",
+        "--caps=devtools",
+        "--user-data-dir=.auth/mcp-profile",
+        "--browser=chromium"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "firecrawl-mcp": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "firecrawl-mcp"
+      ],
+      "environment": {
+        "FIRECRAWL_API_KEY": ""
+      },
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "rea": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "rea-agents@6.5.0",
+        "mcp"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "jcodemunch": {
+      "type": "local",
+      "command": [
+        "uvx",
+        "jcodemunch-mcp==1.108.397",
+        "serve"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "repomap": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@sylphx/repomap@1.8.0",
+        "mcp"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "tauri": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@hypothesi/tauri-mcp-server"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    }
+  },
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "uv run flet *": "allow",
+      "uv run python *": "allow",
+      "bench *": "ask",
+      "rm -rf *": "deny",
+      "clan vars generate *": "ask",
+      "clan vars set *": "ask",
+      "clan vars show *": "deny",
+      "git clean -fdx *": "deny",
+      "git commit *": "ask",
+      "git push *": "ask",
+      "git reset --hard *": "deny"
+    },
+    "edit": {
+      "**/.git/**": "deny",
+      ".git/**": "deny"
+    },
+    "read": {
+      "**": "allow",
+      "**/*.jks": "deny",
+      "**/*.keystore": "deny",
+      "**/*id_ed25519*": "deny",
+      "**/*id_rsa*": "deny",
+      "**/.env*": "deny",
+      "*.jks": "deny",
+      "*.keystore": "deny",
+      "*id_ed25519*": "deny",
+      "*id_rsa*": "deny",
+      ".env*": "deny"
+    }
+  },
+  "agent": {
+    "build": {
+      "permission": {
+        "bash": {
+          "*": "allow",
+          "rm -rf /": "deny",
+          "rm -rf C:": "deny",
+          "rm -rf *": "ask"
+        }
+      }
+    }
+  },
+  "plugin": [
+    "opencode-browser",
+    "opencode-wakatime",
+    "fastfree_board"
+  ],
+  "instructions": [
+    "AGENTS.local.md"
+  ]
+}

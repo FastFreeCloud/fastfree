@@ -1,0 +1,12 @@
+{
+  "name": "fastfree-phase23-audit",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Phase 2.3 Tauri MCP automated visual inspection driver",
+  "dependencies": {
+    "@hypothesi/tauri-mcp-server": "^0.13.2",
+    "@napi-rs/canvas": "^1.1.1",
+    "pngjs": "^7.0.0"
+  }
+}

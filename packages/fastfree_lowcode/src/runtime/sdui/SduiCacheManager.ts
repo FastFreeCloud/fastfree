@@ -25,6 +25,9 @@ class SduiDexieDb extends Dexie {
 export class SduiCacheManager {
   private static instance: SduiCacheManager | null = null
 
+  /** Default SWR freshness window: 5 minutes. */
+  private static readonly DEFAULT_TTL = 5 * 60 * 1000
+
   /** L1 In-Memory Fast Cache */
   private l1Cache: Map<string, SduiCacheEntry> = new Map()
 
@@ -249,6 +252,110 @@ export class SduiCacheManager {
    */
   public getL1Size(): number {
     return this.l1Cache.size
+  }
+
+  /**
+   * Number of screens persisted in the L2 Dexie store.
+   */
+  public async size(): Promise<number> {
+    try {
+      return await this.db.screens.count()
+    } catch (err) {
+      console.warn('[SduiCacheManager] Failed to count L2 screens:', err)
+      return 0
+    }
+  }
+
+  /**
+   * Every screen currently persisted in L2 (IndexedDB), newest first.
+   */
+  public async getAll(): Promise<SduiScreen[]> {
+    try {
+      const records = await this.db.screens.orderBy('updatedAt').reverse().toArray()
+      return records.map((record) => record.screen).filter(Boolean)
+    } catch (err) {
+      console.warn('[SduiCacheManager] Failed to read all L2 screens:', err)
+      return []
+    }
+  }
+
+  /**
+   * Cache age (ms) for a screen across L1 then L2. Returns null when missing.
+   */
+  public async getAge(id: string, maxAge = SduiCacheManager.DEFAULT_TTL): Promise<number | null> {
+    const cached = await this.getWithTimestamp(id)
+    if (!cached) return null
+    return Date.now() - cached.timestamp
+  }
+
+  /**
+   * Stale-While-Revalidate freshness check: a cached screen is stale once it
+   * is older than `maxAge` (or when the store holds no entry at all).
+   */
+  public async isStale(id: string, maxAge = SduiCacheManager.DEFAULT_TTL): Promise<boolean> {
+    const age = await this.getAge(id, maxAge)
+    return age === null || age > maxAge
+  }
+
+  /**
+   * Prefetch a batch of screens into L1 + L2 without blocking rendering.
+   */
+  public async prefetch(screens: SduiScreen[] | (() => Promise<SduiScreen[]>)): Promise<void> {
+    const list = typeof screens === 'function' ? await screens() : screens
+    await Promise.all(list.map((screen) => this.set(screen)))
+  }
+
+  /**
+   * Remove every entry older than `maxAge` from both cache tiers.
+   */
+  public async clearStale(maxAge = SduiCacheManager.DEFAULT_TTL): Promise<number> {
+    const cutoff = Date.now() - maxAge
+    let removed = 0
+
+    for (const [id, entry] of this.l1Cache.entries()) {
+      if (entry.timestamp < cutoff) {
+        this.l1Cache.delete(id)
+        removed++
+      }
+    }
+
+    try {
+      const stale = await this.db.screens.filter((r) => r.updatedAt < cutoff).primaryKeys()
+      await this.db.screens.bulkDelete(stale)
+    } catch (err) {
+      console.warn('[SduiCacheManager] Failed to clear stale L2 entries:', err)
+    }
+
+    return removed
+  }
+
+  /**
+   * Snapshot of cache health for diagnostics / the SDUI playground.
+   */
+  public getCacheStats(): { l1: number; l2: number | null; database: string } {
+    return {
+      l1: this.l1Cache.size,
+      l2: null,
+      database: 'lc-sdui-cache',
+    }
+  }
+
+  /**
+   * Internal: read a screen plus the timestamp it was cached at.
+   */
+  private async getWithTimestamp(id: string): Promise<SduiCacheEntry | null> {
+    const memEntry = this.l1Cache.get(id)
+    if (memEntry) return memEntry
+
+    try {
+      const record = await this.db.screens.get(id)
+      if (record) {
+        return { screen: record.screen, timestamp: record.updatedAt || 0 }
+      }
+    } catch {
+      // L2 unavailable — treat as a miss.
+    }
+    return null
   }
 }
 

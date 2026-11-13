@@ -59,16 +59,14 @@ export function Kanban(props: { session: MountedSession; board: BoardStore; star
     const selected = projectFilter()
     if (selected && selected !== "none" && !projects().some((project) => projectKey(project) === selected)) setProjectFilter("")
   })
-  let seededColumns = false
-  // One-time migration for existing boards: make sure the Kanban and Hindsight stage columns exist.
+  let cleanedColumns = false
+  // One-time cleanup: remove the obsolete kanban column and ensure Hindsight exists.
   createEffect(() => {
-    if (seededColumns || !board().ready()) return
-    seededColumns = true
-    const seeded = (settings.value as { columnsSeeded?: boolean } | undefined)?.columnsSeeded
-    if (seeded) return
+    if (cleanedColumns || !board().ready()) return
+    cleanedColumns = true
     board().update((draft) => {
+      draft.columns = draft.columns.filter((column) => column.id !== "kanban")
       const existing = new Set(draft.columns.map((column) => column.id))
-      if (!existing.has("kanban")) draft.columns.push({ id: "kanban", title: "Kanban", color: "#8b5cf6" })
       if (!existing.has("hindsight")) draft.columns.push({ id: "hindsight", title: "Hindsight", color: "#06b6d4" })
     })
     settings.update((draft) => { (draft as Record<string, unknown>).columnsSeeded = true })
@@ -222,7 +220,9 @@ export function Kanban(props: { session: MountedSession; board: BoardStore; star
   const visibleCards = () => cards().filter((card) => matchesTask(card, filter(), label(), projectFilter()))
   createEffect(() => { const menu = cardMenu(); if (menu && !visibleCards().some((card) => card.id === menu.id)) closeCardMenu() })
   const move = (id: string, status: Status) => {
-    board().update((draft) => { if (!draft.columns.some((column) => column.id === status)) return; draft.cards = moveCard(draft.cards, id, status); const task = draft.cards.find((item) => item.id === id); if (task) task.updatedAt = Date.now() })
+    const task = cards().find((card) => card.id === id)
+    const from = task?.status
+    board().update((draft) => { if (!draft.columns.some((column) => column.id === status)) return; draft.cards = moveCard(draft.cards, id, status); const moved = draft.cards.find((item) => item.id === id); if (moved) moved.updatedAt = Date.now() })
   }
   const edit = (existing?: Task, status: Status = columns()[0]?.id ?? "") => {
     if (!existing) setSelected(undefined)

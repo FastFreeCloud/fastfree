@@ -61,7 +61,7 @@ test("moving a task preserves its details and appends it to the destination", ()
 test("same-column and unknown-card drops leave ordering intact", () => {
   assert.deepEqual(moveCard([card], "one", "backlog"), [card])
   assert.deepEqual(moveCard([card], "missing", "done"), [card])
-  assert.equal(columns.length, 7)
+  assert.equal(columns.length, 6)
 })
 
 test("task prompts identify the board task and request checklist updates before the unchanged description", () => {
@@ -70,6 +70,17 @@ test("task prompts identify the board task and request checklist updates before 
   assert.equal(taskPrompt({ ...card, description: "" }), instruction)
   const description = "- [ ] First\n- [x] Second\n\nKeep this **Markdown**."
   assert.equal(taskPrompt({ ...card, description }), `${instruction}\n\n${description}`)
+})
+
+test("opt-in labels add verification, planning and workflow rules without touching plain cards", () => {
+  const instruction = 'Work on board task "Build board" (task_id: one). Mark checkboxes as you complete.'
+  const withVerify = taskPrompt({ ...card, labels: "verify" })
+  assert.match(withVerify, /VERIFY: Run the project's real test\/typecheck command/)
+  assert.ok(withVerify.startsWith(instruction))
+  assert.match(taskPrompt({ ...card, labels: "plan" }), /PLAN FIRST: Post a short plan/)
+  assert.match(taskPrompt({ ...card, labels: "workflow" }), /WORKFLOW: 1\) board_get this task/)
+  // Plain cards stay byte-identical.
+  assert.equal(taskPrompt(card), `${instruction}\n\nKeep tasks per workspace`)
 })
 
 test("cards can be reordered within a column in either direction", () => {
@@ -133,7 +144,7 @@ test("fresh boards have independent column arrays and accept custom column IDs",
 test("column reordering works both ways without changing IDs or task assignments", () => {
   const board = initialBoard()
   const down = placeColumn(board.columns, "backlog", 3)
-  assert.deepEqual(down.map((column) => column.id), ["ready", "progress", "review", "backlog", "done", "kanban", "hindsight"])
+  assert.deepEqual(down.map((column) => column.id), ["ready", "progress", "review", "backlog", "done", "hindsight"])
   assert.deepEqual(placeColumn(down, "backlog", 0).map((column) => column.id), board.columns.map((column) => column.id))
   assert.deepEqual(placeColumn(board.columns, "missing", 1), board.columns)
   assert.equal(card.status, "backlog")
@@ -142,7 +153,7 @@ test("column reordering works both ways without changing IDs or task assignments
 test("column drag previews reserve exactly one slot without persisting intermediate order", () => {
   const saved = initialBoard().columns
   const preview = placeColumn(saved, "backlog", 3)
-  assert.deepEqual(preview.map((column) => column.id), ["ready", "progress", "review", "backlog", "done", "kanban", "hindsight"])
+  assert.deepEqual(preview.map((column) => column.id), ["ready", "progress", "review", "backlog", "done", "hindsight"])
   assert.equal(new Set(preview.map((column) => column.id)).size, saved.length)
   assert.equal(saved[0].id, "backlog")
   assert.deepEqual(placeColumn(saved, "backlog", 0), saved)
@@ -166,7 +177,7 @@ test("column deletion rejects orphaning tasks or deleting the last column", () =
   assert.equal(deleteColumn(board, "backlog", "missing"), board)
   const only = { columns: [board.columns[0]], cards: [] }
   assert.equal(deleteColumn(only, "backlog"), only)
-  assert.equal(deleteColumn(board, "done").columns.length, 6)
+  assert.equal(deleteColumn(board, "done").columns.length, 5)
 })
 
 test("label filters match complete labels and combine with case-insensitive search", () => {

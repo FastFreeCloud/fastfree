@@ -1,0 +1,41 @@
+{
+  "data": {
+    "id": "sdui-demo",
+    "channel": "stable",
+    "version": 2,
+    "versionHash": "c8eab7492615aff098ec5bceaf81d240b4ecc8821ddd35ce5638e875125d55ff",
+    "screen": {
+      "id": "sdui-demo",
+      "title": {
+        "ar": "تم التحديث",
+        "en": "Updated"
+      },
+      "root": {
+        "type": "div",
+        "children": [
+          {
+            "type": "span",
+            "text": {
+              "ar": "محتوى جديد",
+              "en": "new content"
+            }
+          }
+        ]
+      },
+      "state": {
+        "counter": 0
+      },
+      "meta": {
+        "app": "installer",
+        "tags": [
+          "demo",
+          "sdui-05"
+        ],
+        "updatedAt": 1794592001272
+      },
+      "versionHash": "c8eab7492615aff098ec5bceaf81d240b4ecc8821ddd35ce5638e875125d55ff"
+    },
+    "publishedAt": 1794592001350,
+    "createdAt": 1794592001328
+  }
+}

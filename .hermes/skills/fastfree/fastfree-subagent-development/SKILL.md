@@ -106,6 +106,23 @@ Constraints: <any constraints>"""
 ])
 ```
 
+## Deep Inspection Fan-Out
+
+For "inspect the whole project deeply" requests, fan out one bounded auditor per area instead of reading everything in the parent:
+
+1. Split by area, not by file — e.g. `apps/` · `packages/` · `plugins/` · infra+roadmap · backend+QA.
+2. Give each child exact paths, the commands to run (build/typecheck/test), and: "write a Markdown report to `.hermes/cache/scratch/audit-<area>.md` and return a JSON summary".
+3. Pin the return shape with `output_schema` (count + per-item fields + verdict) so the parent aggregates without re-reading transcripts.
+4. Ask for the report in the user's language and state that the child knows nothing of the conversation.
+5. While children run, verify the highest-risk claims yourself (run the suite, check the junction) — do not poll transcripts.
+6. Results arrive between turns; aggregate into one answer, then cross-check the top claims directly.
+
+Pitfalls:
+- Keep areas independent — two children on the same directory produce duplicate, conflicting reports.
+- The scratch report path must be absolute and inside the workspace; children cannot see the parent's variables.
+- Forbid publish/deploy commands in audit children (`npm publish` must never run for the board fork).
+- Quote test numbers from your own run, not a child's summary — child counts drift.
+
 ## Communication
 
 - **Respond in Arabic only** (Egyptian dialect) — user's standing preference

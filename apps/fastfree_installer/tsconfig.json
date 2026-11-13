@@ -23,7 +23,13 @@
       "quasar-app-extension-fastfree-lowcode/*": ["../../packages/fastfree_lowcode/src/runtime/*"],
       "quasar": ["../../packages/fastfree_lowcode/node_modules/quasar"],
       "quasar/*": ["../../packages/fastfree_lowcode/node_modules/quasar/*"],
-      "dexie": ["../../packages/fastfree_lowcode/node_modules/dexie"]
+      "dexie": ["../../packages/fastfree_lowcode/node_modules/dexie"],
+      "fastfree-sdui": ["../../packages/fastfree_sdui/contract/index.ts"],
+      "fastfree-sdui/*": ["../../packages/fastfree_sdui/*"],
+      "fastfree-sdui/contract": ["../../packages/fastfree_sdui/contract/index.ts"],
+      "fastfree-sdui/contract/*": ["../../packages/fastfree_sdui/contract/*"],
+      "fastfree-sdui/client": ["../../packages/fastfree_sdui/client/index.ts"],
+      "fastfree-sdui/client/*": ["../../packages/fastfree_sdui/client/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

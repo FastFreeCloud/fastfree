@@ -1,0 +1,98 @@
+name: 'FastFree pnpm cache'
+description: >-
+  Restores and saves the pnpm store cache (keyed on pnpm-lock.yaml + workspace
+  package.json hashes) and, optionally, a per-workspace build-artifact cache.
+  Resolve the store path at runtime so the cache follows the OS and pnpm major.
+
+inputs:
+  node-version:
+    description: 'Node.js version passed to actions/setup-node.'
+    required: false
+    default: '22'
+  pnpm-version:
+    description: 'pnpm major version. Must match the repo lockfile/store format (currently 11).'
+    required: false
+    default: '11'
+  cache-build:
+    description: "Set to 'true' to also restore/save a build-artifact cache."
+    required: false
+    default: 'false'
+  build-name:
+    description: 'Stable namespace for the build-artifact cache (e.g. the workspace name).'
+    required: false
+    default: ''
+  build-paths:
+    description: 'Newline-separated build output paths to cache (repo-relative).'
+    required: false
+    default: ''
+  workspace-dir:
+    description: 'Workspace root used to hash tracked source files for the build-artifact key.'
+    required: false
+    default: '.'
+
+outputs:
+  store-path:
+    description: 'Resolved pnpm store path.'
+    value: ${{ steps.pnpm-store.outputs.path }}
+  store-cache-hit:
+    description: "True when the store cache was an exact hit (node_modules still needs linking)."
+    value: ${{ steps.pnpm-store-cache.outputs.cache-hit }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Setup Node.js'
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+        # Caching is done explicitly below with a key that also covers the
+        # workspace package.json hashes, so disable setup-node's built-in cache.
+        package-manager-cache: false
+
+    - name: 'Setup pnpm'
+      uses: pnpm/action-setup@v6
+      with:
+        version: ${{ inputs.pnpm-version }}
+        run_install: false
+
+    - name: 'Resolve pnpm store path'
+      id: pnpm-store
+      shell: bash
+      run: |
+        echo "path=$(pnpm store path)" >> "$GITHUB_OUTPUT"
+
+    - name: 'Restore pnpm store'
+      id: pnpm-store-cache
+      uses: actions/cache@v5
+      with:
+        path: |
+          ${{ steps.pnpm-store.outputs.path }}
+          ~/.cache/pnpm
+          ~/.pnpm-store
+        key: ${{ runner.os }}-pnpm-${{ inputs.pnpm-version }}-${{ hashFiles('pnpm-lock.yaml', 'package.json', 'pnpm-workspace.yaml', '.npmrc', '**/package.json') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-${{ inputs.pnpm-version }}-
+          ${{ runner.os }}-pnpm-
+
+    - name: 'Compute workspace source hash'
+      if: inputs.cache-build == 'true'
+      id: build-key
+      shell: bash
+      env:
+        WORKSPACE_DIR: ${{ inputs.workspace-dir }}
+      run: |
+        # Hash tracked source only. `git ls-files` automatically excludes
+        # node_modules, dist and .next (all gitignored), which a raw
+        # hashFiles('<dir>/**') would wastefully walk.
+        dir="${WORKSPACE_DIR:-.}"
+        hash="$(git ls-files -z "$dir" | xargs -0 -r git hash-object | sort | git hash-object --stdin)"
+        echo "hash=${hash}" >> "$GITHUB_OUTPUT"
+
+    - name: 'Restore build artifacts'
+      if: inputs.cache-build == 'true'
+      uses: actions/cache@v5
+      with:
+        path: ${{ inputs.build-paths }}
+        key: ${{ runner.os }}-build-${{ inputs.build-name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ steps.build-key.outputs.hash }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ inputs.build-name }}-

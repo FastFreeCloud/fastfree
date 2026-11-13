@@ -1,7 +1,7 @@
 {
   "name": "fastfree_board",
   "version": "0.3.0",
-  "description": "FastFree kanban board for OpenCode Desktop with Hindsight + Hermes integration",
+  "description": "FastFree kanban board for OpenCode Desktop with Hindsight integration",
   "license": "MIT",
   "author": "dbpolito",
   "homepage": "https://github.com/dbpolito/opencode-board#readme",

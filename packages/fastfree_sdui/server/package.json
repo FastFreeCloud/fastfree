@@ -1,0 +1,27 @@
+{
+  "name": "fastfree-sdui-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "FastFree SDUI delivery server — Hono + SQLite (node:sqlite). Serves versioned screens with ETag/versionHash.",
+  "main": "src/server.ts",
+  "scripts": {
+    "dev": "node --watch src/server.ts",
+    "start": "node src/server.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit --allowImportingTsExtensions",
+    "test": "node --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.0",
+    "hono": "^4.12.12",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "task_id": "t_c4148582",
+  "phase": "2.5",
+  "title": "Multi-Platform: Desktop & Mobile (Android/iOS) Verification",
+  "profile": "devops",
+  "generated_at": "2026-11-13T00:45:00+02:00",
+  "host": {
+    "os": "Windows 10 (10.0.19045)",
+    "cores": 8,
+    "toolchain": {
+      "bun": "1.4.4",
+      "node": "v26.8.1",
+      "cargo": "1.99.1",
+      "tauri_cli": "2.12.4",
+      "vite": "6.4.5",
+      "java": "OpenJDK 21.0.12 (Temurin)",
+      "android_targets_installed": [
+        "aarch64-linux-android",
+        "armv7-linux-androideabi",
+        "i686-linux-android",
+        "x86_64-linux-android",
+        "x86_64-pc-windows-msvc"
+      ],
+      "android_sdk": null,
+      "android_ndk": null,
+      "nsis": "C:/Users/FastFree/AppData/Local/tauri/NSIS/makensis.exe"
+    }
+  },
+  "acceptance": [
+    {
+      "id": 1,
+      "criterion": "Desktop build completes with exit code 0",
+      "status": "pass",
+      "exit_code": 0,
+      "command": "TAURI_SIGNING_PRIVATE_KEY=$(cat src-tauri/fastfree_updater.key) bun run tauri build",
+      "cwd": "apps/fastfree_installer",
+      "runs": [
+        { "exit_code": 0, "started_at": "2026-11-12T22:24:13Z", "ended_at": "2026-11-12T22:29:50Z", "vite_build_seconds": 21.11 }
+      ],
+      "artifacts": [
+        { "path": "apps/fastfree_installer/src-tauri/target/release/fastfree-installer.exe", "bytes": 18808832 },
+        { "path": "apps/fastfree_installer/src-tauri/target/release/bundle/nsis/FastFree-Node-Setup_26.5.33_x64-setup.exe", "bytes": 4971867, "type": "PE32 Windows GUI, Nullsoft Installer self-extracting archive" },
+        { "path": "apps/fastfree_installer/src-tauri/target/release/bundle/nsis/FastFree-Node-Setup_26.5.33_x64-setup.exe.sig", "bytes": 456 }
+      ],
+      "notes": "First run exited 1 because TAURI_SIGNING_PRIVATE_KEY was unset; with the repo key set (as CI does) the build exits 0."
+    },
+    {
+      "id": 2,
+      "criterion": "Web bundle transforms cleanly under 10 seconds",
+      "status": "partial",
+      "clean": true,
+      "modules_transformed": 269,
+      "errors": [],
+      "timings_seconds": {
+        "dev_transform_main_ts_cold": 0.071,
+        "dev_transform_main_ts_warm": 0.002,
+        "dev_transform_App_vue_cold": 0.401,
+        "production_build_idle_minified": [29.76, 31.51],
+        "production_build_idle_unminified": [23.43],
+        "production_build_during_tauri_build": [21.11]
+      },
+      "under_10s": {
+        "dev_transform": true,
+        "production_build": false
+      },
+      "notes": "Correctness is clean (exit 0, no errors). Dev on-demand transform is 71 ms. Production build is 21-31 s on this host; ~6 s is esbuild minify, remainder is module-graph transform + chunk render + asset emission (Quasar stylesheet, Sass, fonts)."
+    },
+    {
+      "id": 3,
+      "criterion": "Single codebase proven across Desktop, Web, and Mobile targets",
+      "status": "partial",
+      "desktop": "pass",
+      "web": "pass",
+      "mobile": "blocked_by_toolchain",
+      "mobile_details": {
+        "android_scaffold_present": true,
+        "android_scaffold_files": 41,
+        "android_gradle": "9.6.1",
+        "android_compile_sdk": 37,
+        "android_min_sdk": 24,
+        "android_target_sdk": 37,
+        "android_namespace": "cloud.fastfree.installer",
+        "rust_mobile_entry_point": "#[cfg_attr(mobile, tauri::mobile_entry_point)] (src-tauri/src/lib.rs:46)",
+        "plugins_registered": [
+          "tauri-plugin-single-instance",
+          "tauri-plugin-os",
+          "tauri-plugin-process",
+          "tauri-plugin-opener",
+          "tauri-plugin-notification",
+          "tauri-plugin-store",
+          "tauri-plugin-updater",
+          "tauri-plugin-mcp-bridge (debug_assertions only)"
+        ],
+        "tauri_android_init": {
+          "attempted": true,
+          "exit_code": 1,
+          "error": "Android SDK not found at C:\\Users\\FastFree\\AppData\\Local\\Android/Sdk (ANDROID_HOME unset)"
+        },
+        "cargo_check_android": {
+          "attempted": true,
+          "target": "aarch64-linux-android",
+          "exit_code": 101,
+          "failing_crate": "ring v0.17.14",
+          "error": "cc-rs: failed to find tool \"aarch64-linux-android-clang\": program not found (Android NDK missing)"
+        },
+        "ios": "no gen/apple scaffold; iOS builds require macOS + Xcode (unavailable on Windows)"
+      }
+    }
+  ],
+  "dexie": {
+    "harness": "qa-artifacts/phase-2.5/reports/dexie-resilience.test.ts",
+    "target_modules": [
+      "packages/fastfree_auth/src/services/storage.service.ts",
+      "packages/fastfree_lowcode/src/runtime/composables/useThemeStorage.ts"
+    ],
+    "backend": "fake-indexeddb 6.2.8",
+    "passed": 21,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "caddy": {
+    "config": "packages/fastfree_os/modules/caddy.nix",
+    "spa_fallback": "try_files {path} /index.html -> file_server",
+    "entry_cache": "no-cache",
+    "asset_cache": "public, max-age=31536000, immutable",
+    "serve_test": [
+      { "route": "/", "status": 200, "content_type": "text/html; charset=utf-8", "ms": 12 },
+      { "route": "/settings/x", "status": 200, "content_type": "text/html; charset=utf-8", "ms": 5 },
+      { "route": "/a/b/c", "status": 200, "content_type": "text/html; charset=utf-8", "ms": 7 },
+      { "route": "/assets/main-*.js", "status": 200, "content_type": "text/javascript; charset=utf-8", "ms": 17 },
+      { "route": "/assets/main-*.css", "status": 200, "content_type": "text/css; charset=utf-8", "ms": 9 }
+    ],
+    "deep_routes_serve_spa_index": true
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "type": "security",
+      "title": "Committed minisign private updater key",
+      "detail": "src-tauri/fastfree_updater.key is tracked in git and matches the pubkey in tauri.conf.json. Anyone with repo read access can sign malicious updater payloads.",
+      "recommendation": "Move the key to a CI secret and rotate the keypair."
+    },
+    {
+      "severity": "medium",
+      "type": "portability",
+      "title": "Hardcoded pnpm virtual-store alias in vite.config.ts",
+      "detail": "The @quasar/extras alias points at node_modules/.pnpm/@quasar+extras@2.1.0/node_modules/@quasar/extras, which only exists under a matching pnpm install.",
+      "recommendation": "Resolve @quasar/extras through the workspace package's node_modules instead of a .pnpm path."
+    },
+    {
+      "severity": "medium",
+      "type": "performance",
+      "title": "Production web build exceeds the 10 s target",
+      "detail": "vite build takes 21-31 s on this host (dev transform is 71 ms). ~6 s is esbuild minify.",
+      "recommendation": "Profile the module-graph/CSS pipeline; consider manualChunks and Windows Defender exclusions for node_modules."
+    },
+    {
+      "severity": "low",
+      "type": "capabilities",
+      "title": "tray-dialog window not listed in capabilities/default.json",
+      "detail": "windows lists only main and splashscreen; the tray-dialog window receives no core permissions from the default capability.",
+      "recommendation": "Confirm tray-dialog needs no permissions, or add it to the capability window list."
+    }
+  ],
+  "environment_side_effects": [
+    "node_modules store migrated pnpm -> bun by a bun add run from a scratch dir inside the repo; repaired with bun install (384 packages, exit 0). bun-added package.json workspaces/overrides reverted and bun.lock removed. No tracked file changed by this work."
+  ],
+  "overall": {
+    "status": "partial",
+    "passed": 1,
+    "partial": 2,
+    "failed": 0,
+    "blocked": ["android_full_build_missing_sdk_ndk", "ios_build_requires_macos"]
+  }
+}

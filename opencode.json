@@ -19,16 +19,6 @@
       "url": "https://mcp.context7.com/mcp",
       "enabled": true
     },
-    "fastfree-panel": {
-      "type": "local",
-      "command": [
-        "node",
-        "C:/Users/FastFree/Desktop/fastfree/packages/fastfree_os/backend/dist/mcp/stdio.js"
-      ],
-      "enabled": true,
-      "timeout": 300000,
-      "cwd": "."
-    },
     "quasar": {
       "type": "local",
       "command": [
@@ -64,7 +54,7 @@
         "-y",
         "@modelcontextprotocol/server-sequential-thinking@0.6.2"
       ],
-      "enabled": true,
+      "enabled": false,
       "timeout": 300000,
       "cwd": "."
     },
@@ -83,7 +73,7 @@
       "environment": {
         "MCP_SERVER_REQUEST_TIMEOUT": "600000"
       },
-      "enabled": true,
+      "enabled": false,
       "timeout": 300000,
       "cwd": "."
     },
@@ -97,7 +87,7 @@
         "--user-data-dir=.auth/mcp-profile",
         "--browser=chromium"
       ],
-      "enabled": true,
+      "enabled": false,
       "timeout": 300000,
       "cwd": "."
     },
@@ -111,19 +101,9 @@
       "environment": {
         "FIRECRAWL_API_KEY": ""
       },
-      "enabled": true,
+      "enabled": false,
       "timeout": 300000,
       "cwd": "."
-    },
-    "nixos": {
-      "type": "local",
-      "command": [
-        "sh",
-        "-c",
-        "command -v mcp-nixos >/dev/null 2>&1 && exec mcp-nixos || exec nix run github:utensils/mcp-nixos --"
-      ],
-      "enabled": false,
-      "timeout": 120000
     },
     "rea": {
       "type": "local",
@@ -137,15 +117,6 @@
       "timeout": 300000,
       "cwd": "."
     },
-    "fastfree-social": {
-      "type": "local",
-      "command": [
-        "node",
-        "C:/Users/FastFree/Desktop/fastfree/fastfree_mcp_tools/fastfree_poster_mcp/src/index.js"
-      ],
-      "enabled": true,
-      "timeout": 120000
-    },
     "jcodemunch": {
       "type": "local",
       "command": [
@@ -153,7 +124,7 @@
         "jcodemunch-mcp==1.108.397",
         "serve"
       ],
-      "enabled": true,
+      "enabled": false,
       "timeout": 300000,
       "cwd": "."
     },
@@ -175,6 +146,16 @@
         "npx",
         "-y",
         "@hypothesi/tauri-mcp-server"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "fastfree_board": {
+      "type": "local",
+      "command": [
+        "C:/Program Files/nodejs/node.exe",
+        "C:/Users/FastFree/Desktop/fastfree/plugins/fastfree_board/mcp-server.mjs"
       ],
       "enabled": true,
       "timeout": 300000,
@@ -226,10 +207,10 @@
       }
     }
   },
-  "plugin": [
+  "plugins": [
     "opencode-browser",
     "opencode-wakatime",
-    "fastfree_board"
+    "./plugins/fastfree_board"
   ],
   "instructions": [
     "AGENTS.local.md"

@@ -1,0 +1,11 @@
+{
+  "name": "fastfree-phase24-interaction",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Phase 2.4 Tauri MCP automated E2E wizard flow & interaction testing driver",
+  "dependencies": {
+    "@hypothesi/tauri-mcp-server": "^0.13.2",
+    "@modelcontextprotocol/sdk": "0.6.1"
+  }
+}

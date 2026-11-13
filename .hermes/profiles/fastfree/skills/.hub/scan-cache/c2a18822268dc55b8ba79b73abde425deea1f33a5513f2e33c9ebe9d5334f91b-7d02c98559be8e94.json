@@ -1,0 +1,35 @@
+{
+  "bundle_hash": "sha256:c2a18822268dc55b8ba79b73abde425deea1f33a5513f2e33c9ebe9d5334f91b",
+  "scanner_version": "skills-guard-v10",
+  "source": "@wanikua/thinking-frameworks",
+  "source_url": "@wanikua/thinking-frameworks",
+  "trust_level": "community",
+  "verdict": "caution",
+  "findings": [
+    {
+      "pattern_id": "git_clone",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "README.md",
+      "line": 17,
+      "match": "git clone https://github.com/YOUR_USERNAME/thinking-frameworks.git",
+      "description": "clones a git repository at runtime"
+    },
+    {
+      "pattern_id": "role_hijack",
+      "severity": "high",
+      "category": "injection",
+      "file": "references\\red-team.md",
+      "line": 7,
+      "match": "You are now the **Red Team**. Your mission: relentlessly attack the following plan, idea, argument, or system. Find e...",
+      "description": "attempts to override the agent's role"
+    }
+  ],
+  "rules": [
+    "git_clone",
+    "role_hijack"
+  ],
+  "scanned_at": "2026-11-12T18:01:18.934470+00:00",
+  "summary": "thinking-frameworks: caution \u2014 2 finding(s) in injection, supply_chain",
+  "fresh": true
+}

@@ -424,13 +424,15 @@ import {
   onErrorCaptured,
   onMounted
 } from 'vue'
-import { Notify } from 'quasar'
+import { Notify, useQuasar } from 'quasar'
 import SduiNode from './SduiNode.vue'
 import type { SduiNode as SduiNodeType, SduiScreen, SduiAction } from './types'
 
 defineOptions({
   name: 'SduiPlayground'
 })
+
+const $q = useQuasar()
 
 // ==========================================
 // PRESET DEFINITIONS (3 Comprehensive Screens)

@@ -16,7 +16,9 @@
 
     <div v-if="loading" class="text-center q-pa-xl">
       <q-spinner-dots color="primary" size="3rem" />
-      <div class="text-caption text-grey-5 q-mt-sm">جاري تحميل واجهة SDUI للشاشة {{ step }}...</div>
+      <div class="text-caption text-muted q-mt-sm">
+        {{ locale === 'ar' ? 'جاري تحميل واجهة SDUI للشاشة' : 'Loading SDUI screen for step' }} {{ step }}...
+      </div>
     </div>
     <div v-else-if="currentSchema" class="sdui-screen-wrapper">
       <SduiNode
@@ -26,7 +28,7 @@
       />
     </div>
     <div v-else class="text-negative text-center q-pa-lg">
-      تعذر تحميل شاشة SDUI للخطوة {{ step }}
+      {{ locale === 'ar' ? 'تعذر تحميل شاشة SDUI للخطوة' : 'Failed to load SDUI screen for step' }} {{ step }}
     </div>
   </div>
 </template>
@@ -41,6 +43,13 @@ import {
   type SduiAction,
 } from 'quasar-app-extension-fastfree-lowcode';
 import {
+  STEP_SCHEMAS,
+  NAMED_SDUI_SCREENS,
+  ALL_SDUI_SCREENS,
+  getStepSchema,
+  getNamedScreen,
+} from '../schemas/screens';
+import {
   navigateToStep,
   discoveryReport,
   assignedCpuCores,
@@ -54,23 +63,6 @@ import {
 import { useI18n } from '../composables/useI18n';
 import { useTheme } from '../composables/useTheme';
 
-const { locale } = useI18n();
-const { theme } = useTheme();
-
-// Import all 6 SDUI schemas directly from local installer schemas
-import step1Schema from '../schemas/step1_discovery.json';
-import step2Schema from '../schemas/step2_license.json';
-import step3Schema from '../schemas/step3_sizing.json';
-import step4Schema from '../schemas/step4_wireguard.json';
-import step5Schema from '../schemas/step5_provisioning.json';
-import step6Schema from '../schemas/step6_launchpad.json';
-
-// Import Sovereign Package Schemas (ERP, Accounting, Sales POS, Fleet Monitor, Create Client)
-import fleetMonitorSchema from '../../../../packages/fastfree_os/src/schemas/fleet_monitor.json';
-import clientManagerSchema from '../../../../packages/fastfree_os/src/schemas/client_manager.json';
-import posCheckoutSchema from '../../../../packages/fastfree_sales/src/schemas/pos_checkout.json';
-import generalLedgerSchema from '../../../../packages/fastfree_accounting/src/schemas/general_ledger.json';
-
 const props = defineProps<{
   step: number;
 }>();
@@ -79,29 +71,13 @@ const emit = defineEmits<{
   (e: 'open-hub', tab?: 'audit' | 'logs' | 'telemetry' | 'sdui'): void;
 }>();
 
+const { locale } = useI18n();
+const { theme } = useTheme();
+
 const loading = ref(false);
 const activeNamedScreen = ref<string | null>(null);
 const currentSchema = ref<SduiScreen | null>(null);
 const cache = SduiCacheManager.getInstance();
-
-const schemasMap: Record<number, SduiScreen> = {
-  1: step1Schema as unknown as SduiScreen,
-  2: step2Schema as unknown as SduiScreen,
-  3: step3Schema as unknown as SduiScreen,
-  4: step4Schema as unknown as SduiScreen,
-  5: step5Schema as unknown as SduiScreen,
-  6: step6Schema as unknown as SduiScreen,
-};
-
-const namedSchemasMap: Record<string, SduiScreen> = {
-  fleet_monitor: fleetMonitorSchema as unknown as SduiScreen,
-  client_manager: clientManagerSchema as unknown as SduiScreen,
-  create_client: clientManagerSchema as unknown as SduiScreen,
-  sales_pos: posCheckoutSchema as unknown as SduiScreen,
-  pos_checkout: posCheckoutSchema as unknown as SduiScreen,
-  accounting_ledger: generalLedgerSchema as unknown as SduiScreen,
-  general_ledger: generalLedgerSchema as unknown as SduiScreen,
-};
 
 function closeNamedScreen() {
   activeNamedScreen.value = null;
@@ -127,7 +103,7 @@ const sharedState = computed(() => ({
 
 async function loadStepSchema(stepNumber: number) {
   loading.value = true;
-  const target = schemasMap[stepNumber];
+  const target = getStepSchema(stepNumber);
   if (target) {
     await cache.set(target);
     const cached = await cache.get(target.id);
@@ -167,9 +143,9 @@ async function handleSduiAction(payload: { action: SduiAction | SduiAction[]; ev
       }
     } else if (action.type === 'open_sdui_screen' || (action.type === 'tauri:invoke' && action.command === 'open_sdui_screen')) {
       const screenId = (action as any).screen || (action.payload as any)?.screen || (action.payload as any)?.url;
-      if (screenId && namedSchemasMap[screenId]) {
+      if (screenId && getNamedScreen(screenId)) {
         activeNamedScreen.value = screenId;
-        currentSchema.value = namedSchemasMap[screenId];
+        currentSchema.value = getNamedScreen(screenId);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } else if (action.type === 'back_to_launchpad') {
@@ -198,6 +174,13 @@ watch(() => props.step, (newStep) => {
 });
 
 onMounted(() => {
+  // Test / MCP bridge: expose the reactive shared state and cache manager so
+  // headless verification can inspect locale + theme without a page reload.
+  (window as any).__FASTFREE_SDUI_SHARED_STATE__ = sharedState;
+  (window as any).__FASTFREE_SDUI_CACHE__ = cache;
+
+  // Phase 2.2: prefetch every registered SDUI schema into the Dexie cache.
+  void cache.prefetch(ALL_SDUI_SCREENS);
   void loadStepSchema(props.step);
 });
 </script>
@@ -211,18 +194,18 @@ onMounted(() => {
 }
 
 .sdui-screen-wrapper {
-  background: rgba(18, 18, 24, 0.72);
+  background: var(--surface-overlay);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-card);
 }
 
 :deep(.q-card) {
-  background: rgba(26, 26, 34, 0.75) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color) !important;
   border-radius: 12px !important;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -230,14 +213,14 @@ onMounted(() => {
 }
 
 :deep(.q-card:hover) {
-  border-color: rgba(14, 165, 233, 0.45) !important;
-  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.12);
+  border-color: rgba(var(--accent-sky-rgb, 56, 189, 248), 0.45) !important;
+  box-shadow: 0 8px 24px rgba(var(--accent-sky-rgb, 56, 189, 248), 0.12);
 }
 
 :deep(.q-banner) {
-  border: 1px solid rgba(14, 165, 233, 0.3) !important;
+  border: 1px solid rgba(var(--accent-sky-rgb, 56, 189, 248), 0.3) !important;
   border-radius: 12px !important;
-  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.15);
+  box-shadow: 0 4px 20px rgba(var(--accent-sky-rgb, 56, 189, 248), 0.15);
 }
 
 :deep(.q-btn) {

@@ -1,0 +1,78 @@
+{
+  "data": {
+    "id": "sdui-demo",
+    "channel": "stable",
+    "version": 1,
+    "versionHash": "73dbd20cdb8c8a5dfc248f1a7de59df8b2d91c5eb7fe656195b8943a7d0fd1bf",
+    "screen": {
+      "id": "sdui-demo",
+      "title": {
+        "ar": "شاشة تجريبية من الخادم",
+        "en": "Server-driven demo screen"
+      },
+      "meta": {
+        "app": "installer",
+        "tags": [
+          "demo",
+          "sdui-05"
+        ],
+        "updatedAt": 1794591985758
+      },
+      "state": {
+        "counter": 0
+      },
+      "root": {
+        "type": "div",
+        "children": [
+          {
+            "type": "card",
+            "children": [
+              {
+                "type": "span",
+                "text": {
+                  "ar": "هذه الشاشة تُخدَم من خادم SDUI",
+                  "en": "This screen is served by the SDUI server"
+                }
+              },
+              {
+                "type": "q-banner",
+                "props": {
+                  "dense": true
+                },
+                "children": [
+                  {
+                    "type": "span",
+                    "text": {
+                      "ar": "تحديث الخادم ينعكس فورًا",
+                      "en": "Server updates reflect instantly"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "q-btn",
+                "props": {
+                  "color": "primary",
+                  "label": {
+                    "ar": "زيادة",
+                    "en": "Increment"
+                  }
+                },
+                "events": {
+                  "click": {
+                    "type": "state:set",
+                    "target": "counter",
+                    "payload": 1
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "versionHash": "73dbd20cdb8c8a5dfc248f1a7de59df8b2d91c5eb7fe656195b8943a7d0fd1bf"
+    },
+    "publishedAt": 1794591985758,
+    "createdAt": 1794591985774
+  }
+}

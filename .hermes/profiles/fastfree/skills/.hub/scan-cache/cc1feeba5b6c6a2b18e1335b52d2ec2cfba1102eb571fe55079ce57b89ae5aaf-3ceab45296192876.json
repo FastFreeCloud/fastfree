@@ -1,0 +1,13 @@
+{
+  "bundle_hash": "sha256:cc1feeba5b6c6a2b18e1335b52d2ec2cfba1102eb571fe55079ce57b89ae5aaf",
+  "scanner_version": "skills-guard-v10",
+  "source": "official",
+  "source_url": "official/software-development/grill-me",
+  "trust_level": "builtin",
+  "verdict": "safe",
+  "findings": [],
+  "rules": [],
+  "scanned_at": "2026-11-12T23:55:55.359239+00:00",
+  "summary": "grill-me: clean scan, no threats detected",
+  "fresh": true
+}

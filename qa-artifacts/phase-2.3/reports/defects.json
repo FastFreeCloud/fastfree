@@ -1,0 +1,72 @@
+[
+  {
+    "id": "DEF-001",
+    "severity": "critical",
+    "title": "Light theme: SDUI text is effectively invisible (contrast 1.07-1.22:1)",
+    "status": "open",
+    "component": "apps/fastfree_installer/src/components/SduiStepHost.vue",
+    "themes": ["light"],
+    "steps": [1, 3, 5, 6],
+    "evidence": "screenshots/step1-light-1280x800.png; reports/evidence/pixel-evidence.txt (text rgb(15,23,42) on card rgb(28,28,35))",
+    "rootCause": "SduiStepHost.vue hardcodes dark glass panel backgrounds (rgba(18,18,24,0.72) / rgba(26,26,34,0.75)) while the light theme switches --text-main to dark navy rgb(15,23,42).",
+    "expected": "WCAG AA >= 4.5:1 for normal text",
+    "actual": "1.07-1.22:1",
+    "fix": "Use theme-aware CSS variables for glass background and text in SduiStepHost.vue; ensure light theme pairs light glass with dark text."
+  },
+  {
+    "id": "DEF-002",
+    "severity": "high",
+    "title": "Tall wizard steps are clipped with no scroll (steps 3, 5, 6)",
+    "status": "open",
+    "component": "apps/fastfree_installer/src/App.vue",
+    "themes": ["dark", "light", "oled-black"],
+    "steps": [3, 5, 6],
+    "evidence": "screenshots/step6-dark-1024x768.png; reports/audit-report.json clipping metrics",
+    "rootCause": ".content-wrapper (App.vue:749-758) and .installer-app (App.vue:493) both set overflow:hidden; no intermediate scroll container.",
+    "expected": "All content reachable at 1024x768, 1280x800, 1920x1080",
+    "actual": "Step 6 content bottom 1769px in a 768px viewport; step 5 1216px; step 3 821px at 1024/1280",
+    "fix": "Make .content-wrapper overflow-y:auto (or allow the step host to scroll) so tall steps are reachable."
+  },
+  {
+    "id": "DEF-003",
+    "severity": "medium",
+    "title": "Secondary text below WCAG AA in Dark and OLED themes",
+    "status": "open",
+    "component": "packages/fastfree_lowcode SDUI styles + installer theme tokens",
+    "themes": ["dark", "oled-black"],
+    "steps": [1, 3, 5],
+    "evidence": "screenshots/step1-dark-1280x800.png; reports/evidence/pixel-evidence.txt (text rgb(25,118,210) on rgb(23,23,30) = 3.86:1)",
+    "rootCause": "Blue secondary text and rgba(0,0,0,0.6) labels on dark glass cards are below the 4.5:1 AA threshold for normal text.",
+    "expected": ">= 4.5:1 normal text",
+    "actual": "3.7-3.86:1 (blue/gray), 1.18:1 (semi-transparent black labels)",
+    "fix": "Raise secondary text tokens to >=4.5:1 on dark backgrounds; replace rgba(0,0,0,0.6) label color with a light muted token."
+  },
+  {
+    "id": "DEF-004",
+    "severity": "medium",
+    "title": "Unrendered SDUI template placeholders displayed to users",
+    "status": "open",
+    "component": "packages/fastfree_lowcode/src/runtime/sdui (state interpolation)",
+    "themes": ["dark", "light", "oled-black"],
+    "steps": [1, 3, 5],
+    "evidence": "reports/audit-report.json textSamples; screenshots/step1-dark-1280x800.png",
+    "rootCause": "{{ state.* }} mustache bindings are not interpolated by the SDUI runtime for these schemas.",
+    "expected": "Resolved values (e.g. '8 أنوية متوفرة')",
+    "actual": "Literal '{{ state.cpuCores || 8 }}', '{{ state.totalRamGb || 16 }}', '{{ state.assignedRam || ... }}', '{{ state.installPercent || 92 }}%'",
+    "fix": "Implement state interpolation in the SDUI runtime and add a regression test asserting no '{{' remains in rendered text."
+  },
+  {
+    "id": "DEF-005",
+    "severity": "low",
+    "title": "Glass panel background not theme-aware (root cause of DEF-001)",
+    "status": "open",
+    "component": "apps/fastfree_installer/src/components/SduiStepHost.vue",
+    "themes": ["light", "oled-black"],
+    "steps": [1, 2, 3, 4, 5, 6],
+    "evidence": "reports/audit-report.json glass metrics (identical rgba(18,18,24,0.72) in all themes)",
+    "rootCause": "Scoped CSS hardcodes dark RGBA values in SduiStepHost.vue lines 213-235 instead of using theme CSS variables.",
+    "expected": "Glass panels follow the active theme",
+    "actual": "Panels remain dark in Light and OLED themes",
+    "fix": "Replace hardcoded RGBA with var(--glass-bg) / var(--glass-border) theme tokens."
+  }
+]

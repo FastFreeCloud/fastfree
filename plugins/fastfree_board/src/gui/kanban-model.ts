@@ -6,7 +6,6 @@ export const columns = [
   { id: "progress", title: "In progress", color: "var(--v2-state-fg-warning)" },
   { id: "review", title: "Review", color: "var(--v2-text-text-accent)" },
   { id: "done", title: "Done", color: "var(--v2-state-fg-success)" },
-  { id: "kanban", title: "Kanban", color: "#8b5cf6" },
   { id: "hindsight", title: "Hindsight", color: "#06b6d4" },
 ] as const
 
@@ -29,8 +28,8 @@ export const CardSchema = Schema.Struct({
 })
 export const ColumnSchema = Schema.Struct({ id: Schema.String, title: Schema.String, color: Schema.String })
 export type Column = typeof ColumnSchema.Type
-export const columnDefaults: Record<string, string> = { backlog: "Backlog", ready: "Ready", progress: "In progress", review: "Review", done: "Done", kanban: "Kanban", hindsight: "Hindsight" }
-export const columnKeys: Record<string, string> = { backlog: "columnBacklog", ready: "columnReady", progress: "columnProgress", review: "columnReview", done: "columnDone", kanban: "columnKanban", hindsight: "columnHindsight" }
+export const columnDefaults: Record<string, string> = { backlog: "Backlog", ready: "Ready", progress: "In progress", review: "Review", done: "Done", hindsight: "Hindsight" }
+export const columnKeys: Record<string, string> = { backlog: "columnBacklog", ready: "columnReady", progress: "columnProgress", review: "columnReview", done: "columnDone", hindsight: "columnHindsight" }
 /** Display a column's title: known default seeds are localized via `t`; user-renamed columns render verbatim. */
 export function columnTitle(column: Pick<Column, "id" | "title">, t?: (key: string) => string): string {
   if (t && columnKeys[column.id] && column.title === columnDefaults[column.id]) return t(columnKeys[column.id])
@@ -140,13 +139,19 @@ export function taskPrompt(card: Task, t?: (key: string, params?: Record<string,
     const raw = label.slice("profile:".length).trim()
     if (!raw) continue
     const profile = raw.startsWith("fastfree-") ? raw : `fastfree-${raw}`
-    rules.push(`PROFILE: This task is routed to the ${profile} Hermes profile. For review or verification steps, delegate to it (e.g. hermes -p ${profile}) rather than doing everything yourself; prefer its specialist roles.`)
-  }
-  if (labels.some((label) => label === "mirror" || label === "kanban" || label.startsWith("mirror:"))) {
-    rules.push(`HERMES MIRROR: This task mirrors to the Hermes 'fastfree-erp' kanban board. Commands run against \`hermes kanban --board fastfree-erp\`. When you start work, run: hermes kanban --board fastfree-erp claim <id> if a matching task exists, or create one with: hermes kanban --board fastfree-erp create --title "<title>" (it maps backlog->todo, ready->ready, progress->running, review->review, done->done). When you move this card, mirror the same move: complete (done), request-review (review), reopen-review/unblock otherwise. Comment with your final summary on the Hermes task using hermes kanban --board fastfree-erp comment <id> "<summary>". If hermes CLI fails, note it and continue; do not block on the mirror.`)
+    rules.push(`PROFILE: This task is routed to the ${profile} specialist profile. For review or verification steps, delegate to it rather than doing everything yourself; prefer its specialist roles.`)
   }
   if (labels.some((label) => label === "hindsight" || label === "memory" || label.startsWith("hindsight:"))) {
     rules.push(`HINDSIGHT: Before writing any code, recall related memory via your available memory tool (hindsight_recall or equivalent) with the task title as the query — honor any dependencies or constraints it returns. When the task completes, write a short memory (hindsight_retain) noting what was done and which decisions mattered for future tasks in this project.`)
+  }
+  if (labels.some((label) => label === "verify" || label === "tested")) {
+    rules.push(`VERIFY: Run the project's real test/typecheck command for the files you touched (e.g. \`pnpm test\`, \`bun run typecheck\`, \`node --test tests/*.test.mjs\`) and paste the actual command output. Never claim a fix works without running it.`)
+  }
+  if (labels.some((label) => label === "plan" || label === "designed")) {
+    rules.push(`PLAN FIRST: Post a short plan (files to change, approach, risks) before editing, and track it as checkboxes in the task description.`)
+  }
+  if (labels.some((label) => label === "workflow" || label === "smart")) {
+    rules.push(`WORKFLOW: 1) board_get this task and read it fully. 2) hindsight_recall the title before coding. 3) Implement in small verifiable steps. 4) Run the real tests and paste the output. 5) board_update checkboxes as you go; move to review only after verification. 6) hindsight_retain the key decisions.`)
   }
   const base = [instruction, card.description].filter(Boolean).join("\n\n")
   return rules.length ? `${base}\n\n## Session rules (fastfree_board)\n${rules.join("\n")}` : base

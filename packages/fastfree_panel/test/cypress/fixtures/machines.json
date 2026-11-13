@@ -1,0 +1,26 @@
+{
+  "machines": [
+    {
+      "name": "client1",
+      "hostname": "client1.fastfree.local",
+      "isOnline": true,
+      "roles": ["hyperv", "controller", "wireguard", "fastfree"],
+      "description": "Central Sovereign Hyper-V Appliance & WireGuard Mesh Hub",
+      "targetHost": "root@client1.fastfree.local",
+      "buildHost": "localhost",
+      "machineClass": "hyperv",
+      "installedAt": "2026-10-18"
+    },
+    {
+      "name": "client2",
+      "hostname": "client2.fastfree.local",
+      "isOnline": false,
+      "roles": ["hyperv", "appliance", "app", "fastfree"],
+      "description": "Customer Hyper-V Appliance #1 (client2)",
+      "targetHost": null,
+      "buildHost": null,
+      "machineClass": "hyperv",
+      "installedAt": "2026-10-24"
+    }
+  ]
+}

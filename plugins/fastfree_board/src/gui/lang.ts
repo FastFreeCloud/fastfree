@@ -1,19 +1,14 @@
 import type { Context } from "@opencode/plugin/gui"
-import { Effect } from "effect"
-import { Schema } from "effect"
 import { boardTranslate, boardPlural, resolveBoardLang, type BoardLang } from "./i18n"
+import { BOARD_SETTINGS_KEY, BOARD_SETTINGS_INITIAL, SettingsSchema } from "./settings-model"
 
 export type BoardTranslate = (key: string, params?: Record<string, string | number>) => string
 
 /** Reads the shared settings-v1 store. Default Arabic if absent. */
 export function useBoardLang(ctx: Pick<Context, "storage">) {
-  const store = ctx.storage.store("settings-v1", {
-    schema: Schema.Struct({
-      toolsEnabled: Schema.Boolean,
-      locale: Schema.optional(Schema.Literals(["ar", "en"])),
-      columnsSeeded: Schema.optional(Schema.Boolean),
-    }),
-    initial: { toolsEnabled: true, locale: "ar" },
+  const store = ctx.storage.store(BOARD_SETTINGS_KEY, {
+    schema: SettingsSchema,
+    initial: BOARD_SETTINGS_INITIAL,
     scope: "global",
   })
   const getValue = (): { toolsEnabled: boolean; locale?: BoardLang } | undefined =>

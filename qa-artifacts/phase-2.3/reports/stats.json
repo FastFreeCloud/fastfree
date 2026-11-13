@@ -1,0 +1,441 @@
+{
+  "themes": {
+    "dark": {
+      "checkpoints": 18,
+      "checkpointsWithContrastFailures": 18,
+      "textSamples": 414,
+      "failingSamples": 69,
+      "minContrast": 1.18,
+      "worstSample": {
+        "bg": "rgb(23,23,31)",
+        "color": "rgba(0, 0, 0, 0.6)",
+        "contrast": 1.18,
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "large": false,
+        "passesAA": false,
+        "rect": {
+          "b": 681,
+          "h": 13,
+          "r": 215,
+          "w": 118,
+          "x": 97,
+          "y": 668
+        },
+        "text": "مسار قرص VHDX المستهدف"
+      }
+    },
+    "light": {
+      "checkpoints": 18,
+      "checkpointsWithContrastFailures": 18,
+      "textSamples": 414,
+      "failingSamples": 231,
+      "minContrast": 1.07,
+      "worstSample": {
+        "bg": "rgb(30,30,37)",
+        "color": "rgb(15, 23, 42)",
+        "contrast": 1.07,
+        "fontSize": "12px",
+        "fontWeight": "700",
+        "large": false,
+        "passesAA": false,
+        "rect": {
+          "b": 684,
+          "h": 40,
+          "r": 922,
+          "w": 166,
+          "x": 756,
+          "y": 644
+        },
+        "text": "client1: البوابة والراوتر (Gateway)"
+      }
+    },
+    "oled-black": {
+      "checkpoints": 18,
+      "checkpointsWithContrastFailures": 18,
+      "textSamples": 414,
+      "failingSamples": 135,
+      "minContrast": 1.17,
+      "worstSample": {
+        "bg": "rgb(23,23,30)",
+        "color": "rgba(0, 0, 0, 0.6)",
+        "contrast": 1.17,
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "large": false,
+        "passesAA": false,
+        "rect": {
+          "b": 681,
+          "h": 13,
+          "r": 215,
+          "w": 118,
+          "x": 97,
+          "y": 668
+        },
+        "text": "مسار قرص VHDX المستهدف"
+      }
+    }
+  },
+  "clippingMatrix": {
+    "1": {
+      "1024x768": {
+        "clippedCheckpoints": 0,
+        "of": 3,
+        "maxContentBottom": 727
+      },
+      "1280x800": {
+        "clippedCheckpoints": 0,
+        "of": 3,
+        "maxContentBottom": 728
+      },
+      "1920x1080": {
+        "clippedCheckpoints": 0,
+        "of": 3,
+        "maxContentBottom": 730
+      }
+    },
+    "2": {
+      "1024x768": {
+        "clippedCheckpoints": 0,
+        "of": 3,
+        "maxContentBottom": 656
+      },
+      "1280x800": {
+        "clippedCheckpoints": 0,
+        "of": 3,
+        "maxContentBottom": 657
+      },
+      "1920x1080": {
+        "clippedCheckpoints": 0,
+        "of": 3,
+        "maxContentBottom": 659
+      }
+    },
+    "3": {
+      "1024x768": {
+        "clippedCheckpoints": 3,
+        "of": 3,
+        "maxContentBottom": 821
+      },
+      "1280x800": {
+        "clippedCheckpoints": 3,
+        "of": 3,
+        "maxContentBottom": 822
+      },
+      "1920x1080": {
+        "clippedCheckpoints": 0,
+        "of": 3,
+        "maxContentBottom": 824
+      }
+    },
+    "4": {
+      "1024x768": {
+        "clippedCheckpoints": 0,
+        "of": 3,
+        "maxContentBottom": 624
+      },
+      "1280x800": {
+        "clippedCheckpoints": 0,
+        "of": 3,
+        "maxContentBottom": 625
+      },
+      "1920x1080": {
+        "clippedCheckpoints": 0,
+        "of": 3,
+        "maxContentBottom": 627
+      }
+    },
+    "5": {
+      "1024x768": {
+        "clippedCheckpoints": 3,
+        "of": 3,
+        "maxContentBottom": 1216
+      },
+      "1280x800": {
+        "clippedCheckpoints": 3,
+        "of": 3,
+        "maxContentBottom": 1217
+      },
+      "1920x1080": {
+        "clippedCheckpoints": 3,
+        "of": 3,
+        "maxContentBottom": 1219
+      }
+    },
+    "6": {
+      "1024x768": {
+        "clippedCheckpoints": 3,
+        "of": 3,
+        "maxContentBottom": 1769
+      },
+      "1280x800": {
+        "clippedCheckpoints": 3,
+        "of": 3,
+        "maxContentBottom": 1769
+      },
+      "1920x1080": {
+        "clippedCheckpoints": 3,
+        "of": 3,
+        "maxContentBottom": 1768
+      }
+    }
+  },
+  "worstOverall": [
+    {
+      "bg": "rgb(30,30,37)",
+      "color": "rgb(15, 23, 42)",
+      "contrast": 1.07,
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "large": false,
+      "passesAA": false,
+      "rect": {
+        "b": 684,
+        "h": 40,
+        "r": 922,
+        "w": 166,
+        "x": 756,
+        "y": 644
+      },
+      "text": "client1: البوابة والراوتر (Gateway)",
+      "theme": "light",
+      "step": 5,
+      "resolution": "1024x768"
+    },
+    {
+      "bg": "rgb(30,30,37)",
+      "color": "rgb(15, 23, 42)",
+      "contrast": 1.07,
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "large": false,
+      "passesAA": false,
+      "rect": {
+        "b": 664,
+        "h": 20,
+        "r": 641,
+        "w": 163,
+        "x": 479,
+        "y": 644
+      },
+      "text": "client2: خادم تطبيق ERPNext",
+      "theme": "light",
+      "step": 5,
+      "resolution": "1024x768"
+    },
+    {
+      "bg": "rgb(30,30,37)",
+      "color": "rgb(15, 23, 42)",
+      "contrast": 1.07,
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "large": false,
+      "passesAA": false,
+      "rect": {
+        "b": 664,
+        "h": 20,
+        "r": 361,
+        "w": 164,
+        "x": 196,
+        "y": 644
+      },
+      "text": "client3: قاعدة بيانات MariaDB",
+      "theme": "light",
+      "step": 5,
+      "resolution": "1024x768"
+    },
+    {
+      "bg": "rgb(30,30,37)",
+      "color": "rgb(15, 23, 42)",
+      "contrast": 1.07,
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "large": false,
+      "passesAA": false,
+      "rect": {
+        "b": 738,
+        "h": 40,
+        "r": 922,
+        "w": 166,
+        "x": 756,
+        "y": 698
+      },
+      "text": "client4: خادم Redis وزمام العمليات",
+      "theme": "light",
+      "step": 5,
+      "resolution": "1024x768"
+    },
+    {
+      "bg": "rgb(30,30,37)",
+      "color": "rgb(15, 23, 42)",
+      "contrast": 1.07,
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "large": false,
+      "passesAA": false,
+      "rect": {
+        "b": 718,
+        "h": 20,
+        "r": 641,
+        "w": 146,
+        "x": 495,
+        "y": 698
+      },
+      "text": "client5: لوحة إدارة Cockpit",
+      "theme": "light",
+      "step": 5,
+      "resolution": "1024x768"
+    },
+    {
+      "bg": "rgb(30,30,37)",
+      "color": "rgb(15, 23, 42)",
+      "contrast": 1.07,
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "large": false,
+      "passesAA": false,
+      "rect": {
+        "b": 718,
+        "h": 20,
+        "r": 361,
+        "w": 157,
+        "x": 204,
+        "y": 698
+      },
+      "text": "client6: مدير البيانات DbGate",
+      "theme": "light",
+      "step": 5,
+      "resolution": "1024x768"
+    },
+    {
+      "bg": "rgb(30,30,37)",
+      "color": "rgb(15, 23, 42)",
+      "contrast": 1.07,
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "large": false,
+      "passesAA": false,
+      "rect": {
+        "b": 792,
+        "h": 40,
+        "r": 922,
+        "w": 166,
+        "x": 757,
+        "y": 752
+      },
+      "text": "client7: خزينة التخزين S3/MinIO",
+      "theme": "light",
+      "step": 5,
+      "resolution": "1024x768"
+    },
+    {
+      "bg": "rgb(30,30,37)",
+      "color": "rgb(15, 23, 42)",
+      "contrast": 1.07,
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "large": false,
+      "passesAA": false,
+      "rect": {
+        "b": 792,
+        "h": 40,
+        "r": 641,
+        "w": 166,
+        "x": 476,
+        "y": 752
+      },
+      "text": "client8: محرك عملاء Hermes الذكي",
+      "theme": "light",
+      "step": 5,
+      "resolution": "1024x768"
+    },
+    {
+      "bg": "rgb(30,30,37)",
+      "color": "rgb(15, 23, 42)",
+      "contrast": 1.07,
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "large": false,
+      "passesAA": false,
+      "rect": {
+        "b": 792,
+        "h": 40,
+        "r": 361,
+        "w": 166,
+        "x": 195,
+        "y": 752
+      },
+      "text": "client9: مكرر شبكة WireGuard",
+      "theme": "light",
+      "step": 5,
+      "resolution": "1024x768"
+    },
+    {
+      "bg": "rgb(30,30,37)",
+      "color": "rgb(15, 23, 42)",
+      "contrast": 1.07,
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "large": false,
+      "passesAA": false,
+      "rect": {
+        "b": 846,
+        "h": 40,
+        "r": 922,
+        "w": 159,
+        "x": 764,
+        "y": 806
+      },
+      "text": "client10: الرصد والمراقبة Prometheus",
+      "theme": "light",
+      "step": 5,
+      "resolution": "1024x768"
+    },
+    {
+      "bg": "rgb(30,30,37)",
+      "color": "rgb(15, 23, 42)",
+      "contrast": 1.07,
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "large": false,
+      "passesAA": false,
+      "rect": {
+        "b": 685,
+        "h": 40,
+        "r": 1055,
+        "w": 169,
+        "x": 886,
+        "y": 645
+      },
+      "text": "client1: البوابة والراوتر (Gateway)",
+      "theme": "light",
+      "step": 5,
+      "resolution": "1280x800"
+    },
+    {
+      "bg": "rgb(30,30,37)",
+      "color": "rgb(15, 23, 42)",
+      "contrast": 1.07,
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "large": false,
+      "passesAA": false,
+      "rect": {
+        "b": 665,
+        "h": 20,
+        "r": 771,
+        "w": 163,
+        "x": 608,
+        "y": 645
+      },
+      "text": "client2: خادم تطبيق ERPNext",
+      "theme": "light",
+      "step": 5,
+      "resolution": "1280x800"
+    }
+  ],
+  "totalTextSamples": 1242,
+  "totalFailingSamples": 435,
+  "overlapCount": 0,
+  "glassBlurPass": true
+}

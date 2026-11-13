@@ -4,6 +4,7 @@ packages:
   # the Clan panel SPA + its private Node backend (packages/*/backend glob).
   - 'packages/*'
   - 'packages/*/backend'
+  - 'packages/*/server'
   - 'apps/*'
   # The MCP server that renders documentation HTML. A workspace member so its
   # @modelcontextprotocol/sdk stays pinned in the shared lockfile and is
@@ -31,6 +32,8 @@ allowBuilds:
   utf-8-validate: true
   vue-demi: true
 autoInstallPeers: false
+minimumReleaseAgeExclude:
+  - '@vitejs/plugin-vue@6.0.11'
 overrides:
   # vite declares sass-embedded as an OPTIONAL peer and pnpm auto-installs optional
   # peers, so sass-embedded lands in the tree. Its prebuilt dart-sass binary cannot

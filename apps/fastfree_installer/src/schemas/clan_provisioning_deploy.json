@@ -1,0 +1,156 @@
+{
+  "id": "clan_provisioning_deploy",
+  "versionHash": "v2.2.0",
+  "title": {
+    "ar": "نشر الجهاز عبر clan machines install و Hyper-V VHDX",
+    "en": "Machine Deployment via clan machines install & Hyper-V VHDX"
+  },
+  "clan": {
+    "spec": "clan.lol/schema/clan_provisioning_deploy",
+    "module": "clan.deployment",
+    "command": "clan machines install",
+    "diskFormat": "VHDX (dynamic)"
+  },
+  "state": {
+    "selectedNode": "client1",
+    "targetDisk": "D:\\FastFree\\vms\\fastfree-clan.vhdx",
+    "assignedCpu": 8,
+    "assignedRamGb": 16,
+    "installPercent": 65,
+    "deployPhase": 4,
+    "deployStatus": "provisioning",
+    "events": 42
+  },
+  "root": {
+    "type": "div",
+    "class": "q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": { "rounded": true, "dense": true },
+        "children": [
+          { "type": "icon", "props": { "name": "rocket_launch", "size": "md", "color": "primary" } },
+          {
+            "type": "div",
+            "class": "text-h6 text-weight-bold text-main",
+            "text": { "ar": "نشر جهاز NixOS Clan على Hyper-V", "en": "Deploying NixOS Clan Machine on Hyper-V" }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted",
+            "text": {
+              "ar": "تثبيت العقدة {{ state.selectedNode || 'client1' }} via clan machines install وإنشاء قرص VHDX ديناميكي",
+              "en": "Installing node {{ state.selectedNode || 'client1' }} via clan machines install and creating a dynamic VHDX disk"
+            }
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": { "bordered": true },
+        "children": [
+          {
+            "type": "row",
+            "class": "row q-col-gutter-md q-mb-md",
+            "children": [
+              {
+                "type": "div",
+                "class": "col-12 col-md-6",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "div", "class": "text-caption accent-blue text-weight-bold", "text": { "ar": "العقدة المستهدفة", "en": "Target Node" } },
+                      { "type": "div", "class": "text-subtitle1 text-weight-bold text-main", "text": { "ar": "{{ state.selectedNode || 'client1' }}", "en": "{{ state.selectedNode || 'client1' }}" } },
+                      { "type": "div", "class": "text-caption text-muted", "text": { "ar": "النطاق: {{ state.selectedNode || 'client1' }}.fastfree.local", "en": "Domain: {{ state.selectedNode || 'client1' }}.fastfree.local" } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "div", "class": "text-caption accent-blue text-weight-bold", "text": { "ar": "موارد الجهاز الافتراضي", "en": "Virtual Machine Resources" } },
+                      { "type": "div", "class": "text-subtitle1 text-weight-bold text-main", "text": { "ar": "{{ state.assignedCpu || 8 }} أنوية | {{ state.assignedRamGb || 16 }} جيجابايت", "en": "{{ state.assignedCpu || 8 }} cores | {{ state.assignedRamGb || 16 }} GB" } },
+                      { "type": "div", "class": "text-caption text-muted", "text": { "ar": "المسار: {{ state.targetDisk || 'D:\\FastFree\\vms\\fastfree-clan.vhdx' }}", "en": "Path: {{ state.targetDisk || 'D:\\FastFree\\vms\\fastfree-clan.vhdx' }}" } }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "q-mb-md",
+            "children": [
+              {
+                "type": "row",
+                "class": "row items-center justify-between q-mb-xs",
+                "children": [
+                  { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "نسبة إنجاز النشر:", "en": "Deployment progress:" } },
+                  { "type": "badge", "props": { "color": "primary", "class": "q-pa-xs text-bold" }, "text": { "ar": "{{ state.installPercent || 0 }}%", "en": "{{ state.installPercent || 0 }}%" } }
+                ]
+              },
+              { "type": "progress", "model": "installPercent", "props": { "color": "primary", "trackColor": "grey-4", "size": "18px", "stripe": true, "rounded": true, "class": "q-my-sm" } },
+              { "type": "div", "class": "text-caption text-muted", "text": { "ar": "الحالة: {{ state.deployStatus || 'provisioning' }} — الأحداث: {{ state.events || 0 }}", "en": "Status: {{ state.deployStatus || 'provisioning' }} — events: {{ state.events || 0 }}" } }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "text-subtitle2 text-weight-bold text-main q-mb-sm",
+            "text": { "ar": "مراحل النشر (Clan Machines Install):", "en": "Deployment Phases (Clan Machines Install):" }
+          },
+          {
+            "type": "row",
+            "class": "row q-col-gutter-sm q-mb-md",
+            "children": [
+              { "type": "div", "class": "col-6 col-md-4", "children": [ { "type": "card", "class": "diag-card q-pa-sm text-center", "props": { "flat": true, "bordered": true }, "children": [ { "type": "icon", "props": { "name": "check_circle", "color": "positive", "size": "sm" } }, { "type": "div", "class": "text-caption text-weight-bold text-main q-mt-xs", "text": { "ar": "1. تخصيص VHDX", "en": "1. Allocate VHDX" } } ] } ] },
+              { "type": "div", "class": "col-6 col-md-4", "children": [ { "type": "card", "class": "diag-card q-pa-sm text-center", "props": { "flat": true, "bordered": true }, "children": [ { "type": "icon", "props": { "name": "check_circle", "color": "positive", "size": "sm" } }, { "type": "div", "class": "text-caption text-weight-bold text-main q-mt-xs", "text": { "ar": "2. فك صورة NixOS", "en": "2. Unpack NixOS" } } ] } ] },
+              { "type": "div", "class": "col-6 col-md-4", "children": [ { "type": "card", "class": "diag-card q-pa-sm text-center", "props": { "flat": true, "bordered": true }, "children": [ { "type": "icon", "props": { "name": "check_circle", "color": "positive", "size": "sm" } }, { "type": "div", "class": "text-caption text-weight-bold text-main q-mt-xs", "text": { "ar": "3. إنشاء VM Gen-2", "en": "3. Create Gen-2 VM" } } ] } ] },
+              { "type": "div", "class": "col-6 col-md-4", "children": [ { "type": "card", "class": "diag-card q-pa-sm text-center", "props": { "flat": true, "bordered": true }, "children": [ { "type": "icon", "props": { "name": "settings", "color": "warning", "size": "sm" } }, { "type": "div", "class": "text-caption text-weight-bold text-main q-mt-xs", "text": { "ar": "4. حقن مفاتيح Mesh", "en": "4. Inject Mesh Keys" } } ] } ] },
+              { "type": "div", "class": "col-6 col-md-4", "children": [ { "type": "card", "class": "diag-card q-pa-sm text-center", "props": { "flat": true, "bordered": true }, "children": [ { "type": "icon", "props": { "name": "hourglass_empty", "color": "grey-7", "size": "sm" } }, { "type": "div", "class": "text-caption text-weight-bold text-main q-mt-xs", "text": { "ar": "5. تشغيل الخدمات", "en": "5. Start Services" } } ] } ] },
+              { "type": "div", "class": "col-6 col-md-4", "children": [ { "type": "card", "class": "diag-card q-pa-sm text-center", "props": { "flat": true, "bordered": true }, "children": [ { "type": "icon", "props": { "name": "hourglass_empty", "color": "grey-7", "size": "sm" } }, { "type": "div", "class": "text-caption text-weight-bold text-main q-mt-xs", "text": { "ar": "6. التحقق الصحي", "en": "6. Health Check" } } ] } ] }
+            ]
+          },
+          { "type": "separator", "props": { "class": "q-my-md" } },
+          {
+            "type": "row",
+            "class": "row justify-between items-center",
+            "children": [
+              {
+                "type": "button",
+                "props": { "label": { "ar": "العودة إلى إعداد Mesh", "en": "Back to Mesh Setup" }, "color": "primary", "icon": "arrow_back", "outline": true },
+                "events": { "click": { "type": "open_sdui_screen", "screen": "clan_mesh_wireguard" } }
+              },
+              {
+                "type": "button",
+                "props": { "label": { "ar": "إعادة المحاولة", "en": "Retry Provisioning" }, "color": "warning", "icon": "refresh", "outline": true },
+                "events": {
+                  "click": [
+                    { "type": "tauri:invoke", "command": "clan_machines_install", "payload": { "node": "{{ state.selectedNode || 'client1' }}", "disk": "{{ state.targetDisk }}" } },
+                    { "type": "state:set", "target": "deployStatus", "payload": "retrying" }
+                  ]
+                }
+              },
+              {
+                "type": "button",
+                "props": { "label": { "ar": "إكمال وفتح منصة الإطلاق ←", "en": "Complete & Open Sovereign Launchpad →" }, "color": "positive", "iconRight": "arrow_forward", "unelevated": true },
+                "events": { "click": { "type": "navigate", "target": "step6" } }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

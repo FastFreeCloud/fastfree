@@ -76,3 +76,45 @@ test("long-running waits do not block other tool deliveries and cancellation rea
   assert.deepEqual(queue.poll("one"), { cancel: delivery.id })
   assert.equal(queue.poll("one"), null)
 })
+
+test("a stale claim is released so another window can finish the request", async () => {
+  const queue = bridgeQueue(60_000, 20)
+  queue.poll("window-one")
+  const result = queue.request({ operation: "create" }, new AbortController().signal)
+  const delivery = queue.poll("window-one")
+  assert.equal(delivery.request.operation, "create")
+  // window-one goes silent; once the lease expires another window can claim the same request.
+  await new Promise((resolve) => setTimeout(resolve, 40))
+  const redelivery = queue.poll("window-two")
+  assert.equal(redelivery.id, delivery.id)
+  queue.complete("window-two", redelivery.id, { id: "created" })
+  assert.deepEqual(await result, { id: "created" })
+})
+
+test("idempotency keys return the cached result instead of applying a write twice", async () => {
+  const queue = bridgeQueue()
+  queue.poll("one")
+  const first = queue.request({ operation: "create" }, new AbortController().signal, { idempotencyKey: "k1" })
+  const delivery = queue.poll("one")
+  queue.complete("one", delivery.id, { id: "created" })
+  assert.deepEqual(await first, { id: "created" })
+  // A retry with the same key must not create a second card.
+  const retry = await queue.request({ operation: "create" }, new AbortController().signal, { idempotencyKey: "k1" })
+  assert.deepEqual(retry, { id: "created" })
+  assert.equal(queue.poll("one"), null)
+})
+
+test("status and heartbeat report Desktop liveness and queue depth", async () => {
+  const queue = bridgeQueue()
+  assert.equal(queue.status().pending, 0)
+  const beat = queue.heartbeat("window-one")
+  assert.equal(beat.ok, true)
+  assert.equal(beat.clientID, "window-one")
+  queue.poll("window-one")
+  const pending = queue.request({ operation: "move" }, new AbortController().signal)
+  assert.equal(queue.status().pending, 1)
+  const delivery = queue.poll("window-one")
+  queue.complete("window-one", delivery.id, "moved")
+  assert.equal(await pending, "moved")
+  assert.equal(queue.status().pending, 0)
+})

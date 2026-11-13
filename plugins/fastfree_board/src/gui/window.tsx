@@ -8,6 +8,7 @@ import { sessionLauncher, sessionStarter } from "./start-session"
 import { globalBoard } from "./kanban-storage"
 import { connectBoardTools } from "./board-bridge"
 import { connectAutoMove } from "./auto-move"
+import { connectAutoLifecycle } from "./auto-lifecycle"
 import { hindsightSettings, hindsightTransportFromServers, bindHindsightTransport } from "./hindsight"
 import { BoardSettings, boardSettings, boardSettingsPage } from "./settings"
 import { newTaskDialog } from "./new-task-dialog"
@@ -21,6 +22,7 @@ export const setup: Plugin.Setup = (ctx) => {
   const hindsight = hindsightSettings(ctx)
   const launch = sessionLauncher(ctx, board)
   connectAutoMove(ctx, board, hindsight)
+  connectAutoLifecycle(ctx, board, settings, launch)
   connectBoardTools(ctx, board, launch, settings, hindsight)
   // Route GUI memory traffic through the plugin server part (the renderer cannot reach the local daemon).
   // Depend on the same storage readiness signals as connectBoardTools: they flip once the stores finish

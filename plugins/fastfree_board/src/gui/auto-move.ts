@@ -3,13 +3,14 @@ import type { Context } from "@opencode/plugin/gui"
 import { moveCard, taskLinks, type Task } from "./kanban-model"
 import type { BoardStore } from "./kanban-storage"
 import { retain, type HindsightStore } from "./hindsight"
+import { reviewSessions } from "./auto-lifecycle"
 
 /**
- * FastFree rule: a card in "progress" whose linked sessions have all reached
- * idle with outcome "succeeded" moves automatically to "review". The moved
- * cards are also written to Hindsight as one memory per task (best effort).
- * Cards with no linked sessions, disconnected servers, or a user-changed
- * status never move.
+ * FastFree automatic lifecycle rules:
+ *  - progress → review: every linked session reached idle with outcome "succeeded".
+ *  - review   → done:   the review session started by the lifecycle succeeded.
+ * Cards with no linked sessions, disconnected servers, or a user-changed status
+ * never move. Cards moved into review are written to Hindsight (best effort).
  */
 export function connectAutoMove(ctx: Pick<Context, "servers" | "sessions">, board: BoardStore, hindsight: HindsightStore) {
   const fallback = () => ctx.sessions.current()?.server.id ?? ""
@@ -30,28 +31,41 @@ export function connectAutoMove(ctx: Pick<Context, "servers" | "sessions">, boar
     if (!board.ready()) return
     const value = board.value
     if (!value) return
-    const moved: Task[] = []
+    const moved: { card: Task; to: string }[] = []
     for (const card of value.cards) {
-      if (card.status !== "progress") continue
       const links = taskLinks(card, fallback())
-      if (links.length === 0 || !links.every(succeeded)) continue
-      moved.push({ ...card })
+      if (card.status === "progress") {
+        if (links.length === 0 || !links.every(succeeded)) continue
+        moved.push({ card: { ...card }, to: "review" })
+        continue
+      }
+      if (card.status === "review") {
+        const reviewID = reviewSessions.get(card.id)
+        if (!reviewID) continue
+        const link = links.find((item) => item.id === reviewID)
+        if (!link || !succeeded(link)) continue
+        moved.push({ card: { ...card }, to: "done" })
+      }
     }
     if (!moved.length) return
     board.update((draft) => {
-      if (!draft.columns.some((column) => column.id === "review")) {
-        console.warn("[fastfree_board] auto-move skipped: no review column on the board")
-        return
-      }
       for (const source of moved) {
-        const current = draft.cards.find((item) => item.id === source.id)
-        if (current?.status !== "progress") continue // user re-planned it meanwhile — respect that
-        const index = draft.cards.filter((item) => item.status === "review").length
-        draft.cards = moveCard(draft.cards, source.id, "review", index)
-        const done = draft.cards.find((item) => item.id === source.id)
+        const current = draft.cards.find((item) => item.id === source.card.id)
+        // User re-planned it meanwhile — respect that.
+        if (!current || current.status !== source.card.status) continue
+        if (!draft.columns.some((column) => column.id === source.to)) {
+          console.warn(`[fastfree_board] auto-move skipped: no ${source.to} column on the board`)
+          continue
+        }
+        const index = draft.cards.filter((item) => item.status === source.to).length
+        draft.cards = moveCard(draft.cards, source.card.id, source.to, index)
+        const done = draft.cards.find((item) => item.id === source.card.id)
         if (done) done.updatedAt = Date.now()
       }
     })
-    for (const card of moved) void retain(hindsight, card)
+    for (const source of moved) {
+      if (source.to === "review") void retain(hindsight, source.card)
+      if (source.to === "done") reviewSessions.delete(source.card.id)
+    }
   })
 }
