@@ -1,0 +1,148 @@
+{
+  "id": "clan_mesh_wireguard",
+  "versionHash": "v2.2.0",
+  "title": {
+    "ar": "شبكة WireGuard Mesh للمتحكم والنظير",
+    "en": "WireGuard Mesh Controller & Peer Configuration"
+  },
+  "clan": {
+    "spec": "clan.lol/schema/clan_mesh_wireguard",
+    "module": "clan.core.vars.generators.wireguard-private-key",
+    "interface": "wg-fastfree",
+    "controller": "client1.fastfree.cloud"
+  },
+  "state": {
+    "selectedNode": "client1",
+    "wgInterface": "wg-fastfree",
+    "wgPort": "51820",
+    "wgTunnelIp": "10.100.0.2/24",
+    "wgEndpoint": "client1.fastfree.cloud:51820",
+    "wgMeshSubnet": "10.100.0.0/24",
+    "wgKeepalive": 25,
+    "wgKillSwitch": true,
+    "wgHardwareAcceleration": true,
+    "wgMeshInterconnect": true,
+    "wgHandshakeMs": 42
+  },
+  "root": {
+    "type": "div",
+    "class": "q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": { "rounded": true, "dense": true },
+        "children": [
+          { "type": "icon", "props": { "name": "vpn_lock", "size": "md", "color": "primary" } },
+          {
+            "type": "div",
+            "class": "text-h6 text-weight-bold text-main",
+            "text": { "ar": "شبكة WireGuard Mesh السيادية", "en": "Sovereign WireGuard Mesh Network" }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted",
+            "text": {
+              "ar": "نفق مشفر يربط العقدة {{ state.selectedNode || 'client1' }} بالمتحكم {{ state.wgEndpoint || 'client1.fastfree.cloud:51820' }}",
+              "en": "Encrypted tunnel linking node {{ state.selectedNode || 'client1' }} to controller {{ state.wgEndpoint || 'client1.fastfree.cloud:51820' }}"
+            }
+          }
+        ]
+      },
+      {
+        "type": "row",
+        "class": "row q-col-gutter-md",
+        "children": [
+          {
+            "type": "div",
+            "class": "col-12 col-md-6",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md",
+                "props": { "bordered": true },
+                "children": [
+                  { "type": "div", "class": "text-caption accent-blue text-weight-bold q-mb-xs", "text": { "ar": "المتحكم المركزي (Controller)", "en": "Central Controller" } },
+                  { "type": "div", "class": "text-subtitle1 text-weight-bold text-main q-mb-sm", "text": { "ar": "client1.fastfree.cloud", "en": "client1.fastfree.cloud" } },
+                  {
+                    "type": "input",
+                    "model": "wgEndpoint",
+                    "props": { "label": { "ar": "عنوان نقطة النهاية (Endpoint)", "en": "Controller Endpoint" }, "outlined": true, "dense": true, "color": "primary", "prefix": "IP:" }
+                  },
+                  {
+                    "type": "input",
+                    "model": "wgPort",
+                    "props": { "label": { "ar": "منفذ الاتصال (Port)", "en": "Listen Port (UDP)" }, "outlined": true, "dense": true, "color": "primary", "prefix": "UDP:" }
+                  },
+                  { "type": "div", "class": "text-caption text-muted q-mt-xs", "text": { "ar": "المفتاح العام للمتحكم: {{ state.selectedNode === 'client1' ? 'نفس العقدة (المتحكم)' : 'ClanMeshControllerPubkey' }}", "en": "Controller public key: {{ state.selectedNode === 'client1' ? 'same node (controller)' : 'ClanMeshControllerPubkey' }}" } }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-md-6",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md",
+                "props": { "bordered": true },
+                "children": [
+                  { "type": "div", "class": "text-caption accent-blue text-weight-bold q-mb-xs", "text": { "ar": "النظير المحلي (Peer)", "en": "Local Peer" } },
+                  { "type": "div", "class": "text-subtitle1 text-weight-bold text-main q-mb-sm", "text": { "ar": "العقدة {{ state.selectedNode || 'client1' }}", "en": "Node {{ state.selectedNode || 'client1' }}" } },
+                  {
+                    "type": "input",
+                    "model": "wgTunnelIp",
+                    "props": { "label": { "ar": "عنوان IP للنفق", "en": "Tunnel IP Address" }, "outlined": true, "dense": true, "color": "primary", "prefix": "IP:" }
+                  },
+                  { "type": "div", "class": "text-caption text-muted", "text": { "ar": "واجهة Systemd-Networkd: {{ state.wgInterface || 'wg-fastfree' }}", "en": "Systemd-Networkd interface: {{ state.wgInterface || 'wg-fastfree' }}" } },
+                  { "type": "div", "class": "text-caption text-muted", "text": { "ar": "نطاق الشبكة: {{ state.wgMeshSubnet || '10.100.0.0/24' }}", "en": "Mesh subnet: {{ state.wgMeshSubnet || '10.100.0.0/24' }}" } },
+                  { "type": "div", "class": "text-caption text-muted", "text": { "ar": "التشفير: ChaCha20-Poly1305 (Curve25519)", "en": "Cipher: ChaCha20-Poly1305 (Curve25519)" } },
+                  { "type": "div", "class": "text-caption text-muted", "text": { "ar": "إبقاء الاتصال: {{ state.wgKeepalive || 25 }} ثانية", "en": "Persistent keepalive: {{ state.wgKeepalive || 25 }} seconds" } }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": { "bordered": true },
+        "children": [
+          { "type": "div", "class": "text-subtitle2 text-weight-bold text-main q-mb-sm", "text": { "ar": "خيارات الأمان والشبكة", "en": "Security & Network Options" } },
+          { "type": "toggle", "model": "wgKillSwitch", "props": { "label": { "ar": "مفتاح الإيقاف التلقائي (Kill Switch)", "en": "Automatic Kill Switch" }, "color": "negative", "dense": true, "icon": "gpp_bad" } },
+          { "type": "toggle", "model": "wgHardwareAcceleration", "props": { "label": { "ar": "تسريع التشفير بالعتاد (Hardware Crypto Acceleration)", "en": "Hardware Crypto Acceleration" }, "color": "primary", "dense": true, "icon": "memory" } },
+          { "type": "toggle", "model": "wgMeshInterconnect", "props": { "label": { "ar": "ترابط أقران شبكة Clan Mesh التلقائي", "en": "Automatic Clan Mesh Peer Interconnect" }, "color": "primary", "dense": true, "icon": "hub" } },
+          { "type": "separator", "props": { "class": "q-my-md" } },
+          {
+            "type": "row",
+            "class": "row justify-between items-center",
+            "children": [
+              {
+                "type": "button",
+                "props": { "label": { "ar": "العودة للأسرار", "en": "Back to Secrets" }, "color": "primary", "icon": "arrow_back", "outline": true },
+                "events": { "click": { "type": "open_sdui_screen", "screen": "clan_vars_secrets" } }
+              },
+              {
+                "type": "button",
+                "props": { "label": { "ar": "اختبار المصافحة", "en": "Test Handshake" }, "color": "secondary", "icon": "speed", "outline": true },
+                "events": {
+                  "click": [
+                    { "type": "tauri:invoke", "command": "test_wireguard_handshake", "payload": { "endpoint": "{{ state.wgEndpoint }}", "port": "{{ state.wgPort }}" } },
+                    { "type": "notify", "payload": { "message": { "ar": "زمن الاستجابة: {{ state.wgHandshakeMs || 42 }} مللي ثانية", "en": "Handshake latency: {{ state.wgHandshakeMs || 42 }} ms" }, "color": "positive", "icon": "speed" } }
+                  ]
+                }
+              },
+              {
+                "type": "button",
+                "props": { "label": { "ar": "نشر الجهاز ←", "en": "Proceed to Machine Deployment →" }, "color": "primary", "iconRight": "arrow_forward", "unelevated": true },
+                "events": { "click": { "type": "navigate", "target": "step5" } }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -13,13 +13,13 @@ metadata:
 
 # FastFree ERP Development Skill
 
-Develop FastFree ERP — a Quasar (Vue 3 + TypeScript) frontend with Frappe (Python) backend, 9 apps, 9 packages, monorepo with pnpm.
+Develop FastFree ERP — a Quasar (Vue 3 + TypeScript) frontend with Frappe (Python) backend: 3 core apps, 10 modular packages, 1 plugin, pnpm monorepo.
 
 ## When to Use
 
 - User asks to develop, modify, or extend FastFree ERP
-- User wants to add features to any app (ERP, HR, Ledger, POS, Panel, Website, OS, Installer, Backend)
-- User wants to work on any package (Auth, CRM, Accounting, Inventory, Sales, Purchase, HR, Lowcode, Update)
+- User wants to add features to any app (Installer, Backend, Website)
+- User wants to work on any package (Auth, CRM, Accounting, Inventory, Sales, Purchase, HR, Lowcode, OS, Panel)
 - User needs to run tests, build, or deploy
 
 ## Prerequisites
@@ -32,65 +32,52 @@ Develop FastFree ERP — a Quasar (Vue 3 + TypeScript) frontend with Frappe (Pyt
 
 ## How to Run
 
-### Step 1: Start development server
+### Step 1: Run tests
 
 ```bash
 cd C:/Users/FastFree/Desktop/fastfree
-pnpm dev  # or pnpm --filter fastfree_hr dev
+pnpm run test:unit      # Vitest across all workspace packages
+pnpm run test:coverage  # same + 80% coverage gate
 ```
 
-### Step 2: Run tests
+### Step 2: Build one app
 
 ```bash
 cd C:/Users/FastFree/Desktop/fastfree
-pnpm test  # Vitest
-pnpm test:e2e  # Cypress
+pnpm --filter fastfree_installer build  # vue-tsc --noEmit && vite build
+pnpm --filter fastfree_website build    # next build
 ```
 
-### Step 3: Build
+The root package.json has no `dev`/`build`/`lint`/`deploy` scripts — run per-package scripts, not root ones.
+
+### Step 3: Start a dev server
 
 ```bash
 cd C:/Users/FastFree/Desktop/fastfree
-pnpm build  # Build all
-pnpm --filter fastfree_hr build  # Build specific
-```
-
-### Step 4: Deploy
-
-```bash
-cd C:/Users/FastFree/Desktop/fastfree
-pnpm deploy  # Deploy all
+pnpm --filter fastfree_panel dev               # panel SPA
+bun --cwd apps/fastfree_installer run tauri dev
 ```
 
 ## Quick Reference
 
 | Command | Purpose |
 |---------|---------|
-| `pnpm dev` | Start dev server (all apps) |
-| `pnpm --filter fastfree_hr dev` | Start HR app dev server |
-| `pnpm test` | Run unit tests (Vitest) |
-| `pnpm test:e2e` | Run E2E tests (Cypress) |
-| `pnpm build` | Build all apps |
-| `pnpm lint` | Run ESLint |
-| `pnpm typecheck` | Run TypeScript type checking |
+| `pnpm run test:unit` | Vitest across all workspace packages |
+| `pnpm run test:coverage` | Tests + 80% coverage gate |
+| `pnpm --filter <pkg> build` | Build one package/app |
+| `pnpm --filter <pkg> typecheck` | Typecheck one package |
+| `cd plugins/fastfree_board && node --test tests/*.test.mjs` | Board plugin tests |
 
 ## Architecture
 
-### 9 Apps
-
+### 3 Core Apps (`apps/`)
 | App | Purpose | Tech |
 |-----|---------|------|
-| fastfree_erp | Main ERP shell | Quasar (Vue 3 + TS) |
-| fastfree_hr | HR management | Quasar (Vue 3 + TS) |
-| fastfree_ledger | Accounting ledger | Quasar (Vue 3 + TS) |
-| fastfree_pos | Point of sale | Quasar (Vue 3 + TS) |
-| fastfree_panel | Admin panel (Hono backend) | Quasar + Hono |
-| fastfree_website | Marketing website | Next.js |
-| fastfree_backend | Frappe backend (Python) | Frappe (Python) |
-| fastfree_os | NixOS/Clan infrastructure | NixOS |
-| fastfree_installer | Desktop installer | Vue 3 + Tauri (Rust) |
+| fastfree_installer | Desktop installer (node setup, licenses, WireGuard, SDUI launchpad) | Vue 3 + Quasar + Tauri 2 (Rust) |
+| fastfree_backend | ERP data model (17 Frappe DocTypes) + employee API | Frappe (Python) |
+| fastfree_website | Marketing site (i18n AR/EN RTL, SEO) | Next.js 15 + React 19 |
 
-### 9 Packages
+### 10 Modular Packages (`packages/`)
 | Package | Purpose |
 |---------|---------|
 | fastfree_auth | Authentication & authorization |
@@ -100,8 +87,16 @@ pnpm deploy  # Deploy all
 | fastfree_sales | Sales management |
 | fastfree_purchase | Purchase management |
 | fastfree_hr | HR management (screens, services, stores) |
-| fastfree_lowcode | Lowcode platform (window manager, CRUD) |
-| fastfree_update | Update management |
+| fastfree_lowcode | Lowcode engine (window manager, CRUD, dynamic form, SDUI runtime) |
+| fastfree_os | NixOS/Clan infrastructure flake (no package.json) |
+| fastfree_panel | Clan panel SPA + private Hono backend |
+
+### 1 Plugin (`plugins/`)
+| Plugin | Purpose |
+|--------|---------|
+| fastfree_board | Kanban board inside OpenCode Desktop (see the `fastfree-board` skill) |
+
+`AGENTS.md` and older docs still describe 9 apps / 11 packages and a `bots/` directory — none of that matches the filesystem. Trust the `apps/`, `packages/`, `plugins/` listings over those docs.
 
 ### Development Pattern
 
@@ -142,25 +137,9 @@ Use `delegate_task` for parallel work:
 - Test writing → subagent with test context
 - Documentation → subagent with docs context
 
-### Using bots for development:
+### Bots
 
-```bash
-# Code inspection
-python bots/project_bot.py
-
-# Design audit
-python bots/design_auditor_bot.py
-
-# Architecture mapping
-python bots/architecture_mapper_bot.py
-
-# Test running
-python bots/test_runner_bot.py
-
-# Cleanup
-python bots/cleanup_bot.py
-python bots/deep_cleanup_bot.py
-```
+`bots/` no longer exists in the repo (the ten Python bots were deleted). Use `delegate_task` subagents and `scripts/` tooling instead; do not reference `bots/*.py` in plans.
 
 ## Communication
 
@@ -229,6 +208,7 @@ Project-local skills are shared via `skills.external_dirs` pointing to `fastfree
 - Installer uses Vue 3 + Tauri (Rust), NOT Quasar — separate build process
 - Rust compile: fix undefined params, truncated identifiers, then verify with cargo build
 - Security: never hardcode secrets; use env vars; sanitize PowerShell; canonicalize paths
+- Verify app/package counts and directory existence against the filesystem before planning — `AGENTS.md`, `PROJECT_KNOWLEDGE_BASE.md`, and this skill have all drifted from reality (non-existent apps, `bots/`, `fastfree_update`)
 
 ## Verification
 

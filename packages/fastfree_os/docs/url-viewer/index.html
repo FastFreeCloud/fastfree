@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>عارف الأرشيف - fastfree_os URL Viewer</title>
+<style>
+  :root{
+    --bg:#0a0b0e; --bg2:#0f1116; --card:#161922; --card2:#1c2130;
+    --fg:#e6e9f0; --muted:#8a90a0; --accent:#6ea9ff; --accent2:#ff8a66;
+    --border:#262c3c; --green:#4ade80; --red:#f87171; --amber:#fbbf24;
+    --code:#1e2330;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{background:var(--bg); color:var(--fg); font-family:'JetBrains Mono','Inter',system-ui,sans-serif; height:100%}
+  body{display:flex; gap:0; padding:0; font-size:15px; line-height:1.6}
+  /* scrollbar */
+  ::-webkit-scrollbar{width:10px;} ::-webkit-scrollbar-track{background:var(--bg2)} ::-webkit-scrollbar-thumb{background:var(--border); border-radius:5px}
+  /* layout */
+  .app{display:flex; height:100%; max-width:1600px; margin:0 auto; min-width:0}
+  /* sidebar */
+  .sidebar{
+    width:340px; min-width:340px; background:var(--bg2); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; overflow:hidden; overflow-y:auto;
+  }
+  .brand{display:flex; align-items:center; gap:10px; padding:14px 18px; border-bottom:1px solid var(--border)}
+  .brand .logo{font-size:22px; line-height:1}
+  .brand .title{font-weight:700; letter-spacing:-.3px}
+  .brand .sub{color:var(--muted); font-size:12px}
+  .urlbar{flex:1; display:flex; gap:8px; padding:10px 14px}
+  .urlbar input{flex:1; background:var(--bg); border:1px solid var(--border); color:var(--fg); padding:10px 14px; border-radius:8px; font-family:inherit; font-size:14px; outline:none}
+  .urlbar input:focus{border-color:var(--accent)}
+  .urlbar .row{display:flex; align-items:center; gap:8px}
+  .btn{
+    background:var(--accent); color:#0a0b0e; border:none; padding:10px 16px; border-radius:8px;
+    font-weight:700; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:8px;
+    transition:transform .1s, filter .15s; white-space:nowrap;
+  }
+  .btn:hover{filter:brightness(1.1)} .btn:active{transform:scale(.97)}
+  .btn.ghost{background:var(--card2); color:var(--fg); border:1px solid var(--border)}
+  .btn.ghost:hover{border-color:var(--accent); color:var(--accent)}
+  .btns{display:flex; gap:8px; padding:8px 14px; border-top:1px solid var(--border)}
+  /* docs */
+  .docs-h3{font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); padding:10px 14px 6px}
+  .docs-list{list-style:none; display:flex; flex-direction:column; gap:2px}
+  .docs-list li{display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:6px; cursor:pointer; transition:background .12s}
+  .docs-list li:hover{background:var(--card2)}
+  .docs-list li .ico{font-size:15px}
+  .docs-list li .t{font-size:13px; font-weight:500}
+  .docs-list li .s{color:var(--muted); font-size:12px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px}
+  .docs-list li .tag{font-size:10px; color:var(--muted); background:var(--bg); border:1px solid var(--border); padding:2px 7px; border-radius:4px; font-weight:600}
+  .docs-list li .tag.green{color:#4ade80; border-color:#161922}
+  .spacer{flex:1}
+  footer{padding:10px 14px; color:var(--muted); font-size:11px; display:flex; gap:14px; align-items:center}
+  footer span{color:var(--fg)}
+  footer .ver{color:var(--muted)}
+  /* main */
+  .main{flex:1; display:flex; flex-direction:column; overflow:hidden; background:var(--bg)}
+  .topbar{display:flex; align-items:center; gap:10px; padding:12px 18px; border-bottom:1px solid var(--border); flex-wrap:wrap}
+  .topbar .title-box{display:flex; align-items:center; gap:10px}
+  .topbar .title-box .ico{font-size:20px}
+  .topbar .title-box .t{font-weight:700; font-size:16px}
+  .topbar .title-box .s{color:var(--muted); font-size:12px}
+  .topbar .actions{display:flex; gap:8px; margin-left:auto}
+  .status{padding:10px 18px; border-bottom:1px solid var(--border); font-size:13px; min-height:40px}
+  .status .lab{color:var(--muted); font-size:12px; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:.5px}
+  .status .msg{color:var(--fg)}
+  .status.error .msg{color:var(--red)} .status.ok .msg{color:var(--green)} .status.loading .msg{color:var(--amber)}
+  .content{flex:1; overflow:auto; padding:20px 22px}
+  .content .doc-header{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:14px}
+  .content .doc-header .k{font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted)}
+  .content .doc-header h1{font-size:28px; font-weight:800; letter-spacing:-.5px; line-height:1.2}
+  .content .doc-header .meta{color:var(--muted); font-size:13px}
+  .content .doc-header .meta span:not(:last-child)::after{content:"  \2022  "; color:var(--border)}
+  .content .markdown{p>strong{font-weight:700} p>em{font-style:italic} .content h2{font-size:20px; margin:22px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border)} .content h3{font-size:16px; margin:16px 0 6px} .content a{color:var(--accent); text-decoration:none} .content a:hover{text-decoration:underline} .content ul{margin:8px 0 8px 18px} .content li{margin-bottom:4px} .content blockquote{border-left:3px solid var(--accent2); padding:4px 12px; color:var(--muted); font-style:italic} .content code{background:var(--code); padding:2px 6px; border-radius:4px; font-size:13px} .content pre{background:var(--code); padding:14px; border-radius:8px; overflow:auto; margin:10px 0} .content pre code{color:var(--fg); font-size:12px} .content hr{border:0; border-top:1px solid var(--border); margin:20px 0} .content table{width:100%; border-collapse:collapse; margin:12px 0} .content th,td{border:1px solid var(--border); padding:8px 10px; text-align:left} .content th{background:var(--card2)} .content img{max-width:100%; border-radius:8px}
+  .empty{font-size:14px; color:var(--muted); text-align:center; padding:60px 20px}
+  .empty .ico{font-size:40px}
+  /* viewer modal content area */
+  .viewer-wrap{display:flex; flex-direction:column; height:100%}
+  @media (max-width:860px){ .sidebar{transform:translateX(0); position:absolute; inset:0; z-index:100; box-shadow:-8px 0 20px rgba(0,0,0,.4); overflow-y:auto} .sidebar.hidden{transform:translateX(100%)} .app{width:100%; min-width:0} }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="logo">◈</span>
+      <div>
+        <div class="title">عارف الأرشيف <span class="sub">fastfree_os</span></div>
+        <div class="sub" id="brandSub">URL Viewer + مخزن المراجع</div>
+      </div>
+    </div>
+
+    <div class="urlbar">
+      <div class="row">
+        <input id="urlInput" type="text" value="https://clan.lol/docs/26.05" placeholder="أدخل الرابط أو الأداة..." autofocus />
+        <button class="btn" id="fetchBtn">▸ ابحث</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn ghost" id="openInBrowser">🔗 فتح في المتصفح</button>
+        <button class="btn ghost" id="rawBtn">📄 عريض المحتوى</button>
+      </div>
+    </div>
+
+    <div class="docs-h3">📚 المراجع الذهبية</div>
+    <ul class="docs-list" id="docsList">
+      <!-- populated by JS -->
+    </ul>
+
+    <div class="spacer"></div>
+    <button class="btn ghost" id="toggleSideBtn" style="width:100%">اضغط لاستعادة الشريط</button>
+    <footer>
+      <span>fastfree_os</span>
+      <span class="ver" id="ver">v1.0</span>
+      <span style="color:var(--muted)">•</span>
+      <span>مصمم بـ &nbsp;◈&nbsp; free tools</span>
+    </footer>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+    <div class="topbar">
+      <div class="title-box">
+        <span class="ico">🌐</span>
+        <div>
+          <div class="t">عارف الأرشيف</div>
+          <div class="s" id="pageTitle">جاري التحميل...</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" id="copyMdBtn">📋 نسخ الصيغة</button>
+        <a class="btn ghost" id="openMdBtn" href="#" target="_blank">🔗 رابط الملف</a>
+      </div>
+    </div>
+    <div class="status" id="status">
+      <span class="lab">الحالة</span>
+      <span class="msg" id="statusMsg">أدخل الرابط واضغط الزر - أو اضغط على إحدى المراجع في الشريط</span>
+    </div>
+    <div class="content" id="content">
+      <div class="empty">
+        <div class="ico">🔍</div>
+        <p>أدخل رابطاً في الشريط العلوي واضغط الزر، أو اضغط على إحدى المراجع في الجانب.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+  const docs = [
+    {url:"https://clan.lol/docs/26.05/getting-started/quick-start", title:"البداية السريعة", subtitle:"إعدادك الأول لـ Clan"},
+    {url:"https://clan.lol/docs/26.05/guides/inventory/intro-to-inventory", title:"مخزن الأجهزة", subtitle:"تعلّم عن المخزن"},
+    {url:"https://clan.lol/docs/26.05/guides/vars/intro-to-vars", title:"المتغيرات", subtitle:"استخدم المتغيرات"},
+    {url:"https://clan.lol/docs/26.05/guides/macos", title:"آيفون ومك", subtitle:"إدارة macOS"},
+    {url:"https://clan.lol/docs/26.05/releases/26-05", title:"إصدار 26.05", subtitle:"ملاحظات إصدار جديد"},
+    {url:"https://clan.lol/docs/26.05/", title:"الرئيسية", subtitle:"الإطار الإقليمي للاعبين"},
+  ];
+
+  const urlInput = document.getElementById('urlInput');
+  const fetchBtn = document.getElementById('fetchBtn');
+  const openInBrowser = document.getElementById('openInBrowser');
+  const rawBtn = document.getElementById('rawBtn');
+  const docsList = document.getElementById('docsList');
+  const main = document.getElementById('main');
+  const status = document.getElementById('status');
+  const statusMsg = document.getElementById('statusMsg');
+  const pageTitle = document.getElementById('pageTitle');
+  const content = document.getElementById('content');
+  const copyMdBtn = document.getElementById('copyMdBtn');
+  const openMdBtn = document.getElementById('openMdBtn');
+  const ver = document.getElementById('ver');
+  const toggleSideBtn = document.getElementById('toggleSideBtn');
+  const sidebar = document.getElementById('sidebar');
+  const brandSub = document.getElementById('brandSub');
+
+  const PROXY = "https://api.allorigins.win/raw?url=";
+
+  // build docs list
+  docs.forEach((d, i) => {
+    const li = document.createElement('li');
+    li.innerHTML =
+      `<span class="ico">📄</span>
+        <span class="t">${d.title}</span>
+        <span class="s">${d.subtitle}</span><span class="tag">${i===0?'الرئيسي':'موجز'}</span>`;
+    li.dataset.url = d.url;
+    li.addEventListener('click', () => { urlInput.value = d.url; fetchUrl(d.url); });
+    docsList.appendChild(li);
+  });
+
+  function setStatus(msg, kind){
+    statusMsg.textContent = msg;
+    status.className = 'status' + (kind ? ' ' + kind : '');
+  }
+
+  async function fetchUrl(url){
+    const mainUrl = new URL(urlInput.value);
+    const raw = await fetch(PROXY + encodeURIComponent(mainUrl));
+    const html = await raw.text();
+    return renderDoc(mainUrl.href, html);
+  }
+
+  async function fetchAndRender(url){
+    setStatus('جاري جلب المحتوى من السيرفر... (بروكسي مجاني)', 'loading');
+    try {
+      const mainUrl = new URL(url);
+      const res = await fetch(PROXY + encodeURIComponent(mainUrl.href));
+      if (!res.ok) throw new Error('السيرفر رجع خطأ: ' + res.status);
+      const html = await res.text();
+      renderDoc(mainUrl.href, html);
+      setStatus('تم جلب المحتوى بنجاح ✓', 'ok');
+    } catch(e){
+      setStatus('فشل في الجلب: ' + e.message, 'error');
+      content.innerHTML = `<div class="empty"><div class="ico">⚠️</div><p>${esc(e.message)}</p></div>`;
+    }
+  }
+
+  function renderDoc(url, html){
+    const doc = parseMarkup(html);
+    pageTitle.textContent = doc.title || 'محتوى غير معروف';
+    const body = doc.body || html;
+    const md = mdToHtml(body);
+    const links = extractLinks(html, url);
+    const htmlOut = `
+      <div class="doc-header">
+        <div><div class="k">📌 عنوان الصفحة</div><h1 id="top">${esc(doc.title||''} || '—'}</h1></div>
+        <div class="meta">
+          <span>📎 رابط:</span>
+          <a href="${esc(url)}" target="_blank">${esc(url)}</a>
+          <span>📏 ${doc.textLength||0} حرف</span>
+        </div>
+      </div>
+      ${md}
+      <div style="margin-top:20px">
+        <div class="k" style="margin-bottom:8px">🔗 روابط الصفحة (${links.length})</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:8px">
+          ${links.map(l=>`<a class="btn" style="justify-content:left" href="${esc(l.url)}" target="_blank">${esc(l.text)}</a>`).join('')}
+        </div>
+      </div>
+    `;
+    content.innerHTML = htmlOut;
+    copyMdBtn.onclick = copyAsMd;
+    openMdBtn.href = url;
+    window.scrollTo(0,0);
+  }
+
+  function parseMarkup(html){
+    const t = typeof html === 'string' ? html : '';
+    const title = t.match(/<title>([\s\S]*?)<\/title>/i);
+    const doc = {};
+    const h1 = t.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+    doc.title = h1 ? h1[1].replace(/<[^>]*>/g,'') : (title?title[1]:'')||'صفحة غير مُسمّاة';
+    doc.body = t;
+    doc.textLength = (t.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().length);
+    return doc;
+  }
+
+  function mdToHtml(html){
+    let t = typeof html === 'string' ? html : '';
+    t = t.replace(/<video([\s\S]*?)<\/video>/gi, '<div style="text-align:center;margin:12px 0"><iframe style="max-width:100%;aspect-video" src="$1" frameborder="0" allowfullscreen></iframe></div>');
+    t = t.replace(/<div([\s\S]*?)<\/div>/gi, '<div$1></div>');
+    t = t.replace(/<([^<>{}]+?)>/g, function(m){
+      if(/^<br\s*\/?>/i.test(m)) return '\n\n';
+      if(/^<(p|div|section|h[1-6]|blockquote|ul|ol|tr|li|table|pre|code|hr|strong|em|a|img)>/i.test(m)) return m;
+      return m;
+    });
+    t = t.replace(/<br\s*\/?>/gi, '\n');
+    t = t.replace(/<[^>]+>/g, '\n');
+    t = t.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+    return t;
+  }
+
+  function extractLinks(html, base){
+    const raw = typeof html === 'string' ? html : '';
+    const links = [];
+    const re = /href=["']([^"']+)["']/gi;
+    let m;
+    while((m = re.exec(raw))){
+      const u = m[1].startsWith('http') ? m[1] : new URL(m[1], base).href;
+      const txt = raw.slice(0, m.index).match(/<a[^>]*>([\s\S]*?)<\/a>/i);
+      links.push({url:u, text: (txt?txt[1]:'') });
+    }
+    return [...new Set(links)].slice(0, 12);
+  }
+
+  function esc(s){ return (s||'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function copyAsMd(){
+    const text = content.innerText || '';
+    navigator.clipboard.writeText(text).then(()=>setStatus('نسخ الصيغة (markdown) بنجاح ✓', 'ok'));
+  }
+
+  fetchBtn.addEventListener('click', () => fetchAndRender(urlInput.value));
+  fetchBtn.addEventListener('keydown', e => { if(e.key==='Enter') fetchAndRender(urlInput.value); });
+  openInBrowser.addEventListener('click', () => {
+    const u = urlInput.value.trim();
+    if(!u) return;
+    const a = document.createElement('a');
+    a.href = u; a.target = '_blank'; a.rel='noopener'; a.click();
+  });
+  rawBtn.addEventListener('click', () => {
+    const t = content.innerText || '';
+    setStatus('الوضع الآن: عريض المحتوى الكامل — اضغط الزر لتحويله للصيغة', 'ok');
+    content.innerHTML = `<div class="markdown">${esc(t)}</div>`;
+  });
+
+  // toggle sidebar on mobile
+  toggleSideBtn.addEventListener('click', () => sidebar.classList.toggle('hidden'));
+  // close sidebar on clicking outside
+  document.addEventListener('click', e => {
+    if(window.innerWidth <= 860 && !sidebar.contains(e.target) && !toggleSideBtn.contains(e.target)){
+      sidebar.classList.add('hidden');
+    }
+  });
+
+  // sample fetch on load
+  fetchAndRender(urlInput.value);
+})();
+</script>
+</body>
+</html>

@@ -62,21 +62,26 @@ attachments:
 # =============================================================================
 plugins:
   enabled:
+    - crew
+    - disk-cleanup
     - herdr-agent-state
+    - hindsight
     - mcp-serve
   clone_timeout_seconds: 300
 
 # =============================================================================
 # Model Configuration
 # =============================================================================
-  disabled: []
+  disabled:
+    - kanban-graph
+    - kanban-task-threads
   entries:
     mcp-serve:
       allow_tool_override: false
 model:
   # Default model to use (can be overridden with --model flag)
   # Both "default" and "model" work as the key name here.
-  default: "reflection/beam-1.0-501b-a23b:free"
+  default: "meituan/longcat-2.5:free"
 
   # Inference provider selection:
   #   "auto"         - Auto-detect from credentials (default)
@@ -1366,7 +1371,7 @@ gateway:
   trust_recent_files: true
   trust_recent_files_seconds: 600
 platform_toolsets:
-  cli: [a2a, browser, clarify, code_execution, computer_use, connections, cronjob, delegation, file, image_gen, kanban, memory, session_search, skills, terminal, todo, tts, video, video_gen, vision, web, x_search]
+  cli: [a2a, browser, clarify, code_execution, computer_use, connections, crew, cronjob, delegation, file, image_gen, kanban, memory, session_search, skills, terminal, todo, tts, video, video_gen, vision, web, x_search]
   telegram: [hermes-telegram]
   discord: [hermes-discord]
   whatsapp: [hermes-whatsapp]
@@ -1533,6 +1538,11 @@ platform_toolsets:
 #     such a server as "lazy" with its cached tool count until it is first used.
 #
 mcp_servers:
+  opencode-runner:
+    command: "C:/Users/FastFree/.opencode/bin/opencode.exe"
+    args: ["run"]
+    enabled: true
+    timeout: 300
   office-docs:
     command: "C:/Users/FastFree/AppData/Roaming/Python/Python315/Scripts/docforge-mcp.exe"
     timeout: 180
@@ -1659,6 +1669,13 @@ mcp_servers:
         - security_check
         - supported_languages
         - semgrep_rule_schema
+  fastfree_board:
+    command: C:/Program Files/nodejs/node.exe
+    args:
+      - C:/Users/FastFree/Desktop/fastfree/plugins/fastfree_board/mcp-server.mjs
+      - --connect-timeout
+      - '90'
+    enabled: true
 stt:
   enabled: true
   # provider: "local"          # auto-detected if omitted
@@ -2194,7 +2211,6 @@ platforms:
     enabled: true
     extra:
       allowed_users: "7834647806"
-
 updates:
   # Disable passive CLI/banner update checks with `hermes config set updates.check false`.
   # Explicit `hermes update --check` and `hermes update` remain available.
@@ -2366,6 +2382,7 @@ updates:
 command_allowlist:
   - delete in root path
   - execute_code
+  - force kill processes (Stop-Process -Force)
 auxiliary:
   mcp:
     provider: nous
@@ -2376,9 +2393,14 @@ onboarding:
 fallback_providers:
   - provider: nous
     model: stepfun/step-3.7-flash:free
+  - provider: nous
+    model: meituan/longcat-2.5:free
+  - provider: nous
+    model: upstage/solar-mini4:free
 known_plugin_toolsets:
   cli:
     - a2a
+    - crew
 known_builtin_toolsets:
   cli:
     - browser
@@ -2406,9 +2428,31 @@ known_builtin_toolsets:
     - vision
     - web
     - x_search
-    - yuanbao
-
-
-
-
-
+moa:
+  presets:
+    default:
+      reference_models:
+        - provider: nous
+          model: stepfun/step-3.7-flash:free
+          enabled: true
+        - provider: nous
+          model: meituan/longcat-2.5:free
+          enabled: true
+      degraded_reference_policy: loud
+      fanout: user_turn
+      aggregator:
+        provider: nous
+        model: upstage/solar-mini4:free
+  reference_models:
+    - provider: nous
+      model: stepfun/step-3.7-flash:free
+      enabled: true
+    - provider: nous
+      model: meituan/longcat-2.5:free
+      enabled: true
+  aggregator:
+    provider: nous
+    model: upstage/solar-mini4:free
+  degraded_reference_policy: loud
+  fanout: user_turn
+  enabled: true

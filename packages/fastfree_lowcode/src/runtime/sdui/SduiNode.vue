@@ -23,6 +23,11 @@ import { computed, defineOptions, type Component } from 'vue'
 import type { SduiNode, SduiState, SduiAction } from './types'
 import { SduiRegistry } from './SduiRegistry'
 import { SduiActionDispatcher } from './SduiActionDispatcher'
+import {
+  resolveNodeValue,
+  type SduiResolveLocale,
+  type SduiResolveState,
+} from './resolve'
 
 defineOptions({
   name: 'SduiNode'
@@ -47,30 +52,17 @@ const dispatcher = SduiActionDispatcher.getInstance()
 /**
  * Active application locale from reactive state
  */
-const currentLocale = computed<string>(() => {
+const currentLocale = computed<SduiResolveLocale>(() => {
   return (props.state as any)?.locale || 'ar'
 })
 
-function evaluateString(str: string): string {
-  if (!str || typeof str !== 'string' || !str.includes('{{')) return str
-  return str.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_, path) => {
-    const cleanPath = path.startsWith('state.') ? path.slice(6) : path
-    const val = dispatcher.getNestedState(props.state, cleanPath)
-    return val !== undefined && val !== null ? String(val) : ''
-  })
-}
-
-function resolveLocalized(val: any): any {
-  if (!val) return val
-  if (typeof val === 'object' && ('ar' in val || 'en' in val)) {
-    const loc = currentLocale.value
-    const localized = val[loc] || val['ar'] || val['en'] || ''
-    return evaluateString(localized)
-  }
-  if (typeof val === 'string') {
-    return evaluateString(val)
-  }
-  return val
+/**
+ * Resolve one node value (text/label/style/prop) through the shared resolver:
+ * dual-language { ar, en } -> {{ expression }} interpolation -> tokens.css
+ * CSS variable resolution for the active theme.
+ */
+function resolveNodeValueForNode(value: any): any {
+  return resolveNodeValue(value, currentLocale.value, props.state as SduiResolveState)
 }
 
 /**
@@ -107,7 +99,7 @@ const boundProps = computed(() => {
   const result: Record<string, any> = {}
 
   for (const [key, val] of Object.entries(rawProps)) {
-    result[key] = resolveLocalized(val)
+    result[key] = resolveNodeValueForNode(val)
   }
 
   if (props.node.id) {
@@ -119,7 +111,7 @@ const boundProps = computed(() => {
   }
 
   if (props.node.style) {
-    result.style = props.node.style
+    result.style = resolveNodeValueForNode(props.node.style)
   }
 
   // Two-way data binding for Quasar and standard elements
@@ -149,13 +141,21 @@ const eventListeners = computed(() => {
   if (props.node.events) {
     for (const [eventName, actionOrActions] of Object.entries(props.node.events)) {
       listeners[eventName] = async (event: any) => {
+        // Resolve dual-language labels and {{ state }} payloads inside actions
+        // before they are emitted or dispatched.
+        const resolvedActions = resolveNodeValue(
+          actionOrActions,
+          currentLocale.value,
+          props.state as SduiResolveState
+        )
+
         emit('action', {
-          action: actionOrActions,
+          action: resolvedActions,
           eventName,
           event
         })
 
-        await dispatcher.dispatchAll(actionOrActions, {
+        await dispatcher.dispatchAll(resolvedActions, {
           state: props.state,
           event,
           node: props.node,
@@ -178,7 +178,7 @@ const eventListeners = computed(() => {
  */
 const interpolatedText = computed(() => {
   if (!props.node.text) return ''
-  return resolveLocalized(props.node.text)
+  return resolveNodeValueForNode(props.node.text)
 })
 
 const onChildAction = (payload: { action: SduiAction | SduiAction[]; eventName: string; event: any }) => {

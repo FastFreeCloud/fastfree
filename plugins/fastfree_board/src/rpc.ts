@@ -25,6 +25,16 @@ export const BoardBridge = Rpc.define({
       },
     },
     complete: { input: { type: "object", properties: { clientID: { type: "string" }, id: { type: "string" }, result: {}, error: { type: "string" } }, required: ["clientID", "id"], additionalProperties: false }, output: { type: "null" } },
+    // Liveness: the GUI beats every couple of seconds so agents can tell "Desktop is closed"
+    // apart from "Desktop is busy", and fail fast instead of waiting for the full timeout.
+    heartbeat: {
+      input: { type: "object", properties: { clientID: { type: "string", minLength: 1 } }, required: ["clientID"], additionalProperties: false },
+      output: { type: "object", properties: { ok: { type: "boolean" }, clientID: { type: "string" }, lastSeen: { type: "number" }, pending: { type: "number" }, owned: { type: "number" }, completed: { type: "number" } }, required: ["ok"], additionalProperties: false },
+    },
+    status: {
+      input: { type: "object", properties: {}, additionalProperties: false },
+      output: { type: "object", properties: { lastSeen: { type: "number" }, pending: { type: "number" }, owned: { type: "number" }, completed: { type: "number" } }, required: ["lastSeen", "pending", "owned", "completed"], additionalProperties: false },
+    },
     hindsight_recall: {
       input: { type: "object", properties: { query: { type: "string", minLength: 1 }, max_tokens: { type: "integer", minimum: 64, maximum: 4096 }, endpoint: { type: "string" }, bank: { type: "string", minLength: 1, maxLength: 64 } }, required: ["query"], additionalProperties: false },
       output: { type: "object", properties: { markdown: { type: ["string", "null"] } }, required: ["markdown"], additionalProperties: false },

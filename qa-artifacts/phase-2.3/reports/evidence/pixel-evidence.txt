@@ -1,0 +1,44 @@
+Pixel-sampling ground truth (pngjs) - Phase 2.3 visual audit
+Generated: 2026-11-12T21:17:50Z
+
+=== EVIDENCE A: DEF-001 light-theme invisible text ===
+File: screenshots/step1-light-1280x800.png  Region: RAM card label x=505..776 y=320..348
+Ground truth: text pixels rgb(15,23,42) on card rgb(28,28,35) -> contrast ~1.2:1
+
+image: 1280x800 region: 505,320 -> 776,348
+top colors (r,g,b -> count):
+   28,28,35 -> 6430
+   15,23,42 -> 305
+   16,23,42 -> 133
+   26,27,36 -> 131
+   19,25,39 -> 119
+   15,23,41 -> 106
+   26,28,36 -> 77
+   18,24,40 -> 69
+   22,26,39 -> 68
+   28,28,36 -> 64
+   24,27,38 -> 59
+   22,26,40 -> 7
+brightest: 28,28,36 lum 28.6
+darkest: 15,23,41 lum 22.6
+
+=== EVIDENCE B: DEF-003 dark-theme sub-AA blue text ===
+File: screenshots/step1-dark-1280x800.png  Region: client1 chip x=944..1024 y=511..532
+Ground truth: text pixels rgb(25,118,210) on card rgb(23,23,30) -> contrast ~3.86:1
+
+image: 1280x800 region: 944,511 -> 1024,532
+top colors (r,g,b -> count):
+   23,23,30 -> 1088
+   25,118,210 -> 240
+   24,69,118 -> 43
+   24,85,147 -> 41
+   24,44,68 -> 40
+   24,33,49 -> 38
+   24,106,188 -> 38
+   24,112,199 -> 36
+   24,54,88 -> 32
+   24,95,168 -> 28
+   23,28,40 -> 24
+   24,79,137 -> 4
+brightest: 25,118,210 lum 104.9
+darkest: 23,23,30 lum 23.5

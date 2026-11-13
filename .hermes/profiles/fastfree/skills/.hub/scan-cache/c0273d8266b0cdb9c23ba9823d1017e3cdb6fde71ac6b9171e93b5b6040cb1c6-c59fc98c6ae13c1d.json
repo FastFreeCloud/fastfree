@@ -1,0 +1,25 @@
+{
+  "bundle_hash": "sha256:c0273d8266b0cdb9c23ba9823d1017e3cdb6fde71ac6b9171e93b5b6040cb1c6",
+  "scanner_version": "skills-guard-v10",
+  "source": "official",
+  "source_url": "official/autonomous-ai-agents/opencode",
+  "trust_level": "builtin",
+  "verdict": "safe",
+  "findings": [
+    {
+      "pattern_id": "git_clone",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "SKILL.md",
+      "line": 161,
+      "match": "terminal(command=\"REVIEW=$(mktemp -d) && git clone https://github.com/user/repo.git $REVIEW && cd $REVIEW && opencode...",
+      "description": "clones a git repository at runtime"
+    }
+  ],
+  "rules": [
+    "git_clone"
+  ],
+  "scanned_at": "2026-11-12T23:44:45.223676+00:00",
+  "summary": "opencode: safe \u2014 1 finding(s) in supply_chain",
+  "fresh": true
+}

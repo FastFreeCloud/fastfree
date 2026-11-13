@@ -1,0 +1,24 @@
+{
+  "name": "fastfree-sdui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared Server-Driven UI contract for FastFree — canonical SduiScreen/SduiNode/SduiAction types, Zod screen schema and the widget catalog used by both the delivery server and the client engine (docs/sdui/PLAN.md §4.1)",
+  "author": "FastFree <sales@fastfree.cloud>",
+  "license": "MIT",
+  "type": "module",
+  "main": "contract/index.ts",
+  "exports": {
+    ".": "./contract/index.ts",
+    "./contract": "./contract/index.ts",
+    "./contract/*": "./contract/*",
+    "./client": "./client/index.ts",
+    "./client/*": "./client/*",
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "engines": {
+    "node": ">= 18"
+  }
+}

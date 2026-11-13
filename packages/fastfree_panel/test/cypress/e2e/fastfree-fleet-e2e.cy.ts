@@ -63,17 +63,20 @@ describe('FastFree Fleet & Services Comprehensive E2E Suite', () => {
   });
 
   describe('Test 2: System Endpoints & Service Health', () => {
-    it('Verifies /mcp/status direct endpoint returns status 200 and the 4 registered MCP tools', () => {
+    it('Verifies /mcp/status direct endpoint returns status 200 and the 7 registered MCP tools', () => {
       cy.request('/mcp/status').then((response) => {
         expect(response.status).to.eq(200);
         expect(response.body).to.have.property('data');
         expect(response.body.data.status).to.eq('ready');
-        expect(response.body.data.tools).to.be.an('array').with.length(4);
+        expect(response.body.data.tools).to.be.an('array').with.length(7);
         expect(response.body.data.tools).to.include.members([
           'clan_machines_list',
           'clan_machines_update',
           'nixos_health',
           'nixos_rollback',
+          'paseo_status',
+          'paseo_agents',
+          'paseo_agent_prompt',
         ]);
       });
     });

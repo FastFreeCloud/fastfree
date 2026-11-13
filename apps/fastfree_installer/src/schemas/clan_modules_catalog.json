@@ -1,0 +1,360 @@
+{
+  "id": "clan_modules_catalog",
+  "versionHash": "v2.2.0",
+  "title": {
+    "ar": "كتالوج وحدات options.fastfree.apps",
+    "en": "options.fastfree.apps Module Catalog"
+  },
+  "clan": {
+    "spec": "clan.lol/schema/clan_modules_catalog",
+    "module": "options.fastfree.apps",
+    "options": ["base", "shell", "mariadb", "caddy", "fastfree_backend", "fastfree_panel", "fastfree_ledger", "fastfree_erp", "fastfree_hr", "fastfree_pos", "fastfree_website", "dbgate", "cockpit"]
+  },
+  "state": {
+    "selectedNode": "client1",
+    "modules": {
+      "base": true,
+      "shell": true,
+      "mariadb": true,
+      "caddy": true,
+      "fastfree_backend": true,
+      "fastfree_panel": true,
+      "fastfree_ledger": true,
+      "fastfree_erp": true,
+      "fastfree_hr": false,
+      "fastfree_pos": false,
+      "fastfree_website": false,
+      "dbgate": true,
+      "cockpit": true
+    }
+  },
+  "root": {
+    "type": "div",
+    "class": "q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": { "rounded": true, "dense": true },
+        "children": [
+          { "type": "icon", "props": { "name": "extension", "size": "md", "color": "primary" } },
+          {
+            "type": "div",
+            "class": "text-h6 text-weight-bold text-main",
+            "text": { "ar": "كتالوج وحدات options.fastfree.apps", "en": "options.fastfree.apps Module Catalog" }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted",
+            "text": {
+              "ar": "تفعيل أو تعطيل وحدات NixOS للعقدة {{ state.selectedNode || 'client1' }} قبل توليد الأسرار ونشر النظام",
+              "en": "Toggle the NixOS modules for node {{ state.selectedNode || 'client1' }} before generating secrets and deploying"
+            }
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": { "bordered": true },
+        "children": [
+          {
+            "type": "row",
+            "class": "row items-center justify-between q-mb-md",
+            "children": [
+              {
+                "type": "div",
+                "class": "text-subtitle1 text-weight-bold text-main",
+                "text": { "ar": "الوحدات المفعلة: {{ enabledCount(state.modules) }} من 13", "en": "{{ enabledCount(state.modules) }} of 13 modules enabled" }
+              },
+              {
+                "type": "row",
+                "class": "row q-gutter-xs",
+                "children": [
+                  {
+                    "type": "button",
+                    "props": { "label": { "ar": "تفعيل الكل", "en": "Enable All" }, "size": "sm", "outline": true, "color": "primary", "icon": "done_all" },
+                    "events": {
+                      "click": {
+                        "type": "state:set",
+                        "payload": {
+                          "modules": {
+                            "base": true, "shell": true, "mariadb": true, "caddy": true,
+                            "fastfree_backend": true, "fastfree_panel": true, "fastfree_ledger": true,
+                            "fastfree_erp": true, "fastfree_hr": true, "fastfree_pos": true,
+                            "fastfree_website": true, "dbgate": true, "cockpit": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "props": { "label": { "ar": "تعطيل الكل", "en": "Disable All" }, "size": "sm", "outline": true, "color": "negative", "icon": "remove_done" },
+                    "events": {
+                      "click": {
+                        "type": "state:set",
+                        "payload": {
+                          "modules": {
+                            "base": true, "shell": false, "mariadb": false, "caddy": false,
+                            "fastfree_backend": false, "fastfree_panel": false, "fastfree_ledger": false,
+                            "fastfree_erp": false, "fastfree_hr": false, "fastfree_pos": false,
+                            "fastfree_website": false, "dbgate": false, "cockpit": false
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "row",
+            "class": "row q-col-gutter-md",
+            "children": [
+              {
+                "type": "div",
+                "class": "col-12 col-md-6 col-lg-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "icon", "props": { "name": "settings", "color": "primary" } },
+                      { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "base — النظام الأساسي", "en": "base — Core NixOS system" } },
+                      { "type": "div", "class": "text-caption text-muted q-mb-xs", "text": { "ar": "إعدادات النظام الأساسية والشبكة والإقلاع", "en": "Core system, networking and boot configuration" } },
+                      { "type": "toggle", "model": "modules.base", "props": { "color": "primary", "dense": true } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6 col-lg-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "icon", "props": { "name": "terminal", "color": "primary" } },
+                      { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "shell — أدوات CLI", "en": "shell — CLI tooling" } },
+                      { "type": "div", "class": "text-caption text-muted q-mb-xs", "text": { "ar": "zsh مع rg/fd/fzf وأدوات البحث العميق", "en": "zsh with rg/fd/fzf and deep-search CLI tools" } },
+                      { "type": "toggle", "model": "modules.shell", "props": { "color": "primary", "dense": true } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6 col-lg-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "icon", "props": { "name": "storage", "color": "primary" } },
+                      { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "mariadb — قاعدة البيانات", "en": "mariadb — Database server" } },
+                      { "type": "div", "class": "text-caption text-muted q-mb-xs", "text": { "ar": "خادم قواعد بيانات MariaDB للأنظمة السيادية", "en": "MariaDB database server for the sovereign stack" } },
+                      { "type": "toggle", "model": "modules.mariadb", "props": { "color": "primary", "dense": true } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6 col-lg-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "icon", "props": { "name": "dns", "color": "primary" } },
+                      { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "caddy — الوكيل العكسي", "en": "caddy — Reverse proxy" } },
+                      { "type": "div", "class": "text-caption text-muted q-mb-xs", "text": { "ar": "توجيه النطاقات الفرعية وتشفير HTTPS تلقائياً", "en": "Subdomain routing with automatic HTTPS" } },
+                      { "type": "toggle", "model": "modules.caddy", "props": { "color": "primary", "dense": true } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6 col-lg-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "icon", "props": { "name": "server", "color": "primary" } },
+                      { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "fastfree_backend — الواجهة الخلفية", "en": "fastfree_backend — Backend" } },
+                      { "type": "div", "class": "text-caption text-muted q-mb-xs", "text": { "ar": "خادم Frappe/ERPNext وعمليات الخلفية", "en": "Frappe/ERPNext server and worker processes" } },
+                      { "type": "toggle", "model": "modules.fastfree_backend", "props": { "color": "primary", "dense": true } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6 col-lg-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "icon", "props": { "name": "dashboard", "color": "primary" } },
+                      { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "fastfree_panel — لوحة الإدارة", "en": "fastfree_panel — Admin panel" } },
+                      { "type": "div", "class": "text-caption text-muted q-mb-xs", "text": { "ar": "لوحة إدارة Clan الأصلية وواجهة SPA", "en": "Native Clan panel service and SPA" } },
+                      { "type": "toggle", "model": "modules.fastfree_panel", "props": { "color": "primary", "dense": true } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6 col-lg-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "icon", "props": { "name": "account_balance", "color": "primary" } },
+                      { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "fastfree_ledger — المحاسبة", "en": "fastfree_ledger — Accounting" } },
+                      { "type": "div", "class": "text-caption text-muted q-mb-xs", "text": { "ar": "دفتر الأستاذ والمخزون والفواتير", "en": "General ledger, inventory and invoicing" } },
+                      { "type": "toggle", "model": "modules.fastfree_ledger", "props": { "color": "primary", "dense": true } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6 col-lg-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "icon", "props": { "name": "business", "color": "primary" } },
+                      { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "fastfree_erp — نظام ERP", "en": "fastfree_erp — ERP suite" } },
+                      { "type": "div", "class": "text-caption text-muted q-mb-xs", "text": { "ar": "نظام تخطيط موارد المؤسسات الكامل", "en": "Full enterprise resource planning suite" } },
+                      { "type": "toggle", "model": "modules.fastfree_erp", "props": { "color": "primary", "dense": true } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6 col-lg-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "icon", "props": { "name": "badge", "color": "primary" } },
+                      { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "fastfree_hr — الموارد البشرية", "en": "fastfree_hr — Human resources" } },
+                      { "type": "div", "class": "text-caption text-muted q-mb-xs", "text": { "ar": "الموظفون والرواتب والإجازات وCRM", "en": "Employees, payroll, leave and CRM" } },
+                      { "type": "toggle", "model": "modules.fastfree_hr", "props": { "color": "primary", "dense": true } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6 col-lg-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "icon", "props": { "name": "point_of_sale", "color": "primary" } },
+                      { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "fastfree_pos — نقطة البيع", "en": "fastfree_pos — Point of sale" } },
+                      { "type": "div", "class": "text-caption text-muted q-mb-xs", "text": { "ar": "شاشة بيع لمسية سريعة مع الفوترة", "en": "Fast touch-friendly POS with invoicing" } },
+                      { "type": "toggle", "model": "modules.fastfree_pos", "props": { "color": "primary", "dense": true } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6 col-lg-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "icon", "props": { "name": "language", "color": "primary" } },
+                      { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "fastfree_website — الموقع", "en": "fastfree_website — Website" } },
+                      { "type": "div", "class": "text-caption text-muted q-mb-xs", "text": { "ar": "موقع Next.js العام للمؤسسة", "en": "Public Next.js company website" } },
+                      { "type": "toggle", "model": "modules.fastfree_website", "props": { "color": "primary", "dense": true } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6 col-lg-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "icon", "props": { "name": "table_chart", "color": "primary" } },
+                      { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "dbgate — إدارة قواعد البيانات", "en": "dbgate — Database manager" } },
+                      { "type": "div", "class": "text-caption text-muted q-mb-xs", "text": { "ar": "واجهة ويب لإدارة قواعد البيانات", "en": "Web interface for database management" } },
+                      { "type": "toggle", "model": "modules.dbgate", "props": { "color": "primary", "dense": true } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "col-12 col-md-6 col-lg-4",
+                "children": [
+                  {
+                    "type": "card",
+                    "class": "diag-card q-pa-sm",
+                    "props": { "flat": true, "bordered": true },
+                    "children": [
+                      { "type": "icon", "props": { "name": "monitor", "color": "primary" } },
+                      { "type": "div", "class": "text-subtitle2 text-weight-bold text-main", "text": { "ar": "cockpit — إدارة الخادم", "en": "cockpit — Server management" } },
+                      { "type": "div", "class": "text-caption text-muted q-mb-xs", "text": { "ar": "لوحة إدارة خادم الويب الشاملة", "en": "Comprehensive web-based server management" } },
+                      { "type": "toggle", "model": "modules.cockpit", "props": { "color": "primary", "dense": true } }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          { "type": "separator", "props": { "class": "q-my-md" } },
+          {
+            "type": "row",
+            "class": "row justify-between items-center",
+            "children": [
+              {
+                "type": "button",
+                "props": { "label": { "ar": "العودة لاكتشاف العقد", "en": "Back to Node Discovery" }, "color": "primary", "icon": "arrow_back", "outline": true },
+                "events": { "click": { "type": "open_sdui_screen", "screen": "clan_node_discovery" } }
+              },
+              {
+                "type": "button",
+                "props": { "label": { "ar": "توليد الأسرار ←", "en": "Generate Secrets →" }, "color": "secondary", "iconRight": "arrow_forward", "unelevated": true },
+                "events": { "click": { "type": "open_sdui_screen", "screen": "clan_vars_secrets" } }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

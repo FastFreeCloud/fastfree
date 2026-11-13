@@ -127,3 +127,4 @@ midscene_run/
 .beads-credential-key
 .beads/proxieddb/
 *.gate.lock*
+.hermes-tmp.*

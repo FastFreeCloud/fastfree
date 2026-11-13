@@ -69,6 +69,20 @@ npx tauri dev  # Uses Vite + Rust, shows all errors in terminal
 - i18n: Custom composable (useI18n)
 - State: Custom composables (useDiscovery, useTheme, useDiagnostics)
 
+### Launcher vs host
+The installer is a **launcher/companion**, not a host for the ERP apps. `AppRegistryService.launchApp()`
+calls `openUrl()` (Tauri opener → OS browser) and deliberately never navigates the installer webview. The
+target architecture is **one FastFree backend + one Tauri client whose UI is JSON/SDUI**, so app tiles must
+open screens **inside** the client (SDUI), not the OS browser. See `fastfree-architect` →
+`references/target-architecture.md`.
+
+### SDUI screen registry
+`src/schemas/screens.ts` is the single source of truth: `STEP_SCHEMAS` (the 6 wizard steps) and
+`NAMED_SDUI_SCREENS` (package screens such as `accounting_ledger`, `sales_pos`, `fleet_monitor`,
+`client_manager`). `SduiStepHost.vue` renders them via `SduiNode` from
+`quasar-app-extension-fastfree-lowcode`. Only 4 packages currently ship JSON schemas (`fastfree_accounting`,
+`fastfree_panel`, `fastfree_sales`); the rest register Vue screens in their own `screens.ts`.
+
 ### Screen Flow (6 steps)
 1. HostDiscovery — System discovery
 2. LicenseScreen — License activation
@@ -110,7 +124,7 @@ npx tauri dev  # Uses Vite + Rust, shows all errors in terminal
 - Tauri commands need Rust backend (src-tauri/)
 - CSS must work in 3 themes (dark, light, oled-black)
 - RTL support required (Arabic)
-- No Quasar — uses plain Vue 3
+- Quasar is used as a component library (`app.use(Quasar, ...)` in `src/main.ts`) but the installer is **not** a Quasar CLI app — it is plain Vite + Vue 3, and the module screens are SDUI JSON, not hand-coded Vue
 - Desktop app — not web
 - WireGuard screen was previously fixed (331 insertions, 207 deletions)
 - Never hardcode secrets in Rust source — recoverable from binary

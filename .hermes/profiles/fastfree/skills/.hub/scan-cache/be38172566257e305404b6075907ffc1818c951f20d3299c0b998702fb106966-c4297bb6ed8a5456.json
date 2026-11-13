@@ -1,0 +1,13 @@
+{
+  "bundle_hash": "sha256:be38172566257e305404b6075907ffc1818c951f20d3299c0b998702fb106966",
+  "scanner_version": "skills-guard-v10",
+  "source": "@jujitao/memory-never-forget",
+  "source_url": "@jujitao/memory-never-forget",
+  "trust_level": "community",
+  "verdict": "safe",
+  "findings": [],
+  "rules": [],
+  "scanned_at": "2026-11-12T18:01:38.063529+00:00",
+  "summary": "memory-never-forget: clean scan, no threats detected",
+  "fresh": true
+}

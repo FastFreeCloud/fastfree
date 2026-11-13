@@ -78,10 +78,10 @@ Line numbers refer to the working tree at the time of writing.
 | `extractUserQuery()` — best-effort extraction of the latest user prompt from raw messages (never throws) | `src/server.ts:13-40` |
 | Global singletons shared across location instances: `bridgeQueue()` (Symbol `fastfree_board.bridge.v2`), `toolSettings()` (Symbol `fastfree_board.tool-settings.v1`) | `src/server.ts:42-48` |
 | `setup()` | `src/server.ts:52` |
-| `ctx.rpc.register(BoardBridge, …)` — registers 5 RPC methods (§3.2) | `src/server.ts:54-79` |
-| → `poll` handler (GUI polls for work; optional `toolsEnabled` heartbeat) | `src/server.ts:55-59` |
-| → `complete` handler (GUI reports result/error; returns `null`) | `src/server.ts:60-64` |
-| → `hindsight_recall` / `hindsight_retain` / `hindsight_reflect` handlers (all delegate to `hindsight-server.ts`) | `src/server.ts:67-78` |
+| `ctx.rpc.register(BoardBridge, …)` — registers 5 RPC methods (§3.2) | `src/server.ts:55-80` |
+| → `poll` handler (GUI polls for work; optional `toolsEnabled` heartbeat) | `src/server.ts:56-60` |
+| → `complete` handler (GUI reports result/error; returns `null`) | `src/server.ts:61-65` |
+| → `hindsight_recall` / `hindsight_retain` / `hindsight_reflect` handlers (all delegate to `hindsight-server.ts`) | `src/server.ts:68-79` |
 | `ctx.tool.transform(editor => …)` — registers agent tools | `src/server.ts:80-135` |
 | → `board_*`: one `editor.add` per operation in `toolSchemas` (9 tools), names `board_${operation}` | `src/server.ts:82-100` |
 | → permission gate: all writes go through `ctx.permission.assert` (`board_start_session`/`board_remove`/`board_update`) | `src/server.ts:89-91` |
@@ -157,13 +157,14 @@ That is the **5-method** contract. The server registers handlers for all five; t
 | `src/gui.tsx` | GUI entry; `Plugin.define({ setup })` → `window.tsx` setup |
 | `window.tsx` | **Setup-owned shared store wiring.** Stores: board (`globalBoard`, `kanban-v2`), settings (`boardSettings`, `settings-v1`), Hindsight (`hindsightSettings`, `hindsight-local-v2`); registers `SettingsPage`, `Command`s (`kanban`, `layout`), side `Panel`, session-header `Slot`, `ComposerPill` (`src/gui/window.tsx:17-79`). Binds Hindsight RPC transport from connected servers (`:26-29`), registers commands at `:49-57`, panel at `:60-66`, header slot at `:74-77`, pill at `:78` |
 | `board-bridge.ts` | **Claims `BoardBridge` requests from connected servers**; polls every 500ms per server; applies board ops to the shared store; `start_session` and `wait` special-cased; agent-create appends recalled Hindsight section best-effort (`:50-65`); agent-driven `move`→`review`/`done` triggers `retain()` (`:67-71`) (`src/gui/board-bridge.ts:11-102`) |
-| `kanban-model.ts` | **Columns.** Seed columns: Backlog, Ready, In progress, Review, Done + `kanban` + `hindsight` (violet/cyan) (`:3-11`); default titles/localization keys (`:26-34`); `BoardSchema`/`CardSchema`; `moveCard`; `taskPrompt()` — including the `HERMES MIRROR` instruction emitted for tasks labelled `mirror` (`:139`) |
+| `kanban-model.ts` | **Columns.** Seed columns: Backlog, Ready, In progress, Review, Done + `hindsight` (`:3-10`); default titles/localization keys (`:26-33`); `BoardSchema`/`CardSchema`; `moveCard`; `taskPrompt()` — including `PROFILE:` instructions emitted for tasks labelled `profile:*` (`:138`) |
 | `kanban.tsx` | Board UI: filters, editors, **drag-and-drop** interactions (no Hindsight retain call anywhere here — see §8). ~36 kB / largest GUI file |
 | `kanban-storage.ts` | Global board store `kanban-v2` (migrated from `plugin.opencode-desktop-showcase.kanban-v2`) (`src/gui/kanban-storage.ts:4-10`) |
 | `kanban.css` | Scoped styles, OpenCode theme tokens, Cairo font stack + RTL support |
-| `settings.tsx` | **Settings → Board page.** `SettingsSchema` `{toolsEnabled, locale?, columnsSeeded?}`, store `settings-v1`, first-install default **Arabic** (`initial: { toolsEnabled: true, locale: "ar" }`, `:15-17`); language toggle Ar/En (`:24,41-43`); layout modes (overlay/split/full/list, `:35-40,77-89`); agent-tools switch (`:99-103`); Hindsight section (`:106-147`) |
+| `settings.tsx` | **Settings → Board page.** `SettingsSchema` `{toolsEnabled, locale?, columnsSeeded?, autoStart?, autoReview?, autoPromote?, maxConcurrent?, autoModel?}`, store `settings-v1`, first-install default **Arabic** (`initial: { toolsEnabled: true, locale: "ar" }`, `:15-17`); language toggle Ar/En; layout modes; agent-tools switch; automatic lifecycle toggles; Hindsight section |
 | `hindsight.ts` | **GUI-side Hindsight client.** Store `hindsight-local-v2`, default `{enabled: true, bank: "fastfree", endpoint: "http://127.0.0.1:9177"}` (`:48-54`); RPC transport via `bindHindsightTransport` (`:22-25`); `recall()` / `recallSection` / `retain()` (`:73-166`); 25s recall timeout (`:57`); falls back to a direct `fetch` only when no transport is bound (normally fails — see §6) |
 | `auto-move.ts` | **Hard rule:** a card in `progress` whose linked sessions all reached `idle` + `succeeded` moves to `review` automatically; retained memory per card is best-effort (`src/gui/auto-move.ts:7-13`, `:14-57`; retain call at `:55`) |
+| `auto-lifecycle.ts` | **Full autonomous lifecycle.** Drives `backlog → ready → progress → review → done` end-to-end: promotes from backlog when there is room, starts work sessions for `ready` cards and moves them to `progress`, starts review sessions for `review` cards (`:46-87`) |
 | `new-task-dialog.tsx` | **New task / New task from session** dialog. GUI-create path pushes the card (`:51-56`), then appends a recalled Hindsight section to the description best-effort, guarded by "edited meanwhile" check (`:57-69`). Optional session link + generated Markdown description via `session.generate` |
 | `kanban-view-v2` handling | Shared handle with `window.tsx:37-41` and `settings.tsx:29-34` (layout mode store) |
 | `i18n.ts` / `lang.ts` | `en`/`ar` catalogs (~150 literals); `useBoardLang`; translation at render time |
@@ -293,10 +294,6 @@ GUI `retain()` swallows errors and returns `false`.
    best-effort and unverified in production.
 2. **Drag-and-drop does NOT retain to Hindsight.** Only the two retain call sites above (agent move to
    `review`/`done`, and the `auto-move` rule) write memories. Moving a card with the mouse is silent memory-wise.
-3. **Hermes kanban mirror is manual.** The plugin never syncs to Hermes. Tasks labelled `mirror` receive a
-   `HERMES MIRROR:` instruction in their agent prompt (`src/gui/kanban-model.ts:139`) telling the agent to run
-   `hermes kanban --board fastfree-erp …` itself (claim/create/move/comment), and to note — not block on —
-   failures. There is no automation beyond that prompt text.
 4. **Desktop must be open and connected.** All board writes are delivered by the Desktop GUI through the
    bridge queue. With Desktop closed, agents get "Open OpenCode Desktop with fastfree_board enabled …"
    (`bridge-queue.ts:35`). The panel doesn't need to be visible, but the app must be running and the plugin
@@ -370,5 +367,45 @@ pack install, but publishing from here is not supported (§8.11). No dependencie
 - **Is:** the orientation map for hacking on the fork — build/test, architecture, data flow, packaging.
 - **Is not:** user docs (`README.md`), the upstream guides (`docs/*.md`), release instructions
   (`docs/releasing.md` — upstream-only), or a promise that any path above has been exercised live.
+
+---
+
+## 11. Automatic lifecycle
+
+The board can drive a card from creation to completion without manual dragging. All automatic steps are gated by
+settings in **Settings → Board → Automatic lifecycle** and can be switched off individually.
+
+### Column-driven flow
+
+```
+backlog → ready → progress → review → done
+```
+
+| Transition | Trigger | Controller |
+|---|---|---|
+| `backlog → ready` | There is room under the **max concurrent work** limit (`progress` count < `maxConcurrent`) | `auto-lifecycle.ts` |
+| `ready → progress` | A work session is started for the card | `auto-lifecycle.ts` |
+| `progress → review` | Every linked session reached `idle` with outcome `succeeded` | `auto-move.ts` |
+| `review → done` | The review session started by the lifecycle succeeded | `auto-move.ts` + `auto-lifecycle.ts` |
+
+### Settings
+
+| Setting | Default | Effect |
+|---|---|---|
+| `autoPromote` | on | Move cards from `backlog` to `ready` when there is room |
+| `maxConcurrent` | 2 | Maximum cards in `progress` at once (safe default for weak hosts) |
+| `autoStart` | on | Start a work session for each `ready` card and move it to `progress` |
+| `autoReview` | on | Start a review session for each `review` card |
+| `autoModel` | `opencode/glm-5.3-flash-free` | `providerID/modelID` used for automatically opened sessions |
+
+### Limits and safety
+
+- A card is started **at most once** per column (`starting` set + `reviewSessions` map).
+- `auto-lifecycle` only starts sessions when the card has no linked sessions in `ready`, and only when no review
+  session has been tracked yet in `review`.
+- Failures are shown as toasts and do not crash the board.
+- Drag-and-drop and agent-driven `board_move` still work; they override or coexist with the automatic rules.
+
+---
 
 Last verified against the working tree on 2026-11-11 (typecheck clean, 93/93 tests pass, `npm pack --dry-run` clean).

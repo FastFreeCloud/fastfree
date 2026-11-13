@@ -1,0 +1,170 @@
+{
+  "id": "clan_launchpad_dashboard",
+  "versionHash": "v2.2.0",
+  "title": {
+    "ar": "منصة الإطلاق السيادية والبوابات",
+    "en": "Sovereign Launchpad & Gateway Dashboard"
+  },
+  "clan": {
+    "spec": "clan.lol/schema/clan_launchpad_dashboard",
+    "module": "caddy.gateways",
+    "gateways": ["erp", "ledger", "hr", "pos", "panel", "cockpit", "dbgate", "website"]
+  },
+  "state": {
+    "selectedNode": "client1",
+    "portalUrl": "http://client1.fastfree.local",
+    "wgOverlayIp": "10.100.0.2",
+    "wgPort": "51820",
+    "nodeLive": true,
+    "vmState": "running"
+  },
+  "root": {
+    "type": "div",
+    "class": "q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": { "rounded": true, "dense": true },
+        "children": [
+          { "type": "icon", "props": { "name": "rocket_launch", "size": "md", "color": "positive" } },
+          {
+            "type": "div",
+            "class": "text-h6 text-weight-bold text-main",
+            "text": { "ar": "منصة إطلاق عقدة FastFree السيادية", "en": "FastFree Sovereign Node Launchpad" }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted",
+            "text": {
+              "ar": "العقدة {{ state.selectedNode || 'client1' }} تعمل بالكامل ومشفرة عبر شبكة FastFree VPN Mesh",
+              "en": "Node {{ state.selectedNode || 'client1' }} is fully operational and encrypted over the FastFree VPN Mesh"
+            }
+          }
+        ]
+      },
+      {
+        "type": "row",
+        "class": "row q-col-gutter-md",
+        "children": [
+          {
+            "type": "div",
+            "class": "col-12 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center",
+                "props": { "bordered": true },
+                "children": [
+                  { "type": "icon", "props": { "name": "dns", "size": "lg", "color": "positive" } },
+                  { "type": "div", "class": "text-subtitle1 text-weight-bold text-main q-mt-xs", "text": { "ar": "حالة العقدة", "en": "Node Status" } },
+                  { "type": "chip", "props": { "color": "positive", "outline": true, "dense": true, "icon": "check_circle" }, "text": { "ar": "{{ state.selectedNode || 'client1' }}: متصل", "en": "{{ state.selectedNode || 'client1' }}: Live" } },
+                  { "type": "div", "class": "text-caption text-muted q-mt-xs", "text": { "ar": "متصل ويعمل — {{ state.vmState || 'running' }}", "en": "Online & operational — {{ state.vmState || 'running' }}" } }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center",
+                "props": { "bordered": true },
+                "children": [
+                  { "type": "icon", "props": { "name": "vpn_lock", "size": "lg", "color": "primary" } },
+                  { "type": "div", "class": "text-subtitle1 text-weight-bold text-main q-mt-xs", "text": { "ar": "عنوان Mesh الداخلي", "en": "Mesh Overlay IP" } },
+                  { "type": "chip", "props": { "color": "primary", "outline": true, "dense": true }, "text": { "ar": "{{ state.wgOverlayIp || '10.100.0.2' }}", "en": "{{ state.wgOverlayIp || '10.100.0.2' }}" } },
+                  { "type": "div", "class": "text-caption text-muted q-mt-xs", "text": { "ar": "منفذ UDP {{ state.wgPort || '51820' }}", "en": "UDP port {{ state.wgPort || '51820' }}" } }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-md text-center",
+                "props": { "bordered": true },
+                "children": [
+                  { "type": "icon", "props": { "name": "language", "size": "lg", "color": "secondary" } },
+                  { "type": "div", "class": "text-subtitle1 text-weight-bold text-main q-mt-xs", "text": { "ar": "البوابة المحلية", "en": "Local Portal" } },
+                  { "type": "chip", "props": { "color": "secondary", "outline": true, "dense": true }, "text": { "ar": "{{ state.portalUrl || 'http://client1.fastfree.local' }}", "en": "{{ state.portalUrl || 'http://client1.fastfree.local' }}" } },
+                  { "type": "div", "class": "text-caption text-muted q-mt-xs", "text": { "ar": "بوابة ERP عبر Caddy", "en": "ERP gateway via Caddy" } }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": { "bordered": true },
+        "children": [
+          { "type": "div", "class": "text-caption accent-blue text-weight-bold q-mb-xs", "text": { "ar": "بوابات الخدمات (Caddy Gateways)", "en": "Service Gateways (Caddy)" } },
+          { "type": "div", "class": "text-subtitle1 text-weight-bold text-main q-mb-md", "text": { "ar": "فتح بوابات الأنظمة داخل الشبكة السيادية", "en": "Open system gateways inside the sovereign network" } },
+          {
+            "type": "row",
+            "class": "row q-col-gutter-sm",
+            "children": [
+              { "type": "div", "class": "col-6 col-md-3", "children": [ { "type": "button", "props": { "label": { "ar": "بوابة ERP", "en": "ERP Portal" }, "color": "primary", "icon": "business", "outline": true, "size": "sm", "class": "full-width" }, "events": { "click": { "type": "open_external_url", "payload": { "url": "http://erp.{{ state.selectedNode || 'client1' }}.fastfree.local" } } } } ] },
+              { "type": "div", "class": "col-6 col-md-3", "children": [ { "type": "button", "props": { "label": { "ar": "المحاسبة", "en": "Ledger" }, "color": "primary", "icon": "account_balance", "outline": true, "size": "sm", "class": "full-width" }, "events": { "click": { "type": "open_external_url", "payload": { "url": "http://ledger.{{ state.selectedNode || 'client1' }}.fastfree.local" } } } } ] },
+              { "type": "div", "class": "col-6 col-md-3", "children": [ { "type": "button", "props": { "label": { "ar": "الموارد البشرية", "en": "HR" }, "color": "primary", "icon": "badge", "outline": true, "size": "sm", "class": "full-width" }, "events": { "click": { "type": "open_external_url", "payload": { "url": "http://hr.{{ state.selectedNode || 'client1' }}.fastfree.local" } } } } ] },
+              { "type": "div", "class": "col-6 col-md-3", "children": [ { "type": "button", "props": { "label": { "ar": "نقطة البيع", "en": "POS" }, "color": "primary", "icon": "point_of_sale", "outline": true, "size": "sm", "class": "full-width" }, "events": { "click": { "type": "open_external_url", "payload": { "url": "http://pos.{{ state.selectedNode || 'client1' }}.fastfree.local" } } } } ] },
+              { "type": "div", "class": "col-6 col-md-3", "children": [ { "type": "button", "props": { "label": { "ar": "لوحة الإدارة", "en": "Panel" }, "color": "secondary", "icon": "dashboard", "outline": true, "size": "sm", "class": "full-width" }, "events": { "click": { "type": "open_external_url", "payload": { "url": "http://panel.{{ state.selectedNode || 'client1' }}.fastfree.local" } } } } ] },
+              { "type": "div", "class": "col-6 col-md-3", "children": [ { "type": "button", "props": { "label": { "ar": "Cockpit", "en": "Cockpit" }, "color": "secondary", "icon": "monitor", "outline": true, "size": "sm", "class": "full-width" }, "events": { "click": { "type": "open_external_url", "payload": { "url": "http://cockpit.{{ state.selectedNode || 'client1' }}.fastfree.local" } } } } ] },
+              { "type": "div", "class": "col-6 col-md-3", "children": [ { "type": "button", "props": { "label": { "ar": "DbGate", "en": "DbGate" }, "color": "secondary", "icon": "table_chart", "outline": true, "size": "sm", "class": "full-width" }, "events": { "click": { "type": "open_external_url", "payload": { "url": "http://db.{{ state.selectedNode || 'client1' }}.fastfree.local" } } } } ] },
+              { "type": "div", "class": "col-6 col-md-3", "children": [ { "type": "button", "props": { "label": { "ar": "الموقع", "en": "Website" }, "color": "secondary", "icon": "language", "outline": true, "size": "sm", "class": "full-width" }, "events": { "click": { "type": "open_external_url", "payload": { "url": "http://www.{{ state.selectedNode || 'client1' }}.fastfree.local" } } } } ] }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": { "bordered": true },
+        "children": [
+          { "type": "div", "class": "text-subtitle2 text-weight-bold text-main q-mb-sm", "text": { "ar": "الشاشات الداخلية (In-App SDUI Screens)", "en": "In-App SDUI Screens" } },
+          {
+            "type": "row",
+            "class": "row q-gutter-sm",
+            "children": [
+              { "type": "button", "props": { "label": { "ar": "فتح إنشاء عقدة سيادية داخل التطبيق", "en": "Open Create Sovereign Node In-App" }, "color": "primary", "icon": "add_circle", "outline": true, "size": "sm" }, "events": { "click": { "type": "open_sdui_screen", "screen": "clan_modules_catalog" } } },
+              { "type": "button", "props": { "label": { "ar": "كتالوج الوحدات", "en": "Modules Catalog" }, "color": "primary", "icon": "extension", "outline": true, "size": "sm" }, "events": { "click": { "type": "open_sdui_screen", "screen": "clan_modules_catalog" } } },
+              { "type": "button", "props": { "label": { "ar": "الأسرار", "en": "Secrets" }, "color": "primary", "icon": "key", "outline": true, "size": "sm" }, "events": { "click": { "type": "open_sdui_screen", "screen": "clan_vars_secrets" } } },
+              { "type": "button", "props": { "label": { "ar": "إعداد Mesh", "en": "Mesh Setup" }, "color": "primary", "icon": "vpn_lock", "outline": true, "size": "sm" }, "events": { "click": { "type": "open_sdui_screen", "screen": "clan_mesh_wireguard" } } }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": { "bordered": true },
+        "children": [
+          { "type": "div", "class": "text-subtitle2 text-weight-bold text-main q-mb-sm", "text": { "ar": "التحكم بالجهاز الافتراضي والمرافق", "en": "Virtual Machine & Companion Controls" } },
+          {
+            "type": "row",
+            "class": "row items-center justify-between",
+            "children": [
+              { "type": "div", "class": "text-body2 text-muted", "text": { "ar": "يعمل FastFree في شريط مهام ويندوز حتى عند إغلاق هذه النافذة", "en": "FastFree keeps running in the Windows system tray when this window is closed" } },
+              {
+                "type": "row",
+                "class": "row q-gutter-xs",
+                "children": [
+                  { "type": "button", "props": { "label": { "ar": "إعادة تشغيل VM", "en": "Restart VM" }, "color": "warning", "icon": "refresh", "outline": true, "size": "sm" }, "events": { "click": { "type": "tauri:invoke", "command": "manage_vm", "payload": { "clientId": "{{ state.selectedNode || 'client1' }}", "action": "restart" } } } },
+                  { "type": "button", "props": { "label": { "ar": "إيقاف VM", "en": "Stop VM" }, "color": "negative", "icon": "stop", "outline": true, "size": "sm" }, "events": { "click": { "type": "tauri:invoke", "command": "manage_vm", "payload": { "clientId": "{{ state.selectedNode || 'client1' }}", "action": "stop" } } } },
+                  { "type": "button", "props": { "label": { "ar": "تصغير لشريط المهام", "en": "Minimize to System Tray" }, "color": "primary", "icon": "minimize", "unelevated": true, "size": "sm" }, "events": { "click": { "type": "tauri:invoke", "command": "minimize_to_tray" } } }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

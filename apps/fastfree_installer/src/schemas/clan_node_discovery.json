@@ -1,0 +1,187 @@
+{
+  "id": "clan_node_discovery",
+  "versionHash": "v2.2.0",
+  "title": {
+    "ar": "اكتشاف عقد Clan.lol واختيار الجهاز",
+    "en": "Clan.lol Node Discovery & Machine Selection"
+  },
+  "clan": {
+    "spec": "clan.lol/schema/clan_node_discovery",
+    "module": "fastfree.identity",
+    "nodeCount": 11,
+    "nodes": ["client1", "client2", "client3", "client4", "client5", "client6", "client7", "client8", "client9", "client10", "client11"]
+  },
+  "state": {
+    "selectedNode": "client1",
+    "cpuCores": 16,
+    "totalRamGb": 64,
+    "hypervReady": true
+  },
+  "root": {
+    "type": "div",
+    "class": "q-gutter-y-md",
+    "children": [
+      {
+        "type": "banner",
+        "class": "diag-card q-pa-md",
+        "props": { "rounded": true, "dense": true },
+        "children": [
+          {
+            "type": "icon",
+            "props": { "name": "hub", "size": "md", "color": "primary" }
+          },
+          {
+            "type": "div",
+            "class": "text-h6 text-weight-bold text-main",
+            "text": {
+              "ar": "اكتشاف عقد Clan.lol واختيار الجهاز المستهدف",
+              "en": "Clan.lol Node Discovery & Target Machine Selection"
+            }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted",
+            "text": {
+              "ar": "فحص الـ 11 عقدة سيادية (client1..client11) واختيار الجهاز الذي سيتم نشر نظام NixOS Clan عليه",
+              "en": "Scanning the 11 sovereign nodes (client1..client11) and choosing the machine to provision with NixOS Clan"
+            }
+          }
+        ]
+      },
+      {
+        "type": "row",
+        "class": "row q-col-gutter-md",
+        "children": [
+          {
+            "type": "div",
+            "class": "col-12 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm text-center",
+                "props": { "flat": true, "bordered": true },
+                "children": [
+                  { "type": "icon", "props": { "name": "developer_board", "size": "lg", "color": "primary" } },
+                  { "type": "div", "class": "text-subtitle1 text-weight-bold q-mt-sm text-main", "text": { "ar": "المعالج (CPU Cores)", "en": "Processor (CPU Cores)" } },
+                  {
+                    "type": "chip",
+                    "props": { "color": "primary", "outline": true, "dense": true },
+                    "text": { "ar": "{{ state.cpuCores || 16 }} أنوية متوفرة", "en": "{{ state.cpuCores || 16 }} Cores Available" }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm text-center",
+                "props": { "flat": true, "bordered": true },
+                "children": [
+                  { "type": "icon", "props": { "name": "memory", "size": "lg", "color": "secondary" } },
+                  { "type": "div", "class": "text-subtitle1 text-weight-bold q-mt-sm text-main", "text": { "ar": "الذاكرة العشوائية (RAM)", "en": "System Memory (RAM)" } },
+                  {
+                    "type": "chip",
+                    "props": { "color": "secondary", "outline": true, "dense": true },
+                    "text": { "ar": "{{ state.totalRamGb || 64 }} جيجابايت إجمالي", "en": "{{ state.totalRamGb || 64 }} GB Total" }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "col-12 col-md-4",
+            "children": [
+              {
+                "type": "card",
+                "class": "diag-card q-pa-sm text-center",
+                "props": { "flat": true, "bordered": true },
+                "children": [
+                  { "type": "icon", "props": { "name": "verified", "size": "lg", "color": "positive" } },
+                  { "type": "div", "class": "text-subtitle1 text-weight-bold q-mt-sm text-main", "text": { "ar": "محرك المحاكاة الافتراضية", "en": "Virtualization Engine" } },
+                  { "type": "chip", "props": { "color": "positive", "outline": true, "dense": true }, "text": { "ar": "Hyper-V Gen 2 جاهز", "en": "Hyper-V Gen 2 Ready" } }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "card",
+        "class": "diag-card q-pa-md",
+        "props": { "bordered": true },
+        "children": [
+          {
+            "type": "div",
+            "class": "text-caption accent-blue text-weight-bold q-mb-xs",
+            "text": { "ar": "أسطول عقد Clan.lol السيادي", "en": "Sovereign Clan.lol Node Fleet" }
+          },
+          {
+            "type": "div",
+            "class": "text-subtitle1 text-weight-bold text-main q-mb-xs",
+            "text": { "ar": "تم اكتشاف الـ 11 عقدة (client1..client11)", "en": "Discovered 11 nodes (client1..client11)" }
+          },
+          {
+            "type": "div",
+            "class": "text-caption text-muted q-mb-md",
+            "text": {
+              "ar": "انقر على العقدة لاختيارها كجهاز هدف لنظام NixOS Clan قبل الانتقال إلى كتالوج الوحدات",
+              "en": "Click a node to select it as the NixOS Clan target machine before opening the modules catalog"
+            }
+          },
+          {
+            "type": "row",
+            "class": "row q-gutter-xs justify-center q-mb-md",
+            "children": [
+              { "type": "chip", "props": { "color": "{{ state.selectedNode === 'client1' ? 'positive' : 'primary' }}", "outline": true, "dense": true, "icon": "hub" }, "text": { "ar": "client1: جاهز", "en": "client1: Ready" }, "events": { "click": { "type": "state:set", "target": "selectedNode", "payload": "client1" } } },
+              { "type": "chip", "props": { "color": "{{ state.selectedNode === 'client2' ? 'positive' : 'primary' }}", "outline": true, "dense": true, "icon": "hub" }, "text": { "ar": "client2: جاهز", "en": "client2: Ready" }, "events": { "click": { "type": "state:set", "target": "selectedNode", "payload": "client2" } } },
+              { "type": "chip", "props": { "color": "{{ state.selectedNode === 'client3' ? 'positive' : 'primary' }}", "outline": true, "dense": true, "icon": "hub" }, "text": { "ar": "client3: جاهز", "en": "client3: Ready" }, "events": { "click": { "type": "state:set", "target": "selectedNode", "payload": "client3" } } },
+              { "type": "chip", "props": { "color": "{{ state.selectedNode === 'client4' ? 'positive' : 'primary' }}", "outline": true, "dense": true, "icon": "hub" }, "text": { "ar": "client4: جاهز", "en": "client4: Ready" }, "events": { "click": { "type": "state:set", "target": "selectedNode", "payload": "client4" } } },
+              { "type": "chip", "props": { "color": "{{ state.selectedNode === 'client5' ? 'positive' : 'primary' }}", "outline": true, "dense": true, "icon": "hub" }, "text": { "ar": "client5: جاهز", "en": "client5: Ready" }, "events": { "click": { "type": "state:set", "target": "selectedNode", "payload": "client5" } } },
+              { "type": "chip", "props": { "color": "{{ state.selectedNode === 'client6' ? 'positive' : 'primary' }}", "outline": true, "dense": true, "icon": "hub" }, "text": { "ar": "client6: جاهز", "en": "client6: Ready" }, "events": { "click": { "type": "state:set", "target": "selectedNode", "payload": "client6" } } },
+              { "type": "chip", "props": { "color": "{{ state.selectedNode === 'client7' ? 'positive' : 'primary' }}", "outline": true, "dense": true, "icon": "hub" }, "text": { "ar": "client7: جاهز", "en": "client7: Ready" }, "events": { "click": { "type": "state:set", "target": "selectedNode", "payload": "client7" } } },
+              { "type": "chip", "props": { "color": "{{ state.selectedNode === 'client8' ? 'positive' : 'primary' }}", "outline": true, "dense": true, "icon": "hub" }, "text": { "ar": "client8: جاهز", "en": "client8: Ready" }, "events": { "click": { "type": "state:set", "target": "selectedNode", "payload": "client8" } } },
+              { "type": "chip", "props": { "color": "{{ state.selectedNode === 'client9' ? 'positive' : 'primary' }}", "outline": true, "dense": true, "icon": "hub" }, "text": { "ar": "client9: جاهز", "en": "client9: Ready" }, "events": { "click": { "type": "state:set", "target": "selectedNode", "payload": "client9" } } },
+              { "type": "chip", "props": { "color": "{{ state.selectedNode === 'client10' ? 'positive' : 'primary' }}", "outline": true, "dense": true, "icon": "hub" }, "text": { "ar": "client10: جاهز", "en": "client10: Ready" }, "events": { "click": { "type": "state:set", "target": "selectedNode", "payload": "client10" } } },
+              { "type": "chip", "props": { "color": "{{ state.selectedNode === 'client11' ? 'positive' : 'primary' }}", "outline": true, "dense": true, "icon": "check_circle" }, "text": { "ar": "client11: جاهز", "en": "client11: Ready" }, "events": { "click": { "type": "state:set", "target": "selectedNode", "payload": "client11" } } }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "text-body2 text-muted q-mb-md",
+            "text": {
+              "ar": "العقدة المختارة حالياً: {{ state.selectedNode || 'client1' }}",
+              "en": "Currently selected node: {{ state.selectedNode || 'client1' }}"
+            }
+          },
+          { "type": "separator", "props": { "class": "q-my-md" } },
+          {
+            "type": "row",
+            "class": "row justify-between items-center",
+            "children": [
+              {
+                "type": "button",
+                "props": { "label": { "ar": "إعادة الفحص الآن", "en": "Re-scan Hardware" }, "color": "primary", "icon": "refresh", "outline": true },
+                "events": { "click": { "type": "tauri:invoke", "command": "run_hardware_discovery" } }
+              },
+              {
+                "type": "button",
+                "props": { "label": { "ar": "كتالوج الوحدات ←", "en": "Modules Catalog →" }, "color": "secondary", "icon": "extension", "outline": true },
+                "events": { "click": { "type": "open_sdui_screen", "screen": "clan_modules_catalog" } }
+              },
+              {
+                "type": "button",
+                "props": { "label": { "ar": "متابعة للترخيص ←", "en": "Proceed to License →" }, "color": "primary", "iconRight": "arrow_forward", "unelevated": true },
+                "events": { "click": { "type": "navigate", "target": "step2" } }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

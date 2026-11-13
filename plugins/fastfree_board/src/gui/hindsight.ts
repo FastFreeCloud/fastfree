@@ -40,7 +40,7 @@ export function hindsightTransportFromServers(servers: ReadonlyArray<unknown>) {
 
 /**
  * fastfree_board ships with local-only Hindsight by design.
- * Point the plugin at the local embedded Hindsight daemon owned by Hermes/fastfree
+ * Point the plugin at the local embedded Hindsight daemon for fastfree_board
  * (bank "fastfree") when `HINDSIGHT_MODE=local_embedded`. No API key required; the
  * Vectorize cloud path is intentionally removed.
  * Default matches the running daemon on 127.0.0.1:9177 (see ~/.hindsight/profiles/fastfree.env).

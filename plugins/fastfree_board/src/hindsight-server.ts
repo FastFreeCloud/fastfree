@@ -6,7 +6,7 @@
  *   FASTFREE_HINDSIGHT_ENDPOINT  (default http://127.0.0.1:9177)
  *   FASTFREE_HINDSIGHT_BANK      (default "fastfree")
  *
- * Both default to the local embedded daemon used by fastfree_board/Hermes.
+ * Both default to the local embedded daemon used by fastfree_board.
  * The read helpers never throw so the context hook can stay best-effort.
  */
 

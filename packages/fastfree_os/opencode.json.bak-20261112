@@ -1,0 +1,175 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": true,
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
+    },
+    "fastfree-panel": {
+      "type": "local",
+      "command": [
+        "node",
+        "C:/Users/FastFree/Desktop/fastfree/apps/fastfree_panel/backend/dist/mcp/stdio.js"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "quasar": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@quasar/mcp@latest"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "grep": {
+      "type": "remote",
+      "url": "https://mcp.grep.app",
+      "enabled": true
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking@0.6.2"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "exa": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp",
+      "enabled": true
+    },
+    "midscene-web": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@midscene/web-bridge-mcp"
+      ],
+      "environment": {
+        "MCP_SERVER_REQUEST_TIMEOUT": "600000"
+      },
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp@latest",
+        "--caps=devtools",
+        "--user-data-dir=.auth/mcp-profile",
+        "--browser=chromium"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "firecrawl-mcp": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "firecrawl-mcp"
+      ],
+      "environment": {
+        "FIRECRAWL_API_KEY": ""
+      },
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "nixos": {
+      "type": "local",
+      "command": [
+        "sh",
+        "-c",
+        "command -v mcp-nixos >/dev/null 2>&1 && exec mcp-nixos || exec nix run github:utensils/mcp-nixos --"
+      ],
+      "enabled": true,
+      "timeout": 120000
+    },
+    "rea": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "rea-agents@6.5.0",
+        "mcp"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "fastfree-flow": {
+      "type": "local",
+      "command": [
+        "node",
+        "C:/Users/FastFree/Desktop/fastfree/fastfree_mcp_tools/fastfree_flow_mcp/src/index.js"
+      ],
+      "environment": {
+        "FLOW_BROWSER": "C:/Users/FastFree/AppData/Local/CentBrowser/Application/chrome.exe",
+        "FLOW_USER_DATA": "C:/Users/FastFree/AppData/Local/CentBrowser/User Data",
+        "FLOW_PROFILE": "Default",
+        "FLOW_CDP_PORT": "9222",
+        "FLOW_ACCOUNT": "mohamed.fastfree@gmail.com"
+      },
+      "enabled": true,
+      "timeout": 600000
+    },
+    "paseo": {
+      "type": "remote",
+      "url": "http://127.0.0.1:6767/mcp",
+      "enabled": false,
+      "timeout": 300000
+    },
+    "jcodemunch": {
+      "type": "local",
+      "command": [
+        "uvx",
+        "jcodemunch-mcp==1.108.397",
+        "serve"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    },
+    "repomap": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@sylphx/repomap@1.8.0",
+        "mcp"
+      ],
+      "enabled": true,
+      "timeout": 300000,
+      "cwd": "."
+    }
+  },
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "uv run flet *": "allow",
+      "uv run python *": "allow",
+      "bench *": "ask",
+      "rm -rf *": "deny"
+    }
+  },
+  "plugin": [
+    "opencode-browser",
+    "opencode-wakatime"
+  ]
+}

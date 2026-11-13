@@ -81,9 +81,11 @@ import './styles/shared-tables.scss'
 export {
   SduiNode,
   SduiPlayground,
+  SduiRemoteScreen,
   SduiCacheManager,
   SduiRegistry,
   SduiActionDispatcher,
+  ScreenLoader,
 } from './sdui'
 export type {
   SduiActionType,

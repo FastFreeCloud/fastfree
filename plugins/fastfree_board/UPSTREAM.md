@@ -34,8 +34,7 @@ FastFree changes live in files here and are diffable with `git diff`.
   Arabic RTL layout support (`Dir`, logical CSS properties, Arabic font stack,
   RTL hit-tests in column reorder/resizer interactions).
 - `taskPrompt()` enriched: opt-in rules via labels — `worktree` (isolated git
-  worktree per card), `profile:<name>` (delegate to a Hermes profile),
-  `mirror` (sync card status to the Hermes `fastfree-erp` kanban),
+  worktree per card), `profile:<name>` (delegate to a specialist profile),
   `hindsight`/`memory` (recall before work, retain after).
 - Settings page gains an optional Hindsight section (API key + Bank ID) stored in
   plugin storage `hindsight-v1`; the key is never committed or logged.

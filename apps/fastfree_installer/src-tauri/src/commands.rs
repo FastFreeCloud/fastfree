@@ -502,10 +502,11 @@ pub async fn check_app_update(_app: AppHandle) -> Result<Option<UpdateInfo>, Str
             Ok(Some(update)) => {
                 InstallerLogger::info("UPDATER", &format!("Update available: v{}", update.version));
                 Ok(Some(UpdateInfo {
+                    available: true,
+                    current_version: env!("CARGO_PKG_VERSION").to_string(),
                     version: update.version.clone(),
                     date: update.date.map(|d| d.to_string()),
                     body: update.body.clone(),
-                    mandatory: true,
                 }))
             }
             Ok(None) => {

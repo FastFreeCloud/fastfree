@@ -417,6 +417,8 @@ model:
   api_mode: chat_completions
 kanban:
   review_dispatch: true
+  max_in_progress: 2
+  max_in_progress_per_profile: 1
 
 # =============================================================================
 # Terminal Tool Configuration
@@ -1359,7 +1361,11 @@ gateway:
   write_sessions_json: true
   multiplex_profiles: true
   auto_multiplex_migration: true
-  profile_routes: []
+  profile_routes:
+    - name: telegram-fastfree
+      platform: telegram
+      chat_id: '7834647806'
+      profile: fastfree
   scale_to_zero:
     idle_timeout_minutes: 2
   restart_loop_guard:
@@ -1608,6 +1614,11 @@ platform_toolsets:
 #     such a server as "lazy" with its cached tool count until it is first used.
 #
 mcp_servers:
+  opencode-runner:
+    command: "C:/Users/FastFree/.opencode/bin/opencode.exe"
+    args: ["run"]
+    enabled: true
+    timeout: 300
   office-docs:
     command: "C:/Users/FastFree/AppData/Roaming/Python/Python315/Scripts/docforge-mcp.exe"
     timeout: 180

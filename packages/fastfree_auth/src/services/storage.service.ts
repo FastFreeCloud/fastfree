@@ -62,16 +62,28 @@ function getDb(): Dexie {
  * Initialize the Dexie database.
  */
 export function initStorage(config: FastFreeStorageConfig = {}): ApiResponse<void> {
-  const { dbName = 'fastfree-storage', version = 1 } = config
+  const { dbName = 'fastfree-storage', version = 2 } = config
 
   try {
     _db = new Dexie(dbName)
 
-    _db.version(version).stores({
+    // v1: original schema. NOTE: indexing the boolean `synced` field is invalid —
+    // IndexedDB keys cannot be booleans, so records were never added to that index
+    // and the sync-queue queries below silently matched nothing.
+    _db.version(1).stores({
       settings: 'id, key',
       documents: 'id, doctype',
       sync_queue: '++id, timestamp, synced',
     })
+
+    // v2: drop the invalid boolean index; the queue is filtered in memory instead.
+    if (version >= 2) {
+      _db.version(2).stores({
+        settings: 'id, key',
+        documents: 'id, doctype',
+        sync_queue: '++id, timestamp',
+      })
+    }
 
     return { success: true }
   }
@@ -427,7 +439,9 @@ export async function getSyncQueue(): Promise<ApiResponse<SyncQueueItem[]>> {
     const db = getDb()
     const table: Table<SyncQueueItem> = db.table('sync_queue')
 
-    const items = await table.where('synced').equals(0).sortBy('timestamp')
+    const items = await table
+      .filter((item: SyncQueueItem) => !item.synced)
+      .sortBy('timestamp')
 
     return {
       success: true,
@@ -478,7 +492,7 @@ export async function clearSyncQueue(): Promise<ApiResponse<void>> {
     const db = getDb()
     const table: Table<SyncQueueItem> = db.table('sync_queue')
 
-    await table.where('synced').equals(1).delete()
+    await table.filter((item: SyncQueueItem) => item.synced).delete()
 
     return { success: true }
   }

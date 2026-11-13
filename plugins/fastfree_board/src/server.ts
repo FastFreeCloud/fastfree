@@ -1,13 +1,17 @@
 import { Plugin } from "@opencode/plugin"
 import { BoardBridge } from "./rpc.ts"
 import { bridgeQueue } from "./bridge-queue.ts"
-import { toolSchemas } from "./board-tools.ts"
+import { toolSchemas, applyBoardRequest } from "./board-tools.ts"
 import { sessionOrigin } from "./session-model.ts"
 import { toolSettings } from "./tool-settings.ts"
 import { serverRecall, toolRecall, toolRetain, toolReflect, hindsightServerConfig, rpcRecall, rpcRetain, rpcReflect } from "./hindsight-server.ts"
 
 // Sessions whose Hindsight snapshot was already injected this process lifetime. Bounded.
 const seenMemorySessions = new Set<string>()
+
+// Board writes wait up to 60s by default: the Desktop GUI may be busy rendering or
+// launching a session, and the old 15s budget produced spurious "did not answer" failures.
+const BOARD_TIMEOUT = Number(process.env.FASTFREE_BOARD_TIMEOUT_MS) || 60_000
 
 /** Best-effort extraction of the latest user prompt from a session's messages. */
 function extractUserQuery(messages: unknown[]): string | undefined {
@@ -40,12 +44,14 @@ function extractUserQuery(messages: unknown[]): string | undefined {
 }
 
 // Location instances in the same server share a broker, not per-project boards.
-const key = Symbol.for("fastfree_board.bridge.v2")
+// v3: bumped so a reloaded plugin never reuses a queue instance from older code.
+const key = Symbol.for("fastfree_board.bridge.v3")
 const shared = globalThis as typeof globalThis & { [key]?: ReturnType<typeof bridgeQueue> }
-const queue = shared[key] ??= bridgeQueue()
+const queue = shared[key] ??= bridgeQueue(BOARD_TIMEOUT)
 const settingsKey = Symbol.for("fastfree_board.tool-settings.v1")
 const preferences = globalThis as typeof globalThis & { [settingsKey]?: ReturnType<typeof toolSettings> }
 const settings = preferences[settingsKey] ??= toolSettings()
+
 
 export default Plugin.define({
   id: "fastfree_board",
@@ -62,6 +68,11 @@ export default Plugin.define({
         queue.complete(clientID, id, result, error)
         return null
       },
+      heartbeat: async (input) => {
+        const { clientID } = input as { clientID: string }
+        return queue.heartbeat(clientID)
+      },
+      status: async () => queue.status(),
       // Hindsight memory bridge: the GUI cannot reach the local daemon (CORS preflight
       // gets no answer), so all GUI→daemon traffic flows through the server part.
       hindsight_recall: async (input) => {
@@ -98,6 +109,14 @@ export default Plugin.define({
           },
         })
       }
+      // Liveness probe: answers from the server, no Desktop round-trip, so agents can
+      // distinguish "Desktop is closed" from "Desktop is busy" before retrying a write.
+      editor.add({
+        name: "board_status",
+        description: "Check whether OpenCode Desktop is connected to the board and how many board requests are pending. Use before retrying a failed board write.",
+        input: { type: "object", properties: {}, additionalProperties: false },
+        execute: async () => ({ content: JSON.stringify(queue.status()) }),
+      } as never)
       const { endpoint, bank } = hindsightServerConfig()
       const where = `Local Hindsight bank "${bank}" at ${endpoint} (set FASTFREE_HINDSIGHT_ENDPOINT / FASTFREE_HINDSIGHT_BANK to override).`
       editor.add({
@@ -140,7 +159,7 @@ export default Plugin.define({
       if (event.tools && Object.keys(event.tools).length === 0) return // auxiliary requests (title etc.) that carry no tools
       event.system.push({
         type: "text" as const,
-        text: "FASTFREE_BOARD: Track significant work on the fastfree_board plugin, not in ad-hoc notes. Before executing a multi-step task, open the board (or use board_create) and mark it in progress; after verifying, move it to review/done. Prefer not to call board tools for trivial one-line changes — only when the task has multiple steps, touches files, or spans sessions. When a session completes linked work, prefer waiting briefly for any board sessions before announcing completion. Hindsight memory: use hindsight_recall before non-trivial work and hindsight_retain to persist durable decisions; results reflect the local bank, not session history.",
+        text: "FASTFREE_BOARD: You are an autonomous engineer on the FastFree ERP project. Track significant work on the fastfree_board plugin, not in ad-hoc notes.\n\nWORKFLOW for multi-step tasks:\n1. OPEN — board_get the task (or board_list) and read the full description, acceptance criteria, and linked context.\n2. RECALL — hindsight_recall with the task title before writing code; honor any dependencies, constraints, or prior decisions it returns.\n3. PLAN — state a short plan, then implement in small verifiable steps.\n4. VERIFY — run the relevant tests/typecheck (e.g. `pnpm test`, `bun run typecheck`) and include the REAL command output in your report. Never claim success without running them.\n5. TRACK — board_update as you complete checklist items (one at a time, never check unfinished work); move to review only after verification.\n6. PERSIST — hindsight_retain the decisions and root causes that matter for future tasks.\n\nBOARD RELIABILITY: if a board write fails with \"Desktop did not answer\", re-read the board (board_get/board_list) before retrying — the write may already have been applied. Use board_status to check Desktop connectivity. Prefer not to call board tools for trivial one-line changes — only when the task has multiple steps, touches files, or spans sessions. When a session completes linked work, prefer waiting briefly for any board sessions before announcing completion.",
       })
       if (seenMemorySessions.has(event.sessionID)) return
       seenMemorySessions.add(event.sessionID)
