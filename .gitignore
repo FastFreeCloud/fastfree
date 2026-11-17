@@ -36,6 +36,7 @@ yarn-debug.log*
 pnpm-debug.log*
 
 # Environment files
+.env
 .env.local
 .env.*.local
 
@@ -128,3 +129,6 @@ midscene_run/
 .beads/proxieddb/
 *.gate.lock*
 .hermes-tmp.*
+
+# Tauri updater signing private key - NEVER commit (rotated 2026-11-17)
+apps/fastfree_installer/src-tauri/fastfree_updater.key
