@@ -1,0 +1,10 @@
+2026-11-19T22:15:30.574Z warn синк: токен не принят
+2026-11-19T22:15:30.576Z info notice {"kind":"unauthorized"}
+2026-11-19T22:18:30.354Z info synced: pulled 0, pushed 1: Welcome to FastFree AI.md
+2026-11-20T08:05:46.934Z info synced: pulled 0, pushed 1: FastFree Clan Overview.md
+2026-11-20T08:05:59.819Z info synced: pulled 0, pushed 1: FastFree Clan Overview.md
+2026-11-20T08:08:07.270Z info synced: pulled 0, pushed 1: FastFree Clan — Journey, Goal, Lifecycle.md
+2026-11-20T10:25:03.208Z info synced: pulled 0, pushed 10: FastFree Clan, FastFree Clan/Journey, Goal, Lifecycle.md, FastFree Clan/Overview.md, OmniRoute, OmniRoute/Hermes Agent.md …+5
+2026-11-20T11:36:55.551Z info synced: pulled 0, pushed 1: FastFree Clan Kanban.md
+2026-11-20T11:44:01.229Z info synced: pulled 0, pushed 1: Obsidian Git — Setup & Usage.md
+2026-11-20T11:44:28.909Z info synced: pulled 0, pushed 2: Obsidian Git Setup and Usage.md, Obsidian Git — Setup & Usage.md
