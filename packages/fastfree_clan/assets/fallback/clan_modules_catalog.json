@@ -1,0 +1,82 @@
+{
+  "type": "scaffold",
+  "backgroundColor": "#0B1220",
+  "appBar": {
+    "type": "appBar",
+    "title": { "type": "text", "data": "Clan Modules Catalog" },
+    "backgroundColor": "#111827",
+    "foregroundColor": "#F8FAFC"
+  },
+  "body": {
+    "type": "singleChildScrollView",
+    "child": {
+      "type": "padding",
+      "padding": { "all": 16 },
+      "child": {
+        "type": "column",
+        "crossAxisAlignment": "stretch",
+        "children": [
+          {
+            "type": "container",
+            "padding": { "all": 16 },
+            "decoration": { "color": "#111827", "borderRadius": 12 },
+            "child": {
+              "type": "column",
+              "crossAxisAlignment": "start",
+              "children": [
+                { "type": "text", "data": "Service & Module Catalog", "style": { "fontSize": 20, "fontWeight": "bold", "color": "#F8FAFC" } },
+                { "type": "sizedBox", "height": 6 },
+                { "type": "text", "data": "Inventory-backed instances and roles from /api/v1/clan/services and /api/v1/clan/inventory.", "style": { "fontSize": 13, "color": "#94A3B8" } }
+              ]
+            }
+          },
+          { "type": "sizedBox", "height": 12 },
+          {
+            "type": "container",
+            "padding": { "all": 14 },
+            "decoration": { "color": "#111827", "borderRadius": 12 },
+            "child": {
+              "type": "column",
+              "crossAxisAlignment": "start",
+              "children": [
+                { "type": "text", "data": "Clan Service 1", "style": { "fontSize": 16, "fontWeight": "bold", "color": "#F8FAFC" } },
+                { "type": "sizedBox", "height": 4 },
+                { "type": "text", "data": "kind: server • role: default • status: active", "style": { "fontSize": 12, "color": "#94A3B8" } },
+                { "type": "sizedBox", "height": 4 },
+                { "type": "text", "data": "machines: client1 • config.port: 8080", "style": { "fontSize": 12, "color": "#A5B4FC" } },
+                { "type": "sizedBox", "height": 6 },
+                { "type": "text", "data": "Primary clan service instance.", "style": { "fontSize": 13, "color": "#CBD5E1" } }
+              ]
+            }
+          },
+          { "type": "sizedBox", "height": 10 },
+          {
+            "type": "container",
+            "padding": { "all": 14 },
+            "decoration": { "color": "#111827", "borderRadius": 12 },
+            "child": {
+              "type": "column",
+              "crossAxisAlignment": "start",
+              "children": [
+                { "type": "text", "data": "Clan Service 2", "style": { "fontSize": 16, "fontWeight": "bold", "color": "#F8FAFC" } },
+                { "type": "sizedBox", "height": 4 },
+                { "type": "text", "data": "kind: server • role: peer • status: active", "style": { "fontSize": 12, "color": "#94A3B8" } },
+                { "type": "sizedBox", "height": 4 },
+                { "type": "text", "data": "machines: client2, client3 • config.port: 8081", "style": { "fontSize": 12, "color": "#A5B4FC" } },
+                { "type": "sizedBox", "height": 6 },
+                { "type": "text", "data": "Secondary peer clan service instance.", "style": { "fontSize": 13, "color": "#CBD5E1" } }
+              ]
+            }
+          },
+          { "type": "sizedBox", "height": 10 },
+          {
+            "type": "container",
+            "padding": { "all": 12 },
+            "decoration": { "color": "#0F172A", "borderRadius": 10 },
+            "child": { "type": "text", "data": "Tip: use inventory instances/roles to understand module bindings per machine.", "style": { "fontSize": 12, "color": "#67E8F9" } }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -138,3 +138,6 @@ apps/fastfree_installer/src-tauri/fastfree_updater.key
 fastfree_ai/docker-compose.yml
 fastfree_ai/data/
 obsidian/fastfree/.obsidian/plugins/selfsync/
+
+# Dart tool caches
+.dart_tool/

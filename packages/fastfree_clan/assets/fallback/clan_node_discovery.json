@@ -1,0 +1,69 @@
+{
+  "type": "scaffold",
+  "backgroundColor": "#0B1220",
+  "appBar": {
+    "type": "appBar",
+    "title": { "type": "text", "data": "Clan Node Discovery" },
+    "backgroundColor": "#111827",
+    "foregroundColor": "#F8FAFC"
+  },
+  "body": {
+    "type": "singleChildScrollView",
+    "child": {
+      "type": "padding",
+      "padding": { "all": 16 },
+      "child": {
+        "type": "column",
+        "crossAxisAlignment": "stretch",
+        "children": [
+          {
+            "type": "container",
+            "padding": { "all": 16 },
+            "decoration": { "color": "#111827", "borderRadius": 12 },
+            "child": {
+              "type": "column",
+              "crossAxisAlignment": "start",
+              "children": [
+                { "type": "text", "data": "Discovered Nodes", "style": { "fontSize": 20, "fontWeight": "bold", "color": "#F8FAFC" } },
+                { "type": "sizedBox", "height": 6 },
+                { "type": "text", "data": "Scan and track the 11 FastFree nodes. Source: /api/v1/clan/machines", "style": { "fontSize": 13, "color": "#94A3B8" } },
+                { "type": "sizedBox", "height": 12 },
+                {
+                  "type": "row",
+                  "children": [
+                    { "type": "expanded", "child": { "type": "container", "padding": { "all": 12 }, "decoration": { "color": "#0F172A", "borderRadius": 10 }, "child": { "type": "column", "children": [ { "type": "text", "data": "11", "style": { "fontSize": 22, "fontWeight": "bold", "color": "#22D3EE" } }, { "type": "text", "data": "Total", "style": { "fontSize": 12, "color": "#94A3B8" } } ] } } },
+                    { "type": "sizedBox", "width": 8 },
+                    { "type": "expanded", "child": { "type": "container", "padding": { "all": 12 }, "decoration": { "color": "#0F172A", "borderRadius": 10 }, "child": { "type": "column", "children": [ { "type": "text", "data": "11", "style": { "fontSize": 22, "fontWeight": "bold", "color": "#34D399" } }, { "type": "text", "data": "Active", "style": { "fontSize": 12, "color": "#94A3B8" } } ] } } },
+                    { "type": "sizedBox", "width": 8 },
+                    { "type": "expanded", "child": { "type": "container", "padding": { "all": 12 }, "decoration": { "color": "#0F172A", "borderRadius": 10 }, "child": { "type": "column", "children": [ { "type": "text", "data": "0", "style": { "fontSize": 22, "fontWeight": "bold", "color": "#F59E0B" } }, { "type": "text", "data": "Pending", "style": { "fontSize": 12, "color": "#94A3B8" } } ] } } }
+                  ]
+                }
+              ]
+            }
+          },
+          { "type": "sizedBox", "height": 12 },
+          {
+            "type": "container",
+            "padding": { "all": 14 },
+            "decoration": { "color": "#111827", "borderRadius": 12 },
+            "child": {
+              "type": "column",
+              "crossAxisAlignment": "start",
+              "children": [
+                { "type": "text", "data": "Node List", "style": { "fontSize": 16, "fontWeight": "bold", "color": "#F8FAFC" } },
+                { "type": "sizedBox", "height": 8 },
+                { "type": "listTile", "leading": { "type": "icon", "icon": "dns", "color": "#34D399" }, "title": { "type": "text", "data": "client1.fastfree.local", "style": { "color": "#F8FAFC" } }, "subtitle": { "type": "text", "data": "id: client1 • status: active • tag: client", "style": { "color": "#94A3B8", "fontSize": 12 } } },
+                { "type": "divider", "color": "#1F2937" },
+                { "type": "listTile", "leading": { "type": "icon", "icon": "dns", "color": "#34D399" }, "title": { "type": "text", "data": "client2.fastfree.local", "style": { "color": "#F8FAFC" } }, "subtitle": { "type": "text", "data": "id: client2 • status: active • tag: client", "style": { "color": "#94A3B8", "fontSize": 12 } } },
+                { "type": "divider", "color": "#1F2937" },
+                { "type": "listTile", "leading": { "type": "icon", "icon": "dns", "color": "#34D399" }, "title": { "type": "text", "data": "client3.fastfree.local", "style": { "color": "#F8FAFC" } }, "subtitle": { "type": "text", "data": "id: client3 • status: active • tag: client", "style": { "color": "#94A3B8", "fontSize": 12 } } },
+                { "type": "sizedBox", "height": 4 },
+                { "type": "text", "data": "…and 8 more nodes (client4–client11). Live list refreshes via SSE.", "style": { "fontSize": 12, "color": "#64748B" } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

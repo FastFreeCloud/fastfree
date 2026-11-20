@@ -1,0 +1,65 @@
+{
+  "type": "scaffold",
+  "backgroundColor": "#0B1220",
+  "appBar": {
+    "type": "appBar",
+    "title": { "type": "text", "data": "Clan Mesh / WireGuard" },
+    "backgroundColor": "#111827",
+    "foregroundColor": "#F8FAFC"
+  },
+  "body": {
+    "type": "singleChildScrollView",
+    "child": {
+      "type": "padding",
+      "padding": { "all": 16 },
+      "child": {
+        "type": "column",
+        "crossAxisAlignment": "stretch",
+        "children": [
+          {
+            "type": "container",
+            "padding": { "all": 16 },
+            "decoration": { "color": "#111827", "borderRadius": 12 },
+            "child": {
+              "type": "column",
+              "crossAxisAlignment": "start",
+              "children": [
+                { "type": "text", "data": "WireGuard Mesh Overview", "style": { "fontSize": 20, "fontWeight": "bold", "color": "#F8FAFC" } },
+                { "type": "sizedBox", "height": 6 },
+                { "type": "text", "data": "Mesh topology and peer hints derived from clan inventory (domain fastfree.local).", "style": { "fontSize": 13, "color": "#94A3B8" } }
+              ]
+            }
+          },
+          { "type": "sizedBox", "height": 12 },
+          {
+            "type": "row",
+            "children": [
+              { "type": "expanded", "child": { "type": "container", "padding": { "all": 12 }, "decoration": { "color": "#0F172A", "borderRadius": 10 }, "child": { "type": "column", "children": [ { "type": "text", "data": "11", "style": { "fontSize": 20, "fontWeight": "bold", "color": "#22D3EE" } }, { "type": "text", "data": "Peers", "style": { "fontSize": 12, "color": "#94A3B8" } } ] } } },
+              { "type": "sizedBox", "width": 8 },
+              { "type": "expanded", "child": { "type": "container", "padding": { "all": 12 }, "decoration": { "color": "#0F172A", "borderRadius": 10 }, "child": { "type": "column", "children": [ { "type": "text", "data": "fastfree.local", "style": { "fontSize": 14, "fontWeight": "bold", "color": "#A78BFA" } }, { "type": "text", "data": "Domain", "style": { "fontSize": 12, "color": "#94A3B8" } } ] } } }
+            ]
+          },
+          { "type": "sizedBox", "height": 12 },
+          {
+            "type": "container",
+            "padding": { "all": 14 },
+            "decoration": { "color": "#111827", "borderRadius": 12 },
+            "child": {
+              "type": "column",
+              "crossAxisAlignment": "start",
+              "children": [
+                { "type": "text", "data": "Peer status (fallback)", "style": { "fontSize": 16, "fontWeight": "bold", "color": "#F8FAFC" } },
+                { "type": "sizedBox", "height": 8 },
+                { "type": "listTile", "leading": { "type": "icon", "icon": "lan", "color": "#34D399" }, "title": { "type": "text", "data": "client1 ↔ mesh", "style": { "color": "#F8FAFC" } }, "subtitle": { "type": "text", "data": "hostname: client1.fastfree.local • expected endpoint configured in vars metadata", "style": { "color": "#94A3B8", "fontSize": 12 } } },
+                { "type": "divider", "color": "#1F2937" },
+                { "type": "listTile", "leading": { "type": "icon", "icon": "lan", "color": "#34D399" }, "title": { "type": "text", "data": "client2 ↔ mesh", "style": { "color": "#F8FAFC" } }, "subtitle": { "type": "text", "data": "hostname: client2.fastfree.local • peer role via services/inventory", "style": { "color": "#94A3B8", "fontSize": 12 } } },
+                { "type": "sizedBox", "height": 6 },
+                { "type": "text", "data": "Live mesh details should be enriched from inventory + vars metadata when available.", "style": { "fontSize": 12, "color": "#64748B" } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

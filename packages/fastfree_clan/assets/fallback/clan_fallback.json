@@ -1,0 +1,58 @@
+{
+  "type": "scaffold",
+  "backgroundColor": "#0B1220",
+  "body": {
+    "type": "center",
+    "child": {
+      "type": "column",
+      "mainAxisAlignment": "center",
+      "crossAxisAlignment": "center",
+      "children": [
+        {
+          "type": "icon",
+          "icon": "hub_rounded",
+          "size": 80.0,
+          "color": "#06B6D4"
+        },
+        {
+          "type": "sizedBox",
+          "height": 24.0
+        },
+        {
+          "type": "text",
+          "data": "FastFree Clan SDUI",
+          "style": {
+            "fontSize": 24.0,
+            "fontWeight": "bold",
+            "color": "#FFFFFF"
+          }
+        },
+        {
+          "type": "sizedBox",
+          "height": 8.0
+        },
+        {
+          "type": "text",
+          "data": "NixOS / Clan.lol — Offline fallback mode",
+          "style": {
+            "fontSize": 13.0,
+            "color": "#94A3B8"
+          }
+        },
+        {
+          "type": "sizedBox",
+          "height": 32.0
+        },
+        {
+          "type": "sizedBox",
+          "width": 200.0,
+          "child": {
+            "type": "linearProgressIndicator",
+            "color": "#06B6D4",
+            "backgroundColor": "#1E293B"
+          }
+        }
+      ]
+    }
+  }
+}

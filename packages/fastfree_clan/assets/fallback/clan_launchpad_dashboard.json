@@ -1,0 +1,71 @@
+{
+  "type": "scaffold",
+  "backgroundColor": "#0B1220",
+  "appBar": {
+    "type": "appBar",
+    "title": { "type": "text", "data": "Clan Launchpad Dashboard" },
+    "backgroundColor": "#111827",
+    "foregroundColor": "#F8FAFC"
+  },
+  "body": {
+    "type": "singleChildScrollView",
+    "child": {
+      "type": "padding",
+      "padding": { "all": 16 },
+      "child": {
+        "type": "column",
+        "crossAxisAlignment": "stretch",
+        "children": [
+          {
+            "type": "container",
+            "padding": { "all": 16 },
+            "decoration": { "color": "#111827", "borderRadius": 12 },
+            "child": {
+              "type": "column",
+              "crossAxisAlignment": "start",
+              "children": [
+                { "type": "text", "data": "Clan Launchpad", "style": { "fontSize": 22, "fontWeight": "bold", "color": "#F8FAFC" } },
+                { "type": "sizedBox", "height": 6 },
+                { "type": "text", "data": "Overview of nodes, services, and vars metadata. Canonical SDUI: /api/v1/sdui/packages/clan_sdui/screens/*", "style": { "fontSize": 13, "color": "#94A3B8" } }
+              ]
+            }
+          },
+          { "type": "sizedBox", "height": 12 },
+          {
+            "type": "row",
+            "children": [
+              { "type": "expanded", "child": { "type": "container", "padding": { "all": 12 }, "decoration": { "color": "#0F172A", "borderRadius": 10 }, "child": { "type": "column", "children": [ { "type": "text", "data": "11", "style": { "fontSize": 20, "fontWeight": "bold", "color": "#22D3EE" } }, { "type": "text", "data": "Nodes", "style": { "fontSize": 12, "color": "#94A3B8" } } ] } } },
+              { "type": "sizedBox", "width": 8 },
+              { "type": "expanded", "child": { "type": "container", "padding": { "all": 12 }, "decoration": { "color": "#0F172A", "borderRadius": 10 }, "child": { "type": "column", "children": [ { "type": "text", "data": "2", "style": { "fontSize": 20, "fontWeight": "bold", "color": "#A78BFA" } }, { "type": "text", "data": "Services", "style": { "fontSize": 12, "color": "#94A3B8" } } ] } } },
+              { "type": "sizedBox", "width": 8 },
+              { "type": "expanded", "child": { "type": "container", "padding": { "all": 12 }, "decoration": { "color": "#0F172A", "borderRadius": 10 }, "child": { "type": "column", "children": [ { "type": "text", "data": "OK", "style": { "fontSize": 20, "fontWeight": "bold", "color": "#34D399" } }, { "type": "text", "data": "Realtime", "style": { "fontSize": 12, "color": "#94A3B8" } } ] } } }
+            ]
+          },
+          { "type": "sizedBox", "height": 12 },
+          {
+            "type": "container",
+            "padding": { "all": 14 },
+            "decoration": { "color": "#111827", "borderRadius": 12 },
+            "child": {
+              "type": "column",
+              "crossAxisAlignment": "start",
+              "children": [
+                { "type": "text", "data": "Quick navigation", "style": { "fontSize": 16, "fontWeight": "bold", "color": "#F8FAFC" } },
+                { "type": "sizedBox", "height": 8 },
+                { "type": "listTile", "leading": { "type": "icon", "icon": "travel_explore", "color": "#22D3EE" }, "title": { "type": "text", "data": "Node Discovery", "style": { "color": "#F8FAFC" } }, "subtitle": { "type": "text", "data": "clan_node_discovery", "style": { "color": "#94A3B8", "fontSize": 12 } } },
+                { "type": "divider", "color": "#1F2937" },
+                { "type": "listTile", "leading": { "type": "icon", "icon": "apps", "color": "#A78BFA" }, "title": { "type": "text", "data": "Modules Catalog", "style": { "color": "#F8FAFC" } }, "subtitle": { "type": "text", "data": "clan_modules_catalog", "style": { "color": "#94A3B8", "fontSize": 12 } } },
+                { "type": "divider", "color": "#1F2937" },
+                { "type": "listTile", "leading": { "type": "icon", "icon": "vpn_key", "color": "#F59E0B" }, "title": { "type": "text", "data": "Vars & Secrets (metadata)", "style": { "color": "#F8FAFC" } }, "subtitle": { "type": "text", "data": "clan_vars_secrets", "style": { "color": "#94A3B8", "fontSize": 12 } } },
+                { "type": "divider", "color": "#1F2937" },
+                { "type": "listTile", "leading": { "type": "icon", "icon": "lan", "color": "#34D399" }, "title": { "type": "text", "data": "Mesh / WireGuard", "style": { "color": "#F8FAFC" } }, "subtitle": { "type": "text", "data": "clan_mesh_wireguard", "style": { "color": "#94A3B8", "fontSize": 12 } } },
+                { "type": "divider", "color": "#1F2937" },
+                { "type": "listTile", "leading": { "type": "icon", "icon": "rocket_launch", "color": "#38BDF8" }, "title": { "type": "text", "data": "Provisioning & Deploy", "style": { "color": "#F8FAFC" } }, "subtitle": { "type": "text", "data": "clan_provisioning_deploy", "style": { "color": "#94A3B8", "fontSize": 12 } } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}
