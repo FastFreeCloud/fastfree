@@ -4,28 +4,36 @@ kanban-plugin: board
 
 ## Backlog
 
-- [ ] Add WebDAV sync for Obsidian vault
-- [ ] Configure Obsidian AI plugins (Copilot/Smart Connections)
-- [ ] Create notes for fastfree_hr, fastfree_layout, fastfree_splash
-- [ ] Set up Auto-Combo combos in OmniRoute
-- [ ] Verify Hermes reads/writes Obsidian via MCP
+- [ ] توحيد قائمة ملفات audit مع generator (flake.nix)
+- [ ] إزالة fileList / ClanSync.list المكرر
+- [ ] إدخال إعدادات حقيقية بدل hardcoded generator
+- [ ] توليد shell.nix أو إزالة الإشارة
+- [ ] تحسين ClanAudit
+- [ ] دعم sync للتعارض/الحذف/المجلدات
+- [ ] اختبارات تكامل run()/CLI
+- [ ] ربط SduiClanScreen بالـ backend الفعلي
+- [ ] اختبارات UI/SDUI
+- [ ] توثيق API contract مع fastfree_panel
+- [ ] WebDAV sync للـ vault
+- [ ] إعداد Obsidian AI plugins
+- [ ] Auto-Combo combos
 
 ## In Progress
 
-- [ ] Organize Obsidian vault (OmniRoute + FastFree Clan folders)
-- [ ] Test Obsidian MCP tools (read/write/search)
+- [ ] مراجعة Phase 3 hardening
 
 ## Done
 
-- [x] OmniRoute �?" Obsidian Context Source connected
-- [x] obsidian_check_status �?' OK
-- [x] obsidian_list_vault �?' ["Welcome to FastFree AI.md"]
-- [x] obsidian_write_note �?' "FastFree Clan Overview.md"
-- [x] obsidian_read_note �?' verified
-- [x] Obsidian vault organized (OmniRoute/ + FastFree Clan/)
-- [x] FastFree Clan �?" Journey, Goal, Lifecycle.md created
-- [x] MCP scopes granted (read:obsidian, write:obsidian)
-
-## Notes
-- Install Obsidian Kanban plugin: Settings �?' Community plugins �?' Browse �?' "Kanban" (mgmeyers)
-- Vault path: fastfree/obsidian/fastfree
+- [x] OmniRoute ↔ Obsidian Context Source
+- [x] obsidian_check_status / list_vault / read_note / write_note
+- [x] Obsidian vault organized
+- [x] FastFree Clan Journey/Goal/Lifecycle
+- [x] MCP scopes read/write obsidian
+- [x] Core backend (generator/audit/sync/list/manager)
+- [x] CLI commands
+- [x] 12 tests
+- [x] SDUI data/domain/presentation
+- [x] Omnigent → OmniRoute → Obsidian smoke test
+- [x] Auto-start stack
+- [x] Create notes for HR/Layout/Splash
+- [x] Verify Hermes reads/writes Obsidian — obsolete (Hermes removed)

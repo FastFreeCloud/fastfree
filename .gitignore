@@ -132,3 +132,9 @@ midscene_run/
 
 # Tauri updater signing private key - NEVER commit (rotated 2026-11-17)
 apps/fastfree_installer/src-tauri/fastfree_updater.key
+
+# Local runtime state and secrets
+.omnigent/
+fastfree_ai/docker-compose.yml
+fastfree_ai/data/
+obsidian/fastfree/.obsidian/plugins/selfsync/
