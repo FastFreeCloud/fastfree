@@ -1,0 +1,10 @@
+# Obsidian plugin data (contains secrets/API keys)
+.obsidian/plugins/*/data.json
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+
+# OS files
+.DS_Store
+Thumbs.db
+"
