@@ -1,0 +1,1 @@
+Review: dart analyze found 6 issues (0 errors, 5 warnings, 1 info). Warnings: 5 unused private widgets. Info: Switch.activeColor deprecated. No code changes made.

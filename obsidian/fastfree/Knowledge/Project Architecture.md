@@ -1,0 +1,1 @@
+Project: FastFree ERP. Stack: Flutter/Dart monorepo, Dox backend, Stac SDUI, Nix/Clan, Tauri, Next.js. Packages: apps/* + packages/*. Melos workspace. Libraries: nix, stac, http, args, collection, path, yaml, flutter. See fastfree_clan README for details.

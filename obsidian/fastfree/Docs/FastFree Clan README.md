@@ -1,0 +1,1 @@
+FastFree Clan: Nix-backed Clan module for FastFree ERP. Backend: pure Dart (generator/audit/sync/list/manager). CLI: generate/audit/list/sync/run. SDUI: SduiClanScreen + SSE. Tests: 12. See README.md for details.
